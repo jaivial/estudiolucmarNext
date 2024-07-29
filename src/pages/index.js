@@ -4,9 +4,11 @@ import { fetchUser } from "../lib/supabase/login/loginFunctions.js";
 import Toastify from 'toastify-js';
 import Image from "next/image";
 import logoLucmar from "../../public/assets/img/logolucmar.jpg";
+import "../app/globals.css";
+import LoginForm from "../components/LoginForm/LoginForm.js";
 
 
-export default function LoginPage() {
+export default function Home() {
 
   const handleLogin = async (email, password) => {
     const user = await fetchUser(email, password);
@@ -24,7 +26,6 @@ export default function LoginPage() {
 
   return (
     <Layout title={metadata.title} description={metadata.description}>
-     <div>
       <div style={{ paddingTop: 'var(--safe-area-inset-top)' }}>
         <main>
           <section className="h-screen overflow-y-hidden w-full bg-slate-50 flex flex-row justify-center items-start pt-20">
@@ -40,8 +41,8 @@ export default function LoginPage() {
               </div>
 
               <div className="w-full">
-                <h1 className="font-sans font-bold text-4xl tracking-wide text-slate-800">Iniciar sesión</h1>
-
+                <h1 className="font-sans font-bold text-4xl tracking-wide text-slate-800 text-center">Iniciar sesión</h1>
+                <LoginForm />
                 <div className="login__footer text-neutral-700"></div>
               </div>
               <div className="login__background h-screen"></div>
@@ -49,7 +50,7 @@ export default function LoginPage() {
           </section>
         </main>
       </div>
-    </div>
+
     </Layout>
   );
 }

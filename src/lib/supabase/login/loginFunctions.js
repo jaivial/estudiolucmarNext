@@ -3,8 +3,12 @@ import { supabase } from '../supabaseClient.js'; // Ensure the correct path to y
 
 export const fetchUser = async (email, password) => {
   try {
-    const { data, error } = await supabase.from('users').select('*').eq('email', email).eq('password', password);
-    console.log('data', data); // Debugging line
+    const { data, error } = await supabase
+      .from('users')
+      .select('*')
+      .eq('email', email)
+      .eq('password', password);
+    
     if (error) {
       throw new Error(error.message);
     }

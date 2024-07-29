@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import Head from "next/head";
 import LoadingScreen from "../LoadingScreen/LoadingScreen.js"; // Ensure this component is converted from .astro to .js/.jsx
 import Toastify from "toastify-js";
+import "../../app/globals.css";
 
 
 export const metadata = {
@@ -37,7 +38,7 @@ const Layout = ({ children, title, description }) => {
             </Head>
 
 
-            <div>{children}</div>
+            <div className="w-full overflow-x-hidden">{children}</div>
         </>
     );
 };
