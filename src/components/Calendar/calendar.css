@@ -26,7 +26,6 @@
     @apply bg-red-400;
   }
   .react-calendar__tile.completed-tasks::after {
-    content: '\f00c \f00c'; /* FontAwesome double checkmark icon (Unicode) */
     font-family: 'Font Awesome 5 Free'; /* FontAwesome font family */
     font-weight: 900; /* FontAwesome solid style */
     color: green; /* Adjust color as needed */

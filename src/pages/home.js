@@ -15,6 +15,7 @@ import { fetchUserName } from "../lib/supabase/users/fetchusers.js";
 import { getTasksByDaySSR, getTasksSSR } from "../lib/supabase/calendar/calendarFunctions.js";
 
 
+
 const showToast = (message, backgroundColor) => {
     Toastify({
         text: message,
@@ -88,13 +89,29 @@ export async function getServerSideProps(context) {
                 )
             );
 
-            datesWithCompletedTasks = Array.from(
-                new Set(
-                    allTasksSSR
-                        .filter((task) => task.completed === true) // Filter tasks that are completed
-                        .map((task) => new Date(task.task_date).toISOString().split('T')[0]), // Extract and format the date
-                )
-            );
+            const groupTasksByDate = (tasks) => {
+                return tasks.reduce((acc, task) => {
+                    const date = new Date(task.task_date).toISOString().split('T')[0];
+                    if (!acc[date]) {
+                        acc[date] = [];
+                    }
+                    acc[date].push(task);
+                    return acc;
+                }, {});
+            };
+
+            // Group tasks by date
+            const tasksByDate = groupTasksByDate(allTasksSSR);
+
+            // Filter dates where all tasks are completed
+            const datesWithAllTasksCompleted = Object.keys(tasksByDate).filter(date => {
+                return tasksByDate[date].every(task => task.completed === true);
+            });
+
+            // Convert the result to a Set
+            const datesWithCompletedTasksSet = new Set(datesWithAllTasksCompleted);
+
+            datesWithCompletedTasks = Array.from(datesWithCompletedTasksSet);
 
             // Output the set of dates with incomplete and completed tasks
             console.log('Incomplete task dates:', datesWithIncompleteTasks);

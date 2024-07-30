@@ -119,3 +119,17 @@ export const addTask = async (date, task, userId, taskTime = null) => {
 
     return true;
 }
+
+export const deleteTask = async (taskId, userId) => {
+    const { data, error } = await supabase
+        .from('tasks')
+        .delete()
+        .eq('user_id', userId)
+        .eq('id', taskId);
+
+    if (error) {
+        console.error("Error deleting task:", error);
+        return false;
+    }
+    return data;
+};

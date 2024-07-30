@@ -2,7 +2,10 @@ import React, { useState } from 'react';
 import { FaTrash } from 'react-icons/fa';
 import Toastify from 'toastify-js';
 import Cookies from 'js-cookie';
-import { addTask as addTaskToDB } from '../../lib/supabase/calendar/calendarFunctions';
+import { addTask as addTaskToDB, markTaskAsCompleted, deleteTask } from '../../lib/supabase/calendar/calendarFunctions';
+import { format, parseISO } from 'date-fns';
+import { es } from 'date-fns/locale';
+
 
 
 const showToast = (message, backgroundColor) => {
@@ -37,13 +40,7 @@ const TaskList = ({ day, tasks, refreshTasks, filteredTasksByDate }) => {
     // Handle task completion by toggling the completed state
     const handleTaskCompletion = async (taskId) => {
         try {
-            await axios.post(
-                'http://localhost:8000/backend/calendar/tasks.php',
-                new URLSearchParams({
-                    taskId,
-                    userId,
-                }),
-            );
+            const result = await markTaskAsCompleted(taskId, userId);
             showToast('Tarea completada', 'linear-gradient(to right bottom, #00603c, #006f39, #007d31, #008b24, #069903)');
             refreshTasks(day);
         } catch (error) {
@@ -54,12 +51,7 @@ const TaskList = ({ day, tasks, refreshTasks, filteredTasksByDate }) => {
     // Handle task deletion
     const handleDeleteTask = async (taskId) => {
         try {
-            await axios.get('http://localhost:8000/backend/calendar/deleteTasks.php', {
-                params: {
-                    taskId: taskId,
-                    userId: userId,
-                },
-            });
+            const result = await deleteTask(taskId, userId);
             showToast('Tarea eliminada', 'linear-gradient(to right bottom, #c62828, #b92125, #ac1a22, #a0131f, #930b1c)');
             refreshTasks(day);
         } catch (error) {
@@ -96,6 +88,17 @@ const TaskList = ({ day, tasks, refreshTasks, filteredTasksByDate }) => {
         }
     };
 
+    const formatDateString = (dateString) => {
+        const date = parseISO(dateString);
+        const dayOfWeek = format(date, 'EEEE', { locale: es });
+        const day = format(date, 'dd', { locale: es });
+        const month = format(date, 'MMMM', { locale: es });
+        const year = format(date, 'yyyy', { locale: es });
+        return `${dayOfWeek.charAt(0).toUpperCase() + dayOfWeek.slice(1)} - ${day} - ${month} - ${year}`;
+    };
+
+
+    const SpanishDateString = formatDateString(day);
 
 
     // Sort tasks by time, with tasks without time last
@@ -112,7 +115,7 @@ const TaskList = ({ day, tasks, refreshTasks, filteredTasksByDate }) => {
             <div className="flex flex-col items-center justify-center gap-2 bg-blue-50 rounded-xl p-4 w-full">
                 <h3 className="text-center">
                     Tareas para <br />
-                    {day}
+                    {SpanishDateString}
                 </h3>
             </div>
             <button className="absolute top-3 right-3 bg-blue-500 text-white rounded-full font-sans font-bold text-2xl text-center flex flex-row justify-center items-center h-10 w-10 pb-0.5" onClick={handleAddTaskClick}>

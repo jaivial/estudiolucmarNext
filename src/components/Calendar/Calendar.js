@@ -5,7 +5,10 @@ import './calendar.css';
 import TaskList from './TaskList'; // Adjust the import path as needed
 import Cookies from 'js-cookie';
 import { getTasksByDay, getTasks } from '../../lib/supabase/calendar/calendarFunctions';
-import { format, set, startOfDay } from 'date-fns';
+import { format, startOfDay } from 'date-fns';
+import { IoMdCheckmarkCircleOutline } from "react-icons/io";
+
+
 
 const CalendarApp = ({ tasksSSR, allTasksSSR, datesWithCompletedTasks, datesWithIncompleteTasks }) => {
     const [date, setDate] = useState(new Date());
@@ -18,14 +21,6 @@ const CalendarApp = ({ tasksSSR, allTasksSSR, datesWithCompletedTasks, datesWith
 
     // Get user ID from cookies
     const userId = Cookies.get('user_id');
-
-    useEffect(() => {
-        // console.log('tasksSSR', tasksSSR);
-        // console.log('allTasksSSR', allTasksSSR);
-        // console.log('incompletedTasksDates', incompletedTasksDates);
-        // console.log('completedTasksDates', completedTasksDates);
-
-    }, []);
 
     const startOfDayUTC = (date) => {
         const localStartOfDay = startOfDay(date);
@@ -83,15 +78,30 @@ const CalendarApp = ({ tasksSSR, allTasksSSR, datesWithCompletedTasks, datesWith
                 )
 
 
-            datesWithCompletedTasks =
-                new Set(
-                    allTasks
-                        .filter((task) => task.completed === true) // Filter tasks that are completed
-                        .map((task) => new Date(task.task_date).toISOString().split('T')[0]), // Extract and format the date
-                )
+            const groupTasksByDate = (tasks) => {
+                return tasks.reduce((acc, task) => {
+                    const date = new Date(task.task_date).toISOString().split('T')[0];
+                    if (!acc[date]) {
+                        acc[date] = [];
+                    }
+                    acc[date].push(task);
+                    return acc;
+                }, {});
+            };
+
+            // Group tasks by date
+            const tasksByDate = groupTasksByDate(allTasks);
+
+            // Filter dates where all tasks are completed
+            const datesWithAllTasksCompleted = Object.keys(tasksByDate).filter(date => {
+                return tasksByDate[date].every(task => task.completed === true);
+            });
+
+            // Convert the result to a Set
+            const datesWithCompletedTasksSet = new Set(datesWithAllTasksCompleted);
 
             setIncompletedTasksDates(datesWithIncompleteTasks);
-            setCompletedTasksDates(datesWithCompletedTasks);
+            setCompletedTasksDates(datesWithCompletedTasksSet);
             // Output the set of dates with incomplete and completed tasks
             console.log('Incomplete task dates:', datesWithIncompleteTasks);
             console.log('Completed task dates:', datesWithCompletedTasks);
@@ -128,8 +138,20 @@ const CalendarApp = ({ tasksSSR, allTasksSSR, datesWithCompletedTasks, datesWith
             if (incompletedTasksDates.has(dateString)) {
                 return 'has-tasks';
             }
+
+        }
+        return null;
+    };
+
+    const renderTileContent = ({ date, view }) => {
+        if (view === 'month') {
+            const dateString = format(startOfDayUTC(date), 'yyyy-MM-dd');
             if (completedTasksDates.has(dateString)) {
-                return 'completed-tasks';
+                return (
+                    <div style={{ position: 'relative', height: 'auto' }}>
+                        <IoMdCheckmarkCircleOutline style={{ position: 'absolute', bottom: '-21px', left: '50%', transform: 'translateX(-50%)', color: 'green', fontSize: '1.2rem' }} />
+                    </div>
+                );
             }
         }
         return null;
@@ -140,9 +162,9 @@ const CalendarApp = ({ tasksSSR, allTasksSSR, datesWithCompletedTasks, datesWith
     }, [tasks]);
 
     return (
-        <div className="pb-28 flex flex-col items-center justify-center gap-4 px-6 py-8 rounded-lg shadow-md">
+        <div className="pb-36 flex flex-col items-center justify-center gap-6  ">
             <h1 className="text-center text-2xl font-bold">Calendario de tareas</h1>
-            <Calendar value={date} onClickDay={onDateClick} className="w-full bg-purple-400 rounded-xl" tileClassName={tileClassName} />
+            <Calendar value={date} onClickDay={onDateClick} className="w-full bg-purple-400 rounded-xl" tileClassName={tileClassName} tileContent={renderTileContent} />
             {selectedDay && <TaskList day={selectedDay} tasks={tasks} refreshTasks={refreshTasks} filteredTasksByDate={filteredTasksByDate} />}
         </div>
     );
