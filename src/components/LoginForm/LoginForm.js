@@ -1,12 +1,14 @@
 import React, { useState } from 'react';
 import Toastify from 'toastify-js';
-import { supabase } from '../../lib/supabase/supabaseClient.js';
 import 'toastify-js/src/toastify.css'; // Import Toastify CSS
 import { fetchUser } from '../../lib/supabase/login/loginFunctions.js';
+import { useRouter } from 'next/router.js';
+
 
 
 
 const LoginForm = () => {
+  const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [notificationVisible, setNotificationVisible] = useState(false);
@@ -20,7 +22,7 @@ const LoginForm = () => {
       }
       if (!successCredentials) {
         setNotificationVisible(true);
-      } 
+      }
     } catch (error) {
       console.error('Error:', error);
     }

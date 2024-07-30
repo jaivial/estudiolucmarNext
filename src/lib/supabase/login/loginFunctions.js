@@ -3,6 +3,7 @@ import { supabase } from '../supabaseClient.js';
 import Cookies from 'js-cookie';
 import 'toastify-js/src/toastify.css'; // Import Toastify CSS
 import Toastify from 'toastify-js';
+import { useRouter } from 'next/router';
 
 
 const showToast = (message, backgroundColor) => {
@@ -22,8 +23,10 @@ const showToast = (message, backgroundColor) => {
 
 
 
+
 export const fetchUser = async (email, password) => {
   try {
+
     const { data, error } = await supabase
       .from('users')
       .select('*')
@@ -39,10 +42,11 @@ export const fetchUser = async (email, password) => {
       return { successCredentials: false, error: error };
 
     } else if (data.length > 0) {
-      const expires = 0.5; // 12 hours
+      const now = new Date();
+      const expires = new Date(now.getTime() + 6 * 60 * 60 * 1000);
       // Set cookies with a path of '/'
-      Cookies.set('user_id', data[0].user_id, { expires, path: '/' });
-      Cookies.set('admin', data[0].admin, { expires, path: '/' });
+      Cookies.set('user_id', data[0].user_id, { expires: expires, path: '/' });
+      Cookies.set('admin', data[0].admin, { expires: expires, path: '/' });
       console.log('cookies', Cookies.get()); // Debugging line
 
       try {
@@ -52,14 +56,17 @@ export const fetchUser = async (email, password) => {
         }
 
         if (activeUser.length > 0) { // If the user is not active
-          showToast('Usuario activo en otro dispositivo', 'linear-gradient(to right bottom, #00603c, #006f39, #007d31, #008b24, #069903)'); // Display a toast message
+          showToast('Usuario activo en otro dispositivo', 'linear-gradient(to right bottom, #c62828, #b92125, #ac1a22, #a0131f, #930b1c)'); // Display a toast message
         } else { // If the user is active
-          showToast('Usuario no activo', 'linear-gradient(to right bottom, #c62828, #b92125, #ac1a22, #a0131f, #930b1c)'); // Display a toast message
           try {
+
             const { success, message } = await handleUserSession();
             if (success) {
-              showToast(message, 'linear-gradient(to right bottom, #00603c, #006f39, #007d31, #008b24, #069903)');
-
+              localStorage.setItem('toastMessage', JSON.stringify({
+                message: 'Sesión iniciada',
+                style: 'linear-gradient(to right bottom, #00603c, #006f39, #007d31, #008b24, #069903)'
+              }));
+              window.location.href = '/home';
             } else {
               showToast(message, 'linear-gradient(to right bottom, #c62828, #b92125, #ac1a22, #a0131f, #930b1c)'); // Display a toast message
             }
@@ -119,14 +126,15 @@ const handleUserSession = async () => {
       .from('active_sessions')
       .insert([{ user_id: userID, session_id: sessionIDHex }], { upsert: true })
       .select();
-    console.log('handleUserSession', data); // Debugging line
 
     if (error) {
       throw new Error(error.message);
     }
 
     if (data.length > 0) { // If the user is active
-      Cookies.set('hashID', sessionIDHex, { expires: 1 / 12, path: '/' }); // 1/12 of a day = 2 hours
+      const now = new Date();
+      const expires = new Date(now.getTime() + 6 * 60 * 60 * 1000);
+      Cookies.set('hashID', sessionIDHex, { expires: expires, path: '/' }); // 1/12 of a day = 2 hours
       return { success: true, message: 'User session set' };
     } else {
       return { success: false, message: 'User session setting went wrong' };

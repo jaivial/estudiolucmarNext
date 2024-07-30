@@ -1,7 +1,7 @@
 import { supabase } from '../supabaseClient.js';
 import cookie from 'cookie';
 
-export const checkActiveUser = async (req) => {
+export const checkLogin = async (req) => {
     let user_id;
     let session_id;
 
