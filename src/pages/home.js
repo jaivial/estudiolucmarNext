@@ -71,6 +71,7 @@ export default function Home({ user }) {
         <GeneralLayout title={metadata.title} description={metadata.description} user={user}>
             <div style={{ paddingTop: 'var(--safe-area-inset-top)' }}>
                 <p>hola</p>
+                <p>hola</p>
             </div>
         </GeneralLayout>
     );
