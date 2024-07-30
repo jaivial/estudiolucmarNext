@@ -32,7 +32,7 @@ const MobileMenuBar = () => {
 
     useEffect(() => {
         const restoreColores = (currentPage) => {
-            const navLinks = document.querySelectorAll('Link, div');
+            const navLinks = document.querySelectorAll('a');
             navLinks.forEach((link) => {
                 if (link.id.includes(currentPage)) {
                     link.classList.remove('h-[45px]', 'bg-white', 'p-2', 'text-black');
@@ -111,8 +111,8 @@ const MobileMenuBar = () => {
 
     return (
         <div id="completesidenavbar" className="relative z-[999]">
-            <nav className="h-9 w-full flex flex-row justify-between bg-white border-t shadow-xl fixed bottom-0 left-0 z-[999] overflow-visible">
-                <ul className="w-full h-full flex flex-row justify-around items-end transition-all ml-3 pb-2 overflow-y-visible shadow-xl">
+            <nav className="h-10 w-full flex flex-row justify-between border-t border-slate-300 shadow-2xl fixed bottom-0 left-0 z-[999] overflow-visible">
+                <ul className="w-full h-full flex flex-row justify-around items-end transition-all pb-3.5 overflow-y-visible shadow-xl">
                     <Link href="/home" id="mobile-itemHome" className="h-[55px] bg-blue-400 p-2.5 px-3.5 rounded-3xl shadow-lg text-white flex items-center justify-center hover:cursor-pointer hover:bg-blue-400 hover:text-white">
                         <svg xmlns="http://www.w3.org/2000/svg" width="1.8em" height="1.8em" viewBox="0 0 1024 1024">
                             <path fill="currentColor" d="M946.5 505L534.6 93.4a31.93 31.93 0 0 0-45.2 0L77.5 505c-12 12-18.8 28.3-18.8 45.3c0 35.3 28.7 64 64 64h43.4V908c0 17.7 14.3 32 32 32H448V716h112v224h265.9c17.7 0 32-14.3 32-32V614.3h43.4c17 0 33.3-6.7 45.3-18.8c24.9-25 24.9-65.5-.1-90.5"></path>
@@ -129,8 +129,8 @@ const MobileMenuBar = () => {
                             <path fill="currentColor" d="M50.002 0c-16.3 0-29.674 13.333-29.674 29.596c0 6.252 1.987 12.076 5.342 16.865l19.234 33.25l.082.107c.759.991 1.5 1.773 2.37 2.348c.87.576 1.95.92 3.01.814c2.118-.212 3.415-1.708 4.646-3.376l.066-.086l21.234-36.141l.012-.023c.498-.9.866-1.816 1.178-2.708a29.246 29.246 0 0 0 2.17-11.05C79.672 13.333 66.302 0 50.002 0m0 17.045c7.071 0 12.59 5.509 12.59 12.55c0 7.043-5.519 12.55-12.59 12.55c-7.072 0-12.594-5.508-12.594-12.55c0-7.04 5.523-12.55 12.594-12.55" caprule="evenodd"></path>
                         </svg>
                     </Link>
-                    <div id="moreMobileMenu" className="h-auto pt-3.5 px-3.5 rounded-3xl flex flex-col items-center justify-center">
-                        <ul className="w-auto h-full flex flex-col justify-between gap-6">
+                    <div id="moreMobileMenu" className="h-auto pt-3.5 -mx-3.5 rounded-3xl flex flex-col items-center justify-center">
+                        <ul className="w-auto h-full flex flex-col justify-between gap-6 px-3.5">
                             <div id="mobile-itemEncargos" className="h-[45px] bg-white p-2 px-3.5 rounded-3xl shadow-lg hidden items-center justify-center hover:cursor-pointer hover:bg-blue-400 hover:text-white">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="1.8em" height="1.8em" viewBox="0 0 20 20">
                                     <path fill="currentColor" d="M2 3a1 1 0 0 1 2 0h13a1 1 0 1 1 0 2H4v12.5a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5zm3 3.5a.5.5 0 0 1 .5-.5h11a.5.5 0 0 1 .5.5v7a2.5 2.5 0 0 1-2.5 2.5h-7A2.5 2.5 0 0 1 5 13.5zm3 7a.5.5 0 0 0 .5.5h1a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 0 .5.5h1a.5.5 0 0 0 .5-.5v-2.55a1 1 0 0 0-.336-.748L11.332 8.13a.5.5 0 0 0-.664 0L8.336 10.2a1 1 0 0 0-.336.75z" caprule="evenodd"></path>
@@ -158,9 +158,9 @@ const MobileMenuBar = () => {
                             </div>
                         </ul>
                     </div>
-                </ul >
-            </nav >
-        </div >
+                </ul>
+            </nav>
+        </div>
     );
 };
 

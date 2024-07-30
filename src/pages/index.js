@@ -54,6 +54,8 @@ export default function Index({ user, shouldRedirect }) {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
 
+
+
   useEffect(() => {
     const toastMessage = localStorage.getItem('toastMessage');
     if (toastMessage) {
@@ -63,7 +65,15 @@ export default function Index({ user, shouldRedirect }) {
       // Remove the message from localStorage
       localStorage.removeItem('toastMessage');
     }
-    setLoading(false);
+  }, []);
+
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      setLoading(false);
+    }, 800); // Set the timeout duration to 3 seconds (3000 milliseconds) or any other desired duration
+
+    // Cleanup the timeout if the component unmounts
+    return () => clearTimeout(timeout);
   }, []);
 
   useEffect(() => {

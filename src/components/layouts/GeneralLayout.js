@@ -13,18 +13,15 @@ export const metadata = {
 const Layout = ({ children, title, description }) => {
     const [loading, setLoading] = useState(true);
 
-    const handleShowLoadingScreen = () => {
-        setLoading(true);
-    };
-
-    const handleHideLoadingScreen = () => {
-        console.log("Hiding loading screen");
-        setLoading(false);
-    };
-
     useEffect(() => {
-        handleHideLoadingScreen();
-    }, []); // Empty dependency array means this useEffect runs once when the component mounts
+        const timeout = setTimeout(() => {
+            setLoading(false);
+        }, 800); // Set the timeout duration to 3 seconds (3000 milliseconds) or any other desired duration
+
+        // Cleanup the timeout if the component unmounts
+        return () => clearTimeout(timeout);
+    }, []);
+
 
     return (
         <>
