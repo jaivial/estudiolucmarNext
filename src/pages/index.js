@@ -3,7 +3,7 @@ import Layout from "../components/layouts/IndexLayout.js";
 import { fetchUser } from "../lib/supabase/login/loginFunctions.js";
 import Toastify from 'toastify-js';
 import Image from "next/image";
-import logoLucmar from "../../public/assets/img/logolucmar.jpg";
+import logoLucmar from "../../public/assets/icons/icon-256.webp";
 import "../app/globals.css";
 import LoginForm from "../components/LoginForm/LoginForm.js";
 
