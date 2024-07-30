@@ -74,7 +74,7 @@ export default function Index({ user, shouldRedirect }) {
       }));
       router.push('/home'); // Navigate to the home page
     }
-  }, [shouldRedirect]);
+  }, [router, shouldRedirect]);
 
   return (
     <Layout title={metadata.title} description={metadata.description}>
