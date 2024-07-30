@@ -9,6 +9,11 @@ import { useEffect } from "react";
 import 'toastify-js/src/toastify.css'; // Import Toastify CSS
 import Toastify from 'toastify-js';
 import { checkLogin } from "../lib/supabase/login/checkLogin.js";
+import HeroSection from "../components/Home/HeroSection.js";
+import { parse } from 'cookie';
+import { fetchUserName } from "../lib/supabase/users/fetchusers.js";
+import { getTasksByDaySSR, getTasksSSR } from "../lib/supabase/calendar/calendarFunctions.js";
+
 
 
 const showToast = (message, backgroundColor) => {
@@ -45,16 +50,99 @@ export async function getServerSideProps(context) {
         console.error('Error during server-side data fetching:', error.message);
     }
 
+    const cookies = parse(req.headers.cookie || '');
+    const user_id = cookies.user_id;
+    let initialUserName = null;
+
+    try {
+        if (user_id) {
+            initialUserName = await fetchUserName(user_id);
+        } else {
+            console.log('User ID not found in cookies'); // Debugging line
+        }
+    } catch (error) {
+        console.error('Error fetching user data:', error);
+    }
+
+    const day = new Date();
+    let tasksSSR;
+    try {
+        tasksSSR = await getTasksByDaySSR(day, user_id);
+        console.log('tasks', tasksSSR); // Debugging line
+    } catch (error) {
+        console.error('Error fetching tasks:', error);
+    }
+
+    let allTasksSSR;
+    let datesWithIncompleteTasks;
+    let datesWithCompletedTasks;
+    try {
+        allTasksSSR = await getTasksSSR(user_id);
+        console.log('allTasksSSR', allTasksSSR); // Debugging line
+
+        try {
+            datesWithIncompleteTasks = Array.from(
+                new Set(
+                    allTasksSSR
+                        .filter((task) => task.completed === false) // Filter tasks that are not completed
+                        .map((task) => new Date(task.task_date).toISOString().split('T')[0]), // Extract and format the date
+                )
+            );
+
+            const groupTasksByDate = (tasks) => {
+                return tasks.reduce((acc, task) => {
+                    const date = new Date(task.task_date).toISOString().split('T')[0];
+                    if (!acc[date]) {
+                        acc[date] = [];
+                    }
+                    acc[date].push(task);
+                    return acc;
+                }, {});
+            };
+
+            // Group tasks by date
+            const tasksByDate = groupTasksByDate(allTasksSSR);
+
+            // Filter dates where all tasks are completed
+            const datesWithAllTasksCompleted = Object.keys(tasksByDate).filter(date => {
+                return tasksByDate[date].every(task => task.completed === true);
+            });
+
+            // Convert the result to a Set
+            const datesWithCompletedTasksSet = new Set(datesWithAllTasksCompleted);
+
+            datesWithCompletedTasks = Array.from(datesWithCompletedTasksSet);
+
+            // Output the set of dates with incomplete and completed tasks
+            console.log('Incomplete task dates:', datesWithIncompleteTasks);
+            console.log('Completed task dates:', datesWithCompletedTasks);
+
+        } catch (error) {
+            console.error('Error processing tasks:', error);
+        }
+
+    } catch (error) {
+        console.error('Error fetching all tasks:', error);
+    }
+
+
+
+
     return {
         props: {
             user,
+            initialUserName,
+            tasksSSR,
+            allTasksSSR,
+            datesWithCompletedTasks,
+            datesWithIncompleteTasks,
         },
     };
 }
 
 
 
-export default function Home({ user }) {
+export default function Home({ user, initialUserName, tasksSSR, allTasksSSR, datesWithCompletedTasks, datesWithIncompleteTasks }) {
 
     useEffect(() => {
         const toastMessage = localStorage.getItem('toastMessage');
@@ -69,13 +157,8 @@ export default function Home({ user }) {
 
     return (
         <GeneralLayout title={metadata.title} description={metadata.description} user={user}>
-            <div style={{ paddingTop: 'var(--safe-area-inset-top)' }}>
-                <p>hola</p>
-                <p>hola</p>
-                <p>hola</p>
-                <p>hola</p>
-                <p>hola</p>
-                <p>hola</p>
+            <div style={{ paddingTop: 'var(--safe-area-inset-top)' }} className="h-full w-full">
+                <HeroSection initialUserName={initialUserName} tasksSSR={tasksSSR} allTasksSSR={allTasksSSR} datesWithCompletedTasks={datesWithCompletedTasks} datesWithIncompleteTasks={datesWithIncompleteTasks} />
             </div>
         </GeneralLayout>
     );

@@ -12,6 +12,7 @@ import Toastify from 'toastify-js';
 import Cookies from 'js-cookie';
 import LoadingScreen from "../components/LoadingScreen/LoadingScreen.js";
 
+
 const showToast = (message, backgroundColor) => {
   Toastify({
     text: message,
