@@ -5,7 +5,7 @@ import '../Home/HeroSection.css';
 import { fetchUserName } from '../../lib/supabase/users/fetchusers.js';
 import CalendarApp from '../Calendar/Calendar';
 
-const HeroSection = ({ initialUserName }) => {
+const HeroSection = ({ initialUserName, tasksSSR, allTasksSSR, datesWithCompletedTasks, datesWithIncompleteTasks }) => {
     const [userName, setUserName] = useState(initialUserName);
     const [time, setTime] = useState('');
 
@@ -48,7 +48,7 @@ const HeroSection = ({ initialUserName }) => {
                 <p className="text-4xl font-bold text-center animate-fade-in-up">Bienvenido a</p>
                 <h1 className="animate-fade-in-up-delayed text-5xl font-sans font-extrabold text-transparent bg-clip-text bg-gradient-to-br from-sky-800 via-sky-600 to-sky-300 inline-block">Lucmar Cloud</h1>
             </div>
-            <CalendarApp />
+            <CalendarApp tasksSSR={tasksSSR} allTasksSSR={allTasksSSR} datesWithCompletedTasks={datesWithCompletedTasks} datesWithIncompleteTasks={datesWithIncompleteTasks} />
         </div>
     );
 };

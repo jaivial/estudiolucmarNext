@@ -12,6 +12,7 @@ import { checkLogin } from "../lib/supabase/login/checkLogin.js";
 import HeroSection from "../components/Home/HeroSection.js";
 import { parse } from 'cookie';
 import { fetchUserName } from "../lib/supabase/users/fetchusers.js";
+import { getTasksByDaySSR, getTasksSSR } from "../lib/supabase/calendar/calendarFunctions.js";
 
 
 const showToast = (message, backgroundColor) => {
@@ -62,17 +63,69 @@ export async function getServerSideProps(context) {
         console.error('Error fetching user data:', error);
     }
 
+    const day = new Date();
+    let tasksSSR;
+    try {
+        tasksSSR = await getTasksByDaySSR(day, user_id);
+        console.log('tasks', tasksSSR); // Debugging line
+    } catch (error) {
+        console.error('Error fetching tasks:', error);
+    }
+
+    let allTasksSSR;
+    let datesWithIncompleteTasks;
+    let datesWithCompletedTasks;
+    try {
+        allTasksSSR = await getTasksSSR(user_id);
+        console.log('allTasksSSR', allTasksSSR); // Debugging line
+
+        try {
+            datesWithIncompleteTasks = Array.from(
+                new Set(
+                    allTasksSSR
+                        .filter((task) => task.completed === false) // Filter tasks that are not completed
+                        .map((task) => new Date(task.task_date).toISOString().split('T')[0]), // Extract and format the date
+                )
+            );
+
+            datesWithCompletedTasks = Array.from(
+                new Set(
+                    allTasksSSR
+                        .filter((task) => task.completed === true) // Filter tasks that are completed
+                        .map((task) => new Date(task.task_date).toISOString().split('T')[0]), // Extract and format the date
+                )
+            );
+
+            // Output the set of dates with incomplete and completed tasks
+            console.log('Incomplete task dates:', datesWithIncompleteTasks);
+            console.log('Completed task dates:', datesWithCompletedTasks);
+
+        } catch (error) {
+            console.error('Error processing tasks:', error);
+        }
+
+    } catch (error) {
+        console.error('Error fetching all tasks:', error);
+    }
+
+
+
+
     return {
         props: {
             user,
             initialUserName,
+            tasksSSR,
+            allTasksSSR,
+            datesWithCompletedTasks,
+            datesWithIncompleteTasks,
         },
     };
 }
 
 
 
-export default function Home({ user, initialUserName }) {
+export default function Home({ user, initialUserName, tasksSSR, allTasksSSR, datesWithCompletedTasks, datesWithIncompleteTasks }) {
 
     useEffect(() => {
         const toastMessage = localStorage.getItem('toastMessage');
@@ -88,7 +141,7 @@ export default function Home({ user, initialUserName }) {
     return (
         <GeneralLayout title={metadata.title} description={metadata.description} user={user}>
             <div style={{ paddingTop: 'var(--safe-area-inset-top)' }} className="h-full w-full">
-                <HeroSection initialUserName={initialUserName} />
+                <HeroSection initialUserName={initialUserName} tasksSSR={tasksSSR} allTasksSSR={allTasksSSR} datesWithCompletedTasks={datesWithCompletedTasks} datesWithIncompleteTasks={datesWithIncompleteTasks} />
             </div>
         </GeneralLayout>
     );

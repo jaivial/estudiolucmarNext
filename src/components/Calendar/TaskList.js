@@ -1,6 +1,9 @@
 import React, { useState } from 'react';
 import { FaTrash } from 'react-icons/fa';
 import Toastify from 'toastify-js';
+import Cookies from 'js-cookie';
+import { addTask as addTaskToDB } from '../../lib/supabase/calendar/calendarFunctions';
+
 
 const showToast = (message, backgroundColor) => {
     Toastify({
@@ -25,35 +28,11 @@ const formatTime = (time) => {
     return `${hours}:${minutes}`;
 };
 
-const TaskList = ({ day, tasks, refreshTasks }) => {
+const TaskList = ({ day, tasks, refreshTasks, filteredTasksByDate }) => {
     const [isAdding, setIsAdding] = useState(false);
     const [taskInput, setTaskInput] = useState('');
     const [taskTimeInput, setTaskTimeInput] = useState(''); // New state for task time input
-
-    function getCookies() {
-        let cookies = {};
-        let allCookies = document.cookie;
-        if (allCookies === '') {
-            return cookies;
-        }
-
-        let cookieArray = allCookies.split(';');
-        for (let cookie of cookieArray) {
-            let [name, value] = cookie.split('=');
-            name = name.trim();
-            value = value ? value.trim() : '';
-            cookies[name] = decodeURIComponent(value);
-        }
-        return cookies;
-    }
-
-    function getCookieByName(name) {
-        let cookies = getCookies();
-        return cookies[name] || null;
-    }
-
-    // Get user ID from cookies
-    const userId = getCookieByName('userID');
+    const userId = Cookies.get('user_id');
 
     // Handle task completion by toggling the completed state
     const handleTaskCompletion = async (taskId) => {
@@ -103,16 +82,10 @@ const TaskList = ({ day, tasks, refreshTasks }) => {
     const handleTaskSubmit = async (event) => {
         event.preventDefault();
         try {
-            const formattedDate = startOfDayUTC(day).toISOString().split('T')[0];
-            await axios.post(
-                'http://localhost:8000/backend/calendar/tasks.php',
-                new URLSearchParams({
-                    date: formattedDate,
-                    task: taskInput,
-                    userId, // Add userId here
-                    taskTime: taskTimeInput, // Include task time
-                }),
-            );
+            const addTask = await addTaskToDB(day, taskInput, userId, taskTimeInput);
+            console.log('addTask', addTask);
+
+
             showToast('Tarea añadida', 'linear-gradient(to right bottom, #00603c, #006f39, #007d31, #008b24, #069903)');
             setTaskInput('');
             setTaskTimeInput(''); // Clear task time input
@@ -123,14 +96,10 @@ const TaskList = ({ day, tasks, refreshTasks }) => {
         }
     };
 
-    const formattedDate = day.toLocaleDateString('es-ES', {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric',
-    });
+
 
     // Sort tasks by time, with tasks without time last
-    const sortedTasks = [...tasks].sort((a, b) => {
+    const sortedTasks = [...filteredTasksByDate].sort((a, b) => {
         if (!a.task_time && !b.task_time) return 0;
         if (!a.task_time) return 1;
         if (!b.task_time) return -1;
@@ -143,7 +112,7 @@ const TaskList = ({ day, tasks, refreshTasks }) => {
             <div className="flex flex-col items-center justify-center gap-2 bg-blue-50 rounded-xl p-4 w-full">
                 <h3 className="text-center">
                     Tareas para <br />
-                    {formattedDate}
+                    {day}
                 </h3>
             </div>
             <button className="absolute top-3 right-3 bg-blue-500 text-white rounded-full font-sans font-bold text-2xl text-center flex flex-row justify-center items-center h-10 w-10 pb-0.5" onClick={handleAddTaskClick}>

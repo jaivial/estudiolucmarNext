@@ -1,3 +1,7 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 .react-calendar {
     @apply w-[90%] rounded-xl bg-white border-none shadow-xl;
   }
