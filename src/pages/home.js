@@ -72,6 +72,7 @@ export default function Home({ user }) {
             <div style={{ paddingTop: 'var(--safe-area-inset-top)' }}>
                 <p>hola</p>
                 <p>hola</p>
+                <p>hola</p>
             </div>
         </GeneralLayout>
     );
