@@ -110,8 +110,8 @@ const MobileMenuBar = () => {
     };
 
     return (
-        <div id="completesidenavbar" className="relative z-[999]">
-            <nav className="h-10 w-full flex flex-row justify-between border-t border-slate-300 shadow-2xl fixed bottom-0 left-0 z-[999] overflow-visible">
+        <div id="completesidenavbar" className="relative z-[9999]">
+            <nav className="h-10 w-full flex flex-row justify-between border-t border-slate-300 shadow-2xl fixed bottom-0 left-0 z-[9999] overflow-visible bg-slate-50">
                 <ul className="w-full h-full flex flex-row justify-around items-end transition-all pb-3.5 overflow-y-visible shadow-xl">
                     <Link href="/home" id="mobile-itemHome" className="h-[55px] bg-blue-400 p-2.5 px-3.5 rounded-3xl shadow-lg text-white flex items-center justify-center hover:cursor-pointer hover:bg-blue-400 hover:text-white">
                         <svg xmlns="http://www.w3.org/2000/svg" width="1.8em" height="1.8em" viewBox="0 0 1024 1024">

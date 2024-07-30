@@ -9,6 +9,9 @@ import { useEffect } from "react";
 import 'toastify-js/src/toastify.css'; // Import Toastify CSS
 import Toastify from 'toastify-js';
 import { checkLogin } from "../lib/supabase/login/checkLogin.js";
+import HeroSection from "../components/Home/HeroSection.js";
+import { parse } from 'cookie';
+import { fetchUserName } from "../lib/supabase/users/fetchusers.js";
 
 
 const showToast = (message, backgroundColor) => {
@@ -45,16 +48,31 @@ export async function getServerSideProps(context) {
         console.error('Error during server-side data fetching:', error.message);
     }
 
+    const cookies = parse(req.headers.cookie || '');
+    const user_id = cookies.user_id;
+    let initialUserName = null;
+
+    try {
+        if (user_id) {
+            initialUserName = await fetchUserName(user_id);
+        } else {
+            console.log('User ID not found in cookies'); // Debugging line
+        }
+    } catch (error) {
+        console.error('Error fetching user data:', error);
+    }
+
     return {
         props: {
             user,
+            initialUserName,
         },
     };
 }
 
 
 
-export default function Home({ user }) {
+export default function Home({ user, initialUserName }) {
 
     useEffect(() => {
         const toastMessage = localStorage.getItem('toastMessage');
@@ -69,13 +87,8 @@ export default function Home({ user }) {
 
     return (
         <GeneralLayout title={metadata.title} description={metadata.description} user={user}>
-            <div style={{ paddingTop: 'var(--safe-area-inset-top)' }}>
-                <p>hola</p>
-                <p>hola</p>
-                <p>hola</p>
-                <p>hola</p>
-                <p>hola</p>
-                <p>hola</p>
+            <div style={{ paddingTop: 'var(--safe-area-inset-top)' }} className="h-full w-full">
+                <HeroSection initialUserName={initialUserName} />
             </div>
         </GeneralLayout>
     );

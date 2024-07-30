@@ -34,7 +34,7 @@ const Layout = ({ children, title, description }) => {
                 <title>{title}</title>
             </Head>
 
-            <div className="w-full overflow-x-hidden">{children}</div>
+            <div className="w-full h-dvh overflow-x-hidden">{children}</div>
             <MobileMenuBar />
         </>
     );
