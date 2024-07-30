@@ -75,6 +75,7 @@ export default function Home({ user }) {
                 <p>hola</p>
                 <p>hola</p>
                 <p>hola</p>
+                <p>hola</p>
             </div>
         </GeneralLayout>
     );
