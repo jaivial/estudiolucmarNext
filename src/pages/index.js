@@ -1,29 +1,40 @@
 import { metadata } from "../components/layouts/IndexLayout.js";
 import Layout from "../components/layouts/IndexLayout.js";
-import { fetchUser } from "../lib/supabase/login/loginFunctions.js";
 import Toastify from 'toastify-js';
 import Image from "next/image";
 import logoLucmar from "../../public/assets/icons/icon-256.webp";
 import "../app/globals.css";
 import LoginForm from "../components/LoginForm/LoginForm.js";
+import { checkActiveUser } from "../lib/supabase/login/checkLogin.js";
+import { useRouter } from 'next/navigation'
 
+export async function getServerSideProps(context) {
+  const { req } = context;
+  let user = null;
 
-export default function Home() {
-
-  const handleLogin = async (email, password) => {
-    const user = await fetchUser(email, password);
+  try {
+    user = await checkActiveUser(req); // Pass the request object to checkActiveUser
     console.log('user', user); // Debugging line
-    if (user) {
-      console.log('user', user); // Debugging line
-      // window.location.href = '/home';
-    } else {
-      console.log('user', user); // Debugging line
-      // window.location.href = '/login';
+    if (user && user.length > 0) {
+      return {
+        redirect: {
+          destination: '/home',
+          permanent: false,
+        },
+      };
     }
+  } catch (error) {
+    console.error('Error during server-side data fetching:', error.message);
+  }
+
+  return {
+    props: {
+      user,
+    },
   };
+}
 
-
-
+export default function Index({ user }) {
   return (
     <Layout title={metadata.title} description={metadata.description}>
       <div style={{ paddingTop: 'var(--safe-area-inset-top)' }}>
@@ -50,7 +61,6 @@ export default function Home() {
           </section>
         </main>
       </div>
-
     </Layout>
   );
 }

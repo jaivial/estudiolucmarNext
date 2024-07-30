@@ -43,6 +43,7 @@ export const fetchUser = async (email, password) => {
       // Set cookies with a path of '/'
       Cookies.set('user_id', data[0].user_id, { expires, path: '/' });
       Cookies.set('admin', data[0].admin, { expires, path: '/' });
+      console.log('cookies', Cookies.get()); // Debugging line
 
       try {
         const { data: activeUser, error: activeUserError } = await checkActiveUser(data[0].id);
@@ -58,7 +59,7 @@ export const fetchUser = async (email, password) => {
             const { success, message } = await handleUserSession();
             if (success) {
               showToast(message, 'linear-gradient(to right bottom, #00603c, #006f39, #007d31, #008b24, #069903)');
-              window.location.href = '/home'; // Display a toast message
+
             } else {
               showToast(message, 'linear-gradient(to right bottom, #c62828, #b92125, #ac1a22, #a0131f, #930b1c)'); // Display a toast message
             }

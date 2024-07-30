@@ -7,3 +7,5 @@ const schema = process.env.NEXT_PUBLIC_SUPABASE_SCHEMA;
 export const supabase = createClient(supabaseUrl, supabaseKey, { db: { schema: schema } });
 
 console.log('schema', schema); // Debugging line
+
+
