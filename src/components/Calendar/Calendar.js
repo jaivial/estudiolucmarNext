@@ -4,7 +4,7 @@ import 'react-calendar/dist/Calendar.css';
 import './calendar.css';
 import TaskList from './TaskList'; // Adjust the import path as needed
 import Cookies from 'js-cookie';
-import { getTasksByDay, getTasks } from '../../lib/supabase/calendar/calendarFunctions';
+import { getTasksByDay, getTasks, moveIncompleteTasksToNextDay } from '../../lib/supabase/calendar/calendarFunctions';
 import { format, startOfDay } from 'date-fns';
 import { IoMdCheckmarkCircleOutline } from "react-icons/io";
 
@@ -157,9 +157,24 @@ const CalendarApp = ({ tasksSSR, allTasksSSR, datesWithCompletedTasks, datesWith
         return null;
     };
 
+    // Schedule the function to run at 00:00 local time in Spain
+    function scheduleDailyTask() {
+        const now = new Date();
+        const currentTime = now.toLocaleString('en-US', { timeZone: 'Europe/Madrid' }).split(' ')[1];
+        const [currentHour, currentMinute, currentSecond] = currentTime.split(':').map(Number);
+        const millisecondsUntilMidnight = ((23 - currentHour) * 3600 + (59 - currentMinute) * 60 + (60 - currentSecond)) * 1000;
+
+        setTimeout(() => {
+            moveIncompleteTasksToNextDay();
+
+            // Schedule to run every 24 hours
+            setInterval(moveIncompleteTasksToNextDay, 24 * 60 * 60 * 1000);
+        }, millisecondsUntilMidnight);
+    }
+
     useEffect(() => {
-        console.log('tasks', tasks);
-    }, [tasks]);
+        scheduleDailyTask();
+    }, []);
 
     return (
         <div className="pb-36 flex flex-col items-center justify-center gap-6  ">

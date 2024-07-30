@@ -133,3 +133,41 @@ export const deleteTask = async (taskId, userId) => {
     }
     return data;
 };
+
+
+export const moveIncompleteTasksToNextDay = async () => {
+    // Get the current date in local time (Spain)
+    const now = new Date();
+    const madridDate = new Date(now.toLocaleString('en-US', { timeZone: 'Europe/Madrid' }));
+    const currentDateString = madridDate.toISOString().split('T')[0];
+
+    // Fetch incomplete tasks for the current date
+    const { data: tasks, error } = await supabase
+        .from('tasks')
+        .select('*')
+        .eq('completed', false)
+        .eq('task_date', currentDateString);
+
+    if (error) {
+        console.error('Error fetching tasks:', error);
+        return;
+    }
+
+    // Calculate the next date
+    madridDate.setDate(madridDate.getDate() + 1);
+    const nextDateString = madridDate.toISOString().split('T')[0];
+
+    // Update tasks to the next date
+    for (const task of tasks) {
+        const { id } = task;
+        const { error } = await supabase
+            .from('tasks')
+            .update({ task_date: nextDateString })
+            .eq('id', id);
+
+        if (error) {
+            console.error('Error updating task:', error);
+        }
+    }
+
+}
