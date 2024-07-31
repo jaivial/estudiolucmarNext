@@ -58,7 +58,7 @@ export const fetchAllData = async (page, term, itemsPerPage) => {
                     console.log('ItemsID', ItemsID);
 
 
-
+                    let selectedItems = [];
                     let selectedEdificios = [];
                     for (const itemID of ItemsID) {
                         const { data: edificio, error: errorInmuebles } = await supabase
@@ -69,240 +69,260 @@ export const fetchAllData = async (page, term, itemsPerPage) => {
                         if (errorInmuebles) {
                             throw new Error(errorInmuebles.message);
                         }
-                        console.log('edificio', edificio);
                         selectedEdificios.push(edificio);
                     }
                     const selectedEdificiosFlat = selectedEdificios.flat();
                     console.log('selectedEdificiosFlat', selectedEdificiosFlat);
 
-                    // Remove duplicates based on EdificioID
-                    const uniqueEdificios = [];
-                    const edificioIds = new Set();
-
-                    for (const edificio of selectedEdificiosFlat) {
-                        if (!edificioIds.has(edificio.EdificioID)) {
-                            uniqueEdificios.push(edificio);
-                            edificioIds.add(edificio.EdificioID);
-                        }
-                    }
-                    console.log('uniqueEdificios', uniqueEdificios);
-
-                    // Push uniqueEdificios to edificiosToMergePre
-                    edificiosToMergePre.push(...uniqueEdificios);
-
-
-
-
-                    // for (const itemID of item.id) {
-                    //     console.log('item', itemID);
-
-                    // }
-
-                    // if (inmuebles_id) {
-                    //     let allEdificiosWithInmuebles = [];
-                    //     for (const inmuebleID of inmuebles_id) {
-                    //         const { data: edificio, error: errorInmuebles } = await supabase
-                    //             .from('edificios')
-                    //             .select('*')
-                    //             .contains('inmuebles_id', JSON.stringify([inmuebles_id]));
-
-
-
-                    //         if (errorInmuebles) {
-                    //             throw new Error(errorInmuebles.message);
-                    //         }
-                    //         allEdificiosWithInmuebles.push(edificio);
-                    //         console.log('allEdificiosWithInmuebles', allEdificiosWithInmuebles);
-                    //     }
-
-                    // }
-
-                }
-                if (item.tipoAgrupacion === 2) {
-
-                    const inmuebles_id = item.inmuebles_id;
-                    if (inmuebles_id) {
-                        let allInmuebleData = [];
-                        for (const inmuebleID of inmuebles_id) {
+                    let inmueblestomergedata = [];
+                    const selectedEdificios_inmuebles_id = selectedEdificiosFlat.map(item => item.inmuebles_id);
+                    for (const inmuebleID of selectedEdificios_inmuebles_id) {
+                        console.log('inmuebleID AQUO', inmuebleID);
+                        for (const inmuebleIDQuery of inmuebleID) {
                             const { data: inmuebleData, error: errorInmueble } = await supabase
                                 .from('inmuebles')
                                 .select('*')
-                                .eq('id', inmuebleID);
+                                .eq('id', inmuebleIDQuery);
 
                             if (errorInmueble) {
                                 throw new Error(errorInmueble.message);
                             }
-                            allInmuebleData.push(inmuebleData);
+                            inmueblestomergedata.push(inmuebleData);
                         }
-                        const allInmuebleDataFlat = allInmuebleData.flat();
-                        item.nestedInmuebles = allInmuebleDataFlat;
                     }
+                    const inmueblestomergedataFlat = inmueblestomergedata.flat();
+                    console.log('inmueblestomergedata FLAT', inmueblestomergedataFlat);
 
+                    for (const inmueble of inmueblestomergedataFlat) {
+                        if (inmueble.id === )
+                            // Remove duplicates based on EdificioID
+                            const uniqueEdificios = [];
+                        const edificioIds = new Set();
 
-                    const escaleras_id = item.escaleras_id;
-                    if (escaleras_id) {
-                        let allEscaleraData = [];
-                        for (const escaleraID of escaleras_id) {
-                            const { data: escaleraData, error: errorEscalera } = await supabase
-                                .from('escaleras')
-                                .select('*')
-                                .eq('id', escaleraID);
-
-                            if (errorEscalera) {
-                                throw new Error(errorEscalera.message);
+                        for (const edificio of selectedEdificiosFlat) {
+                            if (!edificioIds.has(edificio.EdificioID)) {
+                                uniqueEdificios.push(edificio);
+                                edificioIds.add(edificio.EdificioID);
                             }
-                            allEscaleraData.push(escaleraData);
                         }
-                        const allEscaleraDataFlat = allEscaleraData.flat();
-                        item.nestedEscaleras = allEscaleraDataFlat;
+                        console.log('uniqueEdificios', uniqueEdificios);
+
+                        // Push uniqueEdificios to edificiosToMergePre
+                        edificiosToMergePre.push(...uniqueEdificios);
+
+
+
+
+                        // for (const itemID of item.id) {
+                        //     console.log('item', itemID);
+
+                        // }
+
+                        // if (inmuebles_id) {
+                        //     let allEdificiosWithInmuebles = [];
+                        //     for (const inmuebleID of inmuebles_id) {
+                        //         const { data: edificio, error: errorInmuebles } = await supabase
+                        //             .from('edificios')
+                        //             .select('*')
+                        //             .contains('inmuebles_id', JSON.stringify([inmuebles_id]));
+
+
+
+                        //         if (errorInmuebles) {
+                        //             throw new Error(errorInmuebles.message);
+                        //         }
+                        //         allEdificiosWithInmuebles.push(edificio);
+                        //         console.log('allEdificiosWithInmuebles', allEdificiosWithInmuebles);
+                        //     }
+
+                        // }
+
                     }
+                    if (item.tipoAgrupacion === 2) {
 
-                    const nestedEscaleras = item.nestedEscaleras;
-                    console.log('nestedEscaleras', nestedEscaleras);
-                    for (const nestedEscalera of nestedEscaleras) {
-                        const inmuebles_id_Escalaras = nestedEscalera.inmuebles_id;
-                        console.log('inmuebles_id_Escalaras', inmuebles_id_Escalaras);
-                        let allInmuebleDataEscaleras = [];
-                        for (const inmuebleID of inmuebles_id_Escalaras) {
-                            const { data: inmuebleData, error: errorInmueble } = await supabase
-                                .from('inmuebles')
-                                .select('*')
-                                .eq('id', inmuebleID);
+                        const inmuebles_id = item.inmuebles_id;
+                        if (inmuebles_id) {
+                            let allInmuebleData = [];
+                            for (const inmuebleID of inmuebles_id) {
+                                const { data: inmuebleData, error: errorInmueble } = await supabase
+                                    .from('inmuebles')
+                                    .select('*')
+                                    .eq('id', inmuebleID);
 
-                            if (errorInmueble) {
-                                throw new Error(errorInmueble.message);
+                                if (errorInmueble) {
+                                    throw new Error(errorInmueble.message);
+                                }
+                                allInmuebleData.push(inmuebleData);
                             }
-
-                            allInmuebleDataEscaleras.push(inmuebleData);
+                            const allInmuebleDataFlat = allInmuebleData.flat();
+                            item.nestedInmuebles = allInmuebleDataFlat;
                         }
-                        const allInmuebleDataEscalerasFlat = allInmuebleDataEscaleras.flat();
-                        nestedEscalera.nestedInmuebles = allInmuebleDataEscalerasFlat;
 
-                        // Filter out nestedInmuebles whose id matches any id in nestedEscaleras.nestedInmuebles
-                        const nestedInmueblesIds = item.nestedEscaleras.flatMap(escalera => escalera.nestedInmuebles).map(nestedInmueble => nestedInmueble.id);
-                        console.log('nestedInmueblesIds to remove', nestedInmueblesIds);
 
-                        item.nestedInmuebles = item.nestedInmuebles.filter(nestedInmueble => !nestedInmueblesIds.includes(nestedInmueble.id));
-                        console.log('Final item.nestedInmuebles', item.nestedInmuebles);
+                        const escaleras_id = item.escaleras_id;
+                        if (escaleras_id) {
+                            let allEscaleraData = [];
+                            for (const escaleraID of escaleras_id) {
+                                const { data: escaleraData, error: errorEscalera } = await supabase
+                                    .from('escaleras')
+                                    .select('*')
+                                    .eq('id', escaleraID);
+
+                                if (errorEscalera) {
+                                    throw new Error(errorEscalera.message);
+                                }
+                                allEscaleraData.push(escaleraData);
+                            }
+                            const allEscaleraDataFlat = allEscaleraData.flat();
+                            item.nestedEscaleras = allEscaleraDataFlat;
+                        }
+
+                        const nestedEscaleras = item.nestedEscaleras;
+                        console.log('nestedEscaleras', nestedEscaleras);
+                        for (const nestedEscalera of nestedEscaleras) {
+                            const inmuebles_id_Escalaras = nestedEscalera.inmuebles_id;
+                            console.log('inmuebles_id_Escalaras', inmuebles_id_Escalaras);
+                            let allInmuebleDataEscaleras = [];
+                            for (const inmuebleID of inmuebles_id_Escalaras) {
+                                const { data: inmuebleData, error: errorInmueble } = await supabase
+                                    .from('inmuebles')
+                                    .select('*')
+                                    .eq('id', inmuebleID);
+
+                                if (errorInmueble) {
+                                    throw new Error(errorInmueble.message);
+                                }
+
+                                allInmuebleDataEscaleras.push(inmuebleData);
+                            }
+                            const allInmuebleDataEscalerasFlat = allInmuebleDataEscaleras.flat();
+                            nestedEscalera.nestedInmuebles = allInmuebleDataEscalerasFlat;
+
+                            // Filter out nestedInmuebles whose id matches any id in nestedEscaleras.nestedInmuebles
+                            const nestedInmueblesIds = item.nestedEscaleras.flatMap(escalera => escalera.nestedInmuebles).map(nestedInmueble => nestedInmueble.id);
+                            console.log('nestedInmueblesIds to remove', nestedInmueblesIds);
+
+                            item.nestedInmuebles = item.nestedInmuebles.filter(nestedInmueble => !nestedInmueblesIds.includes(nestedInmueble.id));
+                            console.log('Final item.nestedInmuebles', item.nestedInmuebles);
+                        }
+
+                        // const inmuebles_id_Escalaras = item.nestedEscaleras.inmuebles_id;
+                        // console.log('inmuebles_id_Escalaras', inmuebles_id_Escalaras);
+                        // let allInmuebleDataEscaleras = [];
+                        // for (const inmuebleID of inmuebles_id_Escalaras) {
+                        //     const { data: inmuebleData, error: errorInmueble } = await supabase
+                        //         .from('inmuebles')
+                        //         .select('*')
+                        //         .eq('id', inmuebleID);
+
+                        //     if (errorInmueble) {
+                        //         throw new Error(errorInmueble.message);
+                        //     }
+                        //     allInmuebleDataEscaleras.push(inmuebleData);
+                        // }
+                        // const allInmuebleDataEscalerasFlat = allInmuebleDataEscaleras.flat();
+                        // item.nestedEscaleras.nestedInmuebles = allInmuebleDataEscalerasFlat;
+
+                        console.log('item', item);
+
+
+
                     }
-
-                    // const inmuebles_id_Escalaras = item.nestedEscaleras.inmuebles_id;
-                    // console.log('inmuebles_id_Escalaras', inmuebles_id_Escalaras);
-                    // let allInmuebleDataEscaleras = [];
-                    // for (const inmuebleID of inmuebles_id_Escalaras) {
-                    //     const { data: inmuebleData, error: errorInmueble } = await supabase
-                    //         .from('inmuebles')
-                    //         .select('*')
-                    //         .eq('id', inmuebleID);
-
-                    //     if (errorInmueble) {
-                    //         throw new Error(errorInmueble.message);
-                    //     }
-                    //     allInmuebleDataEscaleras.push(inmuebleData);
-                    // }
-                    // const allInmuebleDataEscalerasFlat = allInmuebleDataEscaleras.flat();
-                    // item.nestedEscaleras.nestedInmuebles = allInmuebleDataEscalerasFlat;
-
-                    console.log('item', item);
-
-
-
+                    if (item.tipoAgrupacion === 3) {
+                        console.log('item', item);
+                    }
                 }
-                if (item.tipoAgrupacion === 3) {
-                    console.log('item', item);
-                }
+                // Add uniqueEdificios to totalMergedDataCount
+                totalMergedDataCount.push(...edificiosToMergePre);
+                console.log('Final merged data:', totalMergedDataCount);
+                return totalMergedDataCount;
             }
-            // Add uniqueEdificios to totalMergedDataCount
-            totalMergedDataCount.push(...edificiosToMergePre);
-            console.log('Final merged data:', totalMergedDataCount);
-            return totalMergedDataCount;
+            console.log('totalMergedDataCount', totalMergedDataCount);
+
+            const totalPages = Math.round(totalMergedDataCount.length / 6);
+            const paginatedData = totalMergedDataCount.slice(start, end);
+            const finalMergedData = await processMergedData(paginatedData);
+            console.log('finalMergedData', finalMergedData);
+
+
+            console.log('paginatedData', paginatedData);
+
+
+
+
+            const mergedData = finalMergedData;
+            console.log('mergedData', mergedData);
+
+            return { mergedData, totalPages };
+        } catch (error) {
+            console.error('Error fetching data:', error);
+            throw error; // Re-throw the error to be handled by the calling function if necessary
         }
-        console.log('totalMergedDataCount', totalMergedDataCount);
+    };
 
-        const totalPages = Math.round(totalMergedDataCount.length / 6);
-        const paginatedData = totalMergedDataCount.slice(start, end);
-        const finalMergedData = await processMergedData(paginatedData);
-        console.log('finalMergedData', finalMergedData);
+    // mergeData.js
 
+    export const mergeData = (inmuebles, edificios, escaleras) => {
+        if (!Array.isArray(edificios)) {
+            throw new Error('Edificios data is not an array or is undefined');
+        }
 
-        console.log('paginatedData', paginatedData);
+        const mergedData = [];
+        const usedEscaleras = new Set();
+        const usedInmuebles = new Set();
 
-
-
-
-        const mergedData = finalMergedData;
-        console.log('mergedData', mergedData);
-
-        return { mergedData, totalPages };
-    } catch (error) {
-        console.error('Error fetching data:', error);
-        throw error; // Re-throw the error to be handled by the calling function if necessary
-    }
-};
-
-// mergeData.js
-
-export const mergeData = (inmuebles, edificios, escaleras) => {
-    if (!Array.isArray(edificios)) {
-        throw new Error('Edificios data is not an array or is undefined');
-    }
-
-    const mergedData = [];
-    const usedEscaleras = new Set();
-    const usedInmuebles = new Set();
-
-    // Add edificios and nest their inmuebles and escaleras
-    edificios.forEach(edificio => {
-        // Verificamos si `inmuebles_id` y `escaleras_id` existen y son arrays
-        const nestedInmuebles = Array.isArray(edificio.inmuebles_id)
-            ? edificio.inmuebles_id.map(inmuebleId =>
-                inmuebles.find(inmueble => inmueble.id === inmuebleId)
-            ).filter(Boolean)
-            : [];
-
-
-        const nestedEscaleras = Array.isArray(edificio.escaleras_id)
-            ? edificio.escaleras_id.map(escaleraId =>
-                escaleras.find(escalera => escalera.id === Number(escaleraId))
-            ).filter(Boolean)
-            : [];
-
-
-        nestedEscaleras.forEach(escalera => {
-            usedEscaleras.add(escalera.id);
-            const nestedInmueblesInEscalera = Array.isArray(escalera.inmuebles_id)
-                ? escalera.inmuebles_id.map(inmuebleId =>
+        // Add edificios and nest their inmuebles and escaleras
+        edificios.forEach(edificio => {
+            // Verificamos si `inmuebles_id` y `escaleras_id` existen y son arrays
+            const nestedInmuebles = Array.isArray(edificio.inmuebles_id)
+                ? edificio.inmuebles_id.map(inmuebleId =>
                     inmuebles.find(inmueble => inmueble.id === inmuebleId)
                 ).filter(Boolean)
                 : [];
-            escalera.nestedInmuebles = nestedInmueblesInEscalera;
-            nestedInmueblesInEscalera.forEach(inmueble => usedInmuebles.add(inmueble.id));
+
+
+            const nestedEscaleras = Array.isArray(edificio.escaleras_id)
+                ? edificio.escaleras_id.map(escaleraId =>
+                    escaleras.find(escalera => escalera.id === Number(escaleraId))
+                ).filter(Boolean)
+                : [];
+
+
+            nestedEscaleras.forEach(escalera => {
+                usedEscaleras.add(escalera.id);
+                const nestedInmueblesInEscalera = Array.isArray(escalera.inmuebles_id)
+                    ? escalera.inmuebles_id.map(inmuebleId =>
+                        inmuebles.find(inmueble => inmueble.id === inmuebleId)
+                    ).filter(Boolean)
+                    : [];
+                escalera.nestedInmuebles = nestedInmueblesInEscalera;
+                nestedInmueblesInEscalera.forEach(inmueble => usedInmuebles.add(inmueble.id));
+            });
+
+            nestedInmuebles.forEach(inmueble => usedInmuebles.add(inmueble.id));
+
+            mergedData.push({ ...edificio, nestedEscaleras, nestedInmuebles });
         });
 
-        nestedInmuebles.forEach(inmueble => usedInmuebles.add(inmueble.id));
 
-        mergedData.push({ ...edificio, nestedEscaleras, nestedInmuebles });
-    });
+        // Add remaining escaleras that are not part of any edificio
+        escaleras.forEach(escalera => {
+            if (!usedEscaleras.has(escalera.id)) {
+                const nestedInmuebles = escalera.inmuebles_id?.map(inmuebleId =>
+                    inmuebles.find(inmueble => inmueble.id === inmuebleId)
+                ).filter(Boolean) || [];
+                escalera.nestedInmuebles = nestedInmuebles;
+                nestedInmuebles.forEach(inmueble => usedInmuebles.add(inmueble.id));
+                mergedData.push({ ...escalera, nestedInmuebles });
+            }
+        });
 
+        // Add remaining inmuebles that are not part of any escalera or edificio
+        inmuebles.forEach(inmueble => {
+            if (!usedInmuebles.has(inmueble.id)) {
+                mergedData.push(inmueble);
+            }
+        });
 
-    // Add remaining escaleras that are not part of any edificio
-    escaleras.forEach(escalera => {
-        if (!usedEscaleras.has(escalera.id)) {
-            const nestedInmuebles = escalera.inmuebles_id?.map(inmuebleId =>
-                inmuebles.find(inmueble => inmueble.id === inmuebleId)
-            ).filter(Boolean) || [];
-            escalera.nestedInmuebles = nestedInmuebles;
-            nestedInmuebles.forEach(inmueble => usedInmuebles.add(inmueble.id));
-            mergedData.push({ ...escalera, nestedInmuebles });
-        }
-    });
-
-    // Add remaining inmuebles that are not part of any escalera or edificio
-    inmuebles.forEach(inmueble => {
-        if (!usedInmuebles.has(inmueble.id)) {
-            mergedData.push(inmueble);
-        }
-    });
-
-    return mergedData;
-};
+        return mergedData;
+    };
