@@ -4,8 +4,8 @@ import { supabase } from '../supabaseClient.js';
 export const fetchAllData = async (page, term, itemsPerPage) => {
     try {
         // Calculate the range for pagination
-        const start = (page - 1) * itemsPerPage;
-        const end = page * itemsPerPage;
+        const start = (page - 1) * 6;
+        const end = page * 6;
 
         // Check if the term is an empty string
         let isTermEmpty = false;
@@ -49,9 +49,76 @@ export const fetchAllData = async (page, term, itemsPerPage) => {
         console.log('totalMergedDataCount', totalMergedDataCount.length);
 
         async function processMergedData(mergedData) {
+            const ItemsID = [];
+            const edificiosToMergePre = [];
             for (const item of mergedData) {
                 if (item.tipoAgrupacion === 1) {
-                } else if (item.tipoAgrupacion === 2) {
+
+                    ItemsID.push(item.id);
+                    console.log('ItemsID', ItemsID);
+
+
+
+                    let selectedEdificios = [];
+                    for (const itemID of ItemsID) {
+                        const { data: edificio, error: errorInmuebles } = await supabase
+                            .from('edificios')
+                            .select('*')
+                            .contains('inmuebles_id', JSON.stringify([itemID]));
+
+                        if (errorInmuebles) {
+                            throw new Error(errorInmuebles.message);
+                        }
+                        console.log('edificio', edificio);
+                        selectedEdificios.push(edificio);
+                    }
+                    const selectedEdificiosFlat = selectedEdificios.flat();
+                    console.log('selectedEdificiosFlat', selectedEdificiosFlat);
+
+                    // Remove duplicates based on EdificioID
+                    const uniqueEdificios = [];
+                    const edificioIds = new Set();
+
+                    for (const edificio of selectedEdificiosFlat) {
+                        if (!edificioIds.has(edificio.EdificioID)) {
+                            uniqueEdificios.push(edificio);
+                            edificioIds.add(edificio.EdificioID);
+                        }
+                    }
+                    console.log('uniqueEdificios', uniqueEdificios);
+
+                    // Push uniqueEdificios to edificiosToMergePre
+                    edificiosToMergePre.push(...uniqueEdificios);
+
+
+
+
+                    // for (const itemID of item.id) {
+                    //     console.log('item', itemID);
+
+                    // }
+
+                    // if (inmuebles_id) {
+                    //     let allEdificiosWithInmuebles = [];
+                    //     for (const inmuebleID of inmuebles_id) {
+                    //         const { data: edificio, error: errorInmuebles } = await supabase
+                    //             .from('edificios')
+                    //             .select('*')
+                    //             .contains('inmuebles_id', JSON.stringify([inmuebles_id]));
+
+
+
+                    //         if (errorInmuebles) {
+                    //             throw new Error(errorInmuebles.message);
+                    //         }
+                    //         allEdificiosWithInmuebles.push(edificio);
+                    //         console.log('allEdificiosWithInmuebles', allEdificiosWithInmuebles);
+                    //     }
+
+                    // }
+
+                }
+                if (item.tipoAgrupacion === 2) {
 
                     const inmuebles_id = item.inmuebles_id;
                     if (inmuebles_id) {
@@ -140,22 +207,30 @@ export const fetchAllData = async (page, term, itemsPerPage) => {
 
 
 
-                } else if (item.tipoAgrupacion === 3) {
+                }
+                if (item.tipoAgrupacion === 3) {
                     console.log('item', item);
                 }
             }
+            // Add uniqueEdificios to totalMergedDataCount
+            totalMergedDataCount.push(...edificiosToMergePre);
+            console.log('Final merged data:', totalMergedDataCount);
+            return totalMergedDataCount;
         }
-        processMergedData(totalMergedDataCount);
-
+        console.log('totalMergedDataCount', totalMergedDataCount);
 
         const totalPages = Math.round(totalMergedDataCount.length / 6);
         const paginatedData = totalMergedDataCount.slice(start, end);
+        const finalMergedData = await processMergedData(paginatedData);
+        console.log('finalMergedData', finalMergedData);
+
+
         console.log('paginatedData', paginatedData);
 
 
 
 
-        const mergedData = paginatedData.slice(0, 6);
+        const mergedData = finalMergedData;
         console.log('mergedData', mergedData);
 
         return { mergedData, totalPages };

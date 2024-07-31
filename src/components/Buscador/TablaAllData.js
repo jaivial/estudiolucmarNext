@@ -71,7 +71,7 @@ const Table = () => {
     const fetchData = async (page, term) => {
         try {
             const result = await fetchAllData(page, term, itemsPerPage);
-            console.log('result', result);
+            console.log('RESULT HERE', result.mergedData);
             setData(result.mergedData || []);
             // setCurrentPage(result.currentPage || 1);
             setTotalPages(result.totalPages || 1);
@@ -791,15 +791,15 @@ const Table = () => {
     };
 
     const edifciosChildren = (item) => {
-        console.log('edifciosChildren', item.nestedInmuebles.length);
 
-        if (item.nestedInmuebles.length === 0 && item.nestedEscaleras.length === 0) {
+
+        if (item.nestedInmuebles && item.nestedInmuebles.length === 0 && item.nestedEscaleras.length === 0) {
             return <p>No hay detalles disponibles</p>;
         }
 
         return (
             <>
-                {item.nestedInmuebles.length > 0 &&
+                {item.nestedInmuebles && item.nestedInmuebles.length > 0 &&
                     item.nestedInmuebles.map((child) => (
                         <div
                             key={child.id}
@@ -859,7 +859,7 @@ const Table = () => {
                         </div>
                     ))}
 
-                {item.nestedEscaleras.length > 0 &&
+                {item.nestedEscaleras && item.nestedEscaleras.length > 0 &&
                     item.nestedEscaleras.map((child) => (
                         <div
                             key={child.id}
