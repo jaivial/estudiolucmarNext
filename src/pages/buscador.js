@@ -1,5 +1,4 @@
 import GeneralLayout from "../components/layouts/GeneralLayout.js";
-import { fetchAllData } from "../lib/supabase/buscador/functionsBuscador.js";
 import { useState } from "react";
 import TablaAllData from "../components/Buscador/TablaAllData.js";
 

@@ -9,49 +9,11 @@ export const fetchAllData = async (page, term, itemsPerPage) => {
         }
         const pattern = `%${term.split(' ').join('%')}%`;
 
-        // Count total number of items that match the search term
-        const { data: totalItems, error: countError } = await supabase
-            .from('inmuebles')
-            .select('*')
-            .ilike('direccion', isTermEmpty ? '%' : pattern);  // Use '%' if term is empty
-
-        if (countError) {
-            throw new Error(countError.message);
-        }
-
-
-        // Fetching data from 'edificios' table
-        const { data: totalEdificios, error: errorcountEdificios } = await supabase
-            .from('edificios')
-            .select('*')
-            .ilike('direccion', isTermEmpty ? '%' : pattern);  // Use '%' if term is empty
-        console.log('totalEdificios', totalEdificios);
-
-        if (errorcountEdificios) {
-            throw new Error(errorcountEdificios.message);
-        }
-
-        const { data: totalEscaleras, error: errorcountEscaleras } = await supabase
-            .from('escaleras')
-            .select('*')
-            .ilike('direccion', isTermEmpty ? '%' : pattern);  // Use '%' if term is empty
-        console.log('totalEscaleras', totalEscaleras);
-
-        if (errorcountEscaleras) {
-            throw new Error(errorcountEscaleras.message);
-        }
-
-        const totalMergedDataCount = mergeData(totalItems, totalEdificios, totalEscaleras);
-        console.log('totalMergedDataCount', totalMergedDataCount.length);
-        const totalPages = Math.ceil(totalMergedDataCount.length / 6);
-
-
-        // Fetching the actual data from 'inmuebles' table
+        // Fetching data from 'inmuebles' table
         const { data: inmuebles, error: errorInmuebles } = await supabase
             .from('inmuebles')
             .select('*')
-            .ilike('direccion', isTermEmpty ? '%' : pattern)  // Use '%' if term is empty
-            .range((page - 1) * itemsPerPage, page * itemsPerPage - 1);
+            .ilike('direccion', isTermEmpty ? '%' : pattern);
 
         if (errorInmuebles) {
             throw new Error(errorInmuebles.message);
@@ -60,7 +22,8 @@ export const fetchAllData = async (page, term, itemsPerPage) => {
         // Fetching data from 'edificios' table
         const { data: edificios, error: errorEdificios } = await supabase
             .from('edificios')
-            .select('*');
+            .select('*')
+            .ilike('direccion', isTermEmpty ? '%' : pattern);
 
         if (errorEdificios) {
             throw new Error(errorEdificios.message);
@@ -69,17 +32,98 @@ export const fetchAllData = async (page, term, itemsPerPage) => {
         // Fetching data from 'escaleras' table
         const { data: escaleras, error: errorEscaleras } = await supabase
             .from('escaleras')
-            .select('*');
+            .select('*')
+            .ilike('direccion', isTermEmpty ? '%' : pattern);
 
         if (errorEscaleras) {
             throw new Error(errorEscaleras.message);
         }
 
-        const premergedData = mergeData(inmuebles, edificios, escaleras);
-        const mergedData = premergedData.slice(0, 6);
-        console.log('mergedData', mergedData);
+        // Merge data
+        const mergedData = mergeData(inmuebles, edificios, escaleras);
 
-        return { mergedData, totalPages };
+        async function processMergedData(mergedData) {
+            for (const item of mergedData) {
+                if (item.tipoAgrupacion === 1) {
+                    console.log('item', item);
+                } else if (item.tipoAgrupacion === 2) {
+                    console.log('item', item);
+                    const inmuebles_id = item.inmuebles_id;
+                    console.log('inmuebles_id', inmuebles_id);
+
+                    for (const inmuebleID of inmuebles_id) {
+                        console.log('inmueble', inmuebleID);
+
+                        const { data: inmuebleData, error: errorInmueble } = await supabase
+                            .from('inmuebles')
+                            .select('*')
+                            .eq('id', inmuebleID);
+
+                        if (errorInmueble) {
+                            throw new Error(errorInmueble.message);
+                        }
+
+                        console.log('inmuebleData', inmuebleData);
+
+                    }
+                } else if (item.tipoAgrupacion === 3) {
+                    console.log('item', item);
+                }
+            }
+        }
+
+        processMergedData(mergedData);
+        // mergedData.forEach(item => {
+        //     if (item.tipoAgrupacion === 1) {
+        //         // Revisar inmuebles
+        //         const { data: edificioInmuebles, error: errorEdificioInmuebles } = supabase
+        //             .from('edificios')
+        //             .select('*')
+        //             .contains('inmuebles_id->inmuebles_id', [item.id]);
+
+        //         if (errorEdificioInmuebles) {
+        //             throw new Error(errorEdificioInmuebles.message);
+        //         }
+
+        //         edificioInmuebles.forEach(edificio => {
+        //             if (!item.nestedInmuebles) item.nestedInmuebles = [];
+        //             item.nestedInmuebles.push(edificio);
+        //         });
+
+        //         // Revisar escaleras
+        //         const { data: escaleraInmuebles, error: errorEscaleraInmuebles } =  supabase
+        //             .from('escaleras')
+        //             .select('*')
+        //             .contains('inmuebles_id->inmuebles_id', [item.id]);
+
+        //         if (errorEscaleraInmuebles) {
+        //             throw new Error(errorEscaleraInmuebles.message);
+        //         }
+
+        //         for (const escalera of escaleraInmuebles) {
+        //             if (!item.nestedEscaleras) item.nestedEscaleras = [];
+        //             item.nestedEscaleras.push(escalera);
+
+        //             const { data: edificioEscaleras, error: errorEdificioEscaleras }  supabase
+        //                 .from('edificios')
+        //                 .select('*')
+        //                 .contains('escaleras_id->escaleras_id', [escalera.id]);
+
+        //             if (errorEdificioEscaleras) {
+        //                 throw new Error(errorEdificioEscaleras.message);
+        //             }
+
+        //             edificioEscaleras.forEach(edificio => {
+        //                 if (!escalera.nestedInmuebles) escalera.nestedInmuebles = [];
+        //                 escalera.nestedInmuebles.push(edificio);
+        //             });
+        //         }
+        //     }
+        // });
+        const totalPages = Math.ceil(mergedData.length / itemsPerPage);
+        const paginatedData = mergedData.slice((page - 1) * itemsPerPage, page * itemsPerPage);
+
+        return { mergedData: paginatedData, totalPages };
     } catch (error) {
         console.error('Error fetching data:', error);
         throw error; // Re-throw the error to be handled by the calling function if necessary
@@ -89,30 +133,23 @@ export const fetchAllData = async (page, term, itemsPerPage) => {
 // mergeData.js
 
 export const mergeData = (inmuebles, edificios, escaleras) => {
-    if (!Array.isArray(edificios)) {
-        throw new Error('Edificios data is not an array or is undefined');
-    }
-
     const mergedData = [];
     const usedEscaleras = new Set();
     const usedInmuebles = new Set();
 
     // Add edificios and nest their inmuebles and escaleras
     edificios.forEach(edificio => {
-        // Verificamos si `inmuebles_id` y `escaleras_id` existen y son arrays
         const nestedInmuebles = Array.isArray(edificio.inmuebles_id)
             ? edificio.inmuebles_id.map(inmuebleId =>
                 inmuebles.find(inmueble => inmueble.id === inmuebleId)
             ).filter(Boolean)
             : [];
 
-
         const nestedEscaleras = Array.isArray(edificio.escaleras_id)
             ? edificio.escaleras_id.map(escaleraId =>
                 escaleras.find(escalera => escalera.id === Number(escaleraId))
             ).filter(Boolean)
             : [];
-
 
         nestedEscaleras.forEach(escalera => {
             usedEscaleras.add(escalera.id);
@@ -130,7 +167,6 @@ export const mergeData = (inmuebles, edificios, escaleras) => {
         mergedData.push({ ...edificio, nestedEscaleras, nestedInmuebles });
     });
 
-
     // Add remaining escaleras that are not part of any edificio
     escaleras.forEach(escalera => {
         if (!usedEscaleras.has(escalera.id)) {
@@ -143,7 +179,7 @@ export const mergeData = (inmuebles, edificios, escaleras) => {
         }
     });
 
-    // Add remaining inmuebles that are not part of any escalera or edificio
+    // Add remaining inmuebles that are not part of any escalera o edificio
     inmuebles.forEach(inmueble => {
         if (!usedInmuebles.has(inmueble.id)) {
             mergedData.push(inmueble);

@@ -5,8 +5,8 @@ import LoadingScreen from '../LoadingScreen/LoadingScreen.js';
 import Select from 'react-select';
 import Toastify from 'toastify-js';
 import './stylesBuscador.css';
-// import FilterMenu from './FilterMenu.jsx';
-import { fetchAllData } from '../../lib/supabase/buscador/functionsBuscador.js';
+// import FilterMenu from './FilterMenu.jsx'; 
+import { fetchAllData } from '../../lib/supabase/buscador/functionsBuscador2.js';
 
 const Table = () => {
     const [loading, setLoading] = useState(true);
@@ -73,7 +73,7 @@ const Table = () => {
             const result = await fetchAllData(page, term, itemsPerPage);
             console.log('result', result);
             setData(result.mergedData || []);
-            setCurrentPage(result.currentPage || 1);
+            // setCurrentPage(result.currentPage || 1);
             setTotalPages(result.totalPages || 1);
             setLoading(false);
         } catch (error) {
@@ -754,9 +754,9 @@ const Table = () => {
                             key={child.id}
                             className={`relative border py-4 mb-6 rounded-xl shadow-xl flex items-center justify-between flex-row w-full ${child.dataUpdateTime === 'red' ? 'bg-red-100' : child.dataUpdateTime === 'yellow' ? 'bg-yellow-100' : 'bg-green-100'}`}
                         >
-                            {showUngroupButtons && <input type="checkbox" checked={selectedItemsUngroup.has(child.id)} onChange={() => handleCheckboxChangeUngroup(child.id)} className="mr-4 ml-4" />}
-                            {showExtraButtons && <input type="checkbox" checked={selectedItems.has(child.id)} onChange={() => handleCheckboxChange(child.id)} className="mr-4 ml-4" />}
-                            {showDeleteInmuebleButtons && <input type="checkbox" checked={selectedItems.has(child.id)} onChange={() => handleCheckboxChange(child.id)} className="mr-4 ml-4" />}
+                            {showUngroupButtons && <input type="checkbox" checked={selectedItemsUngroup.has(child.id)} onChange={() => handleCheckboxChangeUngroup(child.id)} className="mr-4 ml-4 w-[25px] h-[25px]" />}
+                            {showExtraButtons && <input type="checkbox" checked={selectedItems.has(child.id)} onChange={() => handleCheckboxChange(child.id)} className="mr-4 ml-4 w-[25px] h-[25px]" />}
+                            {showDeleteInmuebleButtons && <input type="checkbox" checked={selectedItems.has(child.id)} onChange={() => handleCheckboxChange(child.id)} className="mr-4 ml-4 w-[25px] h-[25px]" />}
                             <div className="flex flex-row justify-evenly items-center w-[60%] py-2">
                                 <p className="w-[70%] text-center ">{child.direccion}</p>
                                 <p className="text-center w-[30%] ">{child.zona ? child.zona : 'N/A'}</p>
@@ -810,7 +810,7 @@ const Table = () => {
                                     type="checkbox"
                                     checked={selectedItemsUngroup.has(child.id)}
                                     onChange={() => handleCheckboxChangeUngroup(child.id)}
-                                    className="mr-4 ml-4"
+                                    className="mr-4 ml-4 w-[25px] h-[25px]"
                                 />
                             )}
                             {showExtraButtons && (
@@ -818,7 +818,7 @@ const Table = () => {
                                     type="checkbox"
                                     checked={selectedItems.has(child.id)}
                                     onChange={() => handleCheckboxChange(child.id)}
-                                    className="mr-4 ml-4"
+                                    className="mr-4 ml-4 w-[25px] h-[25px]"
                                 />
                             )}
                             {showDeleteInmuebleButtons && (
@@ -826,7 +826,7 @@ const Table = () => {
                                     type="checkbox"
                                     checked={selectedItems.has(child.id)}
                                     onChange={() => handleCheckboxChange(child.id)}
-                                    className="mr-4 ml-4"
+                                    className="mr-4 ml-4 w-[25px] h-[25px]"
                                 />
                             )}
                             <div className="flex flex-row justify-evenly items-center w-[60%] py-2">
@@ -863,7 +863,7 @@ const Table = () => {
                     item.nestedEscaleras.map((child) => (
                         <div
                             key={child.id}
-                            className={`relative border py-2 mb-6 rounded-xl shadow-xl flex items-center flex-col w-full`}
+                            className={`relative border py-2 mb-6 rounded-xl shadow-xl flex items-center flex-col w-full border-zinc-400 bg-zinc-100`}
                         >
                             <div className="flex flex-row justify-start items-center gap-2 w-full cursor-pointer" onClick={() => handleToggle(child.id)}>
                                 {showDeleteInmuebleButtons && (
@@ -871,7 +871,7 @@ const Table = () => {
                                         type="checkbox"
                                         checked={selectedItems.has(child.id)}
                                         onChange={() => handleCheckboxChange(child.id)}
-                                        className="mr-4 ml-4"
+                                        className="mr-4 ml-4 w-[25px] h-[25px]"
                                     />
                                 )}
                                 <div className="flex flex-row justify-start items-center w-[80%] py-2">
@@ -941,7 +941,7 @@ const Table = () => {
                             </svg>
                         </button>
                     </form>
-                    <div className="tablesettingscontainer flex flex-row gap-4 pt-2 pb-2 w-full justify-end items-center">
+                    <div className="tablesettingscontainer flex flex-row gap-4 pt-2 pb-2 w-full justify-center items-center">
                         {showFilters && (
                             <div className="filtercontainer flex flex-row gap-4 pt-2 pb-2 w-fit justify-between">
                                 <div className="flex flex-row gap-4 justify-end items-end w-full">
@@ -1085,8 +1085,8 @@ const Table = () => {
                                             }`}
                                     >
                                         <div className="flex flex-row justify-between w-full">
-                                            {showExtraButtons && <input type="checkbox" checked={selectedItems.has(item.id)} onChange={() => handleCheckboxChange(item.id)} className="mr-4" />}
-                                            {showDeleteInmuebleButtons && <input type="checkbox" checked={selectedItems.has(item.id)} onChange={() => handleCheckboxChange(item.id)} className="mr-4" />}
+                                            {showExtraButtons && <input type="checkbox" checked={selectedItems.has(item.id)} onChange={() => handleCheckboxChange(item.id)} className="mr-4 w-[25px]" />}
+                                            {showDeleteInmuebleButtons && <input type="checkbox" checked={selectedItems.has(item.id)} onChange={() => handleCheckboxChange(item.id)} className="mr-4 w-[25px]" />}
                                             <div className="flex flex-row justify-start items-center gap-1 w-[80%] py-2">
                                                 <p className="w-[50%] text-center">{item.direccion}</p>
                                                 <p className="text-center w-[20%]">{item.zona ? item.zona : 'N/A'}</p>
@@ -1121,13 +1121,11 @@ const Table = () => {
                                 ) : (
                                     item.tipoAgrupacion === 2 && (
                                         <div
-                                            key={item.id}
-                                            className={`relative border px-2 py-4 mb-4 rounded-xl shadow-xl flex items-center flex-row w-full ${item.ParentEdificio == '1' ? 'bg-slate-100' : item.dataUpdateTime === 'red' ? 'bg-red-100' : item.dataUpdateTime === 'yellow' ? 'bg-yellow-100' : 'bg-green-100'
-                                                }`}
-                                        >
+                                            key={item.EdificioID}
+                                            className={`relative border border-gray-400 px-2 py-4 mb-4 rounded-xl shadow-xl flex items-center flex-row w-full bg-gray-100`}>
                                             <div className="w-full flex flex-col justify-center items-center">
-                                                <div className="flex flex-row justify-start items-center gap-2 w-full  cursor-pointer" onClick={() => handleToggle(item.id)}>
-                                                    {showDeleteInmuebleButtons && <input type="checkbox" checked={selectedItems.has(item.id)} onChange={() => handleCheckboxChange(item.id)} className="mr-4" />}
+                                                <div className="flex flex-row justify-start items-center gap-2 w-full  cursor-pointer" onClick={() => handleToggle(item.EdificioID)}>
+                                                    {showDeleteInmuebleButtons && <input type="checkbox" checked={selectedItems.has(item.EdificioID)} onChange={() => handleCheckboxChange(item.EdificioID)} className="mr-4 w-[25px] h-[25px]" />}
                                                     <div className="flex flex-row justify-start items-center w-[80%] py-2">
                                                         <span className="flex flex-row justify-start items-center w-[75%] pl-1">
                                                             <svg xmlns="http://www.w3.org/2000/svg" width="3em" height="3em" viewBox="0 0 24 24">
@@ -1141,19 +1139,19 @@ const Table = () => {
                                                         <p className="text-start w-[40%]">{item.zona ? item.zona : 'N/A'}</p>
                                                     </div>
                                                     <div className="cursor-pointer flex flex-row justify-center w-[30%]">
-                                                        {!expandedItems[item.id] && (
+                                                        {!expandedItems[item.EdificioID] && (
                                                             <svg xmlns="http://www.w3.org/2000/svg" width="2.5em" height="2.5em" viewBox="0 0 24 24">
                                                                 <path fill="currentColor" fillRule="evenodd" d="M7 9a1 1 0 0 0-.707 1.707l5 5a1 1 0 0 0 1.414 0l5-5A1 1 0 0 0 17 9z" clipRule="evenodd" />
                                                             </svg>
                                                         )}
-                                                        {expandedItems[item.id] && (
+                                                        {expandedItems[item.EdificioID] && (
                                                             <svg xmlns="http://www.w3.org/2000/svg" width="2.5em" height="2.5em" viewBox="0 0 24 24">
                                                                 <path fill="currentColor" d="M18.2 13.3L12 7l-6.2 6.3c-.2.2-.3.5-.3.7s.1.5.3.7c.2.2.4.3.7.3h11c.3 0 .5-.1.7-.3c.2-.2.3-.5.3-.7s-.1-.5-.3-.7" />
                                                             </svg>
                                                         )}
                                                     </div>
                                                 </div>
-                                                {expandedItems[item.id] && edifciosChildren(item)}
+                                                {expandedItems[item.EdificioID] && edifciosChildren(item)}
                                             </div>
                                         </div>
                                     )
