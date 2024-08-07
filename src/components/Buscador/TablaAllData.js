@@ -7,7 +7,7 @@ import Toastify from 'toastify-js';
 import './stylesBuscador.css';
 import axios from 'axios';
 import { fetchAllData } from '../../lib/supabase/buscador/functionsBuscador.js';
-import { set } from 'date-fns';
+
 
 
 const Table = () => {
@@ -62,9 +62,7 @@ const Table = () => {
     const [showFilters, setShowFilters] = useState(false);
     const [resetFiltersKey, setResetFiltersKey] = useState(0);
 
-    useEffect(() => {
-        fetchData(currentPage, searchTerm);
-    }, [currentPage, searchTerm, filters]);
+
 
     // useEffect(() => {
     //     fetchParentsAndChilds();
@@ -84,6 +82,9 @@ const Table = () => {
             setLoading(false);
         }
     };
+    useEffect(() => {
+        fetchData(currentPage, searchTerm);
+    }, [currentPage, searchTerm, filters]);
 
     const handlePrevious = () => {
         if (currentPage > 1) {
@@ -903,7 +904,10 @@ const Table = () => {
     return (
         <div>
             {selectedId ? (
-                <ItemDetails id={selectedId} onClose={handleClose} />
+                // <ItemDetails id={selectedId} onClose={handleClose} />
+                <div className="container mx-auto p-4 pb-24 pt-8">
+                    <h1 className="text-3xl font-bold text-center font-sans w-full">Buscador de inmuebles</h1>
+                </div>
             ) : (
                 <div className="container mx-auto p-4 pb-24 pt-8">
                     <h1 className="text-3xl font-bold text-center font-sans w-full">Buscador de inmuebles</h1>
@@ -967,7 +971,7 @@ const Table = () => {
                             </div>
                         </div>
                     </div>
-                    {showFilters && <FilterMenu setFilters={setFilters} currentPage={currentPage} filters={filters} data={data} setData={setData} setCurrentPage={setCurrentPage} setTotalPages={setTotalPages} setLoading={setLoading} resetFiltersKey={resetFiltersKey} />}
+                    {/* {showFilters && <FilterMenu setFilters={setFilters} currentPage={currentPage} filters={filters} data={data} setData={setData} setCurrentPage={setCurrentPage} setTotalPages={setTotalPages} setLoading={setLoading} resetFiltersKey={resetFiltersKey} />} */}
                     {showEditTable && (
                         <div className={`flex flex-row gap-4 pt-2 pb-2 w-full justify-between iconscontainertrue`}>
                             <div className="flex flex-row gap-4">
@@ -1417,7 +1421,7 @@ const Table = () => {
                     </div>
                 </div>
             )}
-            {showAddNewInmueble && (
+            {/* {showAddNewInmueble && (
                 <AddNewInmueble
                     showAddNewInmueble={showAddNewInmueble}
                     setShowAddNewInmueble={setShowAddNewInmueble}
@@ -1427,7 +1431,7 @@ const Table = () => {
                     fetchParentsAndChilds={fetchParentsAndChilds}
                     handleIconAddInmueble={handleIconAddInmueble}
                 />
-            )}
+            )} */}
         </div>
     );
 };
