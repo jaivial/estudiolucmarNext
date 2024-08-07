@@ -5,8 +5,10 @@ import LoadingScreen from '../LoadingScreen/LoadingScreen.js';
 import Select from 'react-select';
 import Toastify from 'toastify-js';
 import './stylesBuscador.css';
-// import FilterMenu from './FilterMenu.jsx'; 
-import { fetchAllData } from '../../lib/supabase/buscador/functionsBuscador2.js';
+import axios from 'axios';
+import { fetchAllData } from '../../lib/supabase/buscador/functionsBuscador.js';
+import { set } from 'date-fns';
+
 
 const Table = () => {
     const [loading, setLoading] = useState(true);
@@ -64,35 +66,22 @@ const Table = () => {
         fetchData(currentPage, searchTerm);
     }, [currentPage, searchTerm, filters]);
 
-    useEffect(() => {
-        fetchParentsAndChilds();
-    }, []);
+    // useEffect(() => {
+    //     fetchParentsAndChilds();
+    // }, []);
 
-    const fetchData = async (page, term) => {
+
+    const fetchData = async () => {
+
         try {
-            const result = await fetchAllData(page, term, itemsPerPage);
-            console.log('RESULT HERE', result.mergedData);
-            setData(result.mergedData || []);
-            // setCurrentPage(result.currentPage || 1);
-            setTotalPages(result.totalPages || 1);
+            const response = await fetchAllData(currentPage, searchTerm);
+            setData(response.mergedData || []);
+            setTotalPages(response.totalPages || 1);
+            console.log('RESULT HERE', response.mergedData);
             setLoading(false);
         } catch (error) {
             console.error('Error fetching data:', error);
             setLoading(false);
-        }
-    };
-
-    const fetchParentsAndChilds = async () => {
-        try {
-            const response = await axios.get('http://localhost:8000/backend/inmuebles/fetchAllInmuebles.php');
-            const result = response.data;
-
-            setChildsEscalera(result.childsescalera || []);
-            setChildsEdificio(result.childsedificio || []);
-            setParentsEscalera(result.parentsescalera || []);
-            setParentsEdificio(result.parentsedificio || []);
-        } catch (error) {
-            console.error('Error fetching data:', error);
         }
     };
 
@@ -740,9 +729,9 @@ const Table = () => {
 
 
     const escalerasChildren = (item) => {
-        console.log('escalerasChildren', item.length);
+        console.log('escalerasChildren', item);
 
-        if (item.length === 0) {
+        if (item === null) {
             return <p>No hay detalles disponibles</p>;
         }
 
@@ -793,17 +782,17 @@ const Table = () => {
     const edifciosChildren = (item) => {
 
 
-        if (item.nestedInmuebles && item.nestedInmuebles.length === 0 && item.nestedEscaleras.length === 0) {
+        if (item.nestedinmuebles && item.nestedinmuebles.length === 0 && item.nestedescaleras.length === 0) {
             return <p>No hay detalles disponibles</p>;
         }
 
         return (
             <>
-                {item.nestedInmuebles && item.nestedInmuebles.length > 0 &&
-                    item.nestedInmuebles.map((child) => (
+                {item.nestedinmuebles && item.nestedinmuebles.length > 0 &&
+                    item.nestedinmuebles.map((child) => (
                         <div
                             key={child.id}
-                            className={`relative border py-4 mb-6 rounded-xl shadow-xl flex items-center justify-between flex-row w-full ${child.dataUpdateTime === 'red' ? 'bg-red-100' : child.dataUpdateTime === 'yellow' ? 'bg-yellow-100' : 'bg-green-100'}`}
+                            className={`relative border py-4 mb-6 rounded-xl shadow-xl flex items-center justify-between flex-row w-full ${child.dataupdatetime === 'red' ? 'bg-red-100' : child.dataupdatetime === 'yellow' ? 'bg-yellow-100' : 'bg-green-100'}`}
                         >
                             {showUngroupButtons && (
                                 <input
@@ -842,7 +831,7 @@ const Table = () => {
                                         />
                                     </svg>
                                 )}
-                                {child.encargoState === '1' && (
+                                {child.encargostate === '1' && (
                                     <svg xmlns="http://www.w3.org/2000/svg" width="2em" height="2em" viewBox="0 0 20 20">
                                         <path
                                             fill="currentColor"
@@ -859,8 +848,8 @@ const Table = () => {
                         </div>
                     ))}
 
-                {item.nestedEscaleras && item.nestedEscaleras.length > 0 &&
-                    item.nestedEscaleras.map((child) => (
+                {item.nestedescaleras && item.nestedescaleras.length > 0 &&
+                    item.nestedescaleras.map((child) => (
                         <div
                             key={child.id}
                             className={`relative border py-2 mb-6 rounded-xl shadow-xl flex items-center flex-col w-full border-zinc-400 bg-zinc-100`}
@@ -896,9 +885,9 @@ const Table = () => {
                                 </div>
                             </div>
                             {expandedItems[child.id] && (
-                                console.log('child.nestedInmuebles', child.nestedInmuebles)
+                                console.log('child.nestedInmuebles', child.nestedinmuebles)
                             )}
-                            {expandedItems[child.id] && <div className="w-full flex flex-col justify-center items-center px-2">{escalerasChildren(child.nestedInmuebles)}</div>}
+                            {expandedItems[child.id] && <div className="w-full flex flex-col justify-center items-center px-2">{escalerasChildren(child.nestedinmuebles)}</div>}
                         </div>
 
                     ))}
@@ -1078,7 +1067,7 @@ const Table = () => {
 
                         {Array.isArray(data) && data.length > 0 ? (
                             data.map((item) =>
-                                item.tipoAgrupacion === 1 ? (
+                                item.tipoagrupacion === 1 ? (
                                     <div
                                         key={item.id}
                                         className={`relative border px-2 py-4 mb-4 rounded-xl shadow-xl flex items-center flex-row w-full ${item.AgrupacionParent === '1' ? 'bg-slate-100' : item.dataUpdateTime === 'red' ? 'bg-red-100' : item.dataUpdateTime === 'yellow' ? 'bg-yellow-200' : 'bg-green-100'
@@ -1119,7 +1108,7 @@ const Table = () => {
                                         </div>
                                     </div>
                                 ) : (
-                                    item.tipoAgrupacion === 2 && (
+                                    item.tipoagrupacion === 2 && (
                                         <div
                                             key={item.EdificioID}
                                             className={`relative border border-gray-400 px-2 py-4 mb-4 rounded-xl shadow-xl flex items-center flex-row w-full bg-gray-100`}>
