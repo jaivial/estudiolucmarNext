@@ -50,7 +50,6 @@ const Table = () => {
     const [showEditTable, setShowEditTable] = useState(false);
     const [showAnimation, setShowAnimation] = useState(showEditTable);
     const [filters, setFilters] = useState({
-        alphabeticalOrder: 'none',
         selectedZone: '',
         selectedCategoria: '',
         selectedResponsable: '',
@@ -88,6 +87,9 @@ const Table = () => {
 
     useEffect(() => {
         fetchData();
+        if (currentPage > totalPages) {
+            setCurrentPage(totalPages);
+        }
     }, [currentPage, searchTerm, filters.selectedZone, filters.selectedResponsable, filters.selectedCategoria, filters.filterNoticia, filters.filterEncargo, filters.superficieMin, filters.superficieMax, filters.yearMin, filters.yearMax]);
 
 
@@ -700,7 +702,6 @@ const Table = () => {
         setShowFilters(!showFilters); // Toggle the <state></state>
         if (showEditTable) setShowEditTable(false);
         setFilters({
-            alphabeticalOrder: 'none',
             selectedZone: '',
             selectedCategoria: '',
             selectedResponsable: '',
@@ -715,7 +716,6 @@ const Table = () => {
     const handleResetFilters = () => {
         setResetFiltersKey(resetFiltersKey + 1);
         setFilters({
-            alphabeticalOrder: 'none',
             selectedZone: '',
             selectedCategoria: '',
             selectedResponsable: '',

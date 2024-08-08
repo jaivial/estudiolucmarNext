@@ -4,6 +4,7 @@ CREATE OR REPLACE FUNCTION u212050690_estudiolucmar.search_in_nested_inmuebles(
     itemsperpage integer DEFAULT 6, 
     zone text DEFAULT ''::text, 
     responsable_filter text DEFAULT ''::text, 
+    categoria_filter text DEFAULT ''::text, 
     filternoticia boolean DEFAULT null, 
     filterencargo boolean DEFAULT null, 
     superficiemin integer DEFAULT 0, 
@@ -195,6 +196,16 @@ BEGIN
 AND (responsable_filter = '' OR LOWER(i.responsable) LIKE LOWER('%' || responsable_filter || '%'))
 AND (filternoticia IS NULL OR (filternoticia = TRUE AND i.noticiastate = 'true') OR (filternoticia = FALSE AND i.noticiastate = 'false'))
 AND (filterencargo IS NULL OR (filterencargo = TRUE AND i.encargostate = 'true') OR (filterencargo = FALSE AND i.encargostate = 'false'))
+AND (
+    categoria_filter = '' OR 
+    (categoria_filter = 'Sin información' AND i.categoria = 'NULL') OR 
+    (categoria_filter = 'Vacio' AND i.categoria = 'Vacio') OR 
+    (categoria_filter = 'Propietario' AND i.categoria = 'Propietario') OR 
+    (categoria_filter = 'Inquilino' AND i.categoria = 'Inquilino') OR 
+    (categoria_filter <> 'Sin información' AND categoria_filter <> 'Vacio' AND categoria_filter <> 'Propietario' AND categoria_filter <> 'Inquilino' AND i.categoria = categoria_filter)
+)
+ AND (i.superficie)::int BETWEEN superficiemin AND superficiemax
+          AND (i.ano_construccion)::int BETWEEN yearmin AND yearmax
 
 
     )
