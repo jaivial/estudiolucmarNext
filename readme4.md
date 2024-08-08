@@ -1,6 +1,12 @@
-DROP FUNCTION search_in_nested_inmuebles;
+DROP FUNCTION IF EXISTS u212050690_estudiolucmar.search_in_nested_inmuebles;
 
-CREATE OR REPLACE FUNCTION u212050690_estudiolucmar.search_in_nested_inmuebles(pattern text, page integer, itemsperpage integer DEFAULT 6)
+CREATE OR REPLACE FUNCTION u212050690_estudiolucmar.search_in_nested_inmuebles(
+    pattern text, 
+    page integer, 
+    itemsperpage integer DEFAULT 6, 
+    zone text DEFAULT '', 
+    responsable_filter text DEFAULT ''
+)
 RETURNS TABLE(
     id bigint,
     direccion character varying,
@@ -128,7 +134,7 @@ BEGIN
             END AS nestedinmuebles,
             COUNT(*) OVER () AS total_count
         FROM inmuebles i
-        WHERE i.direccion ILIKE pattern 
+        WHERE (i.direccion ILIKE pattern 
            OR EXISTS (
                SELECT 1
                FROM jsonb_array_elements(i.nestedinmuebles) AS ni
@@ -142,7 +148,9 @@ BEGIN
                    FROM jsonb_array_elements(esc->'nestedinmuebles') AS ni
                    WHERE ni->>'direccion' ILIKE pattern
                )
-           )
+           ))
+           AND (zone = '' OR LOWER(i.zona) LIKE LOWER('%' || zone || '%'))
+           AND (responsable_filter = '' OR LOWER(i.responsable) LIKE LOWER('%' || responsable_filter || '%'))
     )
     SELECT * FROM filtered_inmuebles
     LIMIT itemsPerPage OFFSET (page - 1) * itemsPerPage;

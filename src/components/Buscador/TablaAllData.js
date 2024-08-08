@@ -7,6 +7,7 @@ import Toastify from 'toastify-js';
 import './stylesBuscador.css';
 import axios from 'axios';
 import { fetchAllData } from '../../lib/supabase/buscador/functionsBuscador.js';
+import FilterMenu from './FilterMenu.js';
 
 
 
@@ -70,9 +71,11 @@ const Table = () => {
 
 
     const fetchData = async () => {
-
         try {
-            const response = await fetchAllData(currentPage, searchTerm);
+            const { selectedZone, selectedResponsable } = filters;
+            console.log('selectedZone', selectedZone);
+            console.log('selectedResponsable', selectedResponsable);
+            const response = await fetchAllData(currentPage, searchTerm, 6, selectedZone, selectedResponsable);
             setData(response.mergedData || []);
             setTotalPages(response.totalPages || 1);
             console.log('RESULT HERE', response.mergedData);
@@ -82,9 +85,11 @@ const Table = () => {
             setLoading(false);
         }
     };
+
+
     useEffect(() => {
         fetchData(currentPage, searchTerm);
-    }, [currentPage, searchTerm, filters]);
+    }, [currentPage, searchTerm, filters.selectedResponsable, filters.selectedZone]);
 
     const handlePrevious = () => {
         if (currentPage > 1) {
@@ -971,7 +976,7 @@ const Table = () => {
                             </div>
                         </div>
                     </div>
-                    {/* {showFilters && <FilterMenu setFilters={setFilters} currentPage={currentPage} filters={filters} data={data} setData={setData} setCurrentPage={setCurrentPage} setTotalPages={setTotalPages} setLoading={setLoading} resetFiltersKey={resetFiltersKey} />} */}
+                    {showFilters && <FilterMenu setFilters={setFilters} currentPage={currentPage} filters={filters} data={data} setData={setData} setCurrentPage={setCurrentPage} setTotalPages={setTotalPages} setLoading={setLoading} resetFiltersKey={resetFiltersKey} />}
                     {showEditTable && (
                         <div className={`flex flex-row gap-4 pt-2 pb-2 w-full justify-between iconscontainertrue`}>
                             <div className="flex flex-row gap-4">
