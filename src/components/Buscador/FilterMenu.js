@@ -6,7 +6,7 @@ import Slider from 'react-slider';
 import '@fortawesome/fontawesome-svg-core/styles.css'; // Import FontAwesome CSS
 import '../../../fontawesome'; // Import the configuration file
 import './filterStyles.css';
-import { set } from 'date-fns';
+import { FaHouseChimneyUser } from "react-icons/fa6";
 
 const FilterMenu = ({ setFilters, currentPage, filters, data, setData, setCurrentPage, setTotalPages, setLoading, resetFiltersKey }) => {
     const [alphabeticalOrder, setAlphabeticalOrder] = useState(null);
@@ -18,6 +18,8 @@ const FilterMenu = ({ setFilters, currentPage, filters, data, setData, setCurren
     const [yearRange, setYearRange] = useState([1850, new Date().getFullYear()]);
     const [zones, setZones] = useState([]);
     const [responsables, setResponsables] = useState([]);
+    const [categorias, setCategorias] = useState([]);
+    const [selectedCategoria, setSelectedCategoria] = useState(null);
 
 
     const handleChangeSuperficieRange = (values) => {
@@ -62,16 +64,34 @@ const FilterMenu = ({ setFilters, currentPage, filters, data, setData, setCurren
     ];
 
     const filterOptionsNoticia = [
-        { value: '1', label: 'Con noticias' },
-        { value: '0', label: 'Sin noticias' },
+        { value: true, label: 'Con noticias' },
+        { value: false, label: 'Sin noticias' },
     ];
     const filterOptionsEncargo = [
-        { value: '1', label: 'Con encargos' },
-        { value: '0', label: 'Sin encargos' },
+        { value: true, label: 'Con encargos' },
+        { value: false, label: 'Sin encargos' },
     ];
+
+    useEffect(() => {
+        console.log('Filters:', {
+            alphabeticalOrder,
+            selectedZone: selectedZone?.value || '',
+            selectedResponsable: selectedResponsable?.value || '',
+            selectedCategoria: selectedCategoria?.value || '',
+            filterNoticia,
+            filterEncargo,
+            superficieMin: superficieRange[0],
+            superficieMax: superficieRange[1],
+            yearMin: yearRange[0],
+            yearMax: yearRange[1],
+        });
+    }, [alphabeticalOrder, selectedZone, selectedResponsable, selectedCategoria, filterNoticia, filterEncargo, superficieRange, yearRange]);
+
 
     const zoneOptions = zones.map((zone) => ({ value: zone, label: zone }));
     const responsableOptions = responsables.map((responsable) => ({ value: responsable.nombre_completo, label: responsable.nombre_completo }));
+    const categoriaOptions = categorias.map((categoria) => ({ value: categoria, label: categoria }));
+    console.log('categoriaOptions', categoriaOptions);
 
     // Fetch zones and responsables
     const fetchOptions = async () => {
@@ -80,6 +100,7 @@ const FilterMenu = ({ setFilters, currentPage, filters, data, setData, setCurren
             console.log('data', data); // Debugging line
             setZones(data.zones);
             setResponsables(data.responsables);
+            setCategorias(data.categorias);
 
             if (error) {
                 throw new Error(error.message);
@@ -99,24 +120,27 @@ const FilterMenu = ({ setFilters, currentPage, filters, data, setData, setCurren
             alphabeticalOrder: alphabeticalOrder,
             selectedZone: selectedZone?.value || '',
             selectedResponsable: selectedResponsable?.value || '',
-            filterNoticia: filterNoticia !== null ? filterNoticia : '',
-            filterEncargo: filterEncargo !== null ? filterEncargo : '',
+            selectedCategoria: selectedCategoria?.value || '',
+            filterNoticia: filterNoticia !== null ? filterNoticia : null,
+            filterEncargo: filterEncargo !== null ? filterEncargo : null,
             superficieMin: superficieRange[0],
             superficieMax: superficieRange[1],
             yearMin: yearRange[0],
             yearMax: yearRange[1],
         });
-    }, [alphabeticalOrder, selectedZone, selectedResponsable, filterNoticia, filterEncargo, superficieRange, yearRange, setFilters]);
+    }, [alphabeticalOrder, selectedZone, selectedResponsable, selectedCategoria, filterNoticia, filterEncargo, superficieRange, yearRange, setFilters]);
 
     const resetFilters = () => {
         setAlphabeticalOrder(null);
         setSelectedZone(null);
         setSelectedResponsable(null);
-        setFilterNoticia(null);
-        setFilterEncargo(null);
+        setSelectedCategoria(null);
+        setFilterNoticia(null); // Assuming the default is false
+        setFilterEncargo(null); // Assuming the default is false
         setSuperficieRange([0, 1000]);
         setYearRange([1900, new Date().getFullYear()]);
     };
+
 
     useEffect(() => {
         resetFilters();
@@ -133,16 +157,16 @@ const FilterMenu = ({ setFilters, currentPage, filters, data, setData, setCurren
     };
 
     return (
-        <div className="flex flex-col gap-4 p-4">
+        <div className="flex flex-col gap-4 p-2">
             {/* Alphabetical Order Select */}
             <div className="flex flex-row gap-2 w-full items-center justify-center orderbyanimation z-[990]">
                 <Select
                     options={alphabeticalOrderOptions}
                     onChange={(option) => setAlphabeticalOrder(option?.value || null)}
                     value={alphabeticalOrderOptions.find((option) => option.value === alphabeticalOrder) || null}
-                    className="w-1/2 z-[999]"
+                    className="w-full z-[999]"
                     placeholder={
-                        <span className="flex items-center gap-2 text-black">
+                        <span className="flex flex-row justify-start items-center gap-3 text-black">
                             <svg xmlns="http://www.w3.org/2000/svg" width="1.25em" height="1.25em" viewBox="0 0 24 24">
                                 <path
                                     fill="currentColor"
@@ -153,6 +177,19 @@ const FilterMenu = ({ setFilters, currentPage, filters, data, setData, setCurren
                         </span>
                     }
                 />
+
+                <Select
+                    options={categoriaOptions}
+                    onChange={setSelectedCategoria}
+                    value={selectedCategoria}
+                    placeholder={
+                        <span className="flex flex-row justify-start items-center gap-3 text-black">
+                            <FaHouseChimneyUser className="text-2xl" />
+                            Categoría
+                        </span>
+                    }
+                    className="rightanimation1 w-full"
+                />
             </div>
 
             <div className="flex flex-row gap-2 w-full items-center justify-center z-[980]">
@@ -162,7 +199,7 @@ const FilterMenu = ({ setFilters, currentPage, filters, data, setData, setCurren
                     onChange={setSelectedZone}
                     value={selectedZone}
                     placeholder={
-                        <span className="flex flex-row justify-center items-center gap-3 text-black">
+                        <span className="flex flex-row justify-start items-center gap-3 text-black">
                             <svg xmlns="http://www.w3.org/2000/svg" width="1.5em" height="1.5em" viewBox="0 0 24 24">
                                 <path fill="currentColor" d="m12 17l1-2V9.858c1.721-.447 3-2 3-3.858c0-2.206-1.794-4-4-4S8 3.794 8 6c0 1.858 1.279 3.411 3 3.858V15zM10 6c0-1.103.897-2 2-2s2 .897 2 2s-.897 2-2 2s-2-.897-2-2" />
                                 <path
@@ -182,7 +219,7 @@ const FilterMenu = ({ setFilters, currentPage, filters, data, setData, setCurren
                     onChange={setSelectedResponsable}
                     value={selectedResponsable}
                     placeholder={
-                        <span className="flex flex-row justify-center items-center gap-3 text-black">
+                        <span className="flex flex-row justify-start items-center gap-3 text-black">
                             <svg xmlns="http://www.w3.org/2000/svg" width="1.75em" height="1.75em" viewBox="0 0 48 48">
                                 <g fill="none">
                                     <path d="M0 0h48v48H0z" />
@@ -207,7 +244,7 @@ const FilterMenu = ({ setFilters, currentPage, filters, data, setData, setCurren
                     onChange={handleFilterNoticiaChange}
                     value={filterOptionsNoticia.find((option) => option.value === filterNoticia) || null}
                     placeholder={
-                        <span className="flex flex-row justify-center items-center gap-3 text-black">
+                        <span className="flex flex-row justify-start items-center gap-3 text-black">
                             <svg xmlns="http://www.w3.org/2000/svg" width="1.75em" height="1.75em" viewBox="0 0 24 24">
                                 <path
                                     fill="currentColor"
@@ -226,7 +263,7 @@ const FilterMenu = ({ setFilters, currentPage, filters, data, setData, setCurren
                     onChange={handleFilterEncargoChange}
                     value={filterOptionsEncargo.find((option) => option.value === filterEncargo) || null}
                     placeholder={
-                        <span className="flex flex-row justify-center items-center gap-3 text-black">
+                        <span className="flex flex-row justify-start items-center gap-3 text-black">
                             <svg xmlns="http://www.w3.org/2000/svg" width="1.75em" height="1.75em" viewBox="0 0 20 20">
                                 <path
                                     fill="currentColor"

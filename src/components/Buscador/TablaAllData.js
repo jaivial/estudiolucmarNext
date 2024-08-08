@@ -52,6 +52,7 @@ const Table = () => {
     const [filters, setFilters] = useState({
         alphabeticalOrder: 'none',
         selectedZone: '',
+        selectedCategoria: '',
         selectedResponsable: '',
         filterNoticia: null,
         filterEncargo: null,
@@ -62,7 +63,7 @@ const Table = () => {
     });
     const [showFilters, setShowFilters] = useState(false);
     const [resetFiltersKey, setResetFiltersKey] = useState(0);
-
+    const [totalItems, setTotalItems] = useState(0);
 
 
     // useEffect(() => {
@@ -71,10 +72,12 @@ const Table = () => {
 
     const fetchData = async () => {
         try {
-            const { selectedZone, selectedResponsable, filterNoticia, filterEncargo, superficieMin, superficieMax, yearMin, yearMax } = filters;
-            const response = await fetchAllData(currentPage, searchTerm, 6, selectedZone, selectedResponsable, filterNoticia, filterEncargo, superficieMin, superficieMax, yearMin, yearMax);
+            const { selectedZone, selectedResponsable, selectedCategoria, filterNoticia, filterEncargo, superficieMin, superficieMax, yearMin, yearMax } = filters;
+            console.log('Filters being sent:', filters); // Add a debug line here
+            const response = await fetchAllData(currentPage, searchTerm, 6, selectedZone, selectedResponsable, selectedCategoria, filterNoticia, filterEncargo, superficieMin, superficieMax, yearMin, yearMax);
             setData(response.mergedData || []);
             setTotalPages(response.totalPages || 1);
+            setTotalItems(response.total || 0);
             console.log('RESULT HERE', response.mergedData);
             setLoading(false);
         } catch (error) {
@@ -85,7 +88,7 @@ const Table = () => {
 
     useEffect(() => {
         fetchData();
-    }, [currentPage, searchTerm, filters.selectedZone, filters.selectedResponsable, filters.filterNoticia, filters.filterEncargo, filters.superficieMin, filters.superficieMax, filters.yearMin, filters.yearMax]);
+    }, [currentPage, searchTerm, filters.selectedZone, filters.selectedResponsable, filters.selectedCategoria, filters.filterNoticia, filters.filterEncargo, filters.superficieMin, filters.superficieMax, filters.yearMin, filters.yearMax]);
 
 
     const handlePrevious = () => {
@@ -699,6 +702,7 @@ const Table = () => {
         setFilters({
             alphabeticalOrder: 'none',
             selectedZone: '',
+            selectedCategoria: '',
             selectedResponsable: '',
             filterNoticia: null,
             filterEncargo: null,
@@ -713,6 +717,7 @@ const Table = () => {
         setFilters({
             alphabeticalOrder: 'none',
             selectedZone: '',
+            selectedCategoria: '',
             selectedResponsable: '',
             filterNoticia: null,
             filterEncargo: null,
@@ -1053,7 +1058,12 @@ const Table = () => {
                             </button>
                         </div>
                     )}
-                    <div className="flex flex-col gap-2">
+                    <div className="flex flex-col gap-2 pt-3">
+                        <div>
+                            <p className="text-center font-sans text-lg text-slate-800">
+                                <strong>Total de inmuebles: <br /> {totalItems}</strong>
+                            </p>
+                        </div>
                         <div className="tableheader relative px-2 py-1 mt-2 rounded-xl shadow-xl flex items-center flex-row w-full bg-blue-950">
                             <div className="true flex flex-row justify-between w-full">
                                 <div className="flex flex-row justify-start items-center gap-1 w-[80%] py-2 text-white">

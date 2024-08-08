@@ -1,7 +1,46 @@
 -- Active: 1722636257008@@aws-0-eu-central-1.pooler.supabase.com@5432@postgres@u212050690_estudiolucmar
-DROP FUNCTION search_in_nested_inmuebles;
-CREATE OR REPLACE FUNCTION u212050690_estudiolucmar.search_in_nested_inmuebles(pattern text, page integer, itemsperpage integer DEFAULT 6, zone text DEFAULT ''::text, responsable_filter text DEFAULT ''::text)
- RETURNS TABLE(id bigint, direccion character varying, tipo character varying, uso character varying, superficie character varying, ano_construccion bigint, categoria character varying, potencialadquisicion boolean, noticiastate boolean, responsable character varying, encargostate boolean, coordinates text, zona character varying, date_time timestamp with time zone, inmuebleimages bytea, location character varying, habitaciones bigint, garaje boolean, descripcion character varying, ascensor boolean, banyos bigint, trastero boolean, jardin boolean, terraza boolean, aireacondicionado boolean, tipoagrupacion smallint, nestedescaleras jsonb, nestedinmuebles jsonb, total_count bigint)
+-- Active: 1722636257008@@aws-0-eu-central-1.pooler.supabase.com@5432@postgres@u212050690_estudiolucmar
+
+CREATE OR REPLACE FUNCTION u212050690_estudiolucmar.search_in_nested_inmuebles(pattern text, 
+    page integer, 
+    itemsperpage integer DEFAULT 6, 
+    zone text DEFAULT ''::text, 
+    responsable_filter text DEFAULT ''::text, 
+    filternoticia boolean DEFAULT false, 
+    filterencargo boolean DEFAULT false, 
+    superficiemin integer DEFAULT 0, 
+    superficiemax integer DEFAULT 10000, 
+    yearmin integer DEFAULT 1850, 
+    yearmax integer DEFAULT EXTRACT(year FROM CURRENT_DATE))
+ RETURNS TABLE(id bigint, 
+    direccion text, 
+    tipo text, 
+    uso text, 
+    superficie text, 
+    ano_construccion text, 
+    categoria text, 
+    potencialadquisicion text, 
+    noticiastate text, 
+    responsable text, 
+    encargostate boolean, 
+    coordinates jsonb, 
+    zona text, 
+    date_time timestamp with time zone, 
+    inmuebleimages text, 
+    location text, 
+    habitaciones integer, 
+    garaje boolean, 
+    descripcion text, 
+    ascensor boolean, 
+    banyos integer, 
+    trastero boolean, 
+    jardin boolean, 
+    terraza boolean, 
+    aireacondicionado boolean, 
+    tipoagrupacion bigint, 
+    nestedescaleras jsonb, 
+    nestedinmuebles jsonb, 
+    total_count bigint)
  LANGUAGE plpgsql
 AS $function$
 BEGIN
