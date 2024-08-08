@@ -53,8 +53,8 @@ const Table = () => {
         alphabeticalOrder: 'none',
         selectedZone: '',
         selectedResponsable: '',
-        filterNoticia: '',
-        filterEncargo: '',
+        filterNoticia: null,
+        filterEncargo: null,
         superficieMin: 0,
         superficieMax: 1000,
         yearMin: 1850,
@@ -69,13 +69,10 @@ const Table = () => {
     //     fetchParentsAndChilds();
     // }, []);
 
-
     const fetchData = async () => {
         try {
-            const { selectedZone, selectedResponsable } = filters;
-            console.log('selectedZone', selectedZone);
-            console.log('selectedResponsable', selectedResponsable);
-            const response = await fetchAllData(currentPage, searchTerm, 6, selectedZone, selectedResponsable);
+            const { selectedZone, selectedResponsable, filterNoticia, filterEncargo, superficieMin, superficieMax, yearMin, yearMax } = filters;
+            const response = await fetchAllData(currentPage, searchTerm, 6, selectedZone, selectedResponsable, filterNoticia, filterEncargo, superficieMin, superficieMax, yearMin, yearMax);
             setData(response.mergedData || []);
             setTotalPages(response.totalPages || 1);
             console.log('RESULT HERE', response.mergedData);
@@ -86,10 +83,10 @@ const Table = () => {
         }
     };
 
-
     useEffect(() => {
-        fetchData(currentPage, searchTerm);
-    }, [currentPage, searchTerm, filters.selectedResponsable, filters.selectedZone]);
+        fetchData();
+    }, [currentPage, searchTerm, filters.selectedZone, filters.selectedResponsable, filters.filterNoticia, filters.filterEncargo, filters.superficieMin, filters.superficieMax, filters.yearMin, filters.yearMax]);
+
 
     const handlePrevious = () => {
         if (currentPage > 1) {
@@ -703,8 +700,8 @@ const Table = () => {
             alphabeticalOrder: 'none',
             selectedZone: '',
             selectedResponsable: '',
-            filterNoticia: '',
-            filterEncargo: '',
+            filterNoticia: null,
+            filterEncargo: null,
             superficieMin: 0,
             superficieMax: 1000,
             yearMin: 1900,
@@ -717,8 +714,8 @@ const Table = () => {
             alphabeticalOrder: 'none',
             selectedZone: '',
             selectedResponsable: '',
-            filterNoticia: '',
-            filterEncargo: '',
+            filterNoticia: null,
+            filterEncargo: null,
             superficieMin: 0,
             superficieMax: 1000,
             yearMin: 1900,

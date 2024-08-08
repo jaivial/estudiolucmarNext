@@ -1,14 +1,17 @@
 import { supabase } from '../supabaseClient.js';
 
-export const fetchAllData = async (page, term, itemsPerPage, zone = '', responsable = '') => {
+export const fetchAllData = async (page, term, itemsPerPage, zone = '', responsable = '', filternoticia = false, filterencargo = false, superficiemin = 0, superficiemax = 10000, yearmin = 1850, yearmax = new Date().getFullYear()) => {
     try {
         console.time('Total time');
         const isTermEmpty = !term || term.trim() === '';
         const pattern = isTermEmpty ? '%' : `%${term}%`;
 
-        // Search in both the direccion column and nestedInmuebles.direccion
+        // Ensure boolean parameters are boolean
+        filternoticia = filternoticia ? true : false;
+        filterencargo = filterencargo ? true : false;
+
         const { data: searchData, error: searchError } = await supabase
-            .rpc('search_in_nested_inmuebles', { pattern, page, itemsperpage: itemsPerPage, zone, responsable_filter: responsable });
+            .rpc('search_in_nested_inmuebles', { pattern, page, itemsperpage: itemsPerPage, zone, responsable_filter: responsable, filternoticia, filterencargo, superficiemin, superficiemax, yearmin, yearmax });
 
         if (searchError) {
             throw new Error(searchError.message);
@@ -20,11 +23,9 @@ export const fetchAllData = async (page, term, itemsPerPage, zone = '', responsa
 
         console.log('searchData', searchData[0].total_count); // Debugging line
 
-        // Extract total count from the first row if exists
         const total = searchData.length > 0 ? searchData[0].total_count : 0;
         console.log('total', total);
 
-        // Calculate the total number of pages
         const totalPages = Math.ceil(total / itemsPerPage);
 
         console.timeEnd('Total time'); // End the timer

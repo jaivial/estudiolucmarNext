@@ -1,44 +1,8 @@
-DROP FUNCTION IF EXISTS u212050690_estudiolucmar.search_in_nested_inmuebles;
-
-CREATE OR REPLACE FUNCTION u212050690_estudiolucmar.search_in_nested_inmuebles(
-    pattern text, 
-    page integer, 
-    itemsperpage integer DEFAULT 6, 
-    zone text DEFAULT '', 
-    responsable_filter text DEFAULT ''
-)
-RETURNS TABLE(
-    id bigint,
-    direccion character varying,
-    tipo character varying,
-    uso character varying,
-    superficie character varying,
-    ano_construccion bigint,
-    categoria character varying,
-    potencialadquisicion boolean,
-    noticiastate boolean,
-    responsable character varying,
-    encargostate boolean,
-    coordinates text,
-    zona character varying,
-    date_time timestamp with time zone,
-    inmuebleimages bytea,
-    location character varying,
-    habitaciones bigint,
-    garaje boolean,
-    descripcion character varying,
-    ascensor boolean,
-    banyos bigint,
-    trastero boolean,
-    jardin boolean,
-    terraza boolean,
-    aireacondicionado boolean,
-    tipoagrupacion smallint,
-    nestedescaleras jsonb,
-    nestedinmuebles jsonb,
-    total_count bigint
-)
-LANGUAGE plpgsql
+-- Active: 1722636257008@@aws-0-eu-central-1.pooler.supabase.com@5432@postgres@u212050690_estudiolucmar
+DROP FUNCTION search_in_nested_inmuebles;
+CREATE OR REPLACE FUNCTION u212050690_estudiolucmar.search_in_nested_inmuebles(pattern text, page integer, itemsperpage integer DEFAULT 6, zone text DEFAULT ''::text, responsable_filter text DEFAULT ''::text)
+ RETURNS TABLE(id bigint, direccion character varying, tipo character varying, uso character varying, superficie character varying, ano_construccion bigint, categoria character varying, potencialadquisicion boolean, noticiastate boolean, responsable character varying, encargostate boolean, coordinates text, zona character varying, date_time timestamp with time zone, inmuebleimages bytea, location character varying, habitaciones bigint, garaje boolean, descripcion character varying, ascensor boolean, banyos bigint, trastero boolean, jardin boolean, terraza boolean, aireacondicionado boolean, tipoagrupacion smallint, nestedescaleras jsonb, nestedinmuebles jsonb, total_count bigint)
+ LANGUAGE plpgsql
 AS $function$
 BEGIN
     RETURN QUERY
@@ -70,8 +34,10 @@ BEGIN
             i.terraza,
             i.aireacondicionado,
             i.tipoagrupacion,
+            -- Handle nested escalera filtering
             CASE
-                WHEN i.direccion ILIKE pattern THEN i.nestedescaleras
+                WHEN i.direccion ILIKE pattern 
+                THEN i.nestedescaleras
                 ELSE (
                     SELECT jsonb_agg(
                         jsonb_build_object(
@@ -113,6 +79,8 @@ BEGIN
                                 SELECT jsonb_agg(ni)
                                 FROM jsonb_array_elements(esc->'nestedinmuebles') AS ni
                                 WHERE ni->>'direccion' ILIKE pattern
+                                  AND (zone = '' OR LOWER(ni->>'zona') LIKE LOWER('%' || zone || '%'))
+                                  AND (responsable_filter = '' OR LOWER(ni->>'responsable') LIKE LOWER('%' || responsable_filter || '%'))
                             )
                         )
                     )
@@ -121,15 +89,21 @@ BEGIN
                         SELECT 1
                         FROM jsonb_array_elements(esc->'nestedinmuebles') AS ni
                         WHERE ni->>'direccion' ILIKE pattern
+                          AND (zone = '' OR LOWER(ni->>'zona') LIKE LOWER('%' || zone || '%'))
+                          AND (responsable_filter = '' OR LOWER(ni->>'responsable') LIKE LOWER('%' || responsable_filter || '%'))
                     )
                 )
             END AS nestedescaleras,
+            -- Handle nested inmuebles filtering
             CASE
-                WHEN i.direccion ILIKE pattern THEN i.nestedinmuebles
+                WHEN i.direccion ILIKE pattern 
+                THEN i.nestedinmuebles
                 ELSE (
                     SELECT jsonb_agg(ni)
                     FROM jsonb_array_elements(i.nestedinmuebles) AS ni
                     WHERE ni->>'direccion' ILIKE pattern
+                      AND (zone = '' OR LOWER(ni->>'zona') LIKE LOWER('%' || zone || '%'))
+                      AND (responsable_filter = '' OR LOWER(ni->>'responsable') LIKE LOWER('%' || responsable_filter || '%'))
                 )
             END AS nestedinmuebles,
             COUNT(*) OVER () AS total_count
@@ -139,6 +113,8 @@ BEGIN
                SELECT 1
                FROM jsonb_array_elements(i.nestedinmuebles) AS ni
                WHERE ni->>'direccion' ILIKE pattern
+                 AND (zone = '' OR LOWER(ni->>'zona') LIKE LOWER('%' || zone || '%'))
+                 AND (responsable_filter = '' OR LOWER(ni->>'responsable') LIKE LOWER('%' || responsable_filter || '%'))
            )
            OR EXISTS (
                SELECT 1
@@ -147,12 +123,14 @@ BEGIN
                    SELECT 1
                    FROM jsonb_array_elements(esc->'nestedinmuebles') AS ni
                    WHERE ni->>'direccion' ILIKE pattern
+                     AND (zone = '' OR LOWER(ni->>'zona') LIKE LOWER('%' || zone || '%'))
+                     AND (responsable_filter = '' OR LOWER(ni->>'responsable') LIKE LOWER('%' || responsable_filter || '%'))
                )
            ))
            AND (zone = '' OR LOWER(i.zona) LIKE LOWER('%' || zone || '%'))
            AND (responsable_filter = '' OR LOWER(i.responsable) LIKE LOWER('%' || responsable_filter || '%'))
     )
     SELECT * FROM filtered_inmuebles
-    LIMIT itemsPerPage OFFSET (page - 1) * itemsPerPage;
+    LIMIT itemsperpage OFFSET (page - 1) * itemsperpage;
 END;
-$function$;
+$function$

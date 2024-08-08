@@ -77,6 +77,7 @@ const FilterMenu = ({ setFilters, currentPage, filters, data, setData, setCurren
     const fetchOptions = async () => {
         try {
             const { data, error } = await supabase.rpc('fetchdatafiltermenu');
+            console.log('data', data); // Debugging line
             setZones(data.zones);
             setResponsables(data.responsables);
 
