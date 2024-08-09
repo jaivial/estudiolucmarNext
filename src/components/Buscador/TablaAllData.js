@@ -72,9 +72,55 @@ const Table = () => {
 
     const fetchData = async () => {
         try {
-            const { selectedZone, selectedResponsable, selectedCategoria, filterNoticia, filterEncargo, superficieMin, superficieMax, yearMin, yearMax, localizado } = filters;
-            console.log('Filters being sent:', filters); // Add a debug line here
-            const response = await fetchAllData(currentPage, searchTerm, 6, selectedZone, selectedResponsable, selectedCategoria, filterNoticia, filterEncargo, superficieMin, superficieMax, yearMin, yearMax, localizado);
+            const {
+                selectedZone,
+                selectedResponsable,
+                selectedCategoria,
+                filterNoticia,
+                filterEncargo,
+                superficieMin,
+                superficieMax,
+                yearMin,
+                yearMax,
+                localizado,
+                habitaciones,
+                banos,
+                tipo,
+                aireacondicionado,
+                ascensor,
+                garaje,
+                jardin,
+                terraza,
+                trastero
+            } = filters;
+
+            console.log('Filters being sent:', filters); // Debug line to log all filters being sent
+
+            const response = await fetchAllData(
+                currentPage,
+                searchTerm,
+                6,
+                selectedZone,
+                selectedResponsable,
+                selectedCategoria,
+                filterNoticia,
+                filterEncargo,
+                superficieMin,
+                superficieMax,
+                yearMin,
+                yearMax,
+                localizado,
+                habitaciones,
+                banos,
+                tipo,
+                aireacondicionado,
+                ascensor,
+                garaje,
+                jardin,
+                terraza,
+                trastero
+            );
+
             setData(response.mergedData || []);
             setTotalPages(response.totalPages || 1);
             setTotalItems(response.total || 0);
@@ -87,11 +133,37 @@ const Table = () => {
     };
 
     useEffect(() => {
-        fetchData();
-        if (currentPage > totalPages) {
-            setCurrentPage(totalPages);
-        }
-    }, [currentPage, searchTerm, filters.selectedZone, filters.selectedResponsable, filters.selectedCategoria, filters.filterNoticia, filters.filterEncargo, filters.superficieMin, filters.superficieMax, filters.yearMin, filters.yearMax, filters.localizado]);
+        const fetchAndSetData = async () => {
+            await fetchData();
+            if (currentPage > totalPages) {
+                setCurrentPage(totalPages > 0 ? totalPages : 1); // Ensure currentPage is set to a valid page number
+            }
+        };
+
+        fetchAndSetData();
+    }, [
+        currentPage,
+        searchTerm,
+        filters.selectedZone,
+        filters.selectedResponsable,
+        filters.selectedCategoria,
+        filters.filterNoticia,
+        filters.filterEncargo,
+        filters.superficieMin,
+        filters.superficieMax,
+        filters.yearMin,
+        filters.yearMax,
+        filters.localizado,
+        filters.habitaciones,        // Added habitaciones filter
+        filters.banos,               // Added banos filter
+        filters.tipo,                // Added tipo filter
+        filters.aireacondicionado,   // Added aireacondicionado filter
+        filters.ascensor,            // Added ascensor filter
+        filters.garaje,              // Added garaje filter
+        filters.jardin,              // Added jardin filter
+        filters.terraza,             // Added terraza filter
+        filters.trastero             // Added trastero filter
+    ]);
 
 
     const handlePrevious = () => {

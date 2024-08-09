@@ -151,7 +151,7 @@ const FilterMenu = ({ setFilters, currentPage, filters, data, setData, setCurren
                         exit={{ opacity: 0, y: -80 }}
                         transition={{ duration: 0.4 }}
                     >
-                        <MoreFilters filters={filters} setFilters={setFilters} />
+                        <MoreFilters filters={filters} setFilters={setFilters} resetFiltersKey={resetFiltersKey} />
                     </motion.div>
                 )}
             </AnimatePresence>            <div className="flex flex-row gap-2 w-full items-center justify-center orderbyanimation z-[990]">
