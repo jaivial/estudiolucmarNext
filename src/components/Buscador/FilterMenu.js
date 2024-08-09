@@ -5,7 +5,7 @@ import axios from 'axios';
 import Slider from 'react-slider';
 import '@fortawesome/fontawesome-svg-core/styles.css'; // Import FontAwesome CSS
 import '../../../fontawesome'; // Import the configuration file
-import './filterStyles.css';
+import './filterstyles.css';
 import { FaHouseChimneyUser } from "react-icons/fa6";
 import { FaPhone } from "react-icons/fa6";
 import { CgMoreO } from "react-icons/cg";
