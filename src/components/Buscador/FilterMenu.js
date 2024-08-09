@@ -6,10 +6,14 @@ import Slider from 'react-slider';
 import '@fortawesome/fontawesome-svg-core/styles.css'; // Import FontAwesome CSS
 import '../../../fontawesome'; // Import the configuration file
 import './filterStyles.css';
-import { set } from 'date-fns';
+import { FaHouseChimneyUser } from "react-icons/fa6";
+import { FaPhone } from "react-icons/fa6";
+import { CgMoreO } from "react-icons/cg";
+import MoreFilters from './MoreFilters.js';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const FilterMenu = ({ setFilters, currentPage, filters, data, setData, setCurrentPage, setTotalPages, setLoading, resetFiltersKey }) => {
-    const [alphabeticalOrder, setAlphabeticalOrder] = useState(null);
+    const [filterLocalizado, setFilterLocalizado] = useState(null);
     const [selectedZone, setSelectedZone] = useState(null);
     const [selectedResponsable, setSelectedResponsable] = useState(null);
     const [filterNoticia, setFilterNoticia] = useState(null);
@@ -18,6 +22,9 @@ const FilterMenu = ({ setFilters, currentPage, filters, data, setData, setCurren
     const [yearRange, setYearRange] = useState([1850, new Date().getFullYear()]);
     const [zones, setZones] = useState([]);
     const [responsables, setResponsables] = useState([]);
+    const [categorias, setCategorias] = useState([]);
+    const [selectedCategoria, setSelectedCategoria] = useState(null);
+    const [showMoreFilters, setShowMoreFilters] = useState(false);
 
 
     const handleChangeSuperficieRange = (values) => {
@@ -28,57 +35,50 @@ const FilterMenu = ({ setFilters, currentPage, filters, data, setData, setCurren
         setYearRange(values);
     };
 
-    const alphabeticalOrderOptions = [
-        {
-            value: 'asc',
-            label: (
-                <span className="text-black flex flex-row items-center gap-2 font-sans">
-                    {' '}
-                    <svg xmlns="http://www.w3.org/2000/svg" width="2.5em" height="2.5em" viewBox="0 0 24 24">
-                        <path
-                            fill="currentColor"
-                            d="M10.22 15.97L9 17.19V5c0-.41-.34-.75-.75-.75s-.75.34-.75.75v12.19l-1.22-1.22c-.29-.29-.77-.29-1.06 0s-.29.77 0 1.06l2.5 2.5a.78.78 0 0 0 .53.22a.78.78 0 0 0 .53-.22l2.5-2.5c.29-.29.29-.77 0-1.06s-.77-.29-1.06 0M14 11.21c.39.14.82-.06.96-.45l.28-.78h2.03l.28.78c.11.31.4.5.71.5c.08 0 .17-.01.25-.04a.75.75 0 0 0 .45-.96l-1.71-4.79c-.17-.43-.56-.71-1-.71s-.83.28-1 .73l-1.7 4.77c-.14.39.06.82.45.96Zm2.73-2.73h-.96l.48-1.34zm1.94 4.98c-.19-.44-.59-.71-1.05-.71h-3.11c-.41 0-.75.34-.75.75s.34.75.75.75h2.39l-2.83 2.95c-.34.36-.43.88-.24 1.34c.19.44.59.71 1.05.71h3.13c.41 0 .75-.34.75-.75s-.34-.75-.75-.75h-2.39l2.82-2.93c.34-.36.44-.89.24-1.35Z"
-                        />
-                    </svg>
-                    Descendente
-                </span>
-            ),
-        },
-        {
-            value: 'desc',
-            label: (
-                <span className="text-black flex flex-row items-center gap-2 font-sans">
-                    {' '}
-                    <svg xmlns="http://www.w3.org/2000/svg" width="2.5em" height="2.5em" viewBox="0 0 24 24">
-                        <path
-                            fill="currentColor"
-                            d="M8.78 4.47a.8.8 0 0 0-.24-.16a.7.7 0 0 0-.57 0c-.09.04-.17.09-.24.16l-2.5 2.5c-.29.29-.29.77 0 1.06s.77.29 1.06 0l1.22-1.22V19c0 .41.34.75.75.75s.75-.34.75-.75V6.81l1.22 1.22c.15.15.34.22.53.22s.38-.07.53-.22c.29-.29.29-.77 0-1.06l-2.5-2.5Zm10.18 13.78l-1.71-4.79c-.17-.43-.56-.71-1-.71s-.83.28-1 .73l-1.7 4.77a.75.75 0 1 0 1.41.51l.28-.78h2.03l.28.78c.11.31.4.5.71.5c.08 0 .17-.01.25-.04a.75.75 0 0 0 .45-.96Zm-3.19-1.77l.48-1.34l.48 1.34zm-1.94-5.94c.19.44.59.71 1.05.71h3.13c.41 0 .75-.34.75-.75s-.34-.75-.75-.75h-2.39l2.82-2.93c.34-.36.44-.89.24-1.35c-.19-.44-.59-.71-1.05-.71h-3.11c-.41 0-.75.34-.75.75s.34.75.75.75h2.39l-2.83 2.95c-.34.36-.43.88-.24 1.34Z"
-                        />
-                    </svg>
-                    Ascendente
-                </span>
-            ),
-        },
-    ];
+    const superficieOptions = Array.from({ length: 2001 }, (_, i) => ({ value: i, label: `${i} m²` }));
 
     const filterOptionsNoticia = [
-        { value: '1', label: 'Con noticias' },
-        { value: '0', label: 'Sin noticias' },
+        { value: true, label: 'Con noticias' },
+        { value: false, label: 'Sin noticias' },
     ];
     const filterOptionsEncargo = [
-        { value: '1', label: 'Con encargos' },
-        { value: '0', label: 'Sin encargos' },
+        { value: true, label: 'Con encargos' },
+        { value: false, label: 'Sin encargos' },
     ];
+    const filterLocalizadoOptions = [
+        { value: true, label: 'Localizado' },
+        { value: false, label: 'Sin localizar' },
+    ];
+
+    useEffect(() => {
+        console.log('Filters:', {
+            selectedZone: selectedZone?.value || '',
+            selectedResponsable: selectedResponsable?.value || '',
+            selectedCategoria: selectedCategoria?.value || '',
+            filterNoticia,
+            filterEncargo,
+            superficieMin: superficieRange[0],
+            superficieMax: superficieRange[1],
+            yearMin: yearRange[0],
+            yearMax: yearRange[1],
+            localizado: filterLocalizado,
+        });
+    }, [filterLocalizado, selectedZone, selectedResponsable, selectedCategoria, filterNoticia, filterEncargo, superficieRange, yearRange]);
+
 
     const zoneOptions = zones.map((zone) => ({ value: zone, label: zone }));
     const responsableOptions = responsables.map((responsable) => ({ value: responsable.nombre_completo, label: responsable.nombre_completo }));
+    const categoriaOptions = categorias.map((categoria) => ({ value: categoria, label: categoria }));
+    console.log('categoriaOptions', categoriaOptions);
 
     // Fetch zones and responsables
     const fetchOptions = async () => {
         try {
             const { data, error } = await supabase.rpc('fetchdatafiltermenu');
+            console.log('data', data); // Debugging line
             setZones(data.zones);
             setResponsables(data.responsables);
+            setCategorias(data.categorias);
 
             if (error) {
                 throw new Error(error.message);
@@ -95,27 +95,30 @@ const FilterMenu = ({ setFilters, currentPage, filters, data, setData, setCurren
 
     useEffect(() => {
         setFilters({
-            alphabeticalOrder: alphabeticalOrder,
             selectedZone: selectedZone?.value || '',
             selectedResponsable: selectedResponsable?.value || '',
-            filterNoticia: filterNoticia !== null ? filterNoticia : '',
-            filterEncargo: filterEncargo !== null ? filterEncargo : '',
+            selectedCategoria: selectedCategoria?.value || '',
+            filterNoticia: filterNoticia !== null ? filterNoticia : null,
+            filterEncargo: filterEncargo !== null ? filterEncargo : null,
             superficieMin: superficieRange[0],
             superficieMax: superficieRange[1],
             yearMin: yearRange[0],
             yearMax: yearRange[1],
+            localizado: filterLocalizado,
         });
-    }, [alphabeticalOrder, selectedZone, selectedResponsable, filterNoticia, filterEncargo, superficieRange, yearRange, setFilters]);
+    }, [filterLocalizado, selectedZone, selectedResponsable, selectedCategoria, filterNoticia, filterEncargo, superficieRange, yearRange, setFilters]);
 
     const resetFilters = () => {
-        setAlphabeticalOrder(null);
-        setSelectedZone(null);
-        setSelectedResponsable(null);
-        setFilterNoticia(null);
-        setFilterEncargo(null);
-        setSuperficieRange([0, 1000]);
-        setYearRange([1900, new Date().getFullYear()]);
+        setFilterLocalizado(null);
+        setSelectedZone('');
+        setSelectedResponsable('');
+        setSelectedCategoria(null);
+        setFilterNoticia(null); // Assuming the default is false
+        setFilterEncargo(null); // Assuming the default is false
+        setSuperficieRange([0, 2000000]);
+        setYearRange([1800, new Date().getFullYear()]);
     };
+
 
     useEffect(() => {
         resetFilters();
@@ -130,27 +133,52 @@ const FilterMenu = ({ setFilters, currentPage, filters, data, setData, setCurren
     const handleFilterEncargoChange = (selectedOption) => {
         setFilterEncargo(selectedOption ? selectedOption.value : null);
     };
+    const handleFilterLocalizadoChange = (selectedOption) => {
+        setFilterLocalizado(selectedOption ? selectedOption.value : null);
+    };
 
     return (
-        <div className="flex flex-col gap-4 p-4">
-            {/* Alphabetical Order Select */}
-            <div className="flex flex-row gap-2 w-full items-center justify-center orderbyanimation z-[990]">
+        <div className="flex flex-col gap-4 p-2">
+            <div className='flex flex-row items-start justify-end cursor-pointer -mt-8' onClick={() => setShowMoreFilters(!showMoreFilters)}>
+                <CgMoreO className='text-2xl text-black' onClick={() => setShowMoreFilters(!showMoreFilters)} />
+            </div>
+            <AnimatePresence>
+                {showMoreFilters && (
+                    <motion.div
+                        key="moreFilters"
+                        initial={{ opacity: 0, y: -100 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -80 }}
+                        transition={{ duration: 0.4 }}
+                    >
+                        <MoreFilters filters={filters} setFilters={setFilters} resetFiltersKey={resetFiltersKey} />
+                    </motion.div>
+                )}
+            </AnimatePresence>            <div className="flex flex-row gap-2 w-full items-center justify-center orderbyanimation z-[990]">
                 <Select
-                    options={alphabeticalOrderOptions}
-                    onChange={(option) => setAlphabeticalOrder(option?.value || null)}
-                    value={alphabeticalOrderOptions.find((option) => option.value === alphabeticalOrder) || null}
-                    className="w-1/2 z-[999]"
+                    options={filterLocalizadoOptions}
+                    onChange={handleFilterLocalizadoChange}
+                    value={filterLocalizadoOptions.find((option) => option.value === filterLocalizado) || null}
+                    className="w-full z-[999]"
                     placeholder={
-                        <span className="flex items-center gap-2 text-black">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="1.25em" height="1.25em" viewBox="0 0 24 24">
-                                <path
-                                    fill="currentColor"
-                                    d="m8 2l-.707-.707L8 .586l.707.707zm1 15a1 1 0 1 1-2 0zM2.293 6.293l5-5l1.414 1.414l-5 5zm6.414-5l5 5l-1.414 1.414l-5-5zM9 2v15H7V2zm7 20l-.707.707l.707.707l.707-.707zm1-15a1 1 0 1 0-2 0zm-6.707 10.707l5 5l1.414-1.414l-5-5zm6.414 5l5-5l-1.414-1.414l-5 5zM17 22V7h-2v15z"
-                                ></path>
-                            </svg>
-                            Ordenar por
+                        <span className="flex flex-row justify-start items-center gap-3 text-black">
+                            <FaPhone className='text-xl' />
+                            Localizado
                         </span>
                     }
+                />
+
+                <Select
+                    options={categoriaOptions}
+                    onChange={setSelectedCategoria}
+                    value={selectedCategoria}
+                    placeholder={
+                        <span className="flex flex-row justify-start items-center gap-3 text-black">
+                            <FaHouseChimneyUser className="text-2xl" />
+                            Categoría
+                        </span>
+                    }
+                    className="rightanimation1 w-full"
                 />
             </div>
 
@@ -161,7 +189,7 @@ const FilterMenu = ({ setFilters, currentPage, filters, data, setData, setCurren
                     onChange={setSelectedZone}
                     value={selectedZone}
                     placeholder={
-                        <span className="flex flex-row justify-center items-center gap-3 text-black">
+                        <span className="flex flex-row justify-start items-center gap-3 text-black">
                             <svg xmlns="http://www.w3.org/2000/svg" width="1.5em" height="1.5em" viewBox="0 0 24 24">
                                 <path fill="currentColor" d="m12 17l1-2V9.858c1.721-.447 3-2 3-3.858c0-2.206-1.794-4-4-4S8 3.794 8 6c0 1.858 1.279 3.411 3 3.858V15zM10 6c0-1.103.897-2 2-2s2 .897 2 2s-.897 2-2 2s-2-.897-2-2" />
                                 <path
@@ -181,7 +209,7 @@ const FilterMenu = ({ setFilters, currentPage, filters, data, setData, setCurren
                     onChange={setSelectedResponsable}
                     value={selectedResponsable}
                     placeholder={
-                        <span className="flex flex-row justify-center items-center gap-3 text-black">
+                        <span className="flex flex-row justify-start items-center gap-3 text-black">
                             <svg xmlns="http://www.w3.org/2000/svg" width="1.75em" height="1.75em" viewBox="0 0 48 48">
                                 <g fill="none">
                                     <path d="M0 0h48v48H0z" />
@@ -206,7 +234,7 @@ const FilterMenu = ({ setFilters, currentPage, filters, data, setData, setCurren
                     onChange={handleFilterNoticiaChange}
                     value={filterOptionsNoticia.find((option) => option.value === filterNoticia) || null}
                     placeholder={
-                        <span className="flex flex-row justify-center items-center gap-3 text-black">
+                        <span className="flex flex-row justify-start items-center gap-3 text-black">
                             <svg xmlns="http://www.w3.org/2000/svg" width="1.75em" height="1.75em" viewBox="0 0 24 24">
                                 <path
                                     fill="currentColor"
@@ -225,7 +253,7 @@ const FilterMenu = ({ setFilters, currentPage, filters, data, setData, setCurren
                     onChange={handleFilterEncargoChange}
                     value={filterOptionsEncargo.find((option) => option.value === filterEncargo) || null}
                     placeholder={
-                        <span className="flex flex-row justify-center items-center gap-3 text-black">
+                        <span className="flex flex-row justify-start items-center gap-3 text-black">
                             <svg xmlns="http://www.w3.org/2000/svg" width="1.75em" height="1.75em" viewBox="0 0 20 20">
                                 <path
                                     fill="currentColor"
@@ -239,23 +267,30 @@ const FilterMenu = ({ setFilters, currentPage, filters, data, setData, setCurren
                 />
             </div>
             {/* Superficie Range */}
-            <div className="slideranimation1 flex flex-col py-3 px-4 w-full justify-center items-center bg-white border border-gray-300 rounded-lg shadow-md">
+            <div className="slideranimation1 flex flex-col py-3 px-4 w-full justify-center items-center bg-white border border-gray-300 rounded-lg shadow-md z-[960]">
                 <h2 className="font-sans text-gray-700 text-center">Superfície</h2>
                 <div className="flex flex-row gap-8 justify-center mb-2 text-gray-700">
                     <span>Min: {superficieRange[0]} m²</span>
                     <span>Max: {superficieRange[1]} m²</span>
                 </div>
-                <Slider
-                    min={0}
-                    max={2000}
-                    step={1}
-                    value={superficieRange}
-                    onChange={handleChangeSuperficieRange}
-                    className="relative flex items-center w-full h-6"
-                    trackClassName="absolute bg-blue-200 h-1 rounded"
-                    thumbClassName="relative block w-6 h-6 bg-blue-500 rounded-full cursor-pointer"
-                    ariaLabel={['Min value', 'Max value']}
-                />
+                <div className="flex flex-row gap-4 w-full">
+                    <Select
+                        options={superficieOptions}
+                        value={superficieOptions.find(option => option.value === superficieRange[0])}
+                        onChange={(selectedOption) => handleChangeSuperficieRange([selectedOption.value, superficieRange[1]])}
+                        className="w-full"
+                        placeholder="Min Superfície"
+                        isSearchable
+                    />
+                    <Select
+                        options={superficieOptions}
+                        value={superficieOptions.find(option => option.value === superficieRange[1])}
+                        onChange={(selectedOption) => handleChangeSuperficieRange([superficieRange[0], selectedOption.value])}
+                        className="w-full"
+                        placeholder="Max Superfície"
+                        isSearchable
+                    />
+                </div>
             </div>
 
             {/* Year Range */}
@@ -273,7 +308,7 @@ const FilterMenu = ({ setFilters, currentPage, filters, data, setData, setCurren
                     step={1}
                     value={yearRange}
                     onChange={handleChangeYearRange}
-                    className="relative flex items-center w-full h-6"
+                    className="relative flex items-center w-full h-6 z-[900]"
                     trackClassName="absolute bg-blue-200 h-1 rounded"
                     thumbClassName="relative block w-6 h-6 bg-blue-500 rounded-full cursor-pointer"
                     ariaLabel={['Start Year', 'End Year']}

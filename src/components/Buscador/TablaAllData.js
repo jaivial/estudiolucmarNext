@@ -8,6 +8,8 @@ import './stylesBuscador.css';
 import axios from 'axios';
 import { fetchAllData } from '../../lib/supabase/buscador/functionsBuscador.js';
 import FilterMenu from './FilterMenu.js';
+import { IoAnalytics } from "react-icons/io5";
+import Analytics from './Analytics.js';
 
 
 
@@ -50,35 +52,91 @@ const Table = () => {
     const [showEditTable, setShowEditTable] = useState(false);
     const [showAnimation, setShowAnimation] = useState(showEditTable);
     const [filters, setFilters] = useState({
-        alphabeticalOrder: 'none',
         selectedZone: '',
+        selectedCategoria: '',
         selectedResponsable: '',
-        filterNoticia: '',
-        filterEncargo: '',
+        filterNoticia: null,
+        filterEncargo: null,
         superficieMin: 0,
-        superficieMax: 1000,
-        yearMin: 1850,
+        superficieMax: 2000000,
+        yearMin: 1800,
         yearMax: new Date().getFullYear(),
+        localizado: null,
+        garaje: null,
+        aireacondicionado: null,
+        ascensor: null,
+        trastero: null,
+        jardin: null,
+        terraza: null,
+        tipo: null,
+        banos: null,
+        habitaciones: null,
     });
     const [showFilters, setShowFilters] = useState(false);
     const [resetFiltersKey, setResetFiltersKey] = useState(0);
-
+    const [totalItems, setTotalItems] = useState(0);
+    const [showAnalytics, setShowAnalytics] = useState(false);
+    const [analyticsData, setAnalyticsData] = useState([]);
 
 
     // useEffect(() => {
     //     fetchParentsAndChilds();
     // }, []);
 
-
     const fetchData = async () => {
         try {
-            const { selectedZone, selectedResponsable } = filters;
-            console.log('selectedZone', selectedZone);
-            console.log('selectedResponsable', selectedResponsable);
-            const response = await fetchAllData(currentPage, searchTerm, 6, selectedZone, selectedResponsable);
+            const {
+                selectedZone,
+                selectedResponsable,
+                selectedCategoria,
+                filterNoticia,
+                filterEncargo,
+                superficieMin,
+                superficieMax,
+                yearMin,
+                yearMax,
+                localizado,
+                habitaciones,
+                banos,
+                tipo,
+                aireacondicionado,
+                ascensor,
+                garaje,
+                jardin,
+                terraza,
+                trastero
+            } = filters;
+
+
+            const response = await fetchAllData(
+                currentPage,
+                searchTerm,
+                6,
+                selectedZone,
+                selectedResponsable,
+                selectedCategoria,
+                filterNoticia,
+                filterEncargo,
+                superficieMin,
+                superficieMax,
+                yearMin,
+                yearMax,
+                localizado,
+                habitaciones,
+                banos,
+                tipo,
+                aireacondicionado,
+                ascensor,
+                garaje,
+                jardin,
+                terraza,
+                trastero
+            );
+
             setData(response.mergedData || []);
             setTotalPages(response.totalPages || 1);
-            console.log('RESULT HERE', response.mergedData);
+            setTotalItems(response.total || 0);
+            setAnalyticsData(response.analyticsData || []);
             setLoading(false);
         } catch (error) {
             console.error('Error fetching data:', error);
@@ -86,10 +144,39 @@ const Table = () => {
         }
     };
 
-
     useEffect(() => {
-        fetchData(currentPage, searchTerm);
-    }, [currentPage, searchTerm, filters.selectedResponsable, filters.selectedZone]);
+        const fetchAndSetData = async () => {
+            await fetchData();
+            if (currentPage > totalPages) {
+                setCurrentPage(totalPages > 0 ? totalPages : 1); // Ensure currentPage is set to a valid page number
+            }
+        };
+
+        fetchAndSetData();
+    }, [
+        currentPage,
+        searchTerm,
+        filters.selectedZone,
+        filters.selectedResponsable,
+        filters.selectedCategoria,
+        filters.filterNoticia,
+        filters.filterEncargo,
+        filters.superficieMin,
+        filters.superficieMax,
+        filters.yearMin,
+        filters.yearMax,
+        filters.localizado,
+        filters.habitaciones,        // Added habitaciones filter
+        filters.banos,               // Added banos filter
+        filters.tipo,                // Added tipo filter
+        filters.aireacondicionado,   // Added aireacondicionado filter
+        filters.ascensor,            // Added ascensor filter
+        filters.garaje,              // Added garaje filter
+        filters.jardin,              // Added jardin filter
+        filters.terraza,             // Added terraza filter
+        filters.trastero             // Added trastero filter
+    ]);
+
 
     const handlePrevious = () => {
         if (currentPage > 1) {
@@ -694,35 +781,43 @@ const Table = () => {
     const handleEditTable = () => {
         setShowEditTable(!showEditTable); // Toggle the state
         if (showFilters) setShowFilters(false);
+        if (showAnalytics) setShowAnalytics(false);
     };
     // Handle toggling the filters
     const handleShowFilters = () => {
         setShowFilters(!showFilters); // Toggle the <state></state>
         if (showEditTable) setShowEditTable(false);
-        setFilters({
-            alphabeticalOrder: 'none',
-            selectedZone: '',
-            selectedResponsable: '',
-            filterNoticia: '',
-            filterEncargo: '',
-            superficieMin: 0,
-            superficieMax: 1000,
-            yearMin: 1900,
-            yearMax: new Date().getFullYear(),
-        });
+        if (showAnalytics) setShowAnalytics(false);
+    };
+
+    const handleShowAnalytics = () => {
+        setShowAnalytics(!showAnalytics);
+        if (showFilters) setShowFilters(false);
+        if (showEditTable) setShowEditTable(false);
     };
     const handleResetFilters = () => {
         setResetFiltersKey(resetFiltersKey + 1);
         setFilters({
-            alphabeticalOrder: 'none',
             selectedZone: '',
+            selectedCategoria: '',
             selectedResponsable: '',
-            filterNoticia: '',
-            filterEncargo: '',
+            filterNoticia: null,
+            filterEncargo: null,
             superficieMin: 0,
-            superficieMax: 1000,
-            yearMin: 1900,
+            superficieMax: 200000,
+            yearMin: 1800,
             yearMax: new Date().getFullYear(),
+            localizado: null,
+            garaje: null,
+            aireacondicionado: null,
+            ascensor: null,
+            trastero: null,
+            jardin: null,
+            terraza: null,
+            tipo: null,
+            banos: null,
+            habitaciones: null,
+
         });
     };
 
@@ -975,8 +1070,16 @@ const Table = () => {
                                 </button>
                             </div>
                         </div>
+                        <div className={`flex flex-row gap-4 pt-2 pb-2 w-fit justify-between ${showEditTable ? 'edittablecontainertrue' : 'edittablecontainerfalse'}`}>
+                            <div className="flex flex-row gap-4 justify-end items-end w-full">
+                                <button type="button" onClick={handleShowAnalytics} className={`flex items-center justify-center p-2 rounded-lg shadow-xl hover:bg-blue-950 hover:text-white w-fit ${showExtraButtons ? 'bg-blue-950 text-white' : 'bg-blue-300 text-black'}`}>
+                                    <IoAnalytics className='h-[2em] w-[2em]' />
+                                </button>
+                            </div>
+                        </div>
                     </div>
-                    {showFilters && <FilterMenu setFilters={setFilters} currentPage={currentPage} filters={filters} data={data} setData={setData} setCurrentPage={setCurrentPage} setTotalPages={setTotalPages} setLoading={setLoading} resetFiltersKey={resetFiltersKey} />}
+                    {showAnalytics && <Analytics analyticsData={analyticsData} />}
+                    {showFilters && <FilterMenu setFilters={setFilters} currentPage={currentPage} data={data} setData={setData} filters={filters} setCurrentPage={setCurrentPage} setTotalPages={setTotalPages} setLoading={setLoading} resetFiltersKey={resetFiltersKey} />}
                     {showEditTable && (
                         <div className={`flex flex-row gap-4 pt-2 pb-2 w-full justify-between iconscontainertrue`}>
                             <div className="flex flex-row gap-4">
@@ -1056,7 +1159,12 @@ const Table = () => {
                             </button>
                         </div>
                     )}
-                    <div className="flex flex-col gap-2">
+                    <div className="flex flex-col gap-2 pt-3">
+                        <div>
+                            <p className="text-center font-sans text-lg text-slate-800">
+                                <strong>Total de inmuebles: <br /> {totalItems}</strong>
+                            </p>
+                        </div>
                         <div className="tableheader relative px-2 py-1 mt-2 rounded-xl shadow-xl flex items-center flex-row w-full bg-blue-950">
                             <div className="true flex flex-row justify-between w-full">
                                 <div className="flex flex-row justify-start items-center gap-1 w-[80%] py-2 text-white">
