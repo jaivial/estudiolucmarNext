@@ -8,6 +8,9 @@ import '../../../fontawesome'; // Import the configuration file
 import './filterStyles.css';
 import { FaHouseChimneyUser } from "react-icons/fa6";
 import { FaPhone } from "react-icons/fa6";
+import { CgMoreO } from "react-icons/cg";
+import MoreFilters from './MoreFilters.js';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const FilterMenu = ({ setFilters, currentPage, filters, data, setData, setCurrentPage, setTotalPages, setLoading, resetFiltersKey }) => {
     const [filterLocalizado, setFilterLocalizado] = useState(null);
@@ -21,6 +24,7 @@ const FilterMenu = ({ setFilters, currentPage, filters, data, setData, setCurren
     const [responsables, setResponsables] = useState([]);
     const [categorias, setCategorias] = useState([]);
     const [selectedCategoria, setSelectedCategoria] = useState(null);
+    const [showMoreFilters, setShowMoreFilters] = useState(false);
 
 
     const handleChangeSuperficieRange = (values) => {
@@ -135,8 +139,22 @@ const FilterMenu = ({ setFilters, currentPage, filters, data, setData, setCurren
 
     return (
         <div className="flex flex-col gap-4 p-2">
-            {/* Alphabetical Order Select */}
-            <div className="flex flex-row gap-2 w-full items-center justify-center orderbyanimation z-[990]">
+            <div className='flex flex-row items-start justify-end cursor-pointer -mt-8' onClick={() => setShowMoreFilters(!showMoreFilters)}>
+                <CgMoreO className='text-2xl text-black' onClick={() => setShowMoreFilters(!showMoreFilters)} />
+            </div>
+            <AnimatePresence>
+                {showMoreFilters && (
+                    <motion.div
+                        key="moreFilters"
+                        initial={{ opacity: 0, y: -100 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -80 }}
+                        transition={{ duration: 0.4 }}
+                    >
+                        <MoreFilters filters={filters} setFilters={setFilters} />
+                    </motion.div>
+                )}
+            </AnimatePresence>            <div className="flex flex-row gap-2 w-full items-center justify-center orderbyanimation z-[990]">
                 <Select
                     options={filterLocalizadoOptions}
                     onChange={handleFilterLocalizadoChange}
