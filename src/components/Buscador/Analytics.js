@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
 import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer, BarChart, Bar, XAxis, YAxis } from 'recharts';
+import ZonesChart from './Graphs/ZonesChart.js';
 
 const Analytics = ({ analyticsData }) => {
     // Safely extract data using optional chaining and provide default values if data is undefined
@@ -21,11 +22,6 @@ const Analytics = ({ analyticsData }) => {
         scaledCount: item.count > 0 ? Math.log10(item.count) : 0, // Apply log10 to count values
     }));
 
-    useEffect(() => {
-        console.log('barChartData', barChartData);
-        console.log('chartData', chartData);
-        console.log('totalItems', totalItems);
-    }, [barChartData, chartData, totalItems]);
 
     const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#FF6384', '#36A2EB', '#FFCE56'];
     const COLORSBARCHART = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042'];
@@ -104,56 +100,61 @@ const Analytics = ({ analyticsData }) => {
 
     return (
         <div className='flex flex-col gap-4 justify-center items-center'>
-            <div className="flex flex-col gap-1 justify-center items-center bg-slate-100 rounded-xl p-4 shadow-lg w-full h-80 pt-5">
+            <div className="flex flex-col gap-1 justify-center items-center bg-slate-100 rounded-xl p-4 shadow-lg w-full h-auto pt-5">
                 <h2 className="text-center text-xl font-bold">Distribución de Categorías</h2>
-                <ResponsiveContainer>
-                    {isBarChartDataAvailable ? (
-                        <BarChart data={barChartData} margin={{ top: 20, right: 0, left: 0, bottom: 5 }}>
-                            <XAxis dataKey="name" tick={{ fontSize: 13 }} />
-                            <Tooltip content={<CustomTooltip />} />
-                            <Bar dataKey="scaledCount" fill="#8884d8" label={renderCustomBarLabel}>
-                                {barChartData.map((entry, index) => (
-                                    <Cell key={`cell-${index}`} fill={COLORSBARCHART[index % COLORSBARCHART.length]} />
-                                ))}
-                            </Bar>
-                        </BarChart>
-                    ) : (
-                        <div className="flex justify-center items-center w-full h-full">
-                            <p className="text-center text-lg font-medium text-gray-700">No hay datos disponibles</p>
-                        </div>
-                    )}
-                </ResponsiveContainer>
+                <div className='h-40 w-full'>
+                    <ResponsiveContainer>
+                        {isBarChartDataAvailable ? (
+                            <BarChart data={barChartData} margin={{ top: 20, right: 0, left: 0, bottom: 5 }}>
+                                <XAxis dataKey="name" tick={{ fontSize: 13 }} />
+                                <Tooltip content={<CustomTooltip />} />
+                                <Bar dataKey="scaledCount" fill="#8884d8" label={renderCustomBarLabel}>
+                                    {barChartData.map((entry, index) => (
+                                        <Cell key={`cell-${index}`} fill={COLORSBARCHART[index % COLORSBARCHART.length]} />
+                                    ))}
+                                </Bar>
+                            </BarChart>
+                        ) : (
+                            <div className="flex justify-center items-center w-full h-full">
+                                <p className="text-center text-lg font-medium text-gray-700">No hay datos disponibles</p>
+                            </div>
+                        )}
+                    </ResponsiveContainer>
+                </div>
             </div>
 
-            <div className="flex flex-col gap-1 justify-center items-center bg-slate-100 rounded-xl p-4 shadow-lg w-full h-80">
+            <div className="flex flex-col gap-1 justify-center items-center bg-slate-100 rounded-xl p-4 shadow-lg w-full h-auto">
                 <h2 className="text-center text-xl font-bold">Inmuebles asignados <br /> a asesores</h2>
-                <ResponsiveContainer>
-                    {isPieChartDataAvailable ? (
-                        <PieChart>
-                            <Pie
-                                data={chartData}
-                                dataKey="value"
-                                nameKey="name"
-                                cx="50%"
-                                cy="50%"
-                                outerRadius={70}
-                                fill="#8884d8"
-                                label={renderCustomLabel}
-                            >
-                                {chartData.map((entry, index) => (
-                                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                                ))}
-                            </Pie>
-                            <Tooltip formatter={(value) => `${value.toFixed(2)}%`} />
-                            <Legend content={renderLegend} />
-                        </PieChart>
-                    ) : (
-                        <div className="flex justify-center items-center w-full h-full">
-                            <p className="text-center text-lg font-medium text-gray-700">No hay datos disponibles</p>
-                        </div>
-                    )}
-                </ResponsiveContainer>
+                <div className='h-40 w-full'>
+                    <ResponsiveContainer>
+                        {isPieChartDataAvailable ? (
+                            <PieChart>
+                                <Pie
+                                    data={chartData}
+                                    dataKey="value"
+                                    nameKey="name"
+                                    cx="50%"
+                                    cy="50%"
+                                    outerRadius={50}
+                                    fill="#8884d8"
+                                    label={renderCustomLabel}
+                                >
+                                    {chartData.map((entry, index) => (
+                                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                                    ))}
+                                </Pie>
+                                <Tooltip formatter={(value) => `${value.toFixed(2)}%`} />
+                                <Legend content={renderLegend} />
+                            </PieChart>
+                        ) : (
+                            <div className="flex justify-center items-center w-full h-full">
+                                <p className="text-center text-lg font-medium text-gray-700">No hay datos disponibles</p>
+                            </div>
+                        )}
+                    </ResponsiveContainer>
+                </div>
             </div>
+            <ZonesChart analyticsData={analyticsData} />
         </div>
     );
 };

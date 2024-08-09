@@ -107,7 +107,6 @@ const Table = () => {
                 trastero
             } = filters;
 
-            console.log('Filters being sent:', filters); // Debug line to log all filters being sent
 
             const response = await fetchAllData(
                 currentPage,

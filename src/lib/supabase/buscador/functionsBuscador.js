@@ -30,8 +30,6 @@ export const fetchAllData = async (page,
         if (categoria == 'Sin información') {
             categoria = NULL;
         }
-        console.log('Fetching data with params:', { page, term, itemsPerPage, zone, responsable, categoria, filternoticia, filterencargo, superficiemin, superficiemax, yearmin, yearmax, localizado });
-
         const { data: searchData, error: searchError } = await supabase
             .rpc('search_in_nested_inmuebles', {
                 pattern,
@@ -71,9 +69,11 @@ export const fetchAllData = async (page,
         let analyticsData = [];
         const responsablescount = searchData[0].responsables_count;
         const categoriascount = searchData[0].categorias_count;
+        const zonascount = searchData[0].zonas_count;
         analyticsData.push({ name: 'Responsables', value: responsablescount });
         analyticsData.push({ name: 'Total', value: total });
         analyticsData.push({ name: 'Categorias', value: categoriascount });
+        analyticsData.push({ name: 'Zonas', value: zonascount });
         console.log('analyticsData', analyticsData); // Debugging line to log the analytics data
 
 
