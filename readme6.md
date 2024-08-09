@@ -1,6 +1,15 @@
 -- Active: 1722636257008@@aws-0-eu-central-1.pooler.supabase.com@5432@postgres@u212050690_estudiolucmar
 DROP FUNCTION search_in_nested_inmuebles;
-CREATE OR REPLACE FUNCTION u212050690_estudiolucmar.search_in_nested_inmuebles(pattern text, page integer, itemsperpage integer DEFAULT 6, zone text DEFAULT ''::text, responsable_filter text DEFAULT ''::text, categoria_filter text DEFAULT ''::text, filternoticia boolean DEFAULT NULL::boolean, filterencargo boolean DEFAULT NULL::boolean, superficiemin integer DEFAULT 0, superficiemax integer DEFAULT 10000, yearmin integer DEFAULT 1850, yearmax integer DEFAULT EXTRACT(year FROM CURRENT_DATE), localizado_filter boolean DEFAULT NULL::boolean)
+
+CREATE OR REPLACE FUNCTION u212050690_estudiolucmar.search_in_nested_inmuebles(pattern text, page integer, itemsperpage integer DEFAULT 6, zone text DEFAULT ''::text, responsable_filter text DEFAULT ''::text, categoria_filter text DEFAULT ''::text, filternoticia boolean DEFAULT NULL::boolean, filterencargo boolean DEFAULT NULL::boolean, superficiemin integer DEFAULT 0, superficiemax integer DEFAULT 10000, yearmin integer DEFAULT 1850, yearmax integer DEFAULT EXTRACT(year FROM CURRENT_DATE), localizado_filter boolean DEFAULT NULL::boolean, habitaciones_filter integer DEFAULT NULL,
+    banos_filter integer DEFAULT NULL,
+    tipo_filter integer DEFAULT NULL,
+    aireacondicionado_filter boolean DEFAULT NULL,
+    ascensor_filter boolean DEFAULT NULL,
+    garaje_filter boolean DEFAULT NULL,
+    jardin_filter boolean DEFAULT NULL,
+    terraza_filter boolean DEFAULT NULL,
+    trastero_filter boolean DEFAULT NULL)
  RETURNS TABLE(id bigint, direccion text, tipo text, uso text, superficie text, ano_construccion text, categoria text, potencialadquisicion text, noticiastate boolean, responsable text, encargostate boolean, coordinates jsonb, zona text, date_time timestamp with time zone, inmuebleimages text, location text, habitaciones integer, garaje boolean, descripcion text, ascensor boolean, banyos integer, trastero boolean, jardin boolean, terraza boolean, aireacondicionado boolean, tipoagrupacion bigint, localizado boolean, nestedescaleras jsonb, nestedinmuebles jsonb, total_count bigint)
  LANGUAGE plpgsql
 AS $function$
@@ -88,6 +97,15 @@ BEGIN
                                   AND ((filterencargo IS TRUE AND nested_ni->>'encargostate' = 'true') OR (filterencargo IS FALSE AND nested_ni->>'encargostate' = 'false'))
                                   AND (nested_ni->>'superficie')::int BETWEEN superficiemin AND superficiemax
                                   AND (nested_ni->>'ano_construccion')::int BETWEEN yearmin AND yearmax
+                                   AND (habitaciones_filter IS NULL OR (nested_ni->>'habitaciones')::int = habitaciones_filter)
+                                  AND (banos_filter IS NULL OR (nested_ni->>'banyos')::int = banos_filter)
+                                  AND (tipo_filter IS NULL OR (nested_ni->>'tipo')::int = tipo_filter)
+                                  AND (aireacondicionado_filter IS NULL OR (nested_ni->>'aireacondicionado')::boolean = aireacondicionado_filter)
+                                  AND (ascensor_filter IS NULL OR (nested_ni->>'ascensor')::boolean = ascensor_filter)
+                                  AND (garaje_filter IS NULL OR (nested_ni->>'garaje')::boolean = garaje_filter)
+                                  AND (jardin_filter IS NULL OR (nested_ni->>'jardin')::boolean = jardin_filter)
+                                  AND (terraza_filter IS NULL OR (nested_ni->>'terraza')::boolean = terraza_filter)
+                                  AND (trastero_filter IS NULL OR (nested_ni->>'trastero')::boolean = trastero_filter)
                             )
                         )
                     )
@@ -103,6 +121,15 @@ BEGIN
 
                           AND (nested_ni->>'superficie')::int BETWEEN superficiemin AND superficiemax
                           AND (nested_ni->>'ano_construccion')::int BETWEEN yearmin AND yearmax
+                           AND (habitaciones_filter IS NULL OR (nested_ni->>'habitaciones')::int = habitaciones_filter)
+                                  AND (banos_filter IS NULL OR (nested_ni->>'banyos')::int = banos_filter)
+                                  AND (tipo_filter IS NULL OR (nested_ni->>'tipo')::int = tipo_filter)
+                                  AND (aireacondicionado_filter IS NULL OR (nested_ni->>'aireacondicionado')::boolean = aireacondicionado_filter)
+                                  AND (ascensor_filter IS NULL OR (nested_ni->>'ascensor')::boolean = ascensor_filter)
+                                  AND (garaje_filter IS NULL OR (nested_ni->>'garaje')::boolean = garaje_filter)
+                                  AND (jardin_filter IS NULL OR (nested_ni->>'jardin')::boolean = jardin_filter)
+                                  AND (terraza_filter IS NULL OR (nested_ni->>'terraza')::boolean = terraza_filter)
+                                  AND (trastero_filter IS NULL OR (nested_ni->>'trastero')::boolean = trastero_filter)
                     )
                 )
             END AS nestedescaleras,
@@ -121,6 +148,15 @@ BEGIN
 
                       AND (nested_ni->>'superficie')::int BETWEEN superficiemin AND superficiemax
                       AND (nested_ni->>'ano_construccion')::int BETWEEN yearmin AND yearmax
+                       AND (habitaciones_filter IS NULL OR (nested_ni->>'habitaciones')::int = habitaciones_filter)
+                                  AND (banos_filter IS NULL OR (nested_ni->>'banyos')::int = banos_filter)
+                                  AND (tipo_filter IS NULL OR (nested_ni->>'tipo')::int = tipo_filter)
+                                  AND (aireacondicionado_filter IS NULL OR (nested_ni->>'aireacondicionado')::boolean = aireacondicionado_filter)
+                                  AND (ascensor_filter IS NULL OR (nested_ni->>'ascensor')::boolean = ascensor_filter)
+                                  AND (garaje_filter IS NULL OR (nested_ni->>'garaje')::boolean = garaje_filter)
+                                  AND (jardin_filter IS NULL OR (nested_ni->>'jardin')::boolean = jardin_filter)
+                                  AND (terraza_filter IS NULL OR (nested_ni->>'terraza')::boolean = terraza_filter)
+                                  AND (trastero_filter IS NULL OR (nested_ni->>'trastero')::boolean = trastero_filter)
                 )
             END AS nestedinmuebles,
             COUNT(*) OVER () AS total_count
@@ -137,6 +173,15 @@ BEGIN
 
                  AND (nested_ni->>'superficie')::int BETWEEN superficiemin AND superficiemax
                  AND (nested_ni->>'ano_construccion')::int BETWEEN yearmin AND yearmax
+                  AND (habitaciones_filter IS NULL OR (nested_ni->>'habitaciones')::int = habitaciones_filter)
+                                  AND (banos_filter IS NULL OR (nested_ni->>'banyos')::int = banos_filter)
+                                  AND (tipo_filter IS NULL OR (nested_ni->>'tipo')::int = tipo_filter)
+                                  AND (aireacondicionado_filter IS NULL OR (nested_ni->>'aireacondicionado')::boolean = aireacondicionado_filter)
+                                  AND (ascensor_filter IS NULL OR (nested_ni->>'ascensor')::boolean = ascensor_filter)
+                                  AND (garaje_filter IS NULL OR (nested_ni->>'garaje')::boolean = garaje_filter)
+                                  AND (jardin_filter IS NULL OR (nested_ni->>'jardin')::boolean = jardin_filter)
+                                  AND (terraza_filter IS NULL OR (nested_ni->>'terraza')::boolean = terraza_filter)
+                                  AND (trastero_filter IS NULL OR (nested_ni->>'trastero')::boolean = trastero_filter)
            )
            OR EXISTS (
                SELECT 1
@@ -152,6 +197,15 @@ BEGIN
 
                      AND (nested_ni->>'superficie')::int BETWEEN superficiemin AND superficiemax
                      AND (nested_ni->>'ano_construccion')::int BETWEEN yearmin AND yearmax
+                      AND (habitaciones_filter IS NULL OR (nested_ni->>'habitaciones')::int = habitaciones_filter)
+                                  AND (banos_filter IS NULL OR (nested_ni->>'banyos')::int = banos_filter)
+                                  AND (tipo_filter IS NULL OR (nested_ni->>'tipo')::int = tipo_filter)
+                                  AND (aireacondicionado_filter IS NULL OR (nested_ni->>'aireacondicionado')::boolean = aireacondicionado_filter)
+                                  AND (ascensor_filter IS NULL OR (nested_ni->>'ascensor')::boolean = ascensor_filter)
+                                  AND (garaje_filter IS NULL OR (nested_ni->>'garaje')::boolean = garaje_filter)
+                                  AND (jardin_filter IS NULL OR (nested_ni->>'jardin')::boolean = jardin_filter)
+                                  AND (terraza_filter IS NULL OR (nested_ni->>'terraza')::boolean = terraza_filter)
+                                  AND (trastero_filter IS NULL OR (nested_ni->>'trastero')::boolean = trastero_filter)
                )
            ))
 
@@ -170,6 +224,15 @@ AND (
  AND (i.superficie)::int BETWEEN superficiemin AND superficiemax
  AND (i.ano_construccion)::int BETWEEN yearmin AND yearmax
 AND (localizado_filter IS NULL OR (localizado_filter = TRUE AND i.localizado = 'true') OR (localizado_filter = FALSE AND i.localizado = 'false'))
+AND (habitaciones_filter IS NULL OR i.habitaciones = habitaciones_filter)
+          AND (banos_filter IS NULL OR i.banyos = banos_filter)
+          AND (tipo_filter IS NULL OR i.tipoagrupacion::int = tipo_filter)
+          AND (aireacondicionado_filter IS NULL OR i.aireacondicionado = aireacondicionado_filter)
+          AND (ascensor_filter IS NULL OR i.ascensor = ascensor_filter)
+          AND (garaje_filter IS NULL OR i.garaje = garaje_filter)
+          AND (jardin_filter IS NULL OR i.jardin = jardin_filter)
+          AND (terraza_filter IS NULL OR i.terraza = terraza_filter)
+          AND (trastero_filter IS NULL OR i.trastero = trastero_filter)
 
 
     )

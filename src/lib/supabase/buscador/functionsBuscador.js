@@ -66,15 +66,21 @@ export const fetchAllData = async (page,
             return { mergedData: [], totalPages: 0 };
         }
 
-        console.log('searchData', searchData[0].total_count); // Debugging line
+        console.log('searchData', searchData[0].responsables_count); // Debugging line to log the total count
 
         const total = searchData.length > 0 ? searchData[0].total_count : 0;
         console.log('total', total);
+        let analyticsData = [];
+        const responsablescount = searchData[0].responsables_count;
+        analyticsData.push({ name: 'Responsables', value: responsablescount });
+        analyticsData.push({ name: 'Total', value: total });
+        console.log('analyticsData', analyticsData); // Debugging line to log the analytics data
+
 
         const totalPages = Math.ceil(total / itemsPerPage);
 
         console.timeEnd('Total time'); // End the timer
-        return { mergedData: searchData, totalPages, total };
+        return { mergedData: searchData, totalPages, total, analyticsData };
 
     } catch (error) {
         console.error('Error fetching data:', error);
