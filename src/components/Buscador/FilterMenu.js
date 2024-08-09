@@ -7,9 +7,10 @@ import '@fortawesome/fontawesome-svg-core/styles.css'; // Import FontAwesome CSS
 import '../../../fontawesome'; // Import the configuration file
 import './filterStyles.css';
 import { FaHouseChimneyUser } from "react-icons/fa6";
+import { FaPhone } from "react-icons/fa6";
 
 const FilterMenu = ({ setFilters, currentPage, filters, data, setData, setCurrentPage, setTotalPages, setLoading, resetFiltersKey }) => {
-    const [alphabeticalOrder, setAlphabeticalOrder] = useState(null);
+    const [filterLocalizado, setFilterLocalizado] = useState(null);
     const [selectedZone, setSelectedZone] = useState(null);
     const [selectedResponsable, setSelectedResponsable] = useState(null);
     const [filterNoticia, setFilterNoticia] = useState(null);
@@ -30,39 +31,6 @@ const FilterMenu = ({ setFilters, currentPage, filters, data, setData, setCurren
         setYearRange(values);
     };
 
-    const alphabeticalOrderOptions = [
-        {
-            value: 'asc',
-            label: (
-                <span className="text-black flex flex-row items-center gap-2 font-sans">
-                    {' '}
-                    <svg xmlns="http://www.w3.org/2000/svg" width="2.5em" height="2.5em" viewBox="0 0 24 24">
-                        <path
-                            fill="currentColor"
-                            d="M10.22 15.97L9 17.19V5c0-.41-.34-.75-.75-.75s-.75.34-.75.75v12.19l-1.22-1.22c-.29-.29-.77-.29-1.06 0s-.29.77 0 1.06l2.5 2.5a.78.78 0 0 0 .53.22a.78.78 0 0 0 .53-.22l2.5-2.5c.29-.29.29-.77 0-1.06s-.77-.29-1.06 0M14 11.21c.39.14.82-.06.96-.45l.28-.78h2.03l.28.78c.11.31.4.5.71.5c.08 0 .17-.01.25-.04a.75.75 0 0 0 .45-.96l-1.71-4.79c-.17-.43-.56-.71-1-.71s-.83.28-1 .73l-1.7 4.77c-.14.39.06.82.45.96Zm2.73-2.73h-.96l.48-1.34zm1.94 4.98c-.19-.44-.59-.71-1.05-.71h-3.11c-.41 0-.75.34-.75.75s.34.75.75.75h2.39l-2.83 2.95c-.34.36-.43.88-.24 1.34c.19.44.59.71 1.05.71h3.13c.41 0 .75-.34.75-.75s-.34-.75-.75-.75h-2.39l2.82-2.93c.34-.36.44-.89.24-1.35Z"
-                        />
-                    </svg>
-                    Descendente
-                </span>
-            ),
-        },
-        {
-            value: 'desc',
-            label: (
-                <span className="text-black flex flex-row items-center gap-2 font-sans">
-                    {' '}
-                    <svg xmlns="http://www.w3.org/2000/svg" width="2.5em" height="2.5em" viewBox="0 0 24 24">
-                        <path
-                            fill="currentColor"
-                            d="M8.78 4.47a.8.8 0 0 0-.24-.16a.7.7 0 0 0-.57 0c-.09.04-.17.09-.24.16l-2.5 2.5c-.29.29-.29.77 0 1.06s.77.29 1.06 0l1.22-1.22V19c0 .41.34.75.75.75s.75-.34.75-.75V6.81l1.22 1.22c.15.15.34.22.53.22s.38-.07.53-.22c.29-.29.29-.77 0-1.06l-2.5-2.5Zm10.18 13.78l-1.71-4.79c-.17-.43-.56-.71-1-.71s-.83.28-1 .73l-1.7 4.77a.75.75 0 1 0 1.41.51l.28-.78h2.03l.28.78c.11.31.4.5.71.5c.08 0 .17-.01.25-.04a.75.75 0 0 0 .45-.96Zm-3.19-1.77l.48-1.34l.48 1.34zm-1.94-5.94c.19.44.59.71 1.05.71h3.13c.41 0 .75-.34.75-.75s-.34-.75-.75-.75h-2.39l2.82-2.93c.34-.36.44-.89.24-1.35c-.19-.44-.59-.71-1.05-.71h-3.11c-.41 0-.75.34-.75.75s.34.75.75.75h2.39l-2.83 2.95c-.34.36-.43.88-.24 1.34Z"
-                        />
-                    </svg>
-                    Ascendente
-                </span>
-            ),
-        },
-    ];
-
     const filterOptionsNoticia = [
         { value: true, label: 'Con noticias' },
         { value: false, label: 'Sin noticias' },
@@ -71,10 +39,13 @@ const FilterMenu = ({ setFilters, currentPage, filters, data, setData, setCurren
         { value: true, label: 'Con encargos' },
         { value: false, label: 'Sin encargos' },
     ];
+    const filterLocalizadoOptions = [
+        { value: true, label: 'Localizado' },
+        { value: false, label: 'Sin localizar' },
+    ];
 
     useEffect(() => {
         console.log('Filters:', {
-            alphabeticalOrder,
             selectedZone: selectedZone?.value || '',
             selectedResponsable: selectedResponsable?.value || '',
             selectedCategoria: selectedCategoria?.value || '',
@@ -84,8 +55,9 @@ const FilterMenu = ({ setFilters, currentPage, filters, data, setData, setCurren
             superficieMax: superficieRange[1],
             yearMin: yearRange[0],
             yearMax: yearRange[1],
+            localizado: filterLocalizado,
         });
-    }, [alphabeticalOrder, selectedZone, selectedResponsable, selectedCategoria, filterNoticia, filterEncargo, superficieRange, yearRange]);
+    }, [filterLocalizado, selectedZone, selectedResponsable, selectedCategoria, filterNoticia, filterEncargo, superficieRange, yearRange]);
 
 
     const zoneOptions = zones.map((zone) => ({ value: zone, label: zone }));
@@ -117,7 +89,6 @@ const FilterMenu = ({ setFilters, currentPage, filters, data, setData, setCurren
 
     useEffect(() => {
         setFilters({
-            alphabeticalOrder: alphabeticalOrder,
             selectedZone: selectedZone?.value || '',
             selectedResponsable: selectedResponsable?.value || '',
             selectedCategoria: selectedCategoria?.value || '',
@@ -127,11 +98,12 @@ const FilterMenu = ({ setFilters, currentPage, filters, data, setData, setCurren
             superficieMax: superficieRange[1],
             yearMin: yearRange[0],
             yearMax: yearRange[1],
+            localizado: filterLocalizado,
         });
-    }, [alphabeticalOrder, selectedZone, selectedResponsable, selectedCategoria, filterNoticia, filterEncargo, superficieRange, yearRange, setFilters]);
+    }, [filterLocalizado, selectedZone, selectedResponsable, selectedCategoria, filterNoticia, filterEncargo, superficieRange, yearRange, setFilters]);
 
     const resetFilters = () => {
-        setAlphabeticalOrder(null);
+        setFilterLocalizado(null);
         setSelectedZone(null);
         setSelectedResponsable(null);
         setSelectedCategoria(null);
@@ -155,25 +127,23 @@ const FilterMenu = ({ setFilters, currentPage, filters, data, setData, setCurren
     const handleFilterEncargoChange = (selectedOption) => {
         setFilterEncargo(selectedOption ? selectedOption.value : null);
     };
+    const handleFilterLocalizadoChange = (selectedOption) => {
+        setFilterLocalizado(selectedOption ? selectedOption.value : null);
+    };
 
     return (
         <div className="flex flex-col gap-4 p-2">
             {/* Alphabetical Order Select */}
             <div className="flex flex-row gap-2 w-full items-center justify-center orderbyanimation z-[990]">
                 <Select
-                    options={alphabeticalOrderOptions}
-                    onChange={(option) => setAlphabeticalOrder(option?.value || null)}
-                    value={alphabeticalOrderOptions.find((option) => option.value === alphabeticalOrder) || null}
+                    options={filterLocalizadoOptions}
+                    onChange={handleFilterLocalizadoChange}
+                    value={filterLocalizadoOptions.find((option) => option.value === filterLocalizado) || null}
                     className="w-full z-[999]"
                     placeholder={
                         <span className="flex flex-row justify-start items-center gap-3 text-black">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="1.25em" height="1.25em" viewBox="0 0 24 24">
-                                <path
-                                    fill="currentColor"
-                                    d="m8 2l-.707-.707L8 .586l.707.707zm1 15a1 1 0 1 1-2 0zM2.293 6.293l5-5l1.414 1.414l-5 5zm6.414-5l5 5l-1.414 1.414l-5-5zM9 2v15H7V2zm7 20l-.707.707l.707.707l.707-.707zm1-15a1 1 0 1 0-2 0zm-6.707 10.707l5 5l1.414-1.414l-5-5zm6.414 5l5-5l-1.414-1.414l-5 5zM17 22V7h-2v15z"
-                                ></path>
-                            </svg>
-                            Ordenar por
+                            <FaPhone className='text-xl' />
+                            Localizado
                         </span>
                     }
                 />

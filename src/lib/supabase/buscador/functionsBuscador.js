@@ -1,7 +1,7 @@
 
 import { supabase } from '../supabaseClient.js';
 
-export const fetchAllData = async (page, term, itemsPerPage, zone = '', responsable = '', categoria = '', filternoticia = null, filterencargo = null, superficiemin = 0, superficiemax = 10000, yearmin = 1850, yearmax = new Date().getFullYear()) => {
+export const fetchAllData = async (page, term, itemsPerPage, zone = '', responsable = '', categoria = '', filternoticia = null, filterencargo = null, superficiemin = 0, superficiemax = 10000, yearmin = 1850, yearmax = new Date().getFullYear(), localizado) => {
     try {
         console.time('Total time');
         const isTermEmpty = !term || term.trim() === '';
@@ -9,10 +9,10 @@ export const fetchAllData = async (page, term, itemsPerPage, zone = '', responsa
         if (categoria == 'Sin información') {
             categoria = NULL;
         }
-        console.log('Fetching data with params:', { page, term, itemsPerPage, zone, responsable, categoria, filternoticia, filterencargo, superficiemin, superficiemax, yearmin, yearmax });
+        console.log('Fetching data with params:', { page, term, itemsPerPage, zone, responsable, categoria, filternoticia, filterencargo, superficiemin, superficiemax, yearmin, yearmax, localizado });
 
         const { data: searchData, error: searchError } = await supabase
-            .rpc('search_in_nested_inmuebles', { pattern, page, itemsperpage: itemsPerPage, zone, responsable_filter: responsable, categoria_filter: categoria, filternoticia, filterencargo, superficiemin, superficiemax, yearmin, yearmax });
+            .rpc('search_in_nested_inmuebles', { pattern, page, itemsperpage: itemsPerPage, zone, responsable_filter: responsable, categoria_filter: categoria, filternoticia, filterencargo, superficiemin, superficiemax, yearmin, yearmax, localizado_filter: localizado });
 
         if (searchError) {
             throw new Error(searchError.message);

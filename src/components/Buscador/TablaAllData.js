@@ -59,6 +59,7 @@ const Table = () => {
         superficieMax: 1000,
         yearMin: 1850,
         yearMax: new Date().getFullYear(),
+        localizado: null,
     });
     const [showFilters, setShowFilters] = useState(false);
     const [resetFiltersKey, setResetFiltersKey] = useState(0);
@@ -71,9 +72,9 @@ const Table = () => {
 
     const fetchData = async () => {
         try {
-            const { selectedZone, selectedResponsable, selectedCategoria, filterNoticia, filterEncargo, superficieMin, superficieMax, yearMin, yearMax } = filters;
+            const { selectedZone, selectedResponsable, selectedCategoria, filterNoticia, filterEncargo, superficieMin, superficieMax, yearMin, yearMax, localizado } = filters;
             console.log('Filters being sent:', filters); // Add a debug line here
-            const response = await fetchAllData(currentPage, searchTerm, 6, selectedZone, selectedResponsable, selectedCategoria, filterNoticia, filterEncargo, superficieMin, superficieMax, yearMin, yearMax);
+            const response = await fetchAllData(currentPage, searchTerm, 6, selectedZone, selectedResponsable, selectedCategoria, filterNoticia, filterEncargo, superficieMin, superficieMax, yearMin, yearMax, localizado);
             setData(response.mergedData || []);
             setTotalPages(response.totalPages || 1);
             setTotalItems(response.total || 0);
@@ -90,7 +91,7 @@ const Table = () => {
         if (currentPage > totalPages) {
             setCurrentPage(totalPages);
         }
-    }, [currentPage, searchTerm, filters.selectedZone, filters.selectedResponsable, filters.selectedCategoria, filters.filterNoticia, filters.filterEncargo, filters.superficieMin, filters.superficieMax, filters.yearMin, filters.yearMax]);
+    }, [currentPage, searchTerm, filters.selectedZone, filters.selectedResponsable, filters.selectedCategoria, filters.filterNoticia, filters.filterEncargo, filters.superficieMin, filters.superficieMax, filters.yearMin, filters.yearMax, filters.localizado]);
 
 
     const handlePrevious = () => {
