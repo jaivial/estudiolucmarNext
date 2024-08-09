@@ -66,14 +66,14 @@ export const fetchAllData = async (page,
             return { mergedData: [], totalPages: 0 };
         }
 
-        console.log('searchData', searchData[0].responsables_count); // Debugging line to log the total count
 
         const total = searchData.length > 0 ? searchData[0].total_count : 0;
-        console.log('total', total);
         let analyticsData = [];
         const responsablescount = searchData[0].responsables_count;
+        const categoriascount = searchData[0].categorias_count;
         analyticsData.push({ name: 'Responsables', value: responsablescount });
         analyticsData.push({ name: 'Total', value: total });
+        analyticsData.push({ name: 'Categorias', value: categoriascount });
         console.log('analyticsData', analyticsData); // Debugging line to log the analytics data
 
 

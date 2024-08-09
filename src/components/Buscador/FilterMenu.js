@@ -110,13 +110,13 @@ const FilterMenu = ({ setFilters, currentPage, filters, data, setData, setCurren
 
     const resetFilters = () => {
         setFilterLocalizado(null);
-        setSelectedZone(null);
-        setSelectedResponsable(null);
+        setSelectedZone('');
+        setSelectedResponsable('');
         setSelectedCategoria(null);
         setFilterNoticia(null); // Assuming the default is false
         setFilterEncargo(null); // Assuming the default is false
-        setSuperficieRange([0, 1000]);
-        setYearRange([1900, new Date().getFullYear()]);
+        setSuperficieRange([0, 2000000]);
+        setYearRange([1800, new Date().getFullYear()]);
     };
 
 
