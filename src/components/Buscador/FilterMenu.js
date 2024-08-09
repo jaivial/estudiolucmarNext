@@ -249,7 +249,7 @@ const FilterMenu = ({ setFilters, currentPage, filters, data, setData, setCurren
                 />
             </div>
             {/* Superficie Range */}
-            <div className="slideranimation1 flex flex-col py-3 px-4 w-full justify-center items-center bg-white border border-gray-300 rounded-lg shadow-md z-[970]">
+            <div className="slideranimation1 flex flex-col py-3 px-4 w-full justify-center items-center bg-white border border-gray-300 rounded-lg shadow-md z-[960]">
                 <h2 className="font-sans text-gray-700 text-center">Superfície</h2>
                 <div className="flex flex-row gap-8 justify-center mb-2 text-gray-700">
                     <span>Min: {superficieRange[0]} m²</span>

@@ -56,7 +56,7 @@ const Table = () => {
         filterNoticia: null,
         filterEncargo: null,
         superficieMin: 0,
-        superficieMax: 1000,
+        superficieMax: 200,
         yearMin: 1850,
         yearMax: new Date().getFullYear(),
         localizado: null,
@@ -702,17 +702,17 @@ const Table = () => {
     const handleShowFilters = () => {
         setShowFilters(!showFilters); // Toggle the <state></state>
         if (showEditTable) setShowEditTable(false);
-        setFilters({
-            selectedZone: '',
-            selectedCategoria: '',
-            selectedResponsable: '',
-            filterNoticia: null,
-            filterEncargo: null,
-            superficieMin: 0,
-            superficieMax: 1000,
-            yearMin: 1900,
-            yearMax: new Date().getFullYear(),
-        });
+        // setFilters({
+        //     selectedZone: '',
+        //     selectedCategoria: '',
+        //     selectedResponsable: '',
+        //     filterNoticia: null,
+        //     filterEncargo: null,
+        //     superficieMin: 0,
+        //     superficieMax: 1000,
+        //     yearMin: 1900,
+        //     yearMax: new Date().getFullYear(),
+        // });
     };
     const handleResetFilters = () => {
         setResetFiltersKey(resetFiltersKey + 1);
@@ -979,7 +979,7 @@ const Table = () => {
                             </div>
                         </div>
                     </div>
-                    {showFilters && <FilterMenu setFilters={setFilters} currentPage={currentPage} filters={filters} data={data} setData={setData} setCurrentPage={setCurrentPage} setTotalPages={setTotalPages} setLoading={setLoading} resetFiltersKey={resetFiltersKey} />}
+                    {showFilters && <FilterMenu setFilters={setFilters} currentPage={currentPage} data={data} setData={setData} filters={filters} setCurrentPage={setCurrentPage} setTotalPages={setTotalPages} setLoading={setLoading} resetFiltersKey={resetFiltersKey} />}
                     {showEditTable && (
                         <div className={`flex flex-row gap-4 pt-2 pb-2 w-full justify-between iconscontainertrue`}>
                             <div className="flex flex-row gap-4">
