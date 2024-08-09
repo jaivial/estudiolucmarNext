@@ -31,6 +31,8 @@ const FilterMenu = ({ setFilters, currentPage, filters, data, setData, setCurren
         setYearRange(values);
     };
 
+    const superficieOptions = Array.from({ length: 2001 }, (_, i) => ({ value: i, label: `${i} m²` }));
+
     const filterOptionsNoticia = [
         { value: true, label: 'Con noticias' },
         { value: false, label: 'Sin noticias' },
@@ -247,23 +249,30 @@ const FilterMenu = ({ setFilters, currentPage, filters, data, setData, setCurren
                 />
             </div>
             {/* Superficie Range */}
-            <div className="slideranimation1 flex flex-col py-3 px-4 w-full justify-center items-center bg-white border border-gray-300 rounded-lg shadow-md">
+            <div className="slideranimation1 flex flex-col py-3 px-4 w-full justify-center items-center bg-white border border-gray-300 rounded-lg shadow-md z-[970]">
                 <h2 className="font-sans text-gray-700 text-center">Superfície</h2>
                 <div className="flex flex-row gap-8 justify-center mb-2 text-gray-700">
                     <span>Min: {superficieRange[0]} m²</span>
                     <span>Max: {superficieRange[1]} m²</span>
                 </div>
-                <Slider
-                    min={0}
-                    max={2000}
-                    step={1}
-                    value={superficieRange}
-                    onChange={handleChangeSuperficieRange}
-                    className="relative flex items-center w-full h-6"
-                    trackClassName="absolute bg-blue-200 h-1 rounded"
-                    thumbClassName="relative block w-6 h-6 bg-blue-500 rounded-full cursor-pointer"
-                    ariaLabel={['Min value', 'Max value']}
-                />
+                <div className="flex flex-row gap-4 w-full">
+                    <Select
+                        options={superficieOptions}
+                        value={superficieOptions.find(option => option.value === superficieRange[0])}
+                        onChange={(selectedOption) => handleChangeSuperficieRange([selectedOption.value, superficieRange[1]])}
+                        className="w-full"
+                        placeholder="Min Superfície"
+                        isSearchable
+                    />
+                    <Select
+                        options={superficieOptions}
+                        value={superficieOptions.find(option => option.value === superficieRange[1])}
+                        onChange={(selectedOption) => handleChangeSuperficieRange([superficieRange[0], selectedOption.value])}
+                        className="w-full"
+                        placeholder="Max Superfície"
+                        isSearchable
+                    />
+                </div>
             </div>
 
             {/* Year Range */}
@@ -281,7 +290,7 @@ const FilterMenu = ({ setFilters, currentPage, filters, data, setData, setCurren
                     step={1}
                     value={yearRange}
                     onChange={handleChangeYearRange}
-                    className="relative flex items-center w-full h-6"
+                    className="relative flex items-center w-full h-6 z-[900]"
                     trackClassName="absolute bg-blue-200 h-1 rounded"
                     thumbClassName="relative block w-6 h-6 bg-blue-500 rounded-full cursor-pointer"
                     ariaLabel={['Start Year', 'End Year']}
