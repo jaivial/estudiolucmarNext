@@ -74,6 +74,9 @@ export const fetchAllData = async (page,
         analyticsData.push({ name: 'Total', value: total });
         analyticsData.push({ name: 'Categorias', value: categoriascount });
         analyticsData.push({ name: 'Zonas', value: zonascount });
+        analyticsData.push({ name: 'Noticias', value: searchData[0].noticias_count });
+        analyticsData.push({ name: 'Encargos', value: searchData[0].encargos_count });
+        analyticsData.push({ name: 'Localizados', value: searchData[0].localizados_count });
         console.log('analyticsData', analyticsData); // Debugging line to log the analytics data
 
 
