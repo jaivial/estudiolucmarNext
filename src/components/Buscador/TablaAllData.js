@@ -849,7 +849,7 @@ const Table = () => {
                             {showDeleteInmuebleButtons && <input type="checkbox" checked={selectedItems.has(child.id)} onChange={() => handleCheckboxChange(child.id)} className="mr-4 ml-4 w-[25px] h-[25px]" />}
                             <div className="flex flex-row justify-evenly items-center w-[60%] py-2">
                                 <p className="w-[70%] text-center ">{child.direccion}</p>
-                                <p className="text-center w-[30%] ">{child.zona ? child.zona : 'N/A'}</p>
+                                <p className="text-center w-[30%] ">{child.zona === 'NULL' ? 'N/A' : child.zona}</p>
                             </div>
                             <div className="flex flex-row justify-end items-center gap-3 w-[40%]">
                                 {child.noticiastate === true && (
@@ -921,7 +921,7 @@ const Table = () => {
                             )}
                             <div className="flex flex-row justify-evenly items-center w-[60%] py-2">
                                 <p className="w-[70%] text-center">{child.direccion}</p>
-                                <p className="text-center w-[30%]">{child.zona ? child.zona : 'N/A'}</p>
+                                <p className="text-center w-[30%]">{child.zona === 'NULL' ? 'N/A' : child.zona}</p>
                             </div>
                             <div className="flex flex-row justify-end items-center gap-3 w-[40%]">
                                 {child.noticiastate === true && (
@@ -1195,7 +1195,7 @@ const Table = () => {
                                             {showDeleteInmuebleButtons && <input type="checkbox" checked={selectedItems.has(item.id)} onChange={() => handleCheckboxChange(item.id)} className="mr-4 w-[25px]" />}
                                             <div className="flex flex-row justify-start items-center gap-1 w-[80%] py-2">
                                                 <p className="w-[50%] text-center">{item.direccion}</p>
-                                                <p className="text-center w-[20%]">{item.zona ? item.zona : 'N/A'}</p>
+                                                <p className="text-center w-[20%]">{item.zona === 'NULL' ? 'N/A' : item.zona}</p>
                                             </div>
                                             <div className="flex flex-row justify-end items-center gap-3 w-[20%]">
                                                 <div className="flex flex-row gap-2 mr-4">
@@ -1242,7 +1242,7 @@ const Table = () => {
                                                             </svg>
                                                             <p className="w-[60%] text-center">{item.direccion}</p>
                                                         </span>
-                                                        <p className="text-start w-[40%]">{item.zona ? item.zona : 'N/A'}</p>
+                                                        <p className="text-start w-[40%]">{item.zona === 'NULL' ? 'N/A' : item.zona}</p>
                                                     </div>
                                                     <div className="cursor-pointer flex flex-row justify-center w-[30%]">
                                                         {!expandedItems[item.EdificioID] && (
