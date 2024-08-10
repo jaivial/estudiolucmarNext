@@ -5,7 +5,7 @@ import axios from 'axios';
 import Slider from 'react-slider';
 import '@fortawesome/fontawesome-svg-core/styles.css'; // Import FontAwesome CSS
 import '../../../fontawesome'; // Import the configuration file
-import './filterStyles.css';
+import './filterstyles.css';
 import { FaHouseChimneyUser } from "react-icons/fa6";
 import { FaPhone } from "react-icons/fa6";
 import { CgMoreO } from "react-icons/cg";
@@ -19,7 +19,7 @@ const FilterMenu = ({ setFilters, currentPage, filters, data, setData, setCurren
     const [filterNoticia, setFilterNoticia] = useState(null);
     const [filterEncargo, setFilterEncargo] = useState(null);
     const [superficieRange, setSuperficieRange] = useState([0, 1000]);
-    const [yearRange, setYearRange] = useState([1850, new Date().getFullYear()]);
+    const [yearRange, setYearRange] = useState([1800, new Date().getFullYear()]);
     const [zones, setZones] = useState([]);
     const [responsables, setResponsables] = useState([]);
     const [categorias, setCategorias] = useState([]);
