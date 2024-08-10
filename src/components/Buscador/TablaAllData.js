@@ -852,7 +852,7 @@ const Table = () => {
                                 <p className="text-center w-[30%] ">{child.zona ? child.zona : 'N/A'}</p>
                             </div>
                             <div className="flex flex-row justify-end items-center gap-3 w-[40%]">
-                                {child.noticiastate === '1' && (
+                                {child.noticiastate === true && (
                                     <svg xmlns="http://www.w3.org/2000/svg" width="2.1em" height="2.1em" viewBox="0 0 24 24">
                                         <path
                                             fill="currentColor"
@@ -860,7 +860,7 @@ const Table = () => {
                                         />
                                     </svg>
                                 )}
-                                {child.encargoState === '1' && (
+                                {child.encargostate === true && (
                                     <svg xmlns="http://www.w3.org/2000/svg" width="2em" height="2em" viewBox="0 0 20 20">
                                         <path
                                             fill="currentColor"
@@ -924,7 +924,7 @@ const Table = () => {
                                 <p className="text-center w-[30%]">{child.zona ? child.zona : 'N/A'}</p>
                             </div>
                             <div className="flex flex-row justify-end items-center gap-3 w-[40%]">
-                                {child.noticiastate === '1' && (
+                                {child.noticiastate === true && (
                                     <svg xmlns="http://www.w3.org/2000/svg" width="2.1em" height="2.1em" viewBox="0 0 24 24">
                                         <path
                                             fill="currentColor"
@@ -932,7 +932,7 @@ const Table = () => {
                                         />
                                     </svg>
                                 )}
-                                {child.encargostate === '1' && (
+                                {child.encargostate === true && (
                                     <svg xmlns="http://www.w3.org/2000/svg" width="2em" height="2em" viewBox="0 0 20 20">
                                         <path
                                             fill="currentColor"
@@ -1199,7 +1199,7 @@ const Table = () => {
                                             </div>
                                             <div className="flex flex-row justify-end items-center gap-3 w-[20%]">
                                                 <div className="flex flex-row gap-2 mr-4">
-                                                    {item.noticiastate === '1' && (
+                                                    {item.noticiastate === true && (
                                                         <svg xmlns="http://www.w3.org/2000/svg" width="2.1em" height="2.1em" viewBox="0 0 24 24">
                                                             <path
                                                                 fill="currentColor"
@@ -1207,7 +1207,7 @@ const Table = () => {
                                                             />
                                                         </svg>
                                                     )}
-                                                    {item.encargoState === '1' && (
+                                                    {item.encargostate === true && (
                                                         <svg xmlns="http://www.w3.org/2000/svg" width="2em" height="2em" viewBox="0 0 20 20">
                                                             <path
                                                                 fill="currentColor"
