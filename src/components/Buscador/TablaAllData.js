@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { use, useEffect, useState } from 'react';
 // import ItemDetails from './itemDetails/ItemDetails.jsx';
 import LoadingScreen from '../LoadingScreen/LoadingScreen.js';
 // import AddNewInmueble from './AddNewInmueble';
@@ -13,8 +13,7 @@ import Analytics from './Analytics.js';
 import { supabase } from '../../lib/supabase/supabaseClient.js';
 
 
-
-const Table = () => {
+const Table = ({ parentsEdificioProps }) => {
     const [loading, setLoading] = useState(true);
     const [data, setData] = useState([]);
     const [currentPage, setCurrentPage] = useState(1);
@@ -24,7 +23,7 @@ const Table = () => {
     const [childsEscalera, setChildsEscalera] = useState([]);
     const [childsEdificio, setChildsEdificio] = useState([]);
     const [parentsEscalera, setParentsEscalera] = useState([]);
-    const [parentsEdificio, setParentsEdificio] = useState([]);
+    const [parentsEdificio, setParentsEdificio] = useState(parentsEdificioProps);
     const [expandedItems, setExpandedItems] = useState({});
     const [showExtraButtons, setShowExtraButtons] = useState(false);
     const [showUngroupButtons, setShowUngroupButtons] = useState(false);
@@ -78,6 +77,10 @@ const Table = () => {
     const [totalItems, setTotalItems] = useState(0);
     const [showAnalytics, setShowAnalytics] = useState(false);
     const [analyticsData, setAnalyticsData] = useState([]);
+
+    useEffect(() => {
+        console.log('parentsEdificio', parentsEdificioProps);
+    }, []);
 
 
     const fetchData = async () => {
@@ -139,6 +142,17 @@ const Table = () => {
             console.error('Error fetching data:', error);
             setLoading(false);
         }
+    };
+
+    const fetchParentsEdificio = async () => {
+        const { data, error } = await supabase.rpc('fetch_parents');
+
+        if (error) {
+            console.error('Error fetching parents:', error);
+            return;
+        }
+
+        setParentsEdificio(data || { edificios: [], escaleras: [] });
     };
 
     useEffect(() => {
@@ -442,7 +456,7 @@ const Table = () => {
                     }
 
                     Toastify({
-                        text: 'Inmueble agrupado.',
+                        text: 'Eificio creado.',
                         duration: 2500,
                         gravity: 'top',
                         position: 'center',
@@ -460,6 +474,7 @@ const Table = () => {
                     fetchData(currentPage, searchTerm);
                     setShowExtraButtons(false);
                     setShowUngroupButtons(false);
+                    fetchParentsEdificio();
                 }
             } else if (formData.tipo === 'Escalera') {
                 if (formData.nombre === '' || formData.grupo === '') {
@@ -480,14 +495,54 @@ const Table = () => {
                         onClick: function () { }, // Callback after click
                     }).showToast();
                     return;
+                } else {
+                    // Call Supabase function
+                    console.log('selectedItems', selectedItems);
+                    const { data, error } = await supabase
+                        .rpc('create_new_escalera_agrupacion', {
+                            _name: formData.nombre,
+                            _inmuebles: Array.from(selectedItems),
+                            _grupo: formData.grupo,
+                        });
+                    console.log('data', data); // Debugging line
+
+                    if (error) {
+                        console.error('Error performing operation:', error);
+                        Toastify({
+                            text: 'Error performing operation.',
+                            duration: 2500,
+                            gravity: 'top',
+                            position: 'center',
+                            style: {
+                                borderRadius: '10px',
+                                backgroundImage: 'linear-gradient(to right top, #c62828, #b92125, #ac1a22, #a0131f, #930b1c)',
+                                textAlign: 'center',
+                            },
+                        }).showToast();
+                        return;
+                    }
+
+                    Toastify({
+                        text: 'Escalera creada.',
+                        duration: 2500,
+                        gravity: 'top',
+                        position: 'center',
+                        style: {
+                            borderRadius: '10px',
+                            backgroundImage: 'linear-gradient(to right bottom, #00603c, #006f39, #007d31, #008b24, #069903)',
+                            textAlign: 'center',
+                        },
+                    }).showToast();
+
+                    setShowPopup(false);
+                    setSelectedItems(new Set());
+                    setFormData({ tipo: '', nombre: '', existingGroup: '', grupo: '' });
+                    handleIconClick();
+                    fetchData(currentPage, searchTerm);
+                    setShowExtraButtons(false);
+                    setShowUngroupButtons(false);
+                    fetchParentsEdificio();
                 }
-                url = 'http://localhost:8000/backend/inmuebles/agruparNuevaEscalera.php';
-                payload = {
-                    type: formData.tipo,
-                    name: formData.nombre,
-                    inmuebles: Array.from(selectedItems),
-                    grupo: formData.grupo,
-                };
             }
         } else if (showFormType === 'existing') {
             if (formData.tipo === '') {
@@ -796,16 +851,19 @@ const Table = () => {
         return parentEscaleras.filter((parent) => !childAgrupacionIds.has(parent.AgrupacionID_Escalera));
     };
 
-    useEffect(() => {
-        const fetchOrphans = async () => {
-            const orphansEdificio = await findOrphansEdificio(parentsEdificio, childsEdificio);
-            console.log('orphans edificio', orphansEdificio);
-            const orphansEscalera = await findOrphansEscalera(parentsEscalera, childsEscalera);
-            console.log('orphans escalera', orphansEscalera);
-        };
+    // set parentsEdificio
 
-        fetchOrphans();
-    }, [parentsEdificio, childsEdificio, parentsEscalera, childsEscalera]);
+
+    // useEffect(() => {
+    //     const fetchOrphans = async () => {
+    //         const orphansEdificio = await findOrphansEdificio(parentsEdificio, childsEdificio);
+    //         console.log('orphans edificio', orphansEdificio);
+    //         const orphansEscalera = await findOrphansEscalera(parentsEscalera, childsEscalera);
+    //         console.log('orphans escalera', orphansEscalera);
+    //     };
+
+    //     fetchOrphans();
+    // }, [parentsEdificio, childsEdificio, parentsEscalera, childsEscalera]);
 
     // Handle toggling the edit table
     const handleEditTable = () => {
@@ -851,12 +909,12 @@ const Table = () => {
         });
     };
 
-    // Synchronize `shouldRender` with `showEditTable`
+    // // Synchronize `shouldRender` with `showEditTable`
 
-    const options = parentsEdificio.map((parent) => ({
-        value: parent.AgrupacionID_Edificio,
-        label: `${parent.direccion}`,
-    }));
+    // const options = parentsEdificio.map((parent) => ({
+    //     value: parent.AgrupacionID_Edificio,
+    //     label: `${parent.direccion}`,
+    // }));
 
 
     const escalerasChildren = (item) => {
@@ -1379,8 +1437,8 @@ const Table = () => {
                                                     <label className="block">Grupo:</label>
                                                     <select name="grupo" value={formData.grupo} onChange={handleFormChange} className="border border-gray-300 p-2 rounded w-full">
                                                         <option value="">Seleccione un grupo</option>
-                                                        {parentsEdificio.map((parent) => (
-                                                            <option key={parent.id} value={parent.AgrupacionID_Edificio}>
+                                                        {parentsEdificio.edificios.map((parent) => (
+                                                            <option key={parent.id} value={parent.id}>
                                                                 {parent.direccion}
                                                             </option>
                                                         ))}
@@ -1454,13 +1512,13 @@ const Table = () => {
                                                 <select name="existingGroup" value={formData.existingGroup} onChange={handleFormChange} className="border border-gray-300 p-2 rounded w-full">
                                                     <option value="">Seleccione un grupo</option>
                                                     {selectedType === 'Edificio'
-                                                        ? parentsEdificio.map((parent) => (
-                                                            <option key={parent.id} value={parent.AgrupacionID_Edificio}>
+                                                        ? parentsEdificio.edificios.map((parent) => (
+                                                            <option key={parent.id} value={parent.id}>
                                                                 {parent.direccion}
                                                             </option>
                                                         ))
-                                                        : parentsEscalera.map((parent) => (
-                                                            <option key={parent.id} value={parent.AgrupacionID_Escalera}>
+                                                        : parentsEscalera.escaleras.map((parent) => (
+                                                            <option key={parent.id} value={parent.id}>
                                                                 {parent.direccion}
                                                             </option>
                                                         ))}
