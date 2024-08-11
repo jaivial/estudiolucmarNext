@@ -10,6 +10,7 @@ import { fetchAllData } from '../../lib/supabase/buscador/functionsBuscador.js';
 import FilterMenu from './FilterMenu.js';
 import { IoAnalytics } from "react-icons/io5";
 import Analytics from './Analytics.js';
+import { supabase } from '../../lib/supabase/supabaseClient.js';
 
 
 
@@ -78,10 +79,6 @@ const Table = () => {
     const [showAnalytics, setShowAnalytics] = useState(false);
     const [analyticsData, setAnalyticsData] = useState([]);
 
-
-    // useEffect(() => {
-    //     fetchParentsAndChilds();
-    // }, []);
 
     const fetchData = async () => {
         try {
@@ -419,12 +416,50 @@ const Table = () => {
                     }).showToast();
                     return;
                 } else {
-                    url = 'http://localhost:8000/backend/inmuebles/agruparNuevoEdificio.php';
-                    payload = {
-                        type: formData.tipo,
-                        name: formData.nombre,
-                        inmuebles: Array.from(selectedItems),
-                    };
+                    // Call Supabase function
+                    console.log('selectedItems', selectedItems);
+                    const { data, error } = await supabase
+                        .rpc('create_new_edificio_agrupacion', {
+                            _name: formData.nombre,
+                            _inmuebles: Array.from(selectedItems),
+                        });
+                    console.log('data', data); // Debugging line
+
+                    if (error) {
+                        console.error('Error performing operation:', error);
+                        Toastify({
+                            text: 'Error performing operation.',
+                            duration: 2500,
+                            gravity: 'top',
+                            position: 'center',
+                            style: {
+                                borderRadius: '10px',
+                                backgroundImage: 'linear-gradient(to right top, #c62828, #b92125, #ac1a22, #a0131f, #930b1c)',
+                                textAlign: 'center',
+                            },
+                        }).showToast();
+                        return;
+                    }
+
+                    Toastify({
+                        text: 'Inmueble agrupado.',
+                        duration: 2500,
+                        gravity: 'top',
+                        position: 'center',
+                        style: {
+                            borderRadius: '10px',
+                            backgroundImage: 'linear-gradient(to right bottom, #00603c, #006f39, #007d31, #008b24, #069903)',
+                            textAlign: 'center',
+                        },
+                    }).showToast();
+
+                    setShowPopup(false);
+                    setSelectedItems(new Set());
+                    setFormData({ tipo: '', nombre: '', existingGroup: '', grupo: '' });
+                    handleIconClick();
+                    fetchData(currentPage, searchTerm);
+                    setShowExtraButtons(false);
+                    setShowUngroupButtons(false);
                 }
             } else if (formData.tipo === 'Escalera') {
                 if (formData.nombre === '' || formData.grupo === '') {
@@ -553,7 +588,6 @@ const Table = () => {
             setFormData({ tipo: '', nombre: '', existingGroup: '', grupo: '' });
             handleIconClick();
             fetchData(currentPage, searchTerm);
-            fetchParentsAndChilds();
             setShowExtraButtons(false);
             setShowUngroupButtons(false);
         } catch (error) {
@@ -593,7 +627,6 @@ const Table = () => {
             setShowPopupUngroup(false);
             setSelectedItemsUngroup(new Set());
             fetchData(currentPage, searchTerm);
-            fetchParentsAndChilds();
             setShowExtraButtons(false);
             setShowUngroupButtons(false);
         } catch (error) {
@@ -634,7 +667,6 @@ const Table = () => {
                     }).showToast();
                     setShowAskForDeleteOrphan(false);
                     fetchData(currentPage, searchTerm);
-                    fetchParentsAndChilds();
                 } else {
                     console.error('Error deleting orphan:', response.data.message);
                     alert('Error deleting orphan: ' + response.data.message);
@@ -689,7 +721,6 @@ const Table = () => {
                     setShowDeleteInmuebleButtons(false);
                     setShowPopupDeleteInmueble(false);
                     fetchData(currentPage, searchTerm);
-                    fetchParentsAndChilds();
                     setShowExtraButtons(false);
                     setShowUngroupButtons(false);
                     setSelectedItems(new Set());
@@ -736,7 +767,6 @@ const Table = () => {
                 setShowDeleteInmuebleButtons(false);
                 setShowPopupDeleteInmueble(false);
                 fetchData(currentPage, searchTerm);
-                fetchParentsAndChilds();
                 setShowExtraButtons(false);
                 setShowUngroupButtons(false);
                 setSelectedItems(new Set());
@@ -1541,7 +1571,6 @@ const Table = () => {
                     fetchData={fetchData}
                     currentPage={currentPage}
                     searchTerm={searchTerm}
-                    fetchParentsAndChilds={fetchParentsAndChilds}
                     handleIconAddInmueble={handleIconAddInmueble}
                 />
             )} */}
