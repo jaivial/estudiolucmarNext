@@ -22,8 +22,8 @@ const Table = ({ parentsEdificioProps }) => {
     const [searchTerm, setSearchTerm] = useState('');
     const [childsEscalera, setChildsEscalera] = useState([]);
     const [childsEdificio, setChildsEdificio] = useState([]);
-    const [parentsEscalera, setParentsEscalera] = useState([]);
-    const [parentsEdificio, setParentsEdificio] = useState(parentsEdificioProps);
+    const [parentsEscalera, setParentsEscalera] = useState(parentsEdificioProps.escaleras);
+    const [parentsEdificio, setParentsEdificio] = useState(parentsEdificioProps.edificios);
     const [expandedItems, setExpandedItems] = useState({});
     const [showExtraButtons, setShowExtraButtons] = useState(false);
     const [showUngroupButtons, setShowUngroupButtons] = useState(false);
@@ -32,7 +32,6 @@ const Table = ({ parentsEdificioProps }) => {
     const [showPopup, setShowPopup] = useState(false);
     const [showPopupUngroup, setShowPopupUngroup] = useState(false);
     const [showFormType, setShowFormType] = useState(null); // New state to manage form type
-    const [selectedType, setSelectedType] = useState('Edificio'); // For radio button selection in the assign to existing form
     const [formData, setFormData] = useState({
         tipo: '',
         nombre: '',
@@ -77,9 +76,11 @@ const Table = ({ parentsEdificioProps }) => {
     const [totalItems, setTotalItems] = useState(0);
     const [showAnalytics, setShowAnalytics] = useState(false);
     const [analyticsData, setAnalyticsData] = useState([]);
+    const [selectedType, setSelectedType] = useState();
+    const [options, setOptions] = useState([]);
 
     useEffect(() => {
-        console.log('parentsEdificio', parentsEdificioProps);
+        console.log('parentsEdificio', parentsEdificioProps.edificios);
     }, []);
 
 
@@ -152,8 +153,32 @@ const Table = ({ parentsEdificioProps }) => {
             return;
         }
 
-        setParentsEdificio(data || { edificios: [], escaleras: [] });
+        setParentsEdificio(data.edificios || { edificios: [] });
+        setParentsEscalera(data.escaleras || { escaleras: [] });
     };
+
+    useEffect(() => {
+
+        if (selectedType === 'Edificio') {
+            setOptions([]);
+            setOptions(
+                parentsEdificio?.map((parent) => (
+                    <option key={parent.id} value={parent.id}>
+                        {parent.direccion}
+                    </option>
+                ))
+            );
+        } else if (selectedType === 'Escalera') {
+            setOptions([]);
+            setOptions(
+                parentsEscalera?.map((parent) => (
+                    <option key={parent.id} value={parent.id}>
+                        {parent.direccion}
+                    </option>
+                ))
+            );
+        }
+    }, [selectedType, parentsEdificio, parentsEscalera]);
 
     useEffect(() => {
         const fetchAndSetData = async () => {
@@ -970,6 +995,7 @@ const Table = ({ parentsEdificioProps }) => {
 
     const edifciosChildren = (item) => {
 
+        console.log('edifciosChildren', item.nestedescaleras);
 
         if (item.nestedinmuebles && item.nestedinmuebles.length === 0 && item.nestedescaleras.length === 0) {
             return <p>No hay detalles disponibles</p>;
@@ -1437,7 +1463,7 @@ const Table = ({ parentsEdificioProps }) => {
                                                     <label className="block">Grupo:</label>
                                                     <select name="grupo" value={formData.grupo} onChange={handleFormChange} className="border border-gray-300 p-2 rounded w-full">
                                                         <option value="">Seleccione un grupo</option>
-                                                        {parentsEdificio.edificios.map((parent) => (
+                                                        {parentsEdificio?.map((parent) => (
                                                             <option key={parent.id} value={parent.id}>
                                                                 {parent.direccion}
                                                             </option>
@@ -1486,7 +1512,7 @@ const Table = ({ parentsEdificioProps }) => {
                                                             value="Edificio"
                                                             checked={selectedType === 'Edificio'}
                                                             onChange={(e) => {
-                                                                setSelectedType(e.target.value);
+                                                                setSelectedType('Edificio');
                                                                 handleFormChange(e);
                                                             }}
                                                         />
@@ -1499,7 +1525,7 @@ const Table = ({ parentsEdificioProps }) => {
                                                             value="Escalera"
                                                             checked={selectedType === 'Escalera'}
                                                             onChange={(e) => {
-                                                                setSelectedType(e.target.value);
+                                                                setSelectedType('Escalera');
                                                                 handleFormChange(e);
                                                             }}
                                                         />
@@ -1511,17 +1537,9 @@ const Table = ({ parentsEdificioProps }) => {
                                                 <label className="block mb-2">Elige un grupo:</label>
                                                 <select name="existingGroup" value={formData.existingGroup} onChange={handleFormChange} className="border border-gray-300 p-2 rounded w-full">
                                                     <option value="">Seleccione un grupo</option>
-                                                    {selectedType === 'Edificio'
-                                                        ? parentsEdificio.edificios.map((parent) => (
-                                                            <option key={parent.id} value={parent.id}>
-                                                                {parent.direccion}
-                                                            </option>
-                                                        ))
-                                                        : parentsEscalera.escaleras.map((parent) => (
-                                                            <option key={parent.id} value={parent.id}>
-                                                                {parent.direccion}
-                                                            </option>
-                                                        ))}
+                                                    {console.log('parentsEdificio', parentsEdificio)}
+                                                    {console.log('parentsEscalera', parentsEscalera)}
+                                                    {options}
                                                 </select>
                                             </div>
                                             <div className="flex gap-4 mt-4 flex-row justify-center items-center">
