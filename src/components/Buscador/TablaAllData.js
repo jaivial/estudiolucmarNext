@@ -431,16 +431,37 @@ const Table = ({ parentsEdificioProps }) => {
                     }).showToast();
                     return;
                 } else {
-                    // Call Supabase function
+                    // Call API using Axios
                     console.log('selectedItems', selectedItems);
-                    const { data, error } = await supabase
-                        .rpc('create_new_edificio_agrupacion', {
-                            _name: formData.nombre,
-                            _inmuebles: Array.from(selectedItems),
+                    try {
+                        const response = await axios.post('/api/create_new_edificio_agrupacion', {
+                            name: formData.nombre,
+                            selectedInmuebles: Array.from(selectedItems),
                         });
-                    console.log('data', data); // Debugging line
 
-                    if (error) {
+                        console.log('response data', response.data); // Debugging line
+
+                        Toastify({
+                            text: 'Edificio creado.',
+                            duration: 2500,
+                            gravity: 'top',
+                            position: 'center',
+                            style: {
+                                borderRadius: '10px',
+                                backgroundImage: 'linear-gradient(to right bottom, #00603c, #006f39, #007d31, #008b24, #069903)',
+                                textAlign: 'center',
+                            },
+                        }).showToast();
+
+                        setShowPopup(false);
+                        setSelectedItems(new Set());
+                        setFormData({ tipo: '', nombre: '', existingGroup: '', grupo: '' });
+                        handleIconClick();
+                        fetchData(currentPage, searchTerm);
+                        setShowExtraButtons(false);
+                        setShowUngroupButtons(false);
+                        fetchParentsEdificio();
+                    } catch (error) {
                         console.error('Error performing operation:', error);
                         Toastify({
                             text: 'Error performing operation.',
@@ -453,29 +474,7 @@ const Table = ({ parentsEdificioProps }) => {
                                 textAlign: 'center',
                             },
                         }).showToast();
-                        return;
                     }
-
-                    Toastify({
-                        text: 'Eificio creado.',
-                        duration: 2500,
-                        gravity: 'top',
-                        position: 'center',
-                        style: {
-                            borderRadius: '10px',
-                            backgroundImage: 'linear-gradient(to right bottom, #00603c, #006f39, #007d31, #008b24, #069903)',
-                            textAlign: 'center',
-                        },
-                    }).showToast();
-
-                    setShowPopup(false);
-                    setSelectedItems(new Set());
-                    setFormData({ tipo: '', nombre: '', existingGroup: '', grupo: '' });
-                    handleIconClick();
-                    fetchData(currentPage, searchTerm);
-                    setShowExtraButtons(false);
-                    setShowUngroupButtons(false);
-                    fetchParentsEdificio();
                 }
             } else if (formData.tipo === 'Escalera') {
                 if (formData.nombre === '' || formData.grupo === '') {
