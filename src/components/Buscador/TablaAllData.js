@@ -85,65 +85,39 @@ const Table = ({ parentsEdificioProps }) => {
 
 
     const fetchData = async () => {
+
         try {
-            const {
-                selectedZone,
-                selectedResponsable,
-                selectedCategoria,
-                filterNoticia,
-                filterEncargo,
-                superficieMin,
-                superficieMax,
-                yearMin,
-                yearMax,
-                localizado,
-                habitaciones,
-                banos,
-                tipo,
-                aireacondicionado,
-                ascensor,
-                garaje,
-                jardin,
-                terraza,
-                trastero
-            } = filters;
+            setLoading(true);
+            const params = new URLSearchParams({
+                pattern: searchTerm,
+                itemsPerPage: 8,
+                currentPage: currentPage
+            });
+            axios.get('api/searchInmuebles', { params }).then((response) => {
+                const data = response.data;
+                console.log('searchInmuebles Response:', data); // Log the entire API response
+                setData(data);
 
+            }).catch((error) => {
+                console.error('Error fetching data:', error.message || error);
+                setLoading(false);
+            });
 
-            const response = await fetchAllData(
-                currentPage,
-                searchTerm,
-                6,
-                selectedZone,
-                selectedResponsable,
-                selectedCategoria,
-                filterNoticia,
-                filterEncargo,
-                superficieMin,
-                superficieMax,
-                yearMin,
-                yearMax,
-                localizado,
-                habitaciones,
-                banos,
-                tipo,
-                aireacondicionado,
-                ascensor,
-                garaje,
-                jardin,
-                terraza,
-                trastero
-            );
+            if (!data) {
+                throw new Error("Invalid data format received from the API");
+            }
 
-            setData(response.mergedData || []);
-            setTotalPages(response.totalPages || 1);
-            setTotalItems(response.total || 0);
-            setAnalyticsData(response.analyticsData || []);
             setLoading(false);
+
         } catch (error) {
-            console.error('Error fetching data:', error);
+            console.error('Error fetching data:', error.message || error);
             setLoading(false);
         }
     };
+
+
+
+
 
     const fetchParentsEdificio = async () => {
         const { data, error } = await supabase.rpc('fetch_parents');
