@@ -7,7 +7,11 @@ export default async function handler(req, res) {
         const client = await clientPromise;
         const db = client.db('inmoprocrm'); // Use the correct database name
 
-        const { pattern = '' } = req.query;
+        const { pattern = '', currentPage = 1, itemsPerPage = 10 } = req.query;
+
+        const page = parseInt(currentPage, 10);
+        const limit = parseInt(itemsPerPage, 10);
+        const skip = (page - 1) * limit;
 
         // Build the query object to match the pattern in the desired fields
         const query = pattern
@@ -55,12 +59,19 @@ export default async function handler(req, res) {
             nestedescaleras: 1
         };
 
-        // Query the 'inmuebles' collection to find matching documents, ordered by 'direccion' asc, limit to 10 results
+        // Count the total number of matching documents
+        const totalCount = await db.collection('inmuebles').countDocuments(query);
+
+        // Calculate total pages
+        const totalPages = Math.ceil(totalCount / limit);
+
+        // Query the 'inmuebles' collection to find matching documents, ordered by 'direccion' asc, with pagination
         const results = await db.collection('inmuebles')
             .find(query)
             .project(projection)
             .sort({ direccion: 1 })
-            .limit(10)
+            .skip(skip)
+            .limit(limit)
             .toArray();
 
         // Check for conflict situation and return full element if condition is met
@@ -104,7 +115,7 @@ export default async function handler(req, res) {
 
         console.timeEnd("Fetch Duration");
 
-        res.status(200).json(finalResults);
+        res.status(200).json({ totalPages, currentPage: page, results: finalResults });
     } catch (e) {
         console.error('API Error:', e.message, e.stack);
         res.status(500).json({ error: 'An error occurred while processing your request.' });

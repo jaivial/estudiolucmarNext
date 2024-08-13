@@ -84,19 +84,21 @@ const Table = ({ parentsEdificioProps }) => {
     }, []);
 
 
-    const fetchData = async () => {
+    const fetchData = async (currentPage, searchTerm) => {
 
         try {
             setLoading(true);
             const params = new URLSearchParams({
                 pattern: searchTerm,
-                itemsPerPage: 8,
+                itemsPerPage: 4,
                 currentPage: currentPage
             });
             axios.get('api/searchInmuebles', { params }).then((response) => {
                 const data = response.data;
                 console.log('searchInmuebles Response:', data); // Log the entire API response
-                setData(data);
+                setData(data.results);
+                setTotalPages(data.totalPages);
+                setCurrentPage(data.currentPage);
 
             }).catch((error) => {
                 console.error('Error fetching data:', error.message || error);
@@ -156,7 +158,7 @@ const Table = ({ parentsEdificioProps }) => {
 
     useEffect(() => {
         const fetchAndSetData = async () => {
-            await fetchData();
+            await fetchData(currentPage, searchTerm);
             if (currentPage > totalPages) {
                 setCurrentPage(totalPages > 0 ? totalPages : 1); // Ensure currentPage is set to a valid page number
             }
