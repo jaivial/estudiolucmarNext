@@ -59,24 +59,20 @@ export default async function handler(req, res) {
             nestedescaleras: 1
         };
 
-        // Count the total number of matching documents
+        // Count the total number of matching documents˘
         const totalCount = await db.collection('inmuebles').countDocuments(query);
 
         // Calculate total pages
         const totalPages = Math.ceil(totalCount / limit);
 
-        const results = pattern
-            ? await db.collection('inmuebles')
-                .find(query)
-                .project(projection)
-                .skip(skip)
-                .limit(limit)
-                .toArray()
-            : await db.collection('inmuebles')
-                .find({})
-                .skip(skip)
-                .limit(limit)
-                .toArray(); // Fetch all documents if pattern is empty
+        // Query the 'inmuebles' collection to find matching documents, ordered by 'direccion' asc, with pagination
+        const results = await db.collection('inmuebles')
+            .find(query)
+            .project(projection)
+            .sort({ direccion: 1 })
+            .skip(skip)
+            .limit(limit)
+            .toArray();
 
 
         // Check for conflict situation and return full element if condition is met
