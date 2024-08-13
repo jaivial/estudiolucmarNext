@@ -1,31 +1,26 @@
 import { MongoClient } from 'mongodb';
 
-const uri = process.env.MONGODB_URI; // Asegúrate de que esta variable esté en tu archivo .env.local
+const uri = process.env.MONGODB_ATLAS_URI; // Ensure this is set in your .env.local
 const options = {};
 
 let client;
 let clientPromise;
 
-if (!process.env.MONGODB_URI) {
-    throw new Error('Please add your Mongo URI to .env.local');
+if (!uri) {
+    throw new Error('Please add your MongoDB Atlas URI to .env.local');
 }
 
 if (process.env.NODE_ENV === 'development') {
-    // En modo de desarrollo, usa una variable global para evitar recrear la conexión
+    // In development mode, use a global variable so the client is not recreated on every request
     if (!global._mongoClientPromise) {
         client = new MongoClient(uri, options);
-        global._mongoClientPromise = client.connect().then(client => {
-            return client.db('inmoprocrm'); // Selecciona la base de datos 'inmoprocrm'
-        });
+        global._mongoClientPromise = client.connect();
     }
     clientPromise = global._mongoClientPromise;
 } else {
-    // En modo producción, es mejor no usar una variable global
+    // In production mode, it's best to not use a global variable
     client = new MongoClient(uri, options);
-    clientPromise = client.connect().then(client => {
-        return client.db('inmoprocrm'); // Selecciona la base de datos 'inmoprocrm'
-    });
+    clientPromise = client.connect();
 }
 
-// Exporta `clientPromise` para ser utilizado en el resto de la aplicación
 export default clientPromise;
