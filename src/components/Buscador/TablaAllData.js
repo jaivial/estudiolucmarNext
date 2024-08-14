@@ -586,7 +586,7 @@ const Table = ({ parentsEdificioProps }) => {
                 }
                 setSmallLoadingScreen(true);
                 // Use axios to make the API call
-                const { data, error } = await axios.post('http://localhost:3000/api/existing_edificio_agrupacion', {
+                const { data, error } = await axios.post('/api/existing_edificio_agrupacion', {
                     type: formData.tipo,
                     inmuebles: Array.from(selectedItems),
                     existingGroup: parseInt(formData.existingGroup, 10),
