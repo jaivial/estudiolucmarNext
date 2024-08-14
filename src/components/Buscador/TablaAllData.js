@@ -727,17 +727,15 @@ const Table = ({ parentsEdificioProps }) => {
             return;
         }
 
+        const orphanIds = orphanInfo.map(orphan => orphan.id);
+
         axios
-            .get('http://localhost:8000/backend/inmuebles/deleteOrphan.php', {
-                params: {
-                    id: orphanInfo[0].id,
-                },
-            })
+            .post('/api/delete_orphan', { orphanIds }) // Use POST request
             .then((response) => {
                 console.log(response.data);
                 if (response.data.status === 'success') {
                     Toastify({
-                        text: 'Grupo eliminado',
+                        text: 'Grupos eliminados',
                         duration: 2500,
                         destination: 'https://github.com/apvarun/toastify-js',
                         newWindow: true,
