@@ -1,16 +1,13 @@
 import React, { use, useEffect, useState } from 'react';
 // import ItemDetails from './itemDetails/ItemDetails.jsx';
 import LoadingScreen from '../LoadingScreen/LoadingScreen.js';
-// import AddNewInmueble from './AddNewInmueble';
-import Select from 'react-select';
+import AddNewInmueble from './AddNewInmueble';
 import Toastify from 'toastify-js';
 import './stylesBuscador.css';
 import axios from 'axios';
-import { fetchAllData } from '../../lib/supabase/buscador/functionsBuscador.js';
 import FilterMenu from './FilterMenu.js';
 import { IoAnalytics } from "react-icons/io5";
 import Analytics from './Analytics.js';
-import { supabase } from '../../lib/supabase/supabaseClient.js';
 import SmallLoadingScreen from '../LoadingScreen/SmallLoadingScreen.js';
 
 
@@ -1667,7 +1664,7 @@ const Table = ({ parentsEdificioProps }) => {
                     </div>
                 </div>
             )}
-            {/* {showAddNewInmueble && (
+            {showAddNewInmueble && (
                 <AddNewInmueble
                     showAddNewInmueble={showAddNewInmueble}
                     setShowAddNewInmueble={setShowAddNewInmueble}
@@ -1676,7 +1673,7 @@ const Table = ({ parentsEdificioProps }) => {
                     searchTerm={searchTerm}
                     handleIconAddInmueble={handleIconAddInmueble}
                 />
-            )} */}
+            )}
         </div>
     );
 };
