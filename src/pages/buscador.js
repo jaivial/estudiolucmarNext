@@ -1,14 +1,54 @@
 import GeneralLayout from "../components/layouts/GeneralLayout.js";
 import { useState } from "react";
 import TablaAllData from "../components/Buscador/TablaAllData.js";
-import { supabase } from "../lib/supabase/supabaseClient.js";
-
+import clientPromise from '../lib/mongodb.js'; // Import clientPromise
 
 export const getServerSideProps = async () => {
-    // Fetch data from Supabase
-    const { data, error } = await supabase.rpc('fetch_parents');
+    try {
+        const client = await clientPromise;
+        const db = client.db('inmoprocrm'); // Use the correct database name
 
-    if (error) {
+        // Fetch inmuebles where tipoagrupacion = 2
+        const edificios = await db.collection('inmuebles').aggregate([
+            {
+                $match: { tipoagrupacion: 2 },
+            },
+            {
+                $project: {
+                    _id: 0,
+                    id: 1,
+                    direccion: 1,
+                },
+            },
+        ]).toArray();
+
+        // Fetch id and direccion from nestedescaleras where tipoagrupacion = 3
+        const escaleras = await db.collection('inmuebles').aggregate([
+            {
+                $unwind: "$nestedescaleras",
+            },
+            {
+                $match: { "nestedescaleras.tipoagrupacion": 3 },
+            },
+            {
+                $project: {
+                    _id: 0,
+                    id: "$nestedescaleras.id",
+                    direccion: "$nestedescaleras.direccion",
+                },
+            },
+        ]).toArray();
+
+        // Return the data as props
+        return {
+            props: {
+                parentsEdificioProps: {
+                    edificios: edificios,
+                    escaleras: escaleras,
+                }, // Create an object with the desired properties
+            },
+        };
+    } catch (error) {
         console.error('Error fetching parents:', error);
         return {
             props: {
@@ -16,16 +56,7 @@ export const getServerSideProps = async () => {
             },
         };
     }
-
-    // Return the data as props
-    return {
-        props: {
-            parentsEdificioProps: data || { edificios: [], escaleras: [] }, // Ensure data is an object
-        },
-    };
 };
-
-
 
 export default function Buscador({ parentsEdificioProps }) {
     const [loading, setLoading] = useState(true);

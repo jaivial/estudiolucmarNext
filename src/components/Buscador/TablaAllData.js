@@ -80,7 +80,7 @@ const Table = ({ parentsEdificioProps }) => {
     const [options, setOptions] = useState([]);
 
     useEffect(() => {
-        console.log('parentsEdificio', parentsEdificioProps.edificios);
+        console.log('parentsEdificio', parentsEdificioProps);
     }, []);
 
 
@@ -118,19 +118,15 @@ const Table = ({ parentsEdificioProps }) => {
     };
 
 
-
-
-
     const fetchParentsEdificio = async () => {
-        const { data, error } = await supabase.rpc('fetch_parents');
+        try {
+            const { data } = await axios.get('/api/fetch_parents'); // Use axios to fetch parents
 
-        if (error) {
+            setParentsEdificio(data.edificios || []); // Set the state with fetched data
+            setParentsEscalera(data.escaleras || []); // Set the state with fetched data
+        } catch (error) {
             console.error('Error fetching parents:', error);
-            return;
         }
-
-        setParentsEdificio(data.edificios || { edificios: [] });
-        setParentsEscalera(data.escaleras || { escaleras: [] });
     };
 
     useEffect(() => {
@@ -498,12 +494,11 @@ const Table = ({ parentsEdificioProps }) => {
                 } else {
                     // Call Supabase function
                     console.log('selectedItems', selectedItems);
-                    const { data, error } = await supabase
-                        .rpc('create_new_escalera_agrupacion', {
-                            _name: formData.nombre,
-                            _inmuebles: Array.from(selectedItems),
-                            _grupo: formData.grupo,
-                        });
+                    const { data, error } = await axios.post('/api/create_new_escalera_agrupacion', {
+                        name: formData.nombre,
+                        selectedInmuebles: Array.from(selectedItems),
+                        grupo: parseInt(formData.grupo, 10), // Convert grupo to an integer
+                    });
                     console.log('data', data); // Debugging line
 
                     if (error) {
