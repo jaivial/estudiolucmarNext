@@ -11,6 +11,7 @@ import FilterMenu from './FilterMenu.js';
 import { IoAnalytics } from "react-icons/io5";
 import Analytics from './Analytics.js';
 import { supabase } from '../../lib/supabase/supabaseClient.js';
+import SmallLoadingScreen from '../LoadingScreen/SmallLoadingScreen.js';
 
 
 const Table = ({ parentsEdificioProps }) => {
@@ -78,6 +79,7 @@ const Table = ({ parentsEdificioProps }) => {
     const [analyticsData, setAnalyticsData] = useState([]);
     const [selectedType, setSelectedType] = useState();
     const [options, setOptions] = useState([]);
+    const [smallLoadingScreen, setSmallLoadingScreen] = useState(false);
 
     useEffect(() => {
         console.log('parentsEdificio', parentsEdificioProps);
@@ -426,8 +428,8 @@ const Table = ({ parentsEdificioProps }) => {
                     return;
                 } else {
                     // Call API using Axios
-                    console.log('selectedItems', selectedItems);
                     try {
+                        setSmallLoadingScreen(true);
                         const response = await axios.post('/api/create_new_edificio_agrupacion', {
                             name: formData.nombre,
                             selectedInmuebles: Array.from(selectedItems),
@@ -455,6 +457,7 @@ const Table = ({ parentsEdificioProps }) => {
                         setShowExtraButtons(false);
                         setShowUngroupButtons(false);
                         fetchParentsEdificio();
+                        setSmallLoadingScreen(false);
                     } catch (error) {
                         console.error('Error performing operation:', error);
                         Toastify({
@@ -468,6 +471,7 @@ const Table = ({ parentsEdificioProps }) => {
                                 textAlign: 'center',
                             },
                         }).showToast();
+                        setSmallLoadingScreen(false);
                     }
                 }
             } else if (formData.tipo === 'Escalera') {
@@ -491,6 +495,7 @@ const Table = ({ parentsEdificioProps }) => {
                     return;
                 } else {
                     // Call Supabase function
+                    setSmallLoadingScreen(true);
                     console.log('selectedItems', selectedItems);
                     const { data, error } = await axios.post('/api/create_new_escalera_agrupacion', {
                         name: formData.nombre,
@@ -512,6 +517,7 @@ const Table = ({ parentsEdificioProps }) => {
                                 textAlign: 'center',
                             },
                         }).showToast();
+                        setSmallLoadingScreen(false);
                         return;
                     }
 
@@ -526,6 +532,8 @@ const Table = ({ parentsEdificioProps }) => {
                             textAlign: 'center',
                         },
                     }).showToast();
+
+                    setSmallLoadingScreen(false);
 
                     setShowPopup(false);
                     setSelectedItems(new Set());
@@ -578,6 +586,7 @@ const Table = ({ parentsEdificioProps }) => {
                     }).showToast();
                     return;
                 }
+                setSmallLoadingScreen(true);
                 // Use axios to make the API call
                 const { data, error } = await axios.post('http://localhost:3000/api/existing_edificio_agrupacion', {
                     type: formData.tipo,
@@ -598,9 +607,11 @@ const Table = ({ parentsEdificioProps }) => {
                             textAlign: 'center',
                         },
                     }).showToast();
+                    setSmallLoadingScreen(false);
                     return;
                 }
 
+                setSmallLoadingScreen(false);
                 setShowPopup(false);
                 setSelectedItems(new Set());
                 setFormData({ tipo: '', nombre: '', existingGroup: '', grupo: '' });
@@ -631,6 +642,7 @@ const Table = ({ parentsEdificioProps }) => {
                     }).showToast();
                     return;
                 }
+                setSmallLoadingScreen(true);
                 // Use axios to make the API call
                 const { data, error } = await axios.post('/api/existing_escalera_agrupacion', {
                     type: formData.tipo,
@@ -650,9 +662,11 @@ const Table = ({ parentsEdificioProps }) => {
                             textAlign: 'center',
                         },
                     }).showToast();
+                    setSmallLoadingScreen(false);
                     return;
                 }
 
+                setSmallLoadingScreen(false);
                 setShowPopup(false);
                 setSelectedItems(new Set());
                 setFormData({ tipo: '', nombre: '', existingGroup: '', grupo: '' });
@@ -687,6 +701,7 @@ const Table = ({ parentsEdificioProps }) => {
         // const payload = { inmuebles: Array.from(selectedItemsUngroup) };
 
         try {
+            setSmallLoadingScreen(true);
             const response = await axios.post('/api/ungroup', { inmuebles: Array.from(selectedItemsUngroup) });
             console.log(response.data);
             if (response.data.empty === true) {
@@ -709,7 +724,7 @@ const Table = ({ parentsEdificioProps }) => {
                 },
                 onClick: function () { }, // Callback after click
             }).showToast();
-
+            setSmallLoadingScreen(false);
             setShowPopupUngroup(false);
             setSelectedItemsUngroup(new Set());
             fetchData(currentPage, searchTerm);
@@ -726,7 +741,7 @@ const Table = ({ parentsEdificioProps }) => {
             console.error('Orphan info is empty or undefined');
             return;
         }
-
+        setSmallLoadingScreen(true);
         const orphanIds = orphanInfo.map(orphan => orphan.id);
 
         axios
@@ -761,7 +776,10 @@ const Table = ({ parentsEdificioProps }) => {
             .catch((error) => {
                 console.error('Error deleting orphan:', error);
                 alert('Error deleting orphan: ' + error.message);
+                setSmallLoadingScreen(false);
             });
+        setSmallLoadingScreen(false);
+
     };
 
     const handleKeepOrphan = () => {
@@ -1120,8 +1138,11 @@ const Table = ({ parentsEdificioProps }) => {
         return <LoadingScreen />;
     }
 
+
+
     return (
         <div>
+            {smallLoadingScreen && <SmallLoadingScreen />}
             {selectedId ? (
                 // <ItemDetails id={selectedId} onClose={handleClose} />
                 <div className="container mx-auto p-4 pb-24 pt-8">
