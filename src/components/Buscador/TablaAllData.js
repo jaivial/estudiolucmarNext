@@ -683,11 +683,11 @@ const Table = ({ parentsEdificioProps }) => {
 
     const handleSubmitFormUngroup = async (e) => {
         e.preventDefault();
-        const url = 'http://localhost:8000/backend/inmuebles/desagrupar.php';
-        const payload = { inmuebles: Array.from(selectedItemsUngroup) };
+        // const url = 'http://localhost:8000/backend/inmuebles/desagrupar.php';
+        // const payload = { inmuebles: Array.from(selectedItemsUngroup) };
 
         try {
-            const response = await axios.post(url, payload);
+            const response = await axios.post('/api/ungroup', { inmuebles: Array.from(selectedItemsUngroup) });
             console.log(response.data);
             if (response.data.status === 'failure') {
                 setShowAskForDeleteOrphan(true);
