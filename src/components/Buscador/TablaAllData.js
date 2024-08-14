@@ -689,9 +689,9 @@ const Table = ({ parentsEdificioProps }) => {
         try {
             const response = await axios.post('/api/ungroup', { inmuebles: Array.from(selectedItemsUngroup) });
             console.log(response.data);
-            if (response.data.status === 'failure') {
-                setShowAskForDeleteOrphan(true);
-                setOrphanInfo(response.data.data);
+            if (response.data.empty === true) {
+                setOrphanInfo(response.data.emptyParents);
+                setShowAskForDeleteOrphan(true)
             }
             Toastify({
                 text: 'Inmueble desagrupado',
@@ -715,6 +715,7 @@ const Table = ({ parentsEdificioProps }) => {
             fetchData(currentPage, searchTerm);
             setShowExtraButtons(false);
             setShowUngroupButtons(false);
+            console.log('orphanInfo', orphanInfo);
         } catch (error) {
             console.error('Error performing operation:', error);
         }
@@ -1596,9 +1597,11 @@ const Table = ({ parentsEdificioProps }) => {
             {showAskForDeleteOrphan && (
                 <div className="popup-container fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-75 z-50">
                     <div className="popup-content bg-white p-4 shadow-lg flex flex-col justify-center items-center gap-4 rounded-lg w-4/6">
-                        <h2 className="text-lg font-bold w-[80%] text-center flex justify-center">El siguiente grupo se ha quedado vacío:</h2>
-                        <p>{`${orphanInfo[0].direccion}`}</p>
-                        <p>¿Desea eliminarlo?</p>
+                        <h2 className="text-lg font-bold w-[80%] text-center flex justify-center">Los siguientes grupos se han quedado vacíos:</h2>
+                        {orphanInfo.map((info, index) => (
+                            <p key={index}>{info.direccion}</p>
+                        ))}
+                        <p>¿Desea eliminarlos?</p>
                         <div className="flex justify-center gap-4">
                             <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded w-[120px]" onClick={handleKeepOrphan}>
                                 Mantener

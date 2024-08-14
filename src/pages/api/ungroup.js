@@ -51,6 +51,7 @@ export default async function handler(req, res) {
         console.log('nestedInmuebles:', nestedInmuebles);
 
         // Step 2: Remove selected inmuebles from their original documents and delete from collection
+        const emptyParents = [];
         for (const selectedId of inmuebles) {
             // Check if the selected ID is in nestedinmuebles or nestedescaleras.nestedinmuebles of any document
             // Find the parent document containing the selectedId in either nestedinmuebles or nestedescaleras.nestedinmuebles
@@ -73,6 +74,26 @@ export default async function handler(req, res) {
                     { id: parentDocument.id, "nestedescaleras.nestedinmuebles.id": selectedId },
                     { $pull: { "nestedescaleras.$.nestedinmuebles": { id: selectedId } } }
                 );
+                // Check if the nestedinmuebles array is empty after removing the selected inmueble
+                const isNestedInmueblesEmpty = await db.collection('inmuebles').findOne({ id: parentDocument.id }, { projection: { nestedinmuebles: 1, "nestedescaleras.nestedinmuebles": 1 } });
+                const nestedInmueblesEmpty = isNestedInmueblesEmpty.nestedinmuebles.length === 0 || isNestedInmueblesEmpty.nestedescaleras.every(n => n.nestedinmuebles.length === 0);
+
+                // Update the response with the empty status and the parent document id and direccion
+                if (nestedInmueblesEmpty) {
+                    const parentEscalera = parentDocument.nestedescaleras.find(escalera => escalera.nestedinmuebles.some(inmueble => inmueble.id === selectedId));
+                    if (parentEscalera) {
+                        emptyParents.push({
+                            id: parentEscalera.id,
+                            direccion: parentEscalera.direccion
+                        });
+                    } else {
+                        emptyParents.push({
+                            id: parentDocument.id,
+                            direccion: parentDocument.direccion
+                        });
+                    }
+                }
+
             } else {
                 console.log('No parent document found for selected ID:', selectedId);
             }
@@ -81,15 +102,15 @@ export default async function handler(req, res) {
             await db.collection('inmuebles').deleteOne({ id: selectedId });
         }
 
+
         // Step 3: Insert the selected inmuebles as individual documents
         for (const inmueble of nestedInmuebles) {
-            console.log('inmueble individual:', inmueble);
             await db.collection('inmuebles').insertOne(inmueble);
         }
 
         console.timeEnd("Ungroup Duration");
 
-        return res.status(200).json({ status: 'success' });
+        return res.status(200).json({ status: 'success', empty: emptyParents.length > 0, emptyParents });
     } catch (error) {
         console.error(error);
         return res.status(500).json({ status: 'error', message: error.message });
