@@ -383,8 +383,6 @@ const Table = ({ parentsEdificioProps }) => {
 
     const handleSubmitForm = async (e) => {
         e.preventDefault();
-        let url = '';
-        let payload = {};
 
         if (showFormType === 'new') {
             if (formData.tipo === '') {
@@ -580,12 +578,39 @@ const Table = ({ parentsEdificioProps }) => {
                     }).showToast();
                     return;
                 }
-                url = 'http://localhost:8000/backend/inmuebles/agruparExistenteEdificio.php';
-                payload = {
+                // Use axios to make the API call
+                const { data, error } = await axios.post('http://localhost:3000/api/existing_edificio_agrupacion', {
                     type: formData.tipo,
                     inmuebles: Array.from(selectedItems),
-                    existingGroup: formData.existingGroup,
-                };
+                    existingGroup: parseInt(formData.existingGroup, 10),
+                });
+                console.log('data', data);
+                if (error) {
+                    console.error('Error performing operation:', error);
+                    Toastify({
+                        text: 'Error performing operation.',
+                        duration: 2500,
+                        gravity: 'top',
+                        position: 'center',
+                        style: {
+                            borderRadius: '10px',
+                            backgroundImage: 'linear-gradient(to right top, #c62828, #b92125, #ac1a22, #a0131f, #930b1c)',
+                            textAlign: 'center',
+                        },
+                    }).showToast();
+                    return;
+                }
+
+                setShowPopup(false);
+                setSelectedItems(new Set());
+                setFormData({ tipo: '', nombre: '', existingGroup: '', grupo: '' });
+                handleIconClick();
+                fetchData(currentPage, searchTerm);
+                setShowExtraButtons(false);
+                setShowUngroupButtons(false);
+                fetchParentsEdificio();
+
+
             } else if (formData.tipo === 'Escalera') {
                 if (formData.existingGroup === '') {
                     Toastify({
@@ -606,43 +631,54 @@ const Table = ({ parentsEdificioProps }) => {
                     }).showToast();
                     return;
                 }
-                url = 'http://localhost:8000/backend/inmuebles/agruparExistenteEscalera.php';
-                payload = {
+                // Use axios to make the API call
+                const { data, error } = await axios.post('/api/existing_escalera_agrupacion', {
                     type: formData.tipo,
                     inmuebles: Array.from(selectedItems),
-                    existingGroup: formData.existingGroup,
-                };
+                    existingGroup: parseInt(formData.existingGroup, 10),
+                });
+                if (error) {
+                    console.error('Error performing operation:', error);
+                    Toastify({
+                        text: 'Error performing operation.',
+                        duration: 2500,
+                        gravity: 'top',
+                        position: 'center',
+                        style: {
+                            borderRadius: '10px',
+                            backgroundImage: 'linear-gradient(to right top, #c62828, #b92125, #ac1a22, #a0131f, #930b1c)',
+                            textAlign: 'center',
+                        },
+                    }).showToast();
+                    return;
+                }
+
+                setShowPopup(false);
+                setSelectedItems(new Set());
+                setFormData({ tipo: '', nombre: '', existingGroup: '', grupo: '' });
+                handleIconClick();
+                fetchData(currentPage, searchTerm);
+                setShowExtraButtons(false);
+                setShowUngroupButtons(false);
+                fetchParentsEdificio();
             }
         }
-
-        try {
-            await axios.post(url, payload);
-            Toastify({
-                text: 'Inmueble agrupado.',
-                duration: 2500,
-                destination: 'https://github.com/apvarun/toastify-js',
-                newWindow: true,
-                close: false,
-                gravity: 'top', // `top` or `bottom`
-                position: 'center', // `left`, `center` or `right`
-                stopOnFocus: true, // Prevents dismissing of toast on hover
-                style: {
-                    borderRadius: '10px',
-                    backgroundImage: 'linear-gradient(to right bottom, #00603c, #006f39, #007d31, #008b24, #069903)',
-                    textAlign: 'center',
-                },
-                onClick: function () { }, // Callback after click
-            }).showToast();
-            setShowPopup(false);
-            setSelectedItems(new Set());
-            setFormData({ tipo: '', nombre: '', existingGroup: '', grupo: '' });
-            handleIconClick();
-            fetchData(currentPage, searchTerm);
-            setShowExtraButtons(false);
-            setShowUngroupButtons(false);
-        } catch (error) {
-            console.error('Error performing operation:', error);
-        }
+        Toastify({
+            text: 'Inmueble agrupado.',
+            duration: 2500,
+            destination: 'https://github.com/apvarun/toastify-js',
+            newWindow: true,
+            close: false,
+            gravity: 'top', // `top` or `bottom`
+            position: 'center', // `left`, `center` or `right`
+            stopOnFocus: true, // Prevents dismissing of toast on hover
+            style: {
+                borderRadius: '10px',
+                backgroundImage: 'linear-gradient(to right bottom, #00603c, #006f39, #007d31, #008b24, #069903)',
+                textAlign: 'center',
+            },
+            onClick: function () { }, // Callback after click
+        }).showToast();
     };
 
     const handleSubmitFormUngroup = async (e) => {
