@@ -45,6 +45,7 @@ const AddInmueblePopup = ({ showAddNewInmueble, setShowAddNewInmueble, fetchData
     const [aireAcondicionado, setAireAcondicionado] = useState(false);
     const [loading, setLoading] = useState(false);
 
+
     const toggleOptions = () => {
         setShowOptions(!showOptions);
     };

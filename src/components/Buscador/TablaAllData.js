@@ -1,7 +1,8 @@
 import React, { use, useEffect, useState } from 'react';
 // import ItemDetails from './itemDetails/ItemDetails.jsx';
+import dynamic from 'next/dynamic';
+const AddNewInmueble = dynamic(() => import('./AddNewInmueble'), { ssr: false });
 import LoadingScreen from '../LoadingScreen/LoadingScreen.js';
-import AddNewInmueble from './AddNewInmueble';
 import Toastify from 'toastify-js';
 import './stylesBuscador.css';
 import axios from 'axios';
