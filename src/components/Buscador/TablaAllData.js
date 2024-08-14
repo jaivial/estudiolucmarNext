@@ -80,6 +80,7 @@ const Table = ({ parentsEdificioProps }) => {
     const [selectedType, setSelectedType] = useState();
     const [options, setOptions] = useState([]);
     const [smallLoadingScreen, setSmallLoadingScreen] = useState(false);
+    const [nestedElements, setNestedElements] = useState([]);
 
     useEffect(() => {
         console.log('parentsEdificio', parentsEdificioProps);
@@ -328,8 +329,8 @@ const Table = ({ parentsEdificioProps }) => {
         setShowPopupUngroup(!showPopupUngroup);
     };
 
-    const handlePopupToggleDeleteInmueble = () => {
-        // Example: Send DELETE request to backend
+    const handlePopupToggleDeleteInmueble = async () => {
+
         if (selectedItems.size === 0) {
             Toastify({
                 text: 'Selecciona un inmueble',
@@ -349,29 +350,26 @@ const Table = ({ parentsEdificioProps }) => {
             }).showToast();
             return;
         }
-
-        axios
-            .get('http://localhost:8000/backend/inmuebles/checkChildrenDelete.php', {
-                params: {
-                    inmuebles: Array.from(selectedItems),
-                },
-            })
-            .then((response) => {
-                console.log(response.data);
-                if (response.data.status === 'success') {
-                    setKeepChildren(response.data.data);
-                    setParentData(response.data.parentdata);
-                    setThereAreChildrenDelete(true);
-                } else {
-                    setThereAreChildrenDelete(false);
-                }
-            })
-            .catch((error) => {
-                console.error('Error deleting orphan:', error);
-                alert('Error deleting orphan: ' + error.message);
+        try {
+            console.log('selectedItems', selectedItems);
+            const response = await axios.post('/api/check_children_nested', {
+                inmuebles: Array.from(selectedItems) // Transform Set to Array
             });
 
-        setShowPopupDeleteInmueble(!showPopupDeleteInmueble);
+            console.log('response', response.data);
+
+            if (response.data.empty) {
+                setShowPopupDeleteInmueble(!showPopupDeleteInmueble);
+            } else {
+                setShowPopupDeleteInmueble(!showPopupDeleteInmueble);
+                setThereAreChildrenDelete(true);
+                setNestedElements(response.data.nestedElements);
+                console.log('nested Elements', response.data.nestedElements);
+            }
+        } catch (error) {
+            console.error('Error checking nested elements:', error);
+            // Handle the error appropriately
+        }
     };
 
     const handleFormChange = (e) => {
@@ -697,9 +695,6 @@ const Table = ({ parentsEdificioProps }) => {
 
     const handleSubmitFormUngroup = async (e) => {
         e.preventDefault();
-        // const url = 'http://localhost:8000/backend/inmuebles/desagrupar.php';
-        // const payload = { inmuebles: Array.from(selectedItemsUngroup) };
-
         try {
             setSmallLoadingScreen(true);
             const response = await axios.post('/api/ungroup', { inmuebles: Array.from(selectedItemsUngroup) });
@@ -789,18 +784,16 @@ const Table = ({ parentsEdificioProps }) => {
     };
 
     const handleKeepDeleteInmueble = () => {
-        // Implement logic to keep the orphan item
         setShowPopupDeleteInmueble(false);
         setSelectedId(null);
     };
 
     const handleDeleteInmueble = () => {
         console.log('handleDeleteInmueble', Array.from(selectedItems));
+        setSmallLoadingScreen(true);
         axios
-            .get('http://localhost:8000/backend/inmuebles/deleteInmueble.php', {
-                params: {
-                    inmuebles: Array.from(selectedItems),
-                },
+            .post('/api/delete_inmueble', { // Use POST request
+                inmuebles: Array.from(selectedItems),
             })
             .then((response) => {
                 console.log(response.data);
@@ -830,54 +823,60 @@ const Table = ({ parentsEdificioProps }) => {
                     setKeepChildren(new Set());
                     setParentData([]);
                     setThereAreChildrenDelete(false);
+                    setSmallLoadingScreen(false);
                 } else {
-                    console.error('Error deleting orphan:', response.data.message);
-                    alert('Error deleting orphan: ' + response.data.message);
+                    console.error('Error deleting element:', response.data.message);
+                    alert('Error deleting element: ' + response.data.message);
+                    setShowPopupDeleteInmueble(false);
+                    setSmallLoadingScreen(false);
+                }
+            })
+            .catch((error) => {
+                console.error('Error deleting orphan:', error);
+                alert('Error deleting orphan here: ' + error.message);
+            });
+    };
+    const handleDeleteKeepChildren = () => {
+        console.log(nestedElements);
+        axios
+            .post('/api/delete_keep_children', { // Use POST request
+                inmuebles: nestedElements,
+            })
+            .then((response) => {
+                console.log(response.data);
+                if (response.data.status === 'success') {
+                    Toastify({
+                        text: 'Grupo eliminado',
+                        duration: 2500,
+                        destination: 'https://github.com/apvarun/toastify-js',
+                        newWindow: true,
+                        close: false,
+                        gravity: 'top', // `top` or `bottom`
+                        position: 'center', // `left`, `center` or `right`
+                        stopOnFocus: true, // Prevents dismissing of toast on hover
+                        style: {
+                            borderRadius: '10px',
+                            backgroundImage: 'linear-gradient(to right bottom, #00603c, #006f39, #007d31, #008b24, #069903)',
+                            textAlign: 'center',
+                        },
+                        onClick: function () { }, // Callback after click
+                    }).showToast();
+                    setShowDeleteInmuebleButtons(false);
+                    setShowPopupDeleteInmueble(false);
+                    fetchData(currentPage, searchTerm);
+                    setShowExtraButtons(false);
+                    setShowUngroupButtons(false);
+                    setSelectedItems(new Set());
+                    setKeepChildren(new Set());
+                } else {
+                    console.error('Error deleting element:', response.data.message);
+                    alert('Error deleting element: ' + response.data.message);
                     setShowPopupDeleteInmueble(false);
                 }
             })
             .catch((error) => {
                 console.error('Error deleting orphan:', error);
-                alert('Error deleting orphan: ' + error.message);
-            });
-    };
-
-    const handleDeleteKeepChildren = () => {
-        axios
-            .get('http://localhost:8000/backend/inmuebles/deleteKeepChildren.php', {
-                params: {
-                    inmuebles: Array.from(keepChildren),
-                    parentdata: parentData,
-                },
-            })
-            .then((response) => {
-                Toastify({
-                    text: 'Grupo eliminado',
-                    duration: 2500,
-                    destination: 'https://github.com/apvarun/toastify-js',
-                    newWindow: true,
-                    close: false,
-                    gravity: 'top', // `top` or `bottom`
-                    position: 'center', // `left`, `center` or `right`
-                    stopOnFocus: true, // Prevents dismissing of toast on hover
-                    style: {
-                        borderRadius: '10px',
-                        backgroundImage: 'linear-gradient(to right bottom, #00603c, #006f39, #007d31, #008b24, #069903)',
-                        textAlign: 'center',
-                    },
-                    onClick: function () { }, // Callback after click
-                }).showToast();
-                setShowDeleteInmuebleButtons(false);
-                setShowPopupDeleteInmueble(false);
-                fetchData(currentPage, searchTerm);
-                setShowExtraButtons(false);
-                setShowUngroupButtons(false);
-                setSelectedItems(new Set());
-                setKeepChildren(new Set());
-            })
-            .catch((error) => {
-                console.error('Error deleting orphan:', error);
-                alert('Error deleting orphan: ' + error.message);
+                alert('Error deleting orphan here: ' + error.message);
             });
     };
 
@@ -1371,7 +1370,7 @@ const Table = ({ parentsEdificioProps }) => {
                                             className={`relative border border-gray-400 px-2 py-4 mb-4 rounded-xl shadow-xl flex items-center flex-row w-full bg-gray-100`}>
                                             <div className="w-full flex flex-col justify-center items-center">
                                                 <div className="flex flex-row justify-start items-center gap-2 w-full  cursor-pointer" onClick={() => handleToggle(item.EdificioID)}>
-                                                    {showDeleteInmuebleButtons && <input type="checkbox" checked={selectedItems.has(item.EdificioID)} onChange={() => handleCheckboxChange(item.EdificioID)} className="mr-4 w-[25px] h-[25px]" />}
+                                                    {showDeleteInmuebleButtons && <input type="checkbox" checked={selectedItems.has(item.id)} onChange={() => handleCheckboxChange(item.id)} className="mr-4 w-[25px] h-[25px]" />}
                                                     <div className="flex flex-row justify-start items-center w-[80%] py-2">
                                                         <span className="flex flex-row justify-start items-center w-[75%] pl-1">
                                                             <svg xmlns="http://www.w3.org/2000/svg" width="3em" height="3em" viewBox="0 0 24 24">
