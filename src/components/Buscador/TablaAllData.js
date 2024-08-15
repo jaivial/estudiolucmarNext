@@ -225,6 +225,7 @@ const Table = ({ parentsEdificioProps }) => {
         setSearchTerm('');
         setCurrentPage(1);
         fetchData(1, '');
+        handleResetFilters();
         setShowFilters(false);
     };
 
@@ -954,7 +955,7 @@ const Table = ({ parentsEdificioProps }) => {
             filterNoticia: null,
             filterEncargo: null,
             superficieMin: 0,
-            superficieMax: 200000,
+            superficieMax: 20000,
             yearMin: 1800,
             yearMax: new Date().getFullYear(),
             localizado: null,
@@ -964,9 +965,9 @@ const Table = ({ parentsEdificioProps }) => {
             trastero: null,
             jardin: null,
             terraza: null,
-            tipo: null,
-            banos: null,
-            habitaciones: null,
+            tipo: undefined,
+            banos: undefined,
+            habitaciones: undefined,
 
         });
     };
