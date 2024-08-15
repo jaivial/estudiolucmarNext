@@ -179,29 +179,60 @@ const Table = ({ parentsEdificioProps }) => {
             console.error('Error fetching parents:', error);
         }
     };
-
     useEffect(() => {
+        console.log('parentsEdificio', parentsEdificio);
+        console.log('parentsEscalera', parentsEscalera);
+        console.log('selectedType', typeof selectedType);
+        console.log('options', options);
 
+    }, [parentsEdificio, parentsEscalera]);
+
+    // UseEffect to update options whenever selectedType changes
+    useEffect(() => {
         if (selectedType === 'Edificio') {
-            setOptions([]);
             setOptions(
-                parentsEdificio?.map((parent) => (
-                    <option key={parent.id} value={parent.id}>
-                        {parent.direccion}
-                    </option>
-                ))
+                parentsEdificio?.map((parent) => ({
+                    value: parent.id,
+                    label: parent.direccion,
+                })) || []
             );
         } else if (selectedType === 'Escalera') {
-            setOptions([]);
             setOptions(
-                parentsEscalera?.map((parent) => (
-                    <option key={parent.id} value={parent.id}>
-                        {parent.direccion}
-                    </option>
-                ))
+                parentsEscalera?.map((parent) => ({
+                    value: parent.id,
+                    label: parent.direccion,
+                })) || []
             );
+        } else if (selectedType === 'undefined' || selectedType === null || selectedType === '') {
+            setOptions([]);
         }
     }, [selectedType, parentsEdificio, parentsEscalera]);
+    // Handle the change event for react-select
+    const handleChangeExistingGroup = (selectedOption) => {
+        handleFormChange({
+            target: {
+                name: 'existingGroup',
+                value: selectedOption ? selectedOption.value : '',
+            },
+        });
+    };
+
+    // OPTIONS AND HANDECHANGE FOR NUEVO GRUPO ESCALERA
+    const optionsNuevoGrupoEscalera = parentsEdificio?.map((parent) => ({
+        value: parent.id,
+        label: parent.direccion,
+    }));
+    // Handle the change event for react-select
+    const handleChange = (selectedOption) => {
+        // Update the formData with the selected value
+        handleFormChange({
+            target: {
+                name: 'grupo',
+                value: selectedOption ? selectedOption.value : '',
+            },
+        });
+    };
+
 
     useEffect(() => {
         const fetchAndSetData = async () => {
@@ -210,7 +241,7 @@ const Table = ({ parentsEdificioProps }) => {
                 setCurrentPage(totalPages > 0 ? totalPages : 1); // Ensure currentPage is set to a valid page number
             }
         };
-
+        console.log('optionsNuevoGrupoEscalera', optionsNuevoGrupoEscalera);
         fetchAndSetData();
     }, [
         currentPage,
@@ -937,30 +968,6 @@ const Table = ({ parentsEdificioProps }) => {
         setSelectedId(null);
     };
 
-    const findOrphansEdificio = (parentEdificios, childEdificios) => {
-        const childAgrupacionIds = new Set(childEdificios.map((child) => child.AgrupacionID_Edificio));
-        return parentEdificios.filter((parent) => !childAgrupacionIds.has(parent.AgrupacionID_Edificio));
-    };
-
-    const findOrphansEscalera = (parentEscaleras, childEscaleras) => {
-        const childAgrupacionIds = new Set(childEscaleras.map((child) => child.AgrupacionID_Escalera));
-        return parentEscaleras.filter((parent) => !childAgrupacionIds.has(parent.AgrupacionID_Escalera));
-    };
-
-    // set parentsEdificio
-
-
-    // useEffect(() => {
-    //     const fetchOrphans = async () => {
-    //         const orphansEdificio = await findOrphansEdificio(parentsEdificio, childsEdificio);
-    //         console.log('orphans edificio', orphansEdificio);
-    //         const orphansEscalera = await findOrphansEscalera(parentsEscalera, childsEscalera);
-    //         console.log('orphans escalera', orphansEscalera);
-    //     };
-
-    //     fetchOrphans();
-    // }, [parentsEdificio, childsEdificio, parentsEscalera, childsEscalera]);
-
     // Handle toggling the edit table
     const handleEditTable = () => {
         setShowEditTable(!showEditTable); // Toggle the state
@@ -1004,14 +1011,6 @@ const Table = ({ parentsEdificioProps }) => {
 
         });
     };
-
-    // // Synchronize `shouldRender` with `showEditTable`
-
-    // const options = parentsEdificio.map((parent) => ({
-    //     value: parent.AgrupacionID_Edificio,
-    //     label: `${parent.direccion}`,
-    // }));
-
 
     const escalerasChildren = (item) => {
         console.log('escalerasChildren', item);
@@ -1537,9 +1536,8 @@ const Table = ({ parentsEdificioProps }) => {
                                                     <label className="block">Grupo:</label>
                                                     <Select
                                                         name="grupo"
-                                                        value={options.find(option => option.value === formData.grupo) || null}
-                                                        onChange={handleFormChange}
-                                                        options={options}
+                                                        value={optionsNuevoGrupoEscalera.find(option => option.value === formData.grupo) || null} onChange={handleChange}
+                                                        options={optionsNuevoGrupoEscalera}
                                                         className="w-full"
                                                         classNamePrefix="react-select"
                                                         placeholder="Seleccione un grupo"
@@ -1612,12 +1610,17 @@ const Table = ({ parentsEdificioProps }) => {
                                             </div>
                                             <div>
                                                 <label className="block mb-2">Elige un grupo:</label>
-                                                <select name="existingGroup" value={formData.existingGroup} onChange={handleFormChange} className="border border-gray-300 p-2 rounded w-full">
-                                                    <option value="">Seleccione un grupo</option>
-                                                    {console.log('parentsEdificio', parentsEdificio)}
-                                                    {console.log('parentsEscalera', parentsEscalera)}
-                                                    {options}
-                                                </select>
+                                                <Select
+                                                    name="existingGroup"
+                                                    value={options.find(option => option.value === formData.existingGroup) || null}
+                                                    onChange={handleChangeExistingGroup}
+                                                    options={options}
+                                                    className="w-full"
+                                                    classNamePrefix="react-select"
+                                                    placeholder="Seleccione un grupo"
+                                                    isClearable
+                                                    isSearchable
+                                                />
                                             </div>
                                             <div className="flex gap-4 mt-4 flex-row justify-center items-center">
                                                 <button type="button" onClick={handlePopupToggle} className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded">
