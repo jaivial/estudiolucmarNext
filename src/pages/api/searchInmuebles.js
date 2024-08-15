@@ -11,7 +11,9 @@ export default async function handler(req, res) {
         const tipoValue = tipo === 'undefined' ? null : tipo;
         const banosValue = banos === 'undefined' ? null : banos;
         const habitacionesValue = habitaciones === 'undefined' ? null : habitaciones;
-        console.log('tipoValue', tipoValue);
+        const filterNoticiaValue = filterNoticia === null ? (filterNoticia === 'true' ? true : filterNoticia === 'false' ? false : null) : null;
+        // ... existing code ...
+        console.log('filterNoticia', filterNoticia);
         const page = parseInt(currentPage, 10);
         const limit = parseInt(itemsPerPage, 10);
         const skip = (page - 1) * limit;
@@ -29,35 +31,10 @@ export default async function handler(req, res) {
                 ...(selectedCategoria ? [{ categoria: { $eq: selectedCategoria } }] : []),
                 // If selectedResponsable is not empty, filter by responsable
                 ...(selectedResponsable ? [{ responsable: { $regex: selectedResponsable, $options: 'i' } }] : []),
-                // If filterNoticia is not null, filter by noticiastate
-                ...(filterNoticia !== null ? [{ noticiastate: filterNoticia === 'true' ? true : filterNoticia === 'false' ? false : { $exists: true } }] : []),
-                // If filterEncargo is not null, filter by encargostate
-                ...(filterEncargo !== null ? [{ encargostate: filterEncargo === 'true' ? true : filterEncargo === 'false' ? false : { $exists: true } }] : []),
-                // If superficieMin and superficieMax are not null, filter by superficie
-                ...(superficieMin !== null && superficieMax !== null ? [{ superficie: { $gte: parseInt(superficieMin, 10), $lte: parseInt(superficieMax, 10) } }] : []),
                 { ano_construccion: { $gte: parseInt(yearMin, 10), $lte: parseInt(yearMax, 10) } },
-                // If localizado is not null, filter by localizado
-                ...(localizado !== null ? [{ localizado: localizado === 'true' ? true : localizado === 'false' ? false : { $exists: true } }] : []),
-                // If garaje is not null, filter by garaje
-                ...(garaje !== null ? [{ garaje: garaje === 'true' ? true : garaje === 'false' ? false : { $exists: true } }] : []),
-                // If aireacondicionado is not null, filter by aireacondicionado
-                ...(aireacondicionado !== null ? [{ aireacondicionado: aireacondicionado === 'true' ? true : aireacondicionado === 'false' ? false : { $exists: true } }] : []),
-                // If ascensor is not null, filter by ascensor
-                ...(ascensor !== null ? [{ ascensor: ascensor === 'true' ? true : ascensor === 'false' ? false : { $exists: true } }] : []),
-                // If trastero is not null, filter by trastero
-                ...(trastero !== null ? [{ trastero: trastero === 'true' ? true : trastero === 'false' ? false : { $exists: true } }] : []),
-                // If jardin is not null, filter by jardin
-                ...(jardin !== null ? [{ jardin: jardin === 'true' ? true : jardin === 'false' ? false : { $exists: true } }] : []),
-                // If terraza is not null, filter by terraza
-                ...(terraza !== null ? [{ terraza: terraza === 'true' ? true : terraza === 'false' ? false : { $exists: true } }] : []),
-
-                // Add exists check for tipoValue
-                ...(tipoValue !== null ? [{ tipoagrupacion: tipoValue }, { tipoagrupacion: { $exists: true } }] : []),
-                // If banos is not null, filter by banos
-                ...(banosValue !== null ? [{ banyos: parseInt(banosValue, 10) }] : []),
-                // If habitaciones is not null, filter by habitaciones
-                ...(habitacionesValue !== null ? [{ habitaciones: parseInt(habitacionesValue, 10) }] : []),
-
+                ...(superficieMin !== null && superficieMax !== null ? [{ superficie: { $gte: parseInt(superficieMin, 10), $lte: parseInt(superficieMax, 10) } }] : []),
+                // Apply filter only if filterNoticia is not null
+                ...(filterNoticia !== null ? [{ $or: [{ noticiastate: filterNoticia === 'true' ? true : false }, { noticiastate: { $exists: false } }] }] : []),
             ]
         };
 
@@ -103,10 +80,42 @@ export default async function handler(req, res) {
         const totalPages = Math.ceil(totalCount / limit);
 
         // Count total items with tipoagrupacion = 1 from all documents that match the query
-        const totalTipoAgrupacionCount = await db.collection('inmuebles').countDocuments({
-            ...query,
-            tipoagrupacion: 1 // Add the condition for tipoagrupacion = 1
-        });
+        const totalTipoAgrupacionCountPipeline = [
+            { $match: query },
+            {
+                $facet: {
+                    mainCount: [
+                        { $match: { tipoagrupacion: 1 } },
+                        { $count: "count" }
+                    ],
+                    nestedCount: [
+                        { $unwind: "$nestedinmuebles" },
+                        { $match: { "nestedinmuebles.tipoagrupacion": 1 } },
+                        { $count: "count" }
+                    ],
+                    nestedEscalerasCount: [
+                        { $unwind: "$nestedescaleras" },
+                        { $unwind: "$nestedescaleras.nestedinmuebles" },
+                        { $match: { "nestedescaleras.nestedinmuebles.tipoagrupacion": 1 } },
+                        { $count: "count" }
+                    ]
+                }
+            },
+            {
+                $project: {
+                    total: {
+                        $sum: [
+                            { $arrayElemAt: ["$mainCount.count", 0] },
+                            { $arrayElemAt: ["$nestedCount.count", 0] },
+                            { $arrayElemAt: ["$nestedEscalerasCount.count", 0] }
+                        ]
+                    }
+                }
+            }
+        ];
+
+        const totalTipoAgrupacionCountResult = await db.collection('inmuebles').aggregate(totalTipoAgrupacionCountPipeline).toArray();
+        const totalTipoAgrupacionCount = totalTipoAgrupacionCountResult[0]?.total || 0;
 
         // Query the 'inmuebles' collection to find matching documents, ordered by 'direccion' asc, with pagination
         const results = await db.collection('inmuebles')
@@ -117,11 +126,31 @@ export default async function handler(req, res) {
             .limit(limit)
             .toArray();
 
-
         // Check for conflict situation and return full element if condition is met
         const finalResults = results.map(result => {
             if (result.tipoagrupacion === 2 && new RegExp(pattern, 'i').test(result.direccion)) {
-                return result;
+                return {
+                    ...result,
+                    nestedinmuebles: Array.isArray(result.nestedinmuebles) ? result.nestedinmuebles.filter(inmueble => {
+                        // Apply filterNoticia to nestedinmuebles
+                        if (filterNoticia !== null) {
+                            return inmueble.noticiastate === (filterNoticia === 'true' ? true : false);
+                        } else {
+                            return true;
+                        }
+                    }) : result.nestedinmuebles,
+                    nestedescaleras: Array.isArray(result.nestedescaleras) ? result.nestedescaleras.map(escalera => ({
+                        ...escalera,
+                        nestedinmuebles: Array.isArray(escalera.nestedinmuebles) ? escalera.nestedinmuebles.filter(inmueble => {
+                            // Apply filterNoticia to nestedescaleras.nestedinmuebles
+                            if (filterNoticia !== null) {
+                                return inmueble.noticiastate === (filterNoticia === 'true' ? true : false);
+                            } else {
+                                return true;
+                            }
+                        }) : escalera.nestedinmuebles
+                    })) : result.nestedescaleras
+                };
             }
 
             const nestedInmueblesMatch = Array.isArray(result.nestedinmuebles) && result.nestedinmuebles.some(inmueble => new RegExp(pattern, 'i').test(inmueble.direccion));
@@ -130,7 +159,14 @@ export default async function handler(req, res) {
             if (nestedInmueblesMatch && !nestedEscalerasMatch) {
                 return {
                     ...result,
-                    nestedinmuebles: result.nestedinmuebles.filter(inmueble => new RegExp(pattern, 'i').test(inmueble.direccion)),
+                    nestedinmuebles: result.nestedinmuebles.filter(inmueble => {
+                        // Apply filterNoticia to nestedinmuebles
+                        if (filterNoticia !== null) {
+                            return inmueble.noticiastate === (filterNoticia === 'true' ? true : false);
+                        } else {
+                            return true;
+                        }
+                    }),
                     nestedescaleras: []
                 };
             }
@@ -141,7 +177,14 @@ export default async function handler(req, res) {
                     nestedinmuebles: [],
                     nestedescaleras: result.nestedescaleras.map(escalera => ({
                         ...escalera,
-                        nestedinmuebles: Array.isArray(escalera.nestedinmuebles) ? escalera.nestedinmuebles.filter(inmueble => new RegExp(pattern, 'i').test(inmueble.direccion)) : escalera.nestedinmuebles
+                        nestedinmuebles: Array.isArray(escalera.nestedinmuebles) ? escalera.nestedinmuebles.filter(inmueble => {
+                            // Apply filterNoticia to nestedescaleras.nestedinmuebles
+                            if (filterNoticia !== null) {
+                                return inmueble.noticiastate === (filterNoticia === 'true' ? true : false);
+                            } else {
+                                return true;
+                            }
+                        }) : escalera.nestedinmuebles
                     })).filter(escalera => new RegExp(pattern, 'i').test(escalera.direccion) || escalera.nestedinmuebles.length > 0)
                 };
             }
@@ -149,19 +192,29 @@ export default async function handler(req, res) {
             // Apply filtering to nestedinmuebles and nestedescaleras if not in conflict situation
             return {
                 ...result,
-                nestedinmuebles: Array.isArray(result.nestedinmuebles) ? result.nestedinmuebles.filter(inmueble => new RegExp(pattern, 'i').test(inmueble.direccion)) : result.nestedinmuebles,
+                nestedinmuebles: Array.isArray(result.nestedinmuebles) ? result.nestedinmuebles.filter(inmueble => {
+                    // Apply filterNoticia to nestedinmuebles
+                    if (filterNoticia !== null) {
+                        return inmueble.noticiastate === (filterNoticia === 'true' ? true : false);
+                    } else {
+                        return true;
+                    }
+                }) : result.nestedinmuebles,
                 nestedescaleras: Array.isArray(result.nestedescaleras) ? result.nestedescaleras.map(escalera => ({
                     ...escalera,
-                    nestedinmuebles: Array.isArray(escalera.nestedinmuebles) ? escalera.nestedinmuebles.filter(inmueble => new RegExp(pattern, 'i').test(inmueble.direccion)) : escalera.nestedinmuebles
+                    nestedinmuebles: Array.isArray(escalera.nestedinmuebles) ? escalera.nestedinmuebles.filter(inmueble => {
+                        // Apply filterNoticia to nestedescaleras.nestedinmuebles
+                        if (filterNoticia !== null) {
+                            return inmueble.noticiastate === (filterNoticia === 'true' ? true : false);
+                        } else {
+                            return true;
+                        }
+                    }) : escalera.nestedinmuebles
                 })) : result.nestedescaleras
             };
         });
 
-
-
-
         console.timeEnd("Fetch Duration");
-
 
         res.status(200).json({ totalPages, currentPage: page, results: finalResults, totalTipoAgrupacionCount });
     } catch (e) {
