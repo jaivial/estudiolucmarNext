@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { supabase } from '../../lib/supabase/supabaseClient.js';
 import Select from 'react-select';
 import axios from 'axios';
 import Slider from 'react-slider';
@@ -68,14 +67,12 @@ const FilterMenu = ({ setFilters, currentPage, filters, data, setData, setCurren
 
     const zoneOptions = zones.map((zone) => ({ value: zone, label: zone }));
     const responsableOptions = responsables.map((responsable) => ({ value: responsable.nombre_completo, label: responsable.nombre_completo }));
-    const categoriaOptions = categorias.map((categoria) => ({ value: categoria, label: categoria }));
-    console.log('categoriaOptions', categoriaOptions);
+    const categoriaOptions = categorias.map((categoria) => ({ value: categoria, label: categoria === 'NULL' ? 'Sin información' : categoria }));
 
     // Fetch zones and responsables
     const fetchOptions = async () => {
         try {
-            const { data, error } = await supabase.rpc('fetchdatafiltermenu');
-            console.log('data', data); // Debugging line
+            const { data, error } = await axios.get('/api/fetch_data_filter_menu');
             setZones(data.zones);
             setResponsables(data.responsables);
             setCategorias(data.categorias);
@@ -115,7 +112,7 @@ const FilterMenu = ({ setFilters, currentPage, filters, data, setData, setCurren
         setSelectedCategoria(null);
         setFilterNoticia(null); // Assuming the default is false
         setFilterEncargo(null); // Assuming the default is false
-        setSuperficieRange([0, 2000000]);
+        setSuperficieRange([0, 2000]);
         setYearRange([1800, new Date().getFullYear()]);
     };
 

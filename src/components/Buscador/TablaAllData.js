@@ -56,7 +56,7 @@ const Table = ({ parentsEdificioProps }) => {
         filterNoticia: null,
         filterEncargo: null,
         superficieMin: 0,
-        superficieMax: 2000000,
+        superficieMax: 20000,
         yearMin: 1800,
         yearMax: new Date().getFullYear(),
         localizado: null,
@@ -66,9 +66,9 @@ const Table = ({ parentsEdificioProps }) => {
         trastero: null,
         jardin: null,
         terraza: null,
-        tipo: null,
-        banos: null,
-        habitaciones: null,
+        tipo: undefined,
+        banos: undefined,
+        habitaciones: undefined,
     });
     const [showFilters, setShowFilters] = useState(false);
     const [resetFiltersKey, setResetFiltersKey] = useState(0);
@@ -80,10 +80,6 @@ const Table = ({ parentsEdificioProps }) => {
     const [smallLoadingScreen, setSmallLoadingScreen] = useState(false);
     const [nestedElements, setNestedElements] = useState([]);
 
-    useEffect(() => {
-        console.log('parentsEdificio', parentsEdificioProps);
-    }, []);
-
 
     const fetchData = async (currentPage, searchTerm) => {
 
@@ -92,7 +88,26 @@ const Table = ({ parentsEdificioProps }) => {
             const params = new URLSearchParams({
                 pattern: searchTerm,
                 itemsPerPage: 4,
-                currentPage: currentPage
+                currentPage: currentPage,
+                selectedZone: filters.selectedZone,
+                selectedCategoria: filters.selectedCategoria,
+                selectedResponsable: filters.selectedResponsable,
+                filterNoticia: filters.filterNoticia,
+                filterEncargo: filters.filterEncargo,
+                superficieMin: filters.superficieMin,
+                superficieMax: filters.superficieMax,
+                yearMin: filters.yearMin,
+                yearMax: filters.yearMax,
+                localizado: filters.localizado,
+                garaje: filters.garaje,
+                aireacondicionado: filters.aireacondicionado,
+                ascensor: filters.ascensor,
+                trastero: filters.trastero,
+                jardin: filters.jardin,
+                terraza: filters.terraza,
+                tipo: filters.tipo,
+                banos: filters.banos,
+                habitaciones: filters.habitaciones,
             });
             axios.get('api/searchInmuebles', { params }).then((response) => {
                 const data = response.data;
@@ -209,6 +224,7 @@ const Table = ({ parentsEdificioProps }) => {
         setSearchTerm('');
         setCurrentPage(1);
         fetchData(1, '');
+        setShowFilters(false);
     };
 
     const handleToggle = (itemId) => {

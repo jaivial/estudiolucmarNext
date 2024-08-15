@@ -7,22 +7,59 @@ export default async function handler(req, res) {
         const client = await clientPromise;
         const db = client.db('inmoprocrm'); // Use the correct database name
 
-        const { pattern = '', currentPage = 1, itemsPerPage = 10 } = req.query;
-
+        const { pattern = '', currentPage = 1, itemsPerPage = 10, selectedZone = '', selectedCategoria = '', selectedResponsable = '', filterNoticia = null, filterEncargo = null, superficieMin = 0, superficieMax = 20000, yearMin = 1800, yearMax = new Date().getFullYear(), localizado = null, garaje = null, aireacondicionado = null, ascensor = null, trastero = null, jardin = null, terraza = null, tipo, banos, habitaciones } = req.query;
+        const tipoValue = tipo === 'undefined' ? null : tipo;
+        const banosValue = banos === 'undefined' ? null : banos;
+        const habitacionesValue = habitaciones === 'undefined' ? null : habitaciones;
+        console.log('tipoValue', tipoValue);
         const page = parseInt(currentPage, 10);
         const limit = parseInt(itemsPerPage, 10);
         const skip = (page - 1) * limit;
 
         // Build the query object to match the pattern in the desired fields
-        const query = pattern
-            ? {
-                $or: [
-                    { direccion: { $regex: pattern, $options: 'i' } },
-                    { nestedinmuebles: { $elemMatch: { direccion: { $regex: pattern, $options: 'i' } } } },
-                    { 'nestedescaleras.nestedinmuebles': { $elemMatch: { direccion: { $regex: pattern, $options: 'i' } } } }
-                ]
-            }
-            : {};
+        const query = {
+            $or: [
+                { direccion: { $regex: pattern, $options: 'i' } },
+                { nestedinmuebles: { $elemMatch: { direccion: { $regex: pattern, $options: 'i' } } } },
+                { 'nestedescaleras.nestedinmuebles': { $elemMatch: { direccion: { $regex: pattern, $options: 'i' } } } }
+            ],
+            $and: [
+                { zona: { $regex: selectedZone, $options: 'i' } },
+                // If selectedCategoria is not empty, filter by categoria
+                ...(selectedCategoria ? [{ categoria: { $eq: selectedCategoria } }] : []),
+                // If selectedResponsable is not empty, filter by responsable
+                ...(selectedResponsable ? [{ responsable: { $regex: selectedResponsable, $options: 'i' } }] : []),
+                // If filterNoticia is not null, filter by noticiastate
+                ...(filterNoticia !== null ? [{ noticiastate: filterNoticia === true ? true : filterNoticia === false ? false : { $exists: true } }] : []),
+                // If filterEncargo is not null, filter by encargostate
+                ...(filterEncargo !== null ? [{ encargostate: filterEncargo === true ? true : filterEncargo === false ? false : { $exists: true } }] : []),
+                // If superficieMin and superficieMax are not null, filter by superficie
+                ...(superficieMin !== null && superficieMax !== null ? [{ superficie: { $gte: parseInt(superficieMin, 10), $lte: parseInt(superficieMax, 10) } }] : []),
+                { ano_construccion: { $gte: parseInt(yearMin, 10), $lte: parseInt(yearMax, 10) } },
+                // If localizado is not null, filter by localizado
+                ...(localizado !== null ? [{ localizado: localizado === true ? true : localizado === false ? false : { $exists: true } }] : []),
+                // If garaje is not null, filter by garaje
+                ...(garaje !== null ? [{ garaje: garaje === true ? true : garaje === false ? false : { $exists: true } }] : []),
+                // If aireacondicionado is not null, filter by aireacondicionado
+                ...(aireacondicionado !== null ? [{ aireacondicionado: aireacondicionado === true ? true : aireacondicionado === false ? false : { $exists: true } }] : []),
+                // If ascensor is not null, filter by ascensor
+                ...(ascensor !== null ? [{ ascensor: ascensor === true ? true : ascensor === false ? false : { $exists: true } }] : []),
+                // If trastero is not null, filter by trastero
+                ...(trastero !== null ? [{ trastero: trastero === true ? true : trastero === false ? false : { $exists: true } }] : []),
+                // If jardin is not null, filter by jardin
+                ...(jardin !== null ? [{ jardin: jardin === true ? true : jardin === false ? false : { $exists: true } }] : []),
+                // If terraza is not null, filter by terraza
+                ...(terraza !== null ? [{ terraza: terraza === true ? true : terraza === false ? false : { $exists: true } }] : []),
+
+                // Add exists check for tipoValue
+                ...(tipoValue !== null ? [{ tipoagrupacion: tipoValue }, { tipoagrupacion: { $exists: true } }] : []),
+                // If banos is not null, filter by banos
+                ...(banosValue !== null ? [{ banyos: parseInt(banosValue, 10) }] : []),
+                // If habitaciones is not null, filter by habitaciones
+                ...(habitacionesValue !== null ? [{ habitaciones: parseInt(habitacionesValue, 10) }] : []),
+
+            ]
+        };
 
         // Projection to include all fields and filter matching nestedinmuebles
         const projection = {
