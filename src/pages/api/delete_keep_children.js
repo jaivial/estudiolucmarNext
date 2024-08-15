@@ -25,13 +25,26 @@ export default async function handler(req, res) {
                 if (inmueble.tipoagrupacion === 1) {
                     console.log('regular inmueble do nothing');
                 } else if (inmueble.tipoagrupacion === 2) {
-                    // If the selectedId is a regular inmueble
+                    // If the inmueble has nested escalera(s)
+                    if (inmueble.nestedescaleras && inmueble.nestedescaleras.length > 0) {
+                        for (const escalera of inmueble.nestedescaleras) {
+                            if (escalera.nestedinmuebles && escalera.nestedinmuebles.length > 0) {
+                                // Insert all nestedinmuebles inside nestedescaleras as regular documents
+                                await Promise.all(escalera.nestedinmuebles.map(async (nestedInmueble) => {
+                                    await db.collection('inmuebles').insertOne(nestedInmueble);
+                                }));
+                            }
+                        }
+                    }
+
+                    // If the inmueble itself has nestedinmuebles
                     if (inmueble.nestedinmuebles && inmueble.nestedinmuebles.length > 0) {
                         // Insert all nestedinmuebles as regular documents
                         await Promise.all(inmueble.nestedinmuebles.map(async (nestedInmueble) => {
                             await db.collection('inmuebles').insertOne(nestedInmueble);
                         }));
                     }
+
                     // Delete the original inmueble
                     await db.collection('inmuebles').deleteOne({ id: selectedId });
                 }

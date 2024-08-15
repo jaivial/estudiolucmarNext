@@ -380,7 +380,7 @@ const Table = ({ parentsEdificioProps }) => {
                 setShowPopupDeleteInmueble(!showPopupDeleteInmueble);
                 setThereAreChildrenDelete(true);
                 setNestedElements(response.data.nestedElements);
-                console.log('nested Elements', response.data.nestedElements);
+                console.log('nested Elements HERE', response.data.nestedElements);
             }
         } catch (error) {
             console.error('Error checking nested elements:', error);
@@ -853,7 +853,6 @@ const Table = ({ parentsEdificioProps }) => {
             });
     };
     const handleDeleteKeepChildren = () => {
-        console.log(nestedElements);
         axios
             .post('/api/delete_keep_children', { // Use POST request
                 inmuebles: nestedElements,
