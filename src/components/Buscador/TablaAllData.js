@@ -115,6 +115,7 @@ const Table = ({ parentsEdificioProps }) => {
                 setData(data.results);
                 setTotalPages(data.totalPages);
                 setCurrentPage(data.currentPage);
+                setTotalItems(data.totalTipoAgrupacionCount);
 
             }).catch((error) => {
                 console.error('Error fetching data:', error.message || error);

@@ -30,26 +30,26 @@ export default async function handler(req, res) {
                 // If selectedResponsable is not empty, filter by responsable
                 ...(selectedResponsable ? [{ responsable: { $regex: selectedResponsable, $options: 'i' } }] : []),
                 // If filterNoticia is not null, filter by noticiastate
-                ...(filterNoticia !== null ? [{ noticiastate: filterNoticia === true ? true : filterNoticia === false ? false : { $exists: true } }] : []),
+                ...(filterNoticia !== null ? [{ noticiastate: filterNoticia === 'true' ? true : filterNoticia === 'false' ? false : { $exists: true } }] : []),
                 // If filterEncargo is not null, filter by encargostate
-                ...(filterEncargo !== null ? [{ encargostate: filterEncargo === true ? true : filterEncargo === false ? false : { $exists: true } }] : []),
+                ...(filterEncargo !== null ? [{ encargostate: filterEncargo === 'true' ? true : filterEncargo === 'false' ? false : { $exists: true } }] : []),
                 // If superficieMin and superficieMax are not null, filter by superficie
                 ...(superficieMin !== null && superficieMax !== null ? [{ superficie: { $gte: parseInt(superficieMin, 10), $lte: parseInt(superficieMax, 10) } }] : []),
                 { ano_construccion: { $gte: parseInt(yearMin, 10), $lte: parseInt(yearMax, 10) } },
                 // If localizado is not null, filter by localizado
-                ...(localizado !== null ? [{ localizado: localizado === true ? true : localizado === false ? false : { $exists: true } }] : []),
+                ...(localizado !== null ? [{ localizado: localizado === 'true' ? true : localizado === 'false' ? false : { $exists: true } }] : []),
                 // If garaje is not null, filter by garaje
-                ...(garaje !== null ? [{ garaje: garaje === true ? true : garaje === false ? false : { $exists: true } }] : []),
+                ...(garaje !== null ? [{ garaje: garaje === 'true' ? true : garaje === 'false' ? false : { $exists: true } }] : []),
                 // If aireacondicionado is not null, filter by aireacondicionado
-                ...(aireacondicionado !== null ? [{ aireacondicionado: aireacondicionado === true ? true : aireacondicionado === false ? false : { $exists: true } }] : []),
+                ...(aireacondicionado !== null ? [{ aireacondicionado: aireacondicionado === 'true' ? true : aireacondicionado === 'false' ? false : { $exists: true } }] : []),
                 // If ascensor is not null, filter by ascensor
-                ...(ascensor !== null ? [{ ascensor: ascensor === true ? true : ascensor === false ? false : { $exists: true } }] : []),
+                ...(ascensor !== null ? [{ ascensor: ascensor === 'true' ? true : ascensor === 'false' ? false : { $exists: true } }] : []),
                 // If trastero is not null, filter by trastero
-                ...(trastero !== null ? [{ trastero: trastero === true ? true : trastero === false ? false : { $exists: true } }] : []),
+                ...(trastero !== null ? [{ trastero: trastero === 'true' ? true : trastero === 'false' ? false : { $exists: true } }] : []),
                 // If jardin is not null, filter by jardin
-                ...(jardin !== null ? [{ jardin: jardin === true ? true : jardin === false ? false : { $exists: true } }] : []),
+                ...(jardin !== null ? [{ jardin: jardin === 'true' ? true : jardin === 'false' ? false : { $exists: true } }] : []),
                 // If terraza is not null, filter by terraza
-                ...(terraza !== null ? [{ terraza: terraza === true ? true : terraza === false ? false : { $exists: true } }] : []),
+                ...(terraza !== null ? [{ terraza: terraza === 'true' ? true : terraza === 'false' ? false : { $exists: true } }] : []),
 
                 // Add exists check for tipoValue
                 ...(tipoValue !== null ? [{ tipoagrupacion: tipoValue }, { tipoagrupacion: { $exists: true } }] : []),
@@ -102,6 +102,12 @@ export default async function handler(req, res) {
         // Calculate total pages
         const totalPages = Math.ceil(totalCount / limit);
 
+        // Count total items with tipoagrupacion = 1 from all documents that match the query
+        const totalTipoAgrupacionCount = await db.collection('inmuebles').countDocuments({
+            ...query,
+            tipoagrupacion: 1 // Add the condition for tipoagrupacion = 1
+        });
+
         // Query the 'inmuebles' collection to find matching documents, ordered by 'direccion' asc, with pagination
         const results = await db.collection('inmuebles')
             .find(query)
@@ -151,9 +157,13 @@ export default async function handler(req, res) {
             };
         });
 
+
+
+
         console.timeEnd("Fetch Duration");
 
-        res.status(200).json({ totalPages, currentPage: page, results: finalResults });
+
+        res.status(200).json({ totalPages, currentPage: page, results: finalResults, totalTipoAgrupacionCount });
     } catch (e) {
         console.error('API Error:', e.message, e.stack);
         res.status(500).json({ error: 'An error occurred while processing your request.' });
