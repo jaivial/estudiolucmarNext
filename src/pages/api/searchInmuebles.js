@@ -8,8 +8,8 @@ export default async function handler(req, res) {
         const db = client.db('inmoprocrm'); // Use the correct database name
 
         const { pattern = '', currentPage = 1, itemsPerPage = 10, selectedZone = '', selectedCategoria = '', selectedResponsable = '', filterNoticia = null, filterEncargo = null, superficieMin = 0, superficieMax = 20000, yearMin = 1800, yearMax = new Date().getFullYear(), localizado = null, garaje = null, aireacondicionado = null, ascensor = null, trastero = null, jardin = null, terraza = null, tipo, banos, habitaciones } = req.query;
-        console.log('typeof localizdo', typeof localizado);
-        console.log('localizado', localizado);
+        console.log('typeof tipo', typeof tipo);
+        console.log('tipo', tipo);
         const page = parseInt(currentPage, 10);
         const limit = parseInt(itemsPerPage, 10);
         const skip = (page - 1) * limit;
@@ -45,31 +45,31 @@ export default async function handler(req, res) {
                 ...(localizado !== null ? [{ $or: [{ localizado: localizado === 'true' ? true : false }, { localizado: { $exists: false } }] }] : []),
 
                 // // // Filtro para aireacondicionado
-                // ...(aireacondicionado !== null ? [{ $or: [{ aireacondicionado: aireacondicionado === 'true' ? true : false }, { aireacondicionado: { $exists: false } }] }] : []),
+                ...(aireacondicionado !== 'undefined' ? [{ $or: [{ aireacondicionado: aireacondicionado === 'true' ? true : false }, { aireacondicionado: { $exists: false } }] }] : []),
 
-                // // // Filtro para ascensor
-                // ...(ascensor !== null ? [{ $or: [{ ascensor: ascensor === 'true' ? true : false }, { ascensor: { $exists: false } }] }] : []),
+                // // Filtro para ascensor
+                ...(ascensor !== 'undefined' ? [{ $or: [{ ascensor: ascensor === 'true' ? true : false }, { ascensor: { $exists: false } }] }] : []),
 
-                // // // Filtro para garaje
-                // ...(garaje !== null ? [{ $or: [{ garaje: garaje === 'true' ? true : false }, { garaje: { $exists: false } }] }] : []),
+                // // Filtro para garaje
+                ...(garaje !== 'undefined' ? [{ $or: [{ garaje: garaje === 'true' ? true : false }, { garaje: { $exists: false } }] }] : []),
 
-                // // // Filtro para trastero
-                // ...(trastero !== null ? [{ $or: [{ trastero: trastero === 'true' ? true : false }, { trastero: { $exists: false } }] }] : []),
+                // // Filtro para trastero
+                ...(trastero !== 'undefined' ? [{ $or: [{ trastero: trastero === 'true' ? true : false }, { trastero: { $exists: false } }] }] : []),
 
-                // // // Filtro para terraza
-                // ...(terraza !== null ? [{ $or: [{ terraza: terraza === 'true' ? true : false }, { terraza: { $exists: false } }] }] : []),
+                // // Filtro para terraza
+                ...(terraza !== 'undefined' ? [{ $or: [{ terraza: terraza === 'true' ? true : false }, { terraza: { $exists: false } }] }] : []),
 
-                // // // Filtro para jardin
-                // ...(jardin !== null ? [{ $or: [{ jardin: jardin === 'true' ? true : false }, { jardin: { $exists: false } }] }] : []),
+                // // Filtro para jardin
+                ...(jardin !== 'undefined' ? [{ $or: [{ jardin: jardin === 'true' ? true : false }, { jardin: { $exists: false } }] }] : []),
 
-                // // // Filtro para tipoagrupacion
-                // ...(tipo !== 'undefined' ? [{ tipoagrupacion: parseInt(tipo, 10) }] : []),
+                // // Filtro para tipoagrupacion
+                ...(tipo !== 'undefined' ? [{ tipoagrupacion: parseInt(tipo, 10) }] : []),
 
                 // // // Filtro para banyos
-                // ...(banos !== 'undefined' ? [{ banyos: parseInt(banos, 10) }, { banyos: { $exists: false } }] : []),
+                ...(banos !== 'undefined' ? [{ banyos: parseInt(banos, 10) }, { banyos: { $exists: false } }] : []),
 
                 // // // Filtro para habitaciones
-                // ...(habitaciones !== 'undefined' ? [{ habitaciones: parseInt(habitaciones, 10) }, { habitaciones: { $exists: false } }] : []),
+                ...(habitaciones !== 'undefined' ? [{ habitaciones: parseInt(habitaciones, 10) }, { habitaciones: { $exists: false } }] : []),
 
             ]
         };

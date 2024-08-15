@@ -10,6 +10,7 @@ import FilterMenu from './FilterMenu.js';
 import { IoAnalytics } from "react-icons/io5";
 import Analytics from './Analytics.js';
 import SmallLoadingScreen from '../LoadingScreen/SmallLoadingScreen.js';
+import Select from 'react-select';
 
 
 const Table = ({ parentsEdificioProps }) => {
@@ -83,6 +84,39 @@ const Table = ({ parentsEdificioProps }) => {
 
     const fetchData = async (currentPage, searchTerm) => {
 
+        // Function to determine the value for each filter
+        const determineFilterValue = (filterValue) => {
+            if (typeof filterValue === 'undefined' || filterValue === 'undefined') {
+                return 'undefined';
+            } else if (isNaN(filterValue) || filterValue === '' || filterValue === null) {
+                return 'undefined';
+            } else {
+                return filterValue;
+            }
+        };
+        // Apply the function to each filter
+        let aireacondicionadoValue = determineFilterValue(filters.aireacondicionado);
+        let ascensorValue = determineFilterValue(filters.ascensor);
+        let garajeValue = determineFilterValue(filters.garaje);
+        let jardinValue = determineFilterValue(filters.jardin);
+        let terrazaValue = determineFilterValue(filters.terraza);
+        let trasteroValue = determineFilterValue(filters.trastero);
+
+
+        // Always set value to undefined or to inerger value
+        const determineFilterValueInterger = (filterValue) => {
+            if (typeof filterValue === 'undefined' || filterValue === 'undefined') {
+                return 'undefined';
+            } else if (isNaN(filterValue) || filterValue === '' || filterValue === null) {
+                return 'undefined';
+            } else {
+                return parseInt(filterValue, 10);
+            }
+        };
+        let tipoValue = determineFilterValueInterger(filters.tipo);
+        let banosValue = determineFilterValueInterger(filters.banos);
+        let habitacionesValue = determineFilterValueInterger(filters.habitaciones);
+
         try {
             setLoading(true);
             const params = new URLSearchParams({
@@ -99,15 +133,15 @@ const Table = ({ parentsEdificioProps }) => {
                 yearMin: filters.yearMin,
                 yearMax: filters.yearMax,
                 localizado: filters.localizado,
-                garaje: filters.garaje,
-                aireacondicionado: filters.aireacondicionado,
-                ascensor: filters.ascensor,
-                trastero: filters.trastero,
-                jardin: filters.jardin,
-                terraza: filters.terraza,
-                tipo: filters.tipo,
-                banos: filters.banos,
-                habitaciones: filters.habitaciones,
+                garaje: garajeValue,
+                aireacondicionado: aireacondicionadoValue,
+                ascensor: ascensorValue,
+                trastero: trasteroValue,
+                jardin: jardinValue,
+                terraza: terrazaValue,
+                tipo: tipoValue,
+                banos: banosValue,
+                habitaciones: habitacionesValue,
             });
             axios.get('api/searchInmuebles', { params }).then((response) => {
                 const data = response.data;
@@ -1501,14 +1535,17 @@ const Table = ({ parentsEdificioProps }) => {
                                                         <input type="text" name="nombre" value={formData.nombre} onChange={handleFormChange} className="border p-2 rounded w-full" placeholder="Dirección de la escalera" />{' '}
                                                     </div>
                                                     <label className="block">Grupo:</label>
-                                                    <select name="grupo" value={formData.grupo} onChange={handleFormChange} className="border border-gray-300 p-2 rounded w-full">
-                                                        <option value="">Seleccione un grupo</option>
-                                                        {parentsEdificio?.map((parent) => (
-                                                            <option key={parent.id} value={parent.id}>
-                                                                {parent.direccion}
-                                                            </option>
-                                                        ))}
-                                                    </select>
+                                                    <Select
+                                                        name="grupo"
+                                                        value={options.find(option => option.value === formData.grupo) || null}
+                                                        onChange={handleFormChange}
+                                                        options={options}
+                                                        className="w-full"
+                                                        classNamePrefix="react-select"
+                                                        placeholder="Seleccione un grupo"
+                                                        isClearable
+                                                        isSearchable
+                                                    />
                                                 </div>
                                             ) : (
                                                 <div>

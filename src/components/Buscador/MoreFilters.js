@@ -36,9 +36,9 @@ const MoreFilters = ({ filters, setFilters, resetFiltersKey }) => {
     useEffect(() => {
         setFilters((prevFilters) => ({
             ...prevFilters,
-            habitaciones: null,
-            banos: null,
-            tipo: null
+            habitaciones: 'undefined',
+            banos: 'undefined',
+            tipo: 'undefined'
         }));
     }, [resetFiltersKey, setFilters]);
 
