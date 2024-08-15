@@ -51,7 +51,7 @@ export default async function handler(req, res) {
         console.log('nestedInmuebles:', nestedInmuebles);
 
         // Step 2: Remove selected inmuebles from their original documents and delete from collection
-        const emptyParents = [];
+        const emptyParentsFirst = [];
         for (const selectedId of inmuebles) {
             // Check if the selected ID is in nestedinmuebles or nestedescaleras.nestedinmuebles of any document
             // Find the parent document containing the selectedId in either nestedinmuebles or nestedescaleras.nestedinmuebles
@@ -82,12 +82,12 @@ export default async function handler(req, res) {
                 if (nestedInmueblesEmpty) {
                     const parentEscalera = parentDocument.nestedescaleras.find(escalera => escalera.nestedinmuebles.some(inmueble => inmueble.id === selectedId));
                     if (parentEscalera) {
-                        emptyParents.push({
+                        emptyParentsFirst.push({
                             id: parentEscalera.id,
                             direccion: parentEscalera.direccion
                         });
                     } else {
-                        emptyParents.push({
+                        emptyParentsFirst.push({
                             id: parentDocument.id,
                             direccion: parentDocument.direccion
                         });
@@ -102,6 +102,8 @@ export default async function handler(req, res) {
             await db.collection('inmuebles').deleteOne({ id: selectedId });
         }
 
+        // Remove duplicate entries from emptyParents array
+        const emptyParents = [...new Set(emptyParentsFirst.map(item => JSON.stringify(item)))].map(item => JSON.parse(item));
 
         // Step 3: Insert the selected inmuebles as individual documents
         for (const inmueble of nestedInmuebles) {
