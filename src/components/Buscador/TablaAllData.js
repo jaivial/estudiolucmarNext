@@ -116,6 +116,8 @@ const Table = ({ parentsEdificioProps }) => {
         let tipoValue = determineFilterValueInterger(filters.tipo);
         let banosValue = determineFilterValueInterger(filters.banos);
         let habitacionesValue = determineFilterValueInterger(filters.habitaciones);
+        console.log('habitacionesValue', habitacionesValue);
+        console.log('typeof habitacionesValue', typeof habitacionesValue);
 
         try {
             setLoading(true);
@@ -241,7 +243,6 @@ const Table = ({ parentsEdificioProps }) => {
                 setCurrentPage(totalPages > 0 ? totalPages : 1); // Ensure currentPage is set to a valid page number
             }
         };
-        console.log('optionsNuevoGrupoEscalera', optionsNuevoGrupoEscalera);
         fetchAndSetData();
     }, [
         currentPage,

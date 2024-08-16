@@ -8,8 +8,7 @@ export default async function handler(req, res) {
         const db = client.db('inmoprocrm'); // Use the correct database name
 
         const { pattern = '', currentPage = 1, itemsPerPage = 10, selectedZone = '', selectedCategoria = '', selectedResponsable = '', filterNoticia = null, filterEncargo = null, superficieMin = 0, superficieMax = 20000, yearMin = 1800, yearMax = new Date().getFullYear(), localizado = null, garaje = null, aireacondicionado = null, ascensor = null, trastero = null, jardin = null, terraza = null, tipo, banos, habitaciones } = req.query;
-        console.log('typeof tipo', typeof tipo);
-        console.log('tipo', tipo);
+
         const page = parseInt(currentPage, 10);
         const limit = parseInt(itemsPerPage, 10);
         const skip = (page - 1) * limit;
@@ -39,7 +38,7 @@ export default async function handler(req, res) {
                 ...(superficieMin !== null && superficieMax !== null ? [{ $or: [{ superficie: { $gte: parseInt(superficieMin, 10), $lte: parseInt(superficieMax, 10) } }, { superficie: { $exists: false } }] }] : []),
 
                 // // Filtro para categoria
-                ...(selectedCategoria !== '' ? [{ $or: [{ categoria: selectedCategoria === 'NULL' ? { $exists: false } : selectedCategoria }, { categoria: { $exists: false } }] }] : []),
+                ...(selectedCategoria !== '' ? [{ $or: [{ categoria: selectedCategoria === null ? { $exists: false } : selectedCategoria }, { categoria: { $exists: false } }] }] : []),
 
                 // // // Filtro para localizado
                 ...(localizado !== null ? [{ $or: [{ localizado: localizado === 'true' ? true : false }, { localizado: { $exists: false } }] }] : []),
@@ -65,15 +64,13 @@ export default async function handler(req, res) {
                 // // Filtro para tipoagrupacion
                 ...(tipo !== 'undefined' ? [{ tipoagrupacion: parseInt(tipo, 10) }] : []),
 
-                // // // Filtro para banyos
-                ...(banos !== 'undefined' ? [{ banyos: parseInt(banos, 10) }, { banyos: { $exists: false } }] : []),
+                // // Filtro para habitaciones
+                ...(habitaciones !== 'undefined' ? [{ $or: [{ habitaciones: parseInt(habitaciones, 10) }, { habitaciones: { $exists: false } }] }] : []),
 
-                // // // Filtro para habitaciones
-                ...(habitaciones !== 'undefined' ? [{ habitaciones: parseInt(habitaciones, 10) }, { habitaciones: { $exists: false } }] : []),
-
+                // // Filtro para banyos
+                ...(banos !== 'undefined' ? [{ $or: [{ banyos: parseInt(banos, 10) }, { banyos: { $exists: false } }] }] : []),
             ]
         };
-
 
         // Projection to include all fields and filter matching nestedinmuebles
         const projection = {
@@ -198,8 +195,8 @@ export default async function handler(req, res) {
             const applyCategoriaFilter = (inmueble) => {
                 if (selectedCategoria === '') {
                     return true;
-                } else if (selectedCategoria === 'NULL') {
-                    return inmueble.categoria === 'NULL';
+                } else if (selectedCategoria === null) {
+                    return inmueble.categoria === null;
                 } else {
                     return inmueble.categoria === selectedCategoria;
                 }
@@ -222,13 +219,16 @@ export default async function handler(req, res) {
             };
 
             const applyLocalizadoFilter = (inmueble) => {
-                if (localizado === null) {
-                    return true;
-                } else if (localizado === 'true') {
-                    return inmueble.localizado === true;
-                } else if (localizado === 'false') {
-                    return inmueble.localizado === false;
+                if (localizado !== null) {
+                    if (localizado === 'true') {
+                        console.log('localizado true');
+                        return inmueble.localizado === true;
+                    }
+                    if (localizado === 'false') {
+                        return inmueble.localizado === false;
+                    }
                 }
+                return true;
             };
 
             const applySuperficieFilter = (inmueble) => {
@@ -242,7 +242,7 @@ export default async function handler(req, res) {
             };
 
             const applyAireAcondicionadoFilter = (inmueble) => {
-                if (aireacondicionado === null) {
+                if (aireacondicionado === 'undefined') {
                     return true;
                 } else if (aireacondicionado === 'true') {
                     return inmueble.aireacondicionado === true;
@@ -252,7 +252,7 @@ export default async function handler(req, res) {
             };
 
             const applyAscensorFilter = (inmueble) => {
-                if (ascensor === null) {
+                if (ascensor === 'undefined') {
                     return true;
                 } else if (ascensor === 'true') {
                     return inmueble.ascensor === true;
@@ -262,7 +262,7 @@ export default async function handler(req, res) {
             };
 
             const applyGarajeFilter = (inmueble) => {
-                if (garaje === null) {
+                if (garaje === 'undefined') {
                     return true;
                 } else if (garaje === 'true') {
                     return inmueble.garaje === true;
@@ -272,7 +272,7 @@ export default async function handler(req, res) {
             };
 
             const applyTrasteroFilter = (inmueble) => {
-                if (trastero === null) {
+                if (trastero === 'undefined') {
                     return true;
                 } else if (trastero === 'true') {
                     return inmueble.trastero === true;
@@ -282,7 +282,7 @@ export default async function handler(req, res) {
             };
 
             const applyTerrazaFilter = (inmueble) => {
-                if (terraza === null) {
+                if (terraza === 'undefined') {
                     return true;
                 } else if (terraza === 'true') {
                     return inmueble.terraza === true;
@@ -292,7 +292,7 @@ export default async function handler(req, res) {
             };
 
             const applyJardinFilter = (inmueble) => {
-                if (jardin === null) {
+                if (jardin === 'undefined') {
                     return true;
                 } else if (jardin === 'true') {
                     return inmueble.jardin === true;
@@ -318,28 +318,30 @@ export default async function handler(req, res) {
             };
 
             const applyHabitacionesFilter = (inmueble) => {
-                if (habitaciones === 'undefined') {
-                    return true;
-                } else {
+                console.log('habitaciones', habitaciones);
+                if (habitaciones !== 'undefined') {
                     return inmueble.habitaciones === parseInt(habitaciones, 10);
+                } else {
+                    return true;
                 }
             };
 
             const applyFilters = (inmueble) => {
-                return applyNoticiaFilter(inmueble) && applyEncargoFilter(inmueble);
-                // && applyCategoriaFilter(inmueble) && applyZoneFilter(inmueble) && applyResponsableFilter(inmueble) && applyLocalizadoFilter(inmueble) &&
-                // applySuperficieFilter(inmueble) && applyAireAcondicionadoFilter(inmueble) && applyAscensorFilter(inmueble) &&
-                // applyGarajeFilter(inmueble) && applyTrasteroFilter(inmueble) && applyTerrazaFilter(inmueble) && applyJardinFilter(inmueble) &&
-                // applyTipoAgrupacionFilter(inmueble) && applyBanosFilter(inmueble) && applyHabitacionesFilter(inmueble);
+                return applyHabitacionesFilter(inmueble) && applyBanosFilter(inmueble) &&
+                    applyNoticiaFilter(inmueble) && applyEncargoFilter(inmueble) && applyCategoriaFilter(inmueble) && applyZoneFilter(inmueble) && applyResponsableFilter(inmueble) && applyLocalizadoFilter(inmueble) && applySuperficieFilter(inmueble)
+                    && applyAireAcondicionadoFilter(inmueble) && applyAscensorFilter(inmueble) && applyGarajeFilter(inmueble) && applyTrasteroFilter(inmueble) && applyTerrazaFilter(inmueble) && applyJardinFilter(inmueble) && applyTipoAgrupacionFilter(inmueble);
             };
 
             // Aplicación de los filtros
-            const finalResults = results.map(result => {
-                const filteredResult = applyFilters(result);
-                console.log('Filtered Result:', filteredResult);
-                return filteredResult;
-            }).filter(result => result);
+            const finalResults = results
+                .map(result => {
+                    const filteredResult = applyFilters(result);
+                    console.log('Filtered Result:', filteredResult);
+                    return filteredResult;
+                })
+                .filter(result => result !== undefined);
             console.log('Final Results Count:', finalResults.length);
+
             if (result.tipoagrupacion === 2 && new RegExp(pattern, 'i').test(result.direccion)) {
                 return {
                     ...result,

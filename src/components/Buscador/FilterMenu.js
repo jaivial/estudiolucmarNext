@@ -67,12 +67,13 @@ const FilterMenu = ({ setFilters, currentPage, filters, data, setData, setCurren
 
     const zoneOptions = zones.map((zone) => ({ value: zone, label: zone }));
     const responsableOptions = responsables.map((responsable) => ({ value: responsable.nombre_completo, label: responsable.nombre_completo }));
-    const categoriaOptions = categorias.map((categoria) => ({ value: categoria, label: categoria === 'NULL' ? 'Sin información' : categoria }));
+    const categoriaOptions = categorias.map((categoria) => ({ value: categoria, label: categoria === null ? 'Sin información' : categoria }));
 
     // Fetch zones and responsables
     const fetchOptions = async () => {
         try {
             const { data, error } = await axios.get('/api/fetch_data_filter_menu');
+            console.log('data fetch data filter menu', data);
             setZones(data.zones);
             setResponsables(data.responsables);
             setCategorias(data.categorias);
@@ -88,6 +89,7 @@ const FilterMenu = ({ setFilters, currentPage, filters, data, setData, setCurren
 
     useEffect(() => {
         fetchOptions();
+        console.log('categoria options', categoriaOptions);
     }, []);
 
     useEffect(() => {

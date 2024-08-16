@@ -26,6 +26,7 @@ const MoreFilters = ({ filters, setFilters, resetFiltersKey }) => {
             ...prevFilters,
             [field]: selectedOption ? selectedOption.value : null,
         }));
+
     };
 
     useEffect(() => {

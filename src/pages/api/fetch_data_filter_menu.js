@@ -19,11 +19,10 @@ export default async function handler(req, res) {
             }
         ]).toArray();
 
-        // Fetch all categorias, replace NULL with 'Sin Información'
         const categorias = await db.collection('inmuebles').aggregate([
             {
                 $group: {
-                    _id: { $ifNull: ['$categoria', 'Sin Información'] }
+                    _id: '$categoria'
                 }
             },
             {
@@ -33,6 +32,7 @@ export default async function handler(req, res) {
                 }
             }
         ]).toArray();
+
 
         // Combine results
         const result = {
