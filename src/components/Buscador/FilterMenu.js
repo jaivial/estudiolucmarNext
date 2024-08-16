@@ -10,6 +10,8 @@ import { FaPhone } from "react-icons/fa6";
 import { CgMoreO } from "react-icons/cg";
 import MoreFilters from './MoreFilters.js';
 import { motion, AnimatePresence } from 'framer-motion';
+import Skeleton from 'react-loading-skeleton';
+import 'react-loading-skeleton/dist/skeleton.css';
 
 const FilterMenu = ({ setFilters, currentPage, filters, data, setData, setCurrentPage, setTotalPages, setLoading, resetFiltersKey }) => {
     const [filterLocalizado, setFilterLocalizado] = useState(null);
@@ -24,6 +26,8 @@ const FilterMenu = ({ setFilters, currentPage, filters, data, setData, setCurren
     const [categorias, setCategorias] = useState([]);
     const [selectedCategoria, setSelectedCategoria] = useState(null);
     const [showMoreFilters, setShowMoreFilters] = useState(false);
+    const [loadingTotalItems, setLoadingTotalItems] = useState(false);
+    const [totalItems, setTotalItems] = useState();
 
 
     const handleChangeSuperficieRange = (values) => {
@@ -89,8 +93,8 @@ const FilterMenu = ({ setFilters, currentPage, filters, data, setData, setCurren
 
     useEffect(() => {
         fetchOptions();
-        console.log('categoria options', categoriaOptions);
     }, []);
+
 
     useEffect(() => {
         setFilters({
@@ -135,6 +139,78 @@ const FilterMenu = ({ setFilters, currentPage, filters, data, setData, setCurren
     const handleFilterLocalizadoChange = (selectedOption) => {
         setFilterLocalizado(selectedOption ? selectedOption.value : null);
     };
+
+    const calculateAnalytics = async () => {
+        // Function to determine the value for each filter
+        const determineFilterValue = (filterValue) => {
+            if (typeof filterValue === 'undefined' || filterValue === 'undefined') {
+                return 'undefined';
+            } else if (isNaN(filterValue) || filterValue === '' || filterValue === null) {
+                return 'undefined';
+            } else {
+                return filterValue;
+            }
+        };
+        // Apply the function to each filter
+        let aireacondicionadoValue = determineFilterValue(filters.aireacondicionado);
+        let ascensorValue = determineFilterValue(filters.ascensor);
+        let garajeValue = determineFilterValue(filters.garaje);
+        let jardinValue = determineFilterValue(filters.jardin);
+        let terrazaValue = determineFilterValue(filters.terraza);
+        let trasteroValue = determineFilterValue(filters.trastero);
+
+
+        // Always set value to undefined or to inerger value
+        const determineFilterValueInterger = (filterValue) => {
+            if (typeof filterValue === 'undefined' || filterValue === 'undefined') {
+                return 'undefined';
+            } else if (isNaN(filterValue) || filterValue === '' || filterValue === null) {
+                return 'undefined';
+            } else {
+                return parseInt(filterValue, 10);
+            }
+        };
+        let tipoValue = determineFilterValueInterger(filters.tipo);
+        let banosValue = determineFilterValueInterger(filters.banos);
+        let habitacionesValue = determineFilterValueInterger(filters.habitaciones);
+        console.log('habitacionesValue', habitacionesValue);
+        console.log('typeof habitacionesValue', typeof habitacionesValue);
+
+        try {
+            setLoadingTotalItems(true);
+            const params = new URLSearchParams({
+                selectedZone: filters.selectedZone,
+                selectedCategoria: filters.selectedCategoria,
+                selectedResponsable: filters.selectedResponsable,
+                filterNoticia: filters.filterNoticia,
+                filterEncargo: filters.filterEncargo,
+                superficieMin: filters.superficieMin,
+                superficieMax: filters.superficieMax,
+                yearMin: filters.yearMin,
+                yearMax: filters.yearMax,
+                localizado: filters.localizado,
+                garaje: garajeValue,
+                aireacondicionado: aireacondicionadoValue,
+                ascensor: ascensorValue,
+                trastero: trasteroValue,
+                jardin: jardinValue,
+                terraza: terrazaValue,
+                tipo: tipoValue,
+                banos: banosValue,
+                habitaciones: habitacionesValue,
+            });
+            axios.get('api/calculate_analytics', { params }).then((response) => {
+                const data = response.data;
+                setTotalItems(data.totalTipoAgrupacionCount);
+                console.log('calculate_analytics Response:', data); // Log the entire API response
+                setLoadingTotalItems(false);
+            }).catch((error) => {
+                console.error('Error fetching data:', error.message || error);
+            });
+        } catch (error) {
+            console.error('Error fetching data:', error.message || error);
+        }
+    }
 
     return (
         <div className="flex flex-col gap-4 p-2">
@@ -313,6 +389,18 @@ const FilterMenu = ({ setFilters, currentPage, filters, data, setData, setCurren
                     ariaLabel={['Start Year', 'End Year']}
                 />
             </div>
+            <div>
+                <p className="text-center font-sans text-lg text-slate-800 font-bold">Total de inmuebles: <br />
+                    {loadingTotalItems ? (
+                        <Skeleton width={120} height={30}>
+                            Analizando...
+                        </Skeleton>
+                    ) : (
+                        <span><p>{totalItems}</p></span>
+                    )}
+                </p>
+            </div>
+
         </div>
     );
 };

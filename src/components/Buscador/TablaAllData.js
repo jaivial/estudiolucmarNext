@@ -81,9 +81,7 @@ const Table = ({ parentsEdificioProps }) => {
     const [smallLoadingScreen, setSmallLoadingScreen] = useState(false);
     const [nestedElements, setNestedElements] = useState([]);
 
-
     const fetchData = async (currentPage, searchTerm) => {
-
         // Function to determine the value for each filter
         const determineFilterValue = (filterValue) => {
             if (typeof filterValue === 'undefined' || filterValue === 'undefined') {
@@ -181,13 +179,6 @@ const Table = ({ parentsEdificioProps }) => {
             console.error('Error fetching parents:', error);
         }
     };
-    useEffect(() => {
-        console.log('parentsEdificio', parentsEdificio);
-        console.log('parentsEscalera', parentsEscalera);
-        console.log('selectedType', typeof selectedType);
-        console.log('options', options);
-
-    }, [parentsEdificio, parentsEscalera]);
 
     // UseEffect to update options whenever selectedType changes
     useEffect(() => {
@@ -1348,11 +1339,6 @@ const Table = ({ parentsEdificioProps }) => {
                         </div>
                     )}
                     <div className="flex flex-col gap-2 pt-3">
-                        <div>
-                            <p className="text-center font-sans text-lg text-slate-800">
-                                <strong>Total de inmuebles: <br /> {totalItems}</strong>
-                            </p>
-                        </div>
                         <div className="tableheader relative px-2 py-1 mt-2 rounded-xl shadow-xl flex items-center flex-row w-full bg-blue-950">
                             <div className="true flex flex-row justify-between w-full">
                                 <div className="flex flex-row justify-start items-center gap-1 w-[80%] py-2 text-white">
