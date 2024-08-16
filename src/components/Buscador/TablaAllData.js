@@ -80,6 +80,7 @@ const Table = ({ parentsEdificioProps }) => {
     const [options, setOptions] = useState([]);
     const [smallLoadingScreen, setSmallLoadingScreen] = useState(false);
     const [nestedElements, setNestedElements] = useState([]);
+    const [loadingTotalItems, setLoadingTotalItems] = useState(false);
 
     const fetchData = async (currentPage, searchTerm) => {
         // Function to determine the value for each filter
@@ -149,7 +150,6 @@ const Table = ({ parentsEdificioProps }) => {
                 setData(data.results);
                 setTotalPages(data.totalPages);
                 setCurrentPage(data.currentPage);
-                setTotalItems(data.totalTipoAgrupacionCount);
 
             }).catch((error) => {
                 console.error('Error fetching data:', error.message || error);
@@ -1338,6 +1338,18 @@ const Table = ({ parentsEdificioProps }) => {
                             </button>
                         </div>
                     )}
+                    <div>
+                        <p className="text-center font-sans text-lg text-slate-800 font-bold">Total de inmuebles: <br />
+                            {loadingTotalItems ? (
+                                <Skeleton width={120} height={30}>
+                                    Analizando...
+                                </Skeleton>
+                            ) : (
+                                <span><p>{totalItems}</p></span>
+                            )}
+                        </p>
+                    </div>
+
                     <div className="flex flex-col gap-2 pt-3">
                         <div className="tableheader relative px-2 py-1 mt-2 rounded-xl shadow-xl flex items-center flex-row w-full bg-blue-950">
                             <div className="true flex flex-row justify-between w-full">

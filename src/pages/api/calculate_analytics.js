@@ -50,11 +50,31 @@ export default async function handler(req, res) {
             }
         ];
 
-        // Agregación para documentos tipoagrupacion = 2 en nestedinmuebles
         const aggregation2 = [
             { $match: { tipoagrupacion: 2 } },
             { $unwind: "$nestedinmuebles" },
-            { $match: { "nestedinmuebles.direccion": { $regex: pattern, $options: 'i' }, ...baseQuery } },
+            { $match: { "nestedinmuebles.direccion": { $regex: pattern, $options: 'i' } } },
+            {
+                $match: {
+                    "nestedinmuebles.ano_construccion": { $gte: parseInt(yearMin, 10), $lte: parseInt(yearMax, 10) },
+                    ...(selectedZone !== '' ? { "nestedinmuebles.zona": selectedZone } : {}),
+                    ...(selectedResponsable !== '' ? { "nestedinmuebles.responsable": selectedResponsable } : {}),
+                    ...(filterNoticia !== null ? { $or: [{ "nestedinmuebles.noticiastate": filterNoticia === 'true' ? true : false }, { "nestedinmuebles.noticiastate": { $exists: false } }] } : {}),
+                    ...(filterEncargo !== null ? { $or: [{ "nestedinmuebles.encargostate": filterEncargo === 'true' ? true : false }, { "nestedinmuebles.encargostate": { $exists: false } }] } : {}),
+                    ...(superficieMin !== null && superficieMax !== null ? { $or: [{ "nestedinmuebles.superficie": { $gte: parseInt(superficieMin, 10), $lte: parseInt(superficieMax, 10) } }, { "nestedinmuebles.superficie": { $exists: false } }] } : {}),
+                    ...(selectedCategoria !== '' ? { $or: [{ "nestedinmuebles.categoria": selectedCategoria === null ? { $exists: false } : selectedCategoria }, { "nestedinmuebles.categoria": { $exists: false } }] } : {}),
+                    ...(localizado !== null ? { $or: [{ "nestedinmuebles.localizado": localizado === 'true' ? true : false }, { "nestedinmuebles.localizado": { $exists: false } }] } : {}),
+                    ...(aireacondicionado !== 'undefined' ? { $or: [{ "nestedinmuebles.aireacondicionado": aireacondicionado === 'true' ? true : false }, { "nestedinmuebles.aireacondicionado": { $exists: false } }] } : {}),
+                    ...(ascensor !== 'undefined' ? { $or: [{ "nestedinmuebles.ascensor": ascensor === 'true' ? true : false }, { "nestedinmuebles.ascensor": { $exists: false } }] } : {}),
+                    ...(garaje !== 'undefined' ? { $or: [{ "nestedinmuebles.garaje": garaje === 'true' ? true : false }, { "nestedinmuebles.garaje": { $exists: false } }] } : {}),
+                    ...(trastero !== 'undefined' ? { $or: [{ "nestedinmuebles.trastero": trastero === 'true' ? true : false }, { "nestedinmuebles.trastero": { $exists: false } }] } : {}),
+                    ...(terraza !== 'undefined' ? { $or: [{ "nestedinmuebles.terraza": terraza === 'true' ? true : false }, { "nestedinmuebles.terraza": { $exists: false } }] } : {}),
+                    ...(jardin !== 'undefined' ? { $or: [{ "nestedinmuebles.jardin": jardin === 'true' ? true : false }, { "nestedinmuebles.jardin": { $exists: false } }] } : {}),
+                    ...(tipo !== 'undefined' ? { "nestedinmuebles.tipoagrupacion": parseInt(tipo, 10) } : {}),
+                    ...(habitaciones !== 'undefined' ? { $or: [{ "nestedinmuebles.habitaciones": parseInt(habitaciones, 10) }, { "nestedinmuebles.habitaciones": { $exists: false } }] } : {}),
+                    ...(banos !== 'undefined' ? { $or: [{ "nestedinmuebles.banyos": parseInt(banos, 10) }, { "nestedinmuebles.banyos": { $exists: false } }] } : {})
+                }
+            },
             {
                 $group: {
                     _id: null,
@@ -71,6 +91,7 @@ export default async function handler(req, res) {
                 }
             }
         ];
+
 
         // Agregación para documentos tipoagrupacion = 2 en nestedescaleras.nestedinmuebles
         const aggregation3 = [
@@ -98,6 +119,7 @@ export default async function handler(req, res) {
         // Ejecutar las agregaciones
         const result1 = await db.collection('inmuebles').aggregate(aggregation1).toArray();
         const result2 = await db.collection('inmuebles').aggregate(aggregation2).toArray();
+        console.log('result2', result2);
         const result3 = await db.collection('inmuebles').aggregate(aggregation3).toArray();
 
         // Consolidar resultados
