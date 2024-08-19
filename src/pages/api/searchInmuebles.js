@@ -446,13 +446,36 @@ export default async function handler(req, res) {
                                 input: { $setUnion: ["$responsables", []] }, // Eliminamos duplicados
                                 as: "responsable",
                                 in: {
-                                    k: "$$responsable",
+                                    k: {
+                                        $cond: {
+                                            if: { $or: [{ $eq: ["$$responsable", ""] }, { $eq: ["$$responsable", null] }] }, // Condición para convertir '' y null a 'NULL'
+                                            then: "NULL",
+                                            else: { $toString: "$$responsable" }
+                                        }
+                                    },
                                     v: {
                                         $size: {
                                             $filter: {
                                                 input: "$responsables",
                                                 as: "r",
-                                                cond: { $eq: ["$$r", "$$responsable"] }
+                                                cond: {
+                                                    $eq: [
+                                                        {
+                                                            $cond: {
+                                                                if: { $or: [{ $eq: ["$$r", ""] }, { $eq: ["$$r", null] }] }, // Condición para tratar '' y null como 'NULL'
+                                                                then: "NULL",
+                                                                else: { $toString: "$$r" }
+                                                            }
+                                                        },
+                                                        {
+                                                            $cond: {
+                                                                if: { $or: [{ $eq: ["$$responsable", ""] }, { $eq: ["$$responsable", null] }] },
+                                                                then: "NULL",
+                                                                else: { $toString: "$$responsable" }
+                                                            }
+                                                        }
+                                                    ]
+                                                }
                                             }
                                         }
                                     }
@@ -460,19 +483,43 @@ export default async function handler(req, res) {
                             }
                         }
                     },
+
                     categorias: {
                         $arrayToObject: {
                             $map: {
                                 input: { $setUnion: ["$categorias", []] }, // Eliminamos duplicados
                                 as: "categoria",
                                 in: {
-                                    k: "$$categoria",
+                                    k: {
+                                        $cond: {
+                                            if: { $or: [{ $eq: ["$$categoria", "NULL"] }, { $eq: ["$$categoria", null] }] },
+                                            then: "Sin Categoría",
+                                            else: { $toString: "$$categoria" }
+                                        }
+                                    },
                                     v: {
                                         $size: {
                                             $filter: {
                                                 input: "$categorias",
                                                 as: "c",
-                                                cond: { $eq: ["$$c", "$$categoria"] }
+                                                cond: {
+                                                    $eq: [
+                                                        {
+                                                            $cond: {
+                                                                if: { $or: [{ $eq: ["$$c", "NULL"] }, { $eq: ["$$c", null] }] },
+                                                                then: "Sin Categoría",
+                                                                else: { $toString: "$$c" }
+                                                            }
+                                                        },
+                                                        {
+                                                            $cond: {
+                                                                if: { $or: [{ $eq: ["$$categoria", "NULL"] }, { $eq: ["$$categoria", null] }] },
+                                                                then: "Sin Categoría",
+                                                                else: { $toString: "$$categoria" }
+                                                            }
+                                                        }
+                                                    ]
+                                                }
                                             }
                                         }
                                     }
@@ -480,6 +527,7 @@ export default async function handler(req, res) {
                             }
                         }
                     },
+
                     zonas: {
                         $arrayToObject: {
                             $map: {
@@ -666,13 +714,36 @@ export default async function handler(req, res) {
                                 input: { $setUnion: ["$responsables", []] }, // Eliminamos duplicados
                                 as: "responsable",
                                 in: {
-                                    k: "$$responsable",
+                                    k: {
+                                        $cond: {
+                                            if: { $or: [{ $eq: ["$$responsable", ""] }, { $eq: ["$$responsable", null] }] }, // Condición para convertir '' y null a 'NULL'
+                                            then: "NULL",
+                                            else: { $toString: "$$responsable" }
+                                        }
+                                    },
                                     v: {
                                         $size: {
                                             $filter: {
                                                 input: "$responsables",
                                                 as: "r",
-                                                cond: { $eq: ["$$r", "$$responsable"] }
+                                                cond: {
+                                                    $eq: [
+                                                        {
+                                                            $cond: {
+                                                                if: { $or: [{ $eq: ["$$r", ""] }, { $eq: ["$$r", null] }] }, // Condición para tratar '' y null como 'NULL'
+                                                                then: "NULL",
+                                                                else: { $toString: "$$r" }
+                                                            }
+                                                        },
+                                                        {
+                                                            $cond: {
+                                                                if: { $or: [{ $eq: ["$$responsable", ""] }, { $eq: ["$$responsable", null] }] },
+                                                                then: "NULL",
+                                                                else: { $toString: "$$responsable" }
+                                                            }
+                                                        }
+                                                    ]
+                                                }
                                             }
                                         }
                                     }
@@ -680,19 +751,43 @@ export default async function handler(req, res) {
                             }
                         }
                     },
+
                     categorias: {
                         $arrayToObject: {
                             $map: {
                                 input: { $setUnion: ["$categorias", []] }, // Eliminamos duplicados
                                 as: "categoria",
                                 in: {
-                                    k: "$$categoria",
+                                    k: {
+                                        $cond: {
+                                            if: { $or: [{ $eq: ["$$categoria", "NULL"] }, { $eq: ["$$categoria", null] }] },
+                                            then: "Sin Categoría",
+                                            else: { $toString: "$$categoria" }
+                                        }
+                                    },
                                     v: {
                                         $size: {
                                             $filter: {
                                                 input: "$categorias",
                                                 as: "c",
-                                                cond: { $eq: ["$$c", "$$categoria"] }
+                                                cond: {
+                                                    $eq: [
+                                                        {
+                                                            $cond: {
+                                                                if: { $or: [{ $eq: ["$$c", "NULL"] }, { $eq: ["$$c", null] }] },
+                                                                then: "Sin Categoría",
+                                                                else: { $toString: "$$c" }
+                                                            }
+                                                        },
+                                                        {
+                                                            $cond: {
+                                                                if: { $or: [{ $eq: ["$$categoria", "NULL"] }, { $eq: ["$$categoria", null] }] },
+                                                                then: "Sin Categoría",
+                                                                else: { $toString: "$$categoria" }
+                                                            }
+                                                        }
+                                                    ]
+                                                }
                                             }
                                         }
                                     }
@@ -700,6 +795,7 @@ export default async function handler(req, res) {
                             }
                         }
                     },
+
                     zonas: {
                         $arrayToObject: {
                             $map: {
@@ -846,9 +942,14 @@ export default async function handler(req, res) {
                     },
                     categorias: {
                         $push: {
-                            $ifNull: [{ $toString: "$categoria" }, "Sin categoría"]
+                            $cond: {
+                                if: { $or: [{ $eq: ["$categoria", "NULL"] }, { $eq: ["$categoria", null] }] },
+                                then: "Sin Categoría",
+                                else: { $ifNull: [{ $toString: "$categoria" }, "Sin Categoría"] }
+                            }
                         }
                     },
+
                     zonas: {
                         $push: {
                             $ifNull: [{ $toString: "$zona" }, "NULL"]
@@ -884,13 +985,36 @@ export default async function handler(req, res) {
                                 input: { $setUnion: ["$responsables", []] }, // Eliminamos duplicados
                                 as: "responsable",
                                 in: {
-                                    k: "$$responsable",
+                                    k: {
+                                        $cond: {
+                                            if: { $or: [{ $eq: ["$$responsable", ""] }, { $eq: ["$$responsable", null] }] }, // Condición para convertir '' y null a 'NULL'
+                                            then: "NULL",
+                                            else: { $toString: "$$responsable" }
+                                        }
+                                    },
                                     v: {
                                         $size: {
                                             $filter: {
                                                 input: "$responsables",
                                                 as: "r",
-                                                cond: { $eq: ["$$r", "$$responsable"] }
+                                                cond: {
+                                                    $eq: [
+                                                        {
+                                                            $cond: {
+                                                                if: { $or: [{ $eq: ["$$r", ""] }, { $eq: ["$$r", null] }] }, // Condición para tratar '' y null como 'NULL'
+                                                                then: "NULL",
+                                                                else: { $toString: "$$r" }
+                                                            }
+                                                        },
+                                                        {
+                                                            $cond: {
+                                                                if: { $or: [{ $eq: ["$$responsable", ""] }, { $eq: ["$$responsable", null] }] },
+                                                                then: "NULL",
+                                                                else: { $toString: "$$responsable" }
+                                                            }
+                                                        }
+                                                    ]
+                                                }
                                             }
                                         }
                                     }
@@ -898,6 +1022,7 @@ export default async function handler(req, res) {
                             }
                         }
                     },
+
                     categorias: {
                         $arrayToObject: {
                             $map: {
@@ -1071,9 +1196,14 @@ export default async function handler(req, res) {
                     },
                     categorias: {
                         $push: {
-                            $ifNull: [{ $toString: "$nestedinmuebles.categoria" }, "Sin categoría"]
+                            $cond: {
+                                if: { $or: [{ $eq: ["$nestedinmuebles.categoria", "NULL"] }, { $eq: ["$nestedinmuebles.categoria", null] }] },
+                                then: "Sin categoría",
+                                else: { $ifNull: [{ $toString: "$nestedinmuebles.categoria" }, "Sin categoría"] }
+                            }
                         }
                     },
+
                     zonas: {
                         $push: {
                             $ifNull: [{ $toString: "$nestedinmuebles.zona" }, "NULL"]
@@ -1109,13 +1239,36 @@ export default async function handler(req, res) {
                                 input: { $setUnion: ["$responsables", []] }, // Eliminamos duplicados
                                 as: "responsable",
                                 in: {
-                                    k: "$$responsable",
+                                    k: {
+                                        $cond: {
+                                            if: { $or: [{ $eq: ["$$responsable", ""] }, { $eq: ["$$responsable", null] }] }, // Condición para convertir '' y null a 'NULL'
+                                            then: "NULL",
+                                            else: { $toString: "$$responsable" }
+                                        }
+                                    },
                                     v: {
                                         $size: {
                                             $filter: {
                                                 input: "$responsables",
                                                 as: "r",
-                                                cond: { $eq: ["$$r", "$$responsable"] }
+                                                cond: {
+                                                    $eq: [
+                                                        {
+                                                            $cond: {
+                                                                if: { $or: [{ $eq: ["$$r", ""] }, { $eq: ["$$r", null] }] }, // Condición para tratar '' y null como 'NULL'
+                                                                then: "NULL",
+                                                                else: { $toString: "$$r" }
+                                                            }
+                                                        },
+                                                        {
+                                                            $cond: {
+                                                                if: { $or: [{ $eq: ["$$responsable", ""] }, { $eq: ["$$responsable", null] }] },
+                                                                then: "NULL",
+                                                                else: { $toString: "$$responsable" }
+                                                            }
+                                                        }
+                                                    ]
+                                                }
                                             }
                                         }
                                     }
@@ -1123,6 +1276,7 @@ export default async function handler(req, res) {
                             }
                         }
                     },
+
                     categorias: {
                         $arrayToObject: {
                             $map: {
@@ -1302,9 +1456,14 @@ export default async function handler(req, res) {
                     },
                     categorias: {
                         $push: {
-                            $ifNull: [{ $toString: "$nestedescaleras.nestedinmuebles.categoria" }, "Sin categoría"]
+                            $cond: {
+                                if: { $or: [{ $eq: ["$nestedescaleras.nestedinmuebles.categoria", "NULL"] }, { $eq: ["$nestedescaleras.nestedinmuebles.categoria", null] }] },
+                                then: "Sin categoría",
+                                else: { $ifNull: [{ $toString: "$nestedescaleras.nestedinmuebles.categoria" }, "Sin categoría"] }
+                            }
                         }
                     },
+
                     zonas: {
                         $push: {
                             $ifNull: [{ $toString: "$nestedescaleras.nestedinmuebles.zona" }, "NULL"]
@@ -1340,13 +1499,36 @@ export default async function handler(req, res) {
                                 input: { $setUnion: ["$responsables", []] }, // Eliminamos duplicados
                                 as: "responsable",
                                 in: {
-                                    k: "$$responsable",
+                                    k: {
+                                        $cond: {
+                                            if: { $or: [{ $eq: ["$$responsable", ""] }, { $eq: ["$$responsable", null] }] }, // Condición para convertir '' y null a 'NULL'
+                                            then: "NULL",
+                                            else: { $toString: "$$responsable" }
+                                        }
+                                    },
                                     v: {
                                         $size: {
                                             $filter: {
                                                 input: "$responsables",
                                                 as: "r",
-                                                cond: { $eq: ["$$r", "$$responsable"] }
+                                                cond: {
+                                                    $eq: [
+                                                        {
+                                                            $cond: {
+                                                                if: { $or: [{ $eq: ["$$r", ""] }, { $eq: ["$$r", null] }] }, // Condición para tratar '' y null como 'NULL'
+                                                                then: "NULL",
+                                                                else: { $toString: "$$r" }
+                                                            }
+                                                        },
+                                                        {
+                                                            $cond: {
+                                                                if: { $or: [{ $eq: ["$$responsable", ""] }, { $eq: ["$$responsable", null] }] },
+                                                                then: "NULL",
+                                                                else: { $toString: "$$responsable" }
+                                                            }
+                                                        }
+                                                    ]
+                                                }
                                             }
                                         }
                                     }
@@ -1354,6 +1536,7 @@ export default async function handler(req, res) {
                             }
                         }
                     },
+
                     categorias: {
                         $arrayToObject: {
                             $map: {
@@ -1482,14 +1665,22 @@ export default async function handler(req, res) {
                 localizado: { true: 0, false: 0, NULL: 0 }
             };
 
-            // Función auxiliar para sumar los valores de un campo
+            // Función auxiliar para normalizar etiquetas y sumar los valores de un campo
             function addFields(target, source) {
-                for (const key in source) {
+                for (let key in source) {
                     if (source.hasOwnProperty(key)) {
-                        if (!target[key]) {
-                            target[key] = 0;
+                        // Normalizar etiquetas
+                        let normalizedKey = key.toLowerCase();
+
+                        // Convertir 'sin categoría' y similares a una forma unificada
+                        if (normalizedKey === 'sin categoría' || normalizedKey === 'sin categoria') {
+                            normalizedKey = 'Sin Categoría';
                         }
-                        target[key] += source[key];
+
+                        if (!target[normalizedKey]) {
+                            target[normalizedKey] = 0;
+                        }
+                        target[normalizedKey] += source[key];
                     }
                 }
             }
