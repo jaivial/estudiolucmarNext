@@ -3,28 +3,29 @@ import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer } from 'recha
 
 const SimpleBarChart = ({ analyticsData }) => {
     // Safely extract data using optional chaining and provide default values if data is undefined
-    const responsablesData = analyticsData.find(data => data.name === 'Responsables')?.value || [];
-    const totalItems = analyticsData.find(data => data.name === 'Total')?.value || 0;
+    const responsablesData = analyticsData?.responsables || [];
+    const totalItems = Object.values(responsablesData).reduce((sum, value) => sum + value, 0);
 
     // Prepare data for the charts
-    const chartData = responsablesData.map((item, index) => ({
-        name: item.responsable === 'NULL' ? 'Sin asignar' : item.responsable,
-        value: (item.count / totalItems) * 100, // Calculate percentage
-        count: item.count,
+    const chartData = Object.entries(responsablesData).map(([key, count], index) => ({
+        name: key === 'NULL' || key === '' ? 'Sin asignar' : key,
+        value: (count / totalItems) * 100, // Calculate percentage
+        count: count,
         gradientId: `colorGradient${index % 8}`, // Unique gradient ID for each slice, cycling through 8 gradients
     }));
 
-    // 8 Diverse Color Palettes
+    // 8 Diverse Darker Color Palettes
     const gradients = [
-        ['#0B0785', '#388DD6'],  // Deep Blue to Light Blue
-        ['#1E1E1E', '#585858'],  // Black to Grey
-        ['#172B3C', '#62727B'],  // Dark Slate to Slate Grey
-        ['#005F73', '#94D2BD'],  // Teal to Mint
-        ['#3A0CA3', '#F72585'],  // Purple to Pink
-        ['#FF6700', '#FFC300'],  // Orange to Yellow
-        ['#283618', '#606C38'],  // Olive to Moss Green
-        ['#6D597A', '#B56576'],  // Dusty Rose to Mauve
+        ['#0B0033', '#002366'],  // Very Dark Blue to Dark Blue
+        ['#8B0000', '#FF4500'],  // Dark Red to Dark Orange
+        ['#004225', '#228B22'],  // Dark Green to Forest Green
+        ['#4B0082', '#9400D3'],  // Indigo to Dark Violet
+        ['#800080', '#C71585'],  // Dark Purple to Medium Violet Red
+        ['#8B7500', '#DAA520'],  // Dark Goldenrod to Goldenrod
+        ['#003366', '#4682B4'],  // Midnight Blue to Steel Blue
+        ['#5B0000', '#A52A2A'],  // Dark Maroon to Brown
     ];
+
 
     const renderCustomLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, index }) => {
         const RADIAN = Math.PI / 180;
@@ -65,7 +66,7 @@ const SimpleBarChart = ({ analyticsData }) => {
         );
     };
 
-    const isPieChartDataAvailable = chartData.length > 0 && totalItems > 0 && responsablesData.length > 0;
+    const isPieChartDataAvailable = chartData.length > 0 && totalItems > 0;
 
     return (
         <div className="flex flex-col gap-1 justify-center items-center bg-slate-100 rounded-xl p-4 shadow-lg w-full h-auto">

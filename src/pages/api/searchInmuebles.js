@@ -442,12 +442,30 @@ export default async function handler(req, res) {
                                 _id: {
                                     $cond: [
                                         { $ifNull: ["$nestedescaleras.nestedinmuebles.responsable", false] },
-                                        "$nestedescaleras.nestedinmuebles.responsable",
+                                        {
+                                            $cond: [
+                                                { $or: [{ $eq: ["$nestedescaleras.nestedinmuebles.responsable", ""] }, { $eq: ["$nestedescaleras.nestedinmuebles.responsable", "NULL"] }] },
+                                                "NULL",
+                                                "$nestedescaleras.nestedinmuebles.responsable"
+                                            ]
+                                        },
                                         {
                                             $cond: [
                                                 { $ifNull: ["$nestedinmuebles.responsable", false] },
-                                                "$nestedinmuebles.responsable",
-                                                "$topLevelResponsable"
+                                                {
+                                                    $cond: [
+                                                        { $or: [{ $eq: ["$nestedinmuebles.responsable", ""] }, { $eq: ["$nestedinmuebles.responsable", "NULL"] }] },
+                                                        "NULL",
+                                                        "$nestedinmuebles.responsable"
+                                                    ]
+                                                },
+                                                {
+                                                    $cond: [
+                                                        { $or: [{ $eq: ["$topLevelResponsable", ""] }, { $eq: ["$topLevelResponsable", "NULL"] }] },
+                                                        "NULL",
+                                                        "$topLevelResponsable"
+                                                    ]
+                                                }
                                             ]
                                         }
                                     ]
@@ -460,7 +478,7 @@ export default async function handler(req, res) {
                                 _id: null,
                                 responsables: {
                                     $push: {
-                                        k: { $ifNull: ["$_id", "Vacío"] },
+                                        k: { $ifNull: ["$_id", "NULL"] },
                                         v: "$count"
                                     }
                                 }
@@ -473,6 +491,7 @@ export default async function handler(req, res) {
                             }
                         }
                     ],
+
                     categorias: [
                         {
                             $group: {
