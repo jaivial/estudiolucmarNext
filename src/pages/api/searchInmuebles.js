@@ -479,12 +479,45 @@ export default async function handler(req, res) {
                                 _id: {
                                     $cond: [
                                         { $ifNull: ["$nestedescaleras.nestedinmuebles.categoria", false] },
-                                        "$nestedescaleras.nestedinmuebles.categoria",
+                                        {
+                                            $cond: [
+                                                {
+                                                    $or: [
+                                                        { $eq: ["$nestedescaleras.nestedinmuebles.categoria", null] },
+                                                        { $eq: ["$nestedescaleras.nestedinmuebles.categoria", "NULL"] }
+                                                    ]
+                                                },
+                                                "Sin categoría",
+                                                "$nestedescaleras.nestedinmuebles.categoria"
+                                            ]
+                                        },
                                         {
                                             $cond: [
                                                 { $ifNull: ["$nestedinmuebles.categoria", false] },
-                                                "$nestedinmuebles.categoria",
-                                                "$topLevelCategoria"
+                                                {
+                                                    $cond: [
+                                                        {
+                                                            $or: [
+                                                                { $eq: ["$nestedinmuebles.categoria", null] },
+                                                                { $eq: ["$nestedinmuebles.categoria", "NULL"] }
+                                                            ]
+                                                        },
+                                                        "Sin categoría",
+                                                        "$nestedinmuebles.categoria"
+                                                    ]
+                                                },
+                                                {
+                                                    $cond: [
+                                                        {
+                                                            $or: [
+                                                                { $eq: ["$topLevelCategoria", null] },
+                                                                { $eq: ["$topLevelCategoria", "NULL"] }
+                                                            ]
+                                                        },
+                                                        "Sin categoría",
+                                                        "$topLevelCategoria"
+                                                    ]
+                                                }
                                             ]
                                         }
                                     ]
@@ -497,7 +530,7 @@ export default async function handler(req, res) {
                                 _id: null,
                                 categorias: {
                                     $push: {
-                                        k: { $ifNull: ["$_id", "Vacío"] },
+                                        k: { $ifNull: ["$_id", "Sin categoría"] },
                                         v: "$count"
                                     }
                                 }
@@ -510,6 +543,7 @@ export default async function handler(req, res) {
                             }
                         }
                     ],
+
                     noticiastate: [
                         {
                             $group: {
@@ -581,7 +615,7 @@ export default async function handler(req, res) {
 
         console.timeEnd("Fetch Duration");
 
-        res.status(200).json({ totalPages, currentPage: page, results: finalResults, });
+        res.status(200).json({ totalPages, currentPage: page, results: finalResults, analyitics: result });
     } catch (e) {
         console.error('API Error:', e.message, e.stack);
         res.status(500).json({ error: 'An error occurred while processing your request.' });

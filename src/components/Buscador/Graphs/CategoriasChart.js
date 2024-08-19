@@ -1,17 +1,23 @@
-import { he } from 'date-fns/locale';
 import React from 'react';
 import { BarChart, Bar, XAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 
 const CategoriasChart = ({ analyticsData }) => {
-    // Safely extract data using optional chaining and provide default values if data is undefined
-    const totalItems = analyticsData.find(data => data.name === 'Total')?.value || 0;
-    const categoriasData = analyticsData.find(data => data.name === 'Categorias')?.value || [];
+    // Safely extract data from analyticsData
+    const categoriasData = analyticsData?.categorias || {};
 
-    // Apply logarithmic scaling to the count values to adjust bar heights
-    const barChartData = categoriasData.map(item => ({
-        name: item.categoria === 'NULL' ? 'Sin categoria' : item.categoria,
-        count: item.count,
-        scaledCount: item.count > 0 ? Math.log10(item.count) : 0, // Apply log10 to count values
+    // Convert the categorias object into an array of { name, count } objects
+    const rawBarChartData = Object.entries(categoriasData).map(([key, count]) => ({
+        name: key === 'NULL' || key === '' ? 'Sin categoria' : key,
+        count,
+    }));
+
+    // Determine the maximum count value
+    const maxCount = Math.max(...rawBarChartData.map(item => item.count));
+
+    // Apply square root scaling if maxCount is less than 40, otherwise apply log10 scaling
+    const barChartData = rawBarChartData.map(item => ({
+        ...item,
+        scaledCount: maxCount < 40 ? Math.sqrt(item.count) : Math.log2(item.count + 20),
     }));
 
     const renderCustomBarLabel = ({ x, y, width, index }) => {
@@ -41,15 +47,15 @@ const CategoriasChart = ({ analyticsData }) => {
     };
 
     // Check if any of the required data is missing or empty
-    const isBarChartDataAvailable = barChartData.length > 0 && totalItems > 0 && categoriasData.length > 0;
+    const isBarChartDataAvailable = barChartData.length > 0;
 
     return (
         <div className="flex flex-col gap-1 justify-center items-center bg-slate-100 rounded-xl p-4 shadow-lg w-full h-auto pt-5">
             <h2 className="text-center text-xl font-bold">Distribución de Categorías</h2>
-            <div className='h-[200px] w-full'> {/* Increased height to make bars taller */}
+            <div className='h-[220px] w-full'> {/* Increased height to make bars taller */}
                 <ResponsiveContainer>
                     {isBarChartDataAvailable ? (
-                        <BarChart data={barChartData} margin={{ top: -100, right: 0, left: 0, bottom: 0 }}>
+                        <BarChart data={barChartData} margin={{ top: 30, right: 0, left: 0, bottom: 0 }}>
                             <defs>
                                 <linearGradient id="colorGradient" x1="0" y1="0" x2="0" y2="1">
                                     <stop offset="0%" stopColor="#0B0785" />

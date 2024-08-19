@@ -11,6 +11,7 @@ import { IoAnalytics } from "react-icons/io5";
 import Analytics from './Analytics.js';
 import SmallLoadingScreen from '../LoadingScreen/SmallLoadingScreen.js';
 import Select from 'react-select';
+import { set } from 'date-fns';
 
 
 const Table = ({ parentsEdificioProps }) => {
@@ -152,6 +153,8 @@ const Table = ({ parentsEdificioProps }) => {
                 setData(data.results);
                 setTotalPages(data.totalPages);
                 setCurrentPage(data.currentPage);
+                console.log('analyticsData', data.analyitics[0]);
+                setAnalyticsData(data.analyitics[0]);
 
             }).catch((error) => {
                 console.error('Error fetching data:', error.message || error);
@@ -236,6 +239,7 @@ const Table = ({ parentsEdificioProps }) => {
                 setCurrentPage(totalPages > 0 ? totalPages : 1); // Ensure currentPage is set to a valid page number
             }
         };
+        console.log('analyticsData', analyticsData);
         fetchAndSetData();
     }, [
         currentPage,

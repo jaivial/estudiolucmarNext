@@ -10,10 +10,10 @@ const Analytics = ({ analyticsData }) => {
     return (
         <div className='flex flex-col gap-4 justify-center items-center'>
             <CategoriasChart analyticsData={analyticsData} />
-            <AsesoresChart analyticsData={analyticsData} />
+            {/* <AsesoresChart analyticsData={analyticsData} />
             <ZonesChart analyticsData={analyticsData} />
             <NoticiasEncargosChart analyticsData={analyticsData} />
-            <LocalizadosChart analyticsData={analyticsData} />
+            <LocalizadosChart analyticsData={analyticsData} /> */}
         </div>
     );
 };
