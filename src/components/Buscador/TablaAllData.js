@@ -57,16 +57,16 @@ const Table = ({ parentsEdificioProps }) => {
         filterNoticia: null,
         filterEncargo: null,
         superficieMin: 0,
-        superficieMax: 20000,
+        superficieMax: 800000,
         yearMin: 1800,
         yearMax: new Date().getFullYear(),
         localizado: null,
-        garaje: null,
-        aireacondicionado: null,
-        ascensor: null,
-        trastero: null,
-        jardin: null,
-        terraza: null,
+        garaje: undefined,
+        aireacondicionado: undefined,
+        ascensor: undefined,
+        trastero: undefined,
+        jardin: undefined,
+        terraza: undefined,
         tipo: undefined,
         banos: undefined,
         habitaciones: undefined,
@@ -117,6 +117,8 @@ const Table = ({ parentsEdificioProps }) => {
         let habitacionesValue = determineFilterValueInterger(filters.habitaciones);
         console.log('habitacionesValue', habitacionesValue);
         console.log('typeof habitacionesValue', typeof habitacionesValue);
+
+        console.log('filters', filters);
 
         try {
             setLoading(true);

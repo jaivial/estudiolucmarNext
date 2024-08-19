@@ -7,9 +7,11 @@ export default async function handler(req, res) {
 
         const client = await clientPromise;
         const db = client.db('inmoprocrm'); // Use the correct database name
+        const inmuebles = db.collection('inmuebles');
 
-        const { pattern = '', currentPage = 1, itemsPerPage = 10, selectedZone = '', selectedCategoria = '', selectedResponsable = '', filterNoticia = null, filterEncargo = null, superficieMin = 0, superficieMax = 20000, yearMin = 1800, yearMax = new Date().getFullYear(), localizado = null, garaje = null, aireacondicionado = null, ascensor = null, trastero = null, jardin = null, terraza = null, tipo, banos, habitaciones } = req.query;
-
+        const { pattern = '', currentPage = 1, itemsPerPage = 10, selectedZone = '', selectedCategoria = '', selectedResponsable = '', filterNoticia = null, filterEncargo = null, superficieMin = 0, superficieMax = 800000, yearMin = 1800, yearMax = new Date().getFullYear(), localizado = null, garaje = null, aireacondicionado = null, ascensor = null, trastero = null, jardin = null, terraza = null, tipo, banos, habitaciones } = req.query;
+        console.log('garaje', garaje);
+        console.log('typeof garaje', typeof garaje);
         const page = parseInt(currentPage, 10);
         const limit = parseInt(itemsPerPage, 10);
         const skip = (page - 1) * limit;
@@ -338,117 +340,242 @@ export default async function handler(req, res) {
             };
         });
 
-        // Si pattern es una cadena vacía, no usamos regex para permitir coincidencias completas
-        const regex = pattern ? new RegExp(pattern, 'i') : null;
-
-        // Crear pipeline base
-        const pipeline = [];
-
-        // Filtros base en la etapa $match
-        const matchStage = {
-            $match: {
-                $and: [
-                    { tipoagrupacion: { $in: [1, 2] } },  // Asegura que se consideran solo tipoagrupacion 1 y 2
-                    { 'direccion': { $regex: pattern, $options: 'i' } },
-                    { ano_construccion: { $gte: parseInt(yearMin, 10), $lte: parseInt(yearMax, 10) } },
-                    ...(selectedZone !== '' ? [{ zona: selectedZone }] : []),
-                    ...(selectedResponsable !== '' ? [{ responsable: selectedResponsable }] : []),
-                    ...(filterNoticia !== null ? [{ noticiastate: filterNoticia === 'true' ? true : false }] : []),
-                    ...(filterEncargo !== null ? [{ encargostate: filterEncargo === 'true' ? true : false }] : []),
-                    ...(superficieMin !== null && superficieMax !== null ? [{ superficie: { $gte: parseInt(superficieMin, 10), $lte: parseInt(superficieMax, 10) } }] : []),
-                    ...(selectedCategoria !== '' ? [{ categoria: selectedCategoria }] : []),
-                    ...(localizado !== null ? [{ localizado: localizado === 'true' ? true : false }] : []),
-                    ...(aireacondicionado !== 'undefined' ? [{ aireacondicionado: aireacondicionado === 'true' ? true : false }] : []),
-                    ...(ascensor !== 'undefined' ? [{ ascensor: ascensor === 'true' ? true : false }] : []),
-                    ...(garaje !== 'undefined' ? [{ garaje: garaje === 'true' ? true : false }] : []),
-                    ...(trastero !== 'undefined' ? [{ trastero: trastero === 'true' ? true : false }] : []),
-                    ...(terraza !== 'undefined' ? [{ terraza: terraza === 'true' ? true : false }] : []),
-                    ...(jardin !== 'undefined' ? [{ jardin: jardin === 'true' ? true : false }] : []),
-                    ...(tipo !== 'undefined' ? [{ tipoagrupacion: parseInt(tipo, 10) }] : []),
-                    ...(habitaciones !== 'undefined' ? [{ habitaciones: parseInt(habitaciones, 10) }] : []),
-                    ...(banos !== 'undefined' ? [{ banyos: parseInt(banos, 10) }] : []),
-                ]
-            }
-        };
-
-        pipeline.push(matchStage);
-
-        // Proyección de categorías y responsables basadas en tipoagrupacion
-        pipeline.push({
-            $project: {
-                categorias: {
-                    $cond: [
-                        { $eq: ["$tipoagrupacion", 2] },
-                        {
-                            $concatArrays: [
-                                { $ifNull: ["$nestedinmuebles.categoria", []] },
-                                { $ifNull: ["$nestedescaleras.nestedinmuebles.categoria", []] }
-                            ]
-                        },
-                        { $ifNull: [["$categoria"], []] }
-                    ]
-                },
-                responsables: {
-                    $cond: [
-                        { $eq: ["$tipoagrupacion", 2] },
-                        {
-                            $concatArrays: [
-                                { $ifNull: ["$nestedinmuebles.responsable", []] },
-                                { $ifNull: ["$nestedescaleras.nestedinmuebles.responsable", []] }
-                            ]
-                        },
-                        { $ifNull: [["$responsable"], []] }
-                    ]
-                }
-            }
-        });
-
-        // Desenrollar los arrays para preparar la agrupación
-        pipeline.push({ $unwind: "$categorias" });
-        pipeline.push({ $unwind: "$responsables" });
-
-        // Filtrar los valores nulos, vacíos o diferentes del filtro de responsable o categoría
-        pipeline.push({
-            $match: {
-                categorias: { $ne: null, $ne: "" },
-                responsables: { $ne: null, $ne: "" }
-            }
-        });
-
-        // Agrupar para contar ocurrencias de cada categoría y responsable
-        pipeline.push({
-            $group: {
-                _id: null,
-                categoryCounts: {
-                    $push: {
-                        categoria: "$categorias",
-                        responsable: "$responsables"
+        // Run the aggregation pipeline
+        const result = await db.collection('inmuebles').aggregate([
+            { $match: { 'direccion': { $regex: pattern, $options: 'i' } } },
+            { $addFields: { topLevelCategoria: "$categoria", topLevelResponsable: "$responsable" } },
+            { $unwind: { path: "$nestedinmuebles", preserveNullAndEmptyArrays: true } },
+            { $unwind: { path: "$nestedescaleras", preserveNullAndEmptyArrays: true } },
+            { $unwind: { path: "$nestedescaleras.nestedinmuebles", preserveNullAndEmptyArrays: true } },
+            {
+                $addFields: {
+                    noticiastate: {
+                        $cond: {
+                            if: { $ifNull: ["$nestedescaleras.nestedinmuebles.noticiastate", false] },
+                            then: "$nestedescaleras.nestedinmuebles.noticiastate",
+                            else: {
+                                $cond: {
+                                    if: { $ifNull: ["$nestedinmuebles.noticiastate", false] },
+                                    then: "$nestedinmuebles.noticiastate",
+                                    else: "$noticiastate"
+                                }
+                            }
+                        }
+                    },
+                    encargostate: {
+                        $cond: {
+                            if: { $ifNull: ["$nestedescaleras.nestedinmuebles.encargostate", false] },
+                            then: "$nestedescaleras.nestedinmuebles.encargostate",
+                            else: {
+                                $cond: {
+                                    if: { $ifNull: ["$nestedinmuebles.encargostate", false] },
+                                    then: "$nestedinmuebles.encargostate",
+                                    else: "$encargostate"
+                                }
+                            }
+                        }
+                    },
+                    localizado: {
+                        $cond: {
+                            if: { $ifNull: ["$nestedescaleras.nestedinmuebles.localizado", false] },
+                            then: "$nestedescaleras.nestedinmuebles.localizado",
+                            else: {
+                                $cond: {
+                                    if: { $ifNull: ["$nestedinmuebles.localizado", false] },
+                                    then: "$nestedinmuebles.localizado",
+                                    else: "$localizado"
+                                }
+                            }
+                        }
                     }
                 }
+            },
+            {
+                $match: {
+                    $and: [
+                        {
+                            $or: [
+                                {
+                                    tipoagrupacion: 1,
+                                    ...(selectedZone !== '' ? { zona: selectedZone } : {}),
+                                    ...(selectedResponsable !== '' ? { $or: [{ responsable: selectedResponsable }, { responsable: { $exists: false } }, { responsable: null }] } : {}),
+                                    ...(filterNoticia !== null ? { $or: [{ noticiastate: filterNoticia === 'true' }, { noticiastate: { $exists: false } }, { noticiastate: null }] } : {}),
+                                    ...(filterEncargo !== null ? { $or: [{ encargostate: filterEncargo === 'true' }, { encargostate: { $exists: false } }, { encargostate: null }] } : {}),
+                                    ...(selectedCategoria !== '' ? { categoria: selectedCategoria } : {}),
+                                    ...(localizado !== null ? { $or: [{ localizado: localizado === 'true' }, { localizado: { $exists: false } }, { localizado: null }] } : {}),
+                                    ...(aireacondicionado !== 'undefined' ? { aireacondicionado: aireacondicionado === 'true' } : {}),
+                                    ...(ascensor !== 'undefined' ? { ascensor: ascensor === 'true' } : {}),
+                                    ...(garaje !== 'undefined' ? { garaje: garaje === 'true' } : {}),
+                                    ...(trastero !== 'undefined' ? { trastero: trastero === 'true' } : {}),
+                                    ...(terraza !== 'undefined' ? { terraza: terraza === 'true' } : {}),
+                                    ...(jardin !== 'undefined' ? { jardin: jardin === 'true' } : {}),
+                                    ...(habitaciones !== 'undefined' ? { habitaciones } : {}),
+                                    ...(banos !== 'undefined' ? { banyos: banos } : {})
+                                },
+                                {
+                                    tipoagrupacion: 2,
+                                    ...(selectedZone !== '' ? { "nestedinmuebles.zona": selectedZone } : {}),
+                                    ...(selectedResponsable !== '' ? { $or: [{ "nestedinmuebles.responsable": selectedResponsable }, { "nestedinmuebles.responsable": { $exists: false } }, { "nestedinmuebles.responsable": null }] } : {}),
+                                    ...(filterNoticia !== null ? { $or: [{ "noticiastate": filterNoticia === 'true' }, { "noticiastate": { $exists: false } }, { "noticiastate": null }] } : {}),
+                                    ...(filterEncargo !== null ? { $or: [{ "encargostate": filterEncargo === 'true' }, { "encargostate": { $exists: false } }, { "encargostate": null }] } : {}),
+                                    ...(selectedCategoria !== '' ? { "nestedinmuebles.categoria": selectedCategoria } : {}),
+                                    ...(localizado !== null ? { $or: [{ "localizado": localizado === 'true' }, { "localizado": { $exists: false } }, { "localizado": null }] } : {}),
+                                    ...(aireacondicionado !== 'undefined' ? { "nestedinmuebles.aireacondicionado": aireacondicionado === 'true' } : {}),
+                                    ...(ascensor !== 'undefined' ? { "nestedinmuebles.ascensor": ascensor === 'true' } : {}),
+                                    ...(garaje !== 'undefined' ? { "nestedinmuebles.garaje": garaje === 'true' } : {}),
+                                    ...(trastero !== 'undefined' ? { "nestedinmuebles.trastero": trastero === 'true' } : {}),
+                                    ...(terraza !== 'undefined' ? { "nestedinmuebles.terraza": terraza === 'true' } : {}),
+                                    ...(jardin !== 'undefined' ? { "nestedinmuebles.jardin": jardin === 'true' } : {}),
+                                    ...(habitaciones !== 'undefined' ? { "nestedinmuebles.habitaciones": habitaciones } : {}),
+                                    ...(banos !== 'undefined' ? { "nestedinmuebles.banyos": banos } : {})
+                                }
+                            ]
+                        }
+                    ]
+                }
+            },
+            {
+                $facet: {
+                    responsables: [
+                        {
+                            $group: {
+                                _id: {
+                                    $cond: [
+                                        { $ifNull: ["$nestedescaleras.nestedinmuebles.responsable", false] },
+                                        "$nestedescaleras.nestedinmuebles.responsable",
+                                        {
+                                            $cond: [
+                                                { $ifNull: ["$nestedinmuebles.responsable", false] },
+                                                "$nestedinmuebles.responsable",
+                                                "$topLevelResponsable"
+                                            ]
+                                        }
+                                    ]
+                                },
+                                count: { $sum: 1 }
+                            }
+                        },
+                        {
+                            $group: {
+                                _id: null,
+                                responsables: {
+                                    $push: {
+                                        k: { $ifNull: ["$_id", "Vacío"] },
+                                        v: "$count"
+                                    }
+                                }
+                            }
+                        },
+                        {
+                            $project: {
+                                _id: 0,
+                                responsables: { $arrayToObject: "$responsables" }
+                            }
+                        }
+                    ],
+                    categorias: [
+                        {
+                            $group: {
+                                _id: {
+                                    $cond: [
+                                        { $ifNull: ["$nestedescaleras.nestedinmuebles.categoria", false] },
+                                        "$nestedescaleras.nestedinmuebles.categoria",
+                                        {
+                                            $cond: [
+                                                { $ifNull: ["$nestedinmuebles.categoria", false] },
+                                                "$nestedinmuebles.categoria",
+                                                "$topLevelCategoria"
+                                            ]
+                                        }
+                                    ]
+                                },
+                                count: { $sum: 1 }
+                            }
+                        },
+                        {
+                            $group: {
+                                _id: null,
+                                categorias: {
+                                    $push: {
+                                        k: { $ifNull: ["$_id", "Vacío"] },
+                                        v: "$count"
+                                    }
+                                }
+                            }
+                        },
+                        {
+                            $project: {
+                                _id: 0,
+                                categorias: { $arrayToObject: "$categorias" }
+                            }
+                        }
+                    ],
+                    noticiastate: [
+                        {
+                            $group: {
+                                _id: "$noticiastate",
+                                count: { $sum: 1 }
+                            }
+                        },
+                        {
+                            $project: {
+                                _id: 0,
+                                value: "$_id",
+                                count: 1
+                            }
+                        }
+                    ],
+                    encargostate: [
+                        {
+                            $group: {
+                                _id: "$encargostate",
+                                count: { $sum: 1 }
+                            }
+                        },
+                        {
+                            $project: {
+                                _id: 0,
+                                value: "$_id",
+                                count: 1
+                            }
+                        }
+                    ],
+                    localizado: [
+                        {
+                            $group: {
+                                _id: "$localizado",
+                                count: { $sum: 1 }
+                            }
+                        },
+                        {
+                            $project: {
+                                _id: 0,
+                                value: "$_id",
+                                count: 1
+                            }
+                        }
+                    ],
+                    totalInmuebles: [
+                        {
+                            $count: "total"
+                        }
+                    ]
+                }
+            },
+            {
+                $project: {
+                    _id: 0,
+                    responsables: { $first: "$responsables.responsables" },
+                    categorias: { $first: "$categorias.categorias" },
+                    noticiastate: "$noticiastate",
+                    encargostate: "$encargostate",
+                    localizado: "$localizado",
+                    totalInmuebles: { $arrayElemAt: ["$totalInmuebles.total", 0] }
+                }
             }
-        });
+        ]).toArray();
 
-        // Ejecutar la agregación
-        const result = await db.collection('inmuebles').aggregate(pipeline).toArray();
-
-        // Crear un objeto para almacenar los recuentos
-        const categoryCounts = {};
-        const responsibleCounts = {};
-
-        // Contar ocurrencias de cada categoría y responsable
-        if (result.length) {
-            result[0].categoryCounts.forEach(item => {
-                if (item.categoria) {
-                    categoryCounts[item.categoria] = (categoryCounts[item.categoria] || 0) + 1;
-                }
-                if (item.responsable) {
-                    responsibleCounts[item.responsable] = (responsibleCounts[item.responsable] || 0) + 1;
-                }
-            });
-        }
-
-        console.log('categoryCounts', categoryCounts);
-        console.log('responsibleCounts', responsibleCounts);
+        console.log('analyticsResults', result);
 
 
 
