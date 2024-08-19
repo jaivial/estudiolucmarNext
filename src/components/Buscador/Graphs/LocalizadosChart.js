@@ -3,14 +3,21 @@ import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 
 const StraightAnglePieChart = ({ analyticsData }) => {
     // Extract "Localizados" and "Total" data from analyticsData
-    const localizadosValue = analyticsData.find(data => data.name === 'Localizados')?.value || 0;
-    const totalValue = analyticsData.find(data => data.name === 'Total')?.value || 0;
+    const localizadosArray = analyticsData.localizado || [];
+    const totalValue = analyticsData.totalInmuebles || 0;
+
+    // Find the count for true values in the localizado array
+    const localizadosValue = localizadosArray.find(item => item.value === null)?.count || 0;
+    console.log('localizadosValue', localizadosValue);
 
     // Calculate "No Localizados" value
     const noLocalizadosValue = totalValue - localizadosValue;
 
+    // Adjust localizadosValue if it is less than 40
+    const adjustedLocalizadosValue = localizadosValue < 40 ? localizadosValue + (40 - localizadosValue) / 2 : localizadosValue;
+
     // Apply log10 to values for better visual balance if necessary
-    const logLocalizados = localizadosValue > 0 ? Math.log10(localizadosValue) : 0;
+    const logLocalizados = adjustedLocalizadosValue > 0 ? Math.log10(adjustedLocalizadosValue) : 0;
     const logNoLocalizados = noLocalizadosValue > 0 ? Math.log10(noLocalizadosValue) : 0;
 
     // Prepare data for the pie chart, including both log10 values and the original values for tooltip

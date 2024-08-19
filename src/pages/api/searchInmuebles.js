@@ -401,8 +401,8 @@ export default async function handler(req, res) {
                                     ...(selectedResponsable !== '' ? { $or: [{ responsable: selectedResponsable }, { responsable: { $exists: false } }, { responsable: null }] } : {}),
                                     ...(filterNoticia !== null ? { $or: [{ noticiastate: filterNoticia === 'true' }, { noticiastate: { $exists: false } }, { noticiastate: null }] } : {}),
                                     ...(filterEncargo !== null ? { $or: [{ encargostate: filterEncargo === 'true' }, { encargostate: { $exists: false } }, { encargostate: null }] } : {}),
-                                    ...(selectedCategoria !== '' ? { categoria: selectedCategoria } : {}),
                                     ...(localizado !== null ? { $or: [{ localizado: localizado === 'true' }, { localizado: { $exists: false } }, { localizado: null }] } : {}),
+                                    ...(selectedCategoria !== '' ? { categoria: selectedCategoria } : {}),
                                     ...(aireacondicionado !== 'undefined' ? { aireacondicionado: aireacondicionado === 'true' } : {}),
                                     ...(ascensor !== 'undefined' ? { ascensor: ascensor === 'true' } : {}),
                                     ...(garaje !== 'undefined' ? { garaje: garaje === 'true' } : {}),
@@ -563,6 +563,63 @@ export default async function handler(req, res) {
                         }
                     ],
 
+                    zonas: [
+                        {
+                            $group: {
+                                _id: {
+                                    $cond: [
+                                        { $ifNull: ["$nestedescaleras.nestedinmuebles.zona", false] },
+                                        {
+                                            $cond: [
+                                                { $or: [{ $eq: ["$nestedescaleras.nestedinmuebles.zona", ""] }, { $eq: ["$nestedescaleras.nestedinmuebles.zona", "NULL"] }] },
+                                                "NULL",
+                                                "$nestedescaleras.nestedinmuebles.zona"
+                                            ]
+                                        },
+                                        {
+                                            $cond: [
+                                                { $ifNull: ["$nestedinmuebles.zona", false] },
+                                                {
+                                                    $cond: [
+                                                        { $or: [{ $eq: ["$nestedinmuebles.zona", ""] }, { $eq: ["$nestedinmuebles.zona", "NULL"] }] },
+                                                        "NULL",
+                                                        "$nestedinmuebles.zona"
+                                                    ]
+                                                },
+                                                {
+                                                    $cond: [
+                                                        { $or: [{ $eq: ["$zona", ""] }, { $eq: ["$zona", "NULL"] }] },
+                                                        "NULL",
+                                                        "$zona"
+                                                    ]
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                },
+                                count: { $sum: 1 }
+                            }
+                        },
+                        {
+                            $group: {
+                                _id: null,
+                                zonas: {
+                                    $push: {
+                                        k: { $ifNull: ["$_id", "NULL"] },
+                                        v: "$count"
+                                    }
+                                }
+                            }
+                        },
+                        {
+                            $project: {
+                                _id: 0,
+                                zonas: { $arrayToObject: "$zonas" }
+                            }
+                        }
+                    ],
+
+
                     noticiastate: [
                         {
                             $group: {
@@ -620,6 +677,7 @@ export default async function handler(req, res) {
                     _id: 0,
                     responsables: { $first: "$responsables.responsables" },
                     categorias: { $first: "$categorias.categorias" },
+                    zonas: { $first: "$zonas.zonas" },
                     noticiastate: "$noticiastate",
                     encargostate: "$encargostate",
                     localizado: "$localizado",

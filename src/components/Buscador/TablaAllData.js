@@ -11,8 +11,9 @@ import { IoAnalytics } from "react-icons/io5";
 import Analytics from './Analytics.js';
 import SmallLoadingScreen from '../LoadingScreen/SmallLoadingScreen.js';
 import Select from 'react-select';
+import Skeleton from 'react-loading-skeleton';
+import 'react-loading-skeleton/dist/skeleton.css';
 import { set } from 'date-fns';
-
 
 const Table = ({ parentsEdificioProps }) => {
     const [loading, setLoading] = useState(true);
@@ -122,6 +123,7 @@ const Table = ({ parentsEdificioProps }) => {
         console.log('filters', filters);
 
         try {
+            setLoadingTotalItems(true);
             setLoading(true);
             const params = new URLSearchParams({
                 pattern: searchTerm,
@@ -155,6 +157,8 @@ const Table = ({ parentsEdificioProps }) => {
                 setCurrentPage(data.currentPage);
                 console.log('analyticsData', data.analyitics[0]);
                 setAnalyticsData(data.analyitics[0]);
+                setTotalItems(data.analyitics[0].totalInmuebles);
+                console.log('totalItems', data.analyitics[0].totalInmuebles);
 
             }).catch((error) => {
                 console.error('Error fetching data:', error.message || error);
@@ -166,6 +170,8 @@ const Table = ({ parentsEdificioProps }) => {
             }
 
             setLoading(false);
+            setLoadingTotalItems(false);
+
 
         } catch (error) {
             console.error('Error fetching data:', error.message || error);

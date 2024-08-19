@@ -3,14 +3,27 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Responsive
 
 const SimpleBarChart = ({ analyticsData }) => {
     // Extract "Noticias" and "Encargos" data from analyticsData
-    const noticiasData = analyticsData.find(data => data.name === 'Noticias')?.value || 0;
-    const encargosData = analyticsData.find(data => data.name === 'Encargos')?.value || 0;
+    const noticiastateData = analyticsData.noticiastate || [];
+    const encargostateData = analyticsData.encargostate || [];
 
-    // Prepare data for the bar chart
-    const barChartData = [
+    // Find the count for true values in noticiastate and encargostate
+    const noticiasData = noticiastateData.find(item => item.value === true)?.count || 0;
+    const encargosData = encargostateData.find(item => item.value === true)?.count || 0;
+
+    // Prepare raw data for the bar chart
+    const rawBarChartData = [
         { name: 'Noticias', count: noticiasData },
         { name: 'Encargos', count: encargosData },
     ];
+
+    // Calculate the maximum count
+    const maxCount = Math.max(noticiasData, encargosData);
+
+    // Apply square root scaling if maxCount is less than 40, otherwise apply log2 scaling
+    const barChartData = rawBarChartData.map(item => ({
+        ...item,
+        scaledCount: maxCount < 40 ? Math.sqrt(item.count) : Math.log2(item.count + 20),  // Adding 20 to avoid log2(0)
+    }));
 
     // Custom Tooltip Component
     const CustomTooltip = ({ active, payload }) => {
@@ -48,7 +61,7 @@ const SimpleBarChart = ({ analyticsData }) => {
                         </defs>
                         <XAxis dataKey="name" tick={{ fill: '#000' }} />
                         <Tooltip content={<CustomTooltip />} />
-                        <Bar dataKey="count" fill="url(#colorGradient)" radius={[15, 15, 0, 0]} barSize={90}>
+                        <Bar dataKey="scaledCount" fill="url(#colorGradient)" radius={[15, 15, 0, 0]} barSize={80}>
                             <LabelList dataKey="count" position="top" fill='#000' style={{ fontSize: '16px' }} />
                         </Bar>
                     </BarChart>

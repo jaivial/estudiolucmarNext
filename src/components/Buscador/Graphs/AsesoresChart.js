@@ -14,17 +14,18 @@ const SimpleBarChart = ({ analyticsData }) => {
         gradientId: `colorGradient${index % 8}`, // Unique gradient ID for each slice, cycling through 8 gradients
     }));
 
-    // 8 Diverse Darker Color Palettes
+    // 8 Balanced Color Palettes with Three Gradient Colors
     const gradients = [
-        ['#0B0033', '#002366'],  // Very Dark Blue to Dark Blue
-        ['#8B0000', '#FF4500'],  // Dark Red to Dark Orange
-        ['#004225', '#228B22'],  // Dark Green to Forest Green
-        ['#4B0082', '#9400D3'],  // Indigo to Dark Violet
-        ['#800080', '#C71585'],  // Dark Purple to Medium Violet Red
-        ['#8B7500', '#DAA520'],  // Dark Goldenrod to Goldenrod
-        ['#003366', '#4682B4'],  // Midnight Blue to Steel Blue
-        ['#5B0000', '#A52A2A'],  // Dark Maroon to Brown
+        ['#1A237E', '#3949AB', '#7986CB'],  // Dark Indigo to Medium Blue to Light Blue
+        ['#B71C1C', '#E53935', '#EF9A9A'],  // Dark Red to Bright Red to Light Red
+        ['#1B5E20', '#4CAF50', '#A5D6A7'],  // Dark Green to Bright Green to Light Green
+        ['#4A148C', '#8E24AA', '#CE93D8'],  // Dark Purple to Medium Purple to Light Purple
+        ['#6A1B9A', '#AB47BC', '#D1C4E9'],  // Dark Violet to Bright Violet to Soft Violet
+        ['#F57F17', '#FFB300', '#FFE082'],  // Dark Amber to Bright Amber to Light Amber
+        ['#0D47A1', '#2196F3', '#90CAF9'],  // Dark Blue to Medium Blue to Light Blue
+        ['#3E2723', '#795548', '#D7CCC8'],  // Dark Brown to Medium Brown to Light Brown
     ];
+
 
 
     const renderCustomLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, index }) => {

@@ -3,13 +3,18 @@ import { PieChart, Pie, Sector, Cell, Tooltip, ResponsiveContainer, Legend } fro
 
 const CustomActiveShapePieChart = ({ analyticsData }) => {
     // Extract "Zonas" data from analyticsData
-    const zonasData = analyticsData.find(data => data.name === 'Zonas')?.value || [];
+    const zonasData = analyticsData?.zonas || {};
+    console.log('analyticsData', analyticsData);
 
-    // Process the data to replace "NULL" with "Sin zona"
-    const processedZonasData = zonasData.map(item => ({
-        zona: item.zona === 'NULL' ? 'Sin zona' : item.zona,
-        count: item.count,
+    console.log('zonasData', zonasData);
+
+    // Process the data to replace "NULL" with "Sin zona" and convert object to array
+    const processedZonasData = Object.keys(zonasData).map(key => ({
+        zona: key === 'NULL' ? 'Sin zona' : key,
+        count: zonasData[key],
     }));
+
+    console.log('processedZonasData', processedZonasData);
 
     // State to track active index for custom active shape
     const [activeIndex, setActiveIndex] = useState(0);
@@ -79,8 +84,6 @@ const CustomActiveShapePieChart = ({ analyticsData }) => {
         '#CCE8F5', // Pale Blue
     ];
 
-
-
     const renderCustomLegend = () => {
         return (
             <ul className="grid grid-cols-2 gap-2 justify-center items-center -mt-8">
@@ -97,14 +100,13 @@ const CustomActiveShapePieChart = ({ analyticsData }) => {
         );
     };
 
-
     const CustomTooltip = ({ active, payload }) => {
         if (active && payload && payload.length) {
             const { zona, count } = payload[0].payload;
 
             return (
                 <div className="bg-white p-2 border border-gray-300 rounded shadow-lg">
-                    <p className="text-sm font-medium text-gray-700">{`${zona} ${count}`}</p>
+                    <p className="text-sm font-medium text-gray-700">{`${zona}: ${count}`}</p>
                 </div>
             );
         }
@@ -115,7 +117,7 @@ const CustomActiveShapePieChart = ({ analyticsData }) => {
     return (
         <div className="flex flex-col gap-1 justify-center items-center bg-slate-100 rounded-xl p-4 shadow-lg w-full h-auto">
             <h2 className="text-center text-xl font-bold">Inmuebles asignados <br /> a zonas</h2>
-            <div className='h-72 w-full -mt-12'>
+            <div className='h-72 w-full -mt-4'>
                 <ResponsiveContainer>
                     {processedZonasData.length > 0 ? (
                         <PieChart>
