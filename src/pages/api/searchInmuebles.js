@@ -340,359 +340,1197 @@ export default async function handler(req, res) {
             };
         });
 
-        // Run the aggregation pipeline
-        const result = await db.collection('inmuebles').aggregate([
-            { $match: { 'direccion': { $regex: pattern, $options: 'i' } } },
-            { $addFields: { topLevelCategoria: "$categoria", topLevelResponsable: "$responsable" } },
-            { $unwind: { path: "$nestedinmuebles", preserveNullAndEmptyArrays: true } },
-            { $unwind: { path: "$nestedescaleras", preserveNullAndEmptyArrays: true } },
-            { $unwind: { path: "$nestedescaleras.nestedinmuebles", preserveNullAndEmptyArrays: true } },
+        // Convertimos los valores de los filtros booleanos en nuevas variables
+        const filterNoticiaValue = filterNoticia === 'true' ? true : filterNoticia === 'false' ? false : null;
+        const filterEncargoValue = filterEncargo === 'true' ? true : filterEncargo === 'false' ? false : null;
+        const localizadoValue = localizado === 'true' ? true : localizado === 'false' ? false : null;
+        const aireacondicionadoValue = aireacondicionado === 'true' ? true : aireacondicionado === 'false' ? false : 'undefined';
+        const ascensorValue = ascensor === 'true' ? true : ascensor === 'false' ? false : 'undefined';
+        const garajeValue = garaje === 'true' ? true : garaje === 'false' ? false : 'undefined';
+        const trasteroValue = trastero === 'true' ? true : trastero === 'false' ? false : 'undefined';
+        const terrazaValue = terraza === 'true' ? true : terraza === 'false' ? false : 'undefined';
+        const jardinValue = jardin === 'true' ? true : jardin === 'false' ? false : 'undefined';
+
+        const result1 = await db.collection('inmuebles').aggregate([
+            // Filtramos los documentos donde la dirección coincide con el patrón proporcionado
             {
-                $addFields: {
+                $match: {
+                    'direccion': {
+                        $regex: pattern,
+                        $options: 'i'
+                    },
+                    'tipoagrupacion': 2
+                }
+            },
+
+            // Desenrollamos el array de nestedinmuebles para aplicar filtros a cada subdocumento
+            {
+                $unwind: {
+                    path: "$nestedinmuebles",
+                    preserveNullAndEmptyArrays: true
+                }
+            },
+
+            // Aplicamos los filtros solicitados a los subdocumentos de nestedinmuebles
+            {
+                $match: {
+                    ...(selectedZone !== '' ? { "nestedinmuebles.zona": selectedZone } : {}),
+                    ...(selectedResponsable !== '' ? {
+                        $or: [
+                            { "nestedinmuebles.responsable": selectedResponsable },
+                            { "nestedinmuebles.responsable": { $exists: false } },
+                            { "nestedinmuebles.responsable": null }
+                        ]
+                    } : {}),
+                    ...(filterNoticiaValue !== null ? {
+                        $or: [
+                            { "nestedinmuebles.noticiastate": filterNoticiaValue },
+                            { "nestedinmuebles.noticiastate": { $exists: false } },
+                            { "nestedinmuebles.noticiastate": null }
+                        ]
+                    } : {}),
+                    ...(filterEncargoValue !== null ? {
+                        $or: [
+                            { "nestedinmuebles.encargostate": filterEncargoValue },
+                            { "nestedinmuebles.encargostate": { $exists: false } },
+                            { "nestedinmuebles.encargostate": null }
+                        ]
+                    } : {}),
+                    ...(selectedCategoria !== '' ? { "nestedinmuebles.categoria": selectedCategoria } : {}),
+                    ...(localizadoValue !== null ? { "nestedinmuebles.localizado": localizadoValue } : {}),
+                    ...(aireacondicionadoValue !== 'undefined' ? { "nestedinmuebles.aireacondicionado": aireacondicionadoValue } : {}),
+                    ...(ascensorValue !== 'undefined' ? { "nestedinmuebles.ascensor": ascensorValue } : {}),
+                    ...(garajeValue !== 'undefined' ? { "nestedinmuebles.garaje": garajeValue } : {}),
+                    ...(trasteroValue !== 'undefined' ? { "nestedinmuebles.trastero": trasteroValue } : {}),
+                    ...(terrazaValue !== 'undefined' ? { "nestedinmuebles.terraza": terrazaValue } : {}),
+                    ...(jardinValue !== 'undefined' ? { "nestedinmuebles.jardin": jardinValue } : {}),
+                    ...(habitaciones !== 'undefined' ? { "nestedinmuebles.habitaciones": habitaciones } : {}),
+                    ...(banos !== 'undefined' ? { "nestedinmuebles.banyos": banos } : {})
+                }
+            },
+
+            // Agrupamos los resultados por responsables, categorias, zonas, y los estados booleanos, contando el número de coincidencias
+            {
+                $group: {
+                    _id: null,
+                    responsables: {
+                        $push: "$nestedinmuebles.responsable"
+                    },
+                    categorias: {
+                        $push: "$nestedinmuebles.categoria"
+                    },
+                    zonas: {
+                        $push: "$nestedinmuebles.zona"
+                    },
                     noticiastate: {
-                        $cond: {
-                            if: { $ifNull: ["$nestedescaleras.nestedinmuebles.noticiastate", false] },
-                            then: "$nestedescaleras.nestedinmuebles.noticiastate",
-                            else: {
-                                $cond: {
-                                    if: { $ifNull: ["$nestedinmuebles.noticiastate", false] },
-                                    then: "$nestedinmuebles.noticiastate",
-                                    else: "$noticiastate"
+                        $push: "$nestedinmuebles.noticiastate"
+                    },
+                    encargostate: {
+                        $push: "$nestedinmuebles.encargostate"
+                    },
+                    localizado: {
+                        $push: "$nestedinmuebles.localizado"
+                    },
+                    totalInmuebles: {
+                        $sum: 1
+                    }
+                }
+            },
+
+            // Desenrollamos y contamos las ocurrencias de cada responsable, categoría, zona, y estados booleanos
+            {
+                $project: {
+                    responsables: {
+                        $arrayToObject: {
+                            $map: {
+                                input: { $setUnion: ["$responsables", []] }, // Eliminamos duplicados
+                                as: "responsable",
+                                in: {
+                                    k: "$$responsable",
+                                    v: {
+                                        $size: {
+                                            $filter: {
+                                                input: "$responsables",
+                                                as: "r",
+                                                cond: { $eq: ["$$r", "$$responsable"] }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    categorias: {
+                        $arrayToObject: {
+                            $map: {
+                                input: { $setUnion: ["$categorias", []] }, // Eliminamos duplicados
+                                as: "categoria",
+                                in: {
+                                    k: "$$categoria",
+                                    v: {
+                                        $size: {
+                                            $filter: {
+                                                input: "$categorias",
+                                                as: "c",
+                                                cond: { $eq: ["$$c", "$$categoria"] }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    zonas: {
+                        $arrayToObject: {
+                            $map: {
+                                input: { $setUnion: ["$zonas", []] }, // Eliminamos duplicados
+                                as: "zona",
+                                in: {
+                                    k: "$$zona",
+                                    v: {
+                                        $size: {
+                                            $filter: {
+                                                input: "$zonas",
+                                                as: "z",
+                                                cond: { $eq: ["$$z", "$$zona"] }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    noticiastate: {
+                        $arrayToObject: {
+                            $map: {
+                                input: [true, false],
+                                as: "state",
+                                in: {
+                                    k: { $toString: "$$state" }, // Clave: "true" o "false"
+                                    v: {
+                                        $size: {
+                                            $filter: {
+                                                input: "$noticiastate",
+                                                as: "n",
+                                                cond: { $eq: ["$$n", "$$state"] }
+                                            }
+                                        }
+                                    }
                                 }
                             }
                         }
                     },
                     encargostate: {
-                        $cond: {
-                            if: { $ifNull: ["$nestedescaleras.nestedinmuebles.encargostate", false] },
-                            then: "$nestedescaleras.nestedinmuebles.encargostate",
-                            else: {
-                                $cond: {
-                                    if: { $ifNull: ["$nestedinmuebles.encargostate", false] },
-                                    then: "$nestedinmuebles.encargostate",
-                                    else: "$encargostate"
+                        $arrayToObject: {
+                            $map: {
+                                input: [true, false],
+                                as: "state",
+                                in: {
+                                    k: { $toString: "$$state" }, // Clave: "true" o "false"
+                                    v: {
+                                        $size: {
+                                            $filter: {
+                                                input: "$encargostate",
+                                                as: "e",
+                                                cond: { $eq: ["$$e", "$$state"] }
+                                            }
+                                        }
+                                    }
                                 }
                             }
                         }
                     },
                     localizado: {
-                        $cond: {
-                            if: { $ifNull: ["$nestedescaleras.nestedinmuebles.localizado", false] },
-                            then: "$nestedescaleras.nestedinmuebles.localizado",
-                            else: {
-                                $cond: {
-                                    if: { $ifNull: ["$nestedinmuebles.localizado", false] },
-                                    then: "$nestedinmuebles.localizado",
-                                    else: "$localizado"
-                                }
-                            }
-                        }
-                    }
-                }
-            },
-            {
-                $match: {
-                    $and: [
-                        {
-                            $or: [
-                                {
-                                    tipoagrupacion: 1,
-                                    ...(selectedZone !== '' ? { zona: selectedZone } : {}),
-                                    ...(selectedResponsable !== '' ? { $or: [{ responsable: selectedResponsable }, { responsable: { $exists: false } }, { responsable: null }] } : {}),
-                                    ...(filterNoticia !== null ? { $or: [{ noticiastate: filterNoticia === 'true' }, { noticiastate: { $exists: false } }, { noticiastate: null }] } : {}),
-                                    ...(filterEncargo !== null ? { $or: [{ encargostate: filterEncargo === 'true' }, { encargostate: { $exists: false } }, { encargostate: null }] } : {}),
-                                    ...(localizado !== null ? { $or: [{ localizado: localizado === 'true' }, { localizado: { $exists: false } }, { localizado: null }] } : {}),
-                                    ...(selectedCategoria !== '' ? { categoria: selectedCategoria } : {}),
-                                    ...(aireacondicionado !== 'undefined' ? { aireacondicionado: aireacondicionado === 'true' } : {}),
-                                    ...(ascensor !== 'undefined' ? { ascensor: ascensor === 'true' } : {}),
-                                    ...(garaje !== 'undefined' ? { garaje: garaje === 'true' } : {}),
-                                    ...(trastero !== 'undefined' ? { trastero: trastero === 'true' } : {}),
-                                    ...(terraza !== 'undefined' ? { terraza: terraza === 'true' } : {}),
-                                    ...(jardin !== 'undefined' ? { jardin: jardin === 'true' } : {}),
-                                    ...(habitaciones !== 'undefined' ? { habitaciones } : {}),
-                                    ...(banos !== 'undefined' ? { banyos: banos } : {})
-                                },
-                                {
-                                    tipoagrupacion: 2,
-                                    ...(selectedZone !== '' ? { "nestedinmuebles.zona": selectedZone } : {}),
-                                    ...(selectedResponsable !== '' ? { $or: [{ "nestedinmuebles.responsable": selectedResponsable }, { "nestedinmuebles.responsable": { $exists: false } }, { "nestedinmuebles.responsable": null }] } : {}),
-                                    ...(filterNoticia !== null ? { $or: [{ "noticiastate": filterNoticia === 'true' }, { "noticiastate": { $exists: false } }, { "noticiastate": null }] } : {}),
-                                    ...(filterEncargo !== null ? { $or: [{ "encargostate": filterEncargo === 'true' }, { "encargostate": { $exists: false } }, { "encargostate": null }] } : {}),
-                                    ...(selectedCategoria !== '' ? { "nestedinmuebles.categoria": selectedCategoria } : {}),
-                                    ...(localizado !== null ? { $or: [{ "localizado": localizado === 'true' }, { "localizado": { $exists: false } }, { "localizado": null }] } : {}),
-                                    ...(aireacondicionado !== 'undefined' ? { "nestedinmuebles.aireacondicionado": aireacondicionado === 'true' } : {}),
-                                    ...(ascensor !== 'undefined' ? { "nestedinmuebles.ascensor": ascensor === 'true' } : {}),
-                                    ...(garaje !== 'undefined' ? { "nestedinmuebles.garaje": garaje === 'true' } : {}),
-                                    ...(trastero !== 'undefined' ? { "nestedinmuebles.trastero": trastero === 'true' } : {}),
-                                    ...(terraza !== 'undefined' ? { "nestedinmuebles.terraza": terraza === 'true' } : {}),
-                                    ...(jardin !== 'undefined' ? { "nestedinmuebles.jardin": jardin === 'true' } : {}),
-                                    ...(habitaciones !== 'undefined' ? { "nestedinmuebles.habitaciones": habitaciones } : {}),
-                                    ...(banos !== 'undefined' ? { "nestedinmuebles.banyos": banos } : {})
-                                }
-                            ]
-                        }
-                    ]
-                }
-            },
-            {
-                $facet: {
-                    responsables: [
-                        {
-                            $group: {
-                                _id: {
-                                    $cond: [
-                                        { $ifNull: ["$nestedescaleras.nestedinmuebles.responsable", false] },
-                                        {
-                                            $cond: [
-                                                { $or: [{ $eq: ["$nestedescaleras.nestedinmuebles.responsable", ""] }, { $eq: ["$nestedescaleras.nestedinmuebles.responsable", "NULL"] }] },
-                                                "NULL",
-                                                "$nestedescaleras.nestedinmuebles.responsable"
-                                            ]
-                                        },
-                                        {
-                                            $cond: [
-                                                { $ifNull: ["$nestedinmuebles.responsable", false] },
-                                                {
-                                                    $cond: [
-                                                        { $or: [{ $eq: ["$nestedinmuebles.responsable", ""] }, { $eq: ["$nestedinmuebles.responsable", "NULL"] }] },
-                                                        "NULL",
-                                                        "$nestedinmuebles.responsable"
-                                                    ]
-                                                },
-                                                {
-                                                    $cond: [
-                                                        { $or: [{ $eq: ["$topLevelResponsable", ""] }, { $eq: ["$topLevelResponsable", "NULL"] }] },
-                                                        "NULL",
-                                                        "$topLevelResponsable"
-                                                    ]
-                                                }
-                                            ]
+                        $arrayToObject: {
+                            $map: {
+                                input: [true, false],
+                                as: "state",
+                                in: {
+                                    k: { $toString: "$$state" }, // Clave: "true" o "false"
+                                    v: {
+                                        $size: {
+                                            $filter: {
+                                                input: "$localizado",
+                                                as: "l",
+                                                cond: { $eq: ["$$l", "$$state"] }
+                                            }
                                         }
-                                    ]
-                                },
-                                count: { $sum: 1 }
-                            }
-                        },
-                        {
-                            $group: {
-                                _id: null,
-                                responsables: {
-                                    $push: {
-                                        k: { $ifNull: ["$_id", "NULL"] },
-                                        v: "$count"
                                     }
                                 }
                             }
-                        },
-                        {
-                            $project: {
-                                _id: 0,
-                                responsables: { $arrayToObject: "$responsables" }
-                            }
                         }
-                    ],
-
-                    categorias: [
-                        {
-                            $group: {
-                                _id: {
-                                    $cond: [
-                                        { $ifNull: ["$nestedescaleras.nestedinmuebles.categoria", false] },
-                                        {
-                                            $cond: [
-                                                {
-                                                    $or: [
-                                                        { $eq: ["$nestedescaleras.nestedinmuebles.categoria", null] },
-                                                        { $eq: ["$nestedescaleras.nestedinmuebles.categoria", "NULL"] }
-                                                    ]
-                                                },
-                                                "Sin categoría",
-                                                "$nestedescaleras.nestedinmuebles.categoria"
-                                            ]
-                                        },
-                                        {
-                                            $cond: [
-                                                { $ifNull: ["$nestedinmuebles.categoria", false] },
-                                                {
-                                                    $cond: [
-                                                        {
-                                                            $or: [
-                                                                { $eq: ["$nestedinmuebles.categoria", null] },
-                                                                { $eq: ["$nestedinmuebles.categoria", "NULL"] }
-                                                            ]
-                                                        },
-                                                        "Sin categoría",
-                                                        "$nestedinmuebles.categoria"
-                                                    ]
-                                                },
-                                                {
-                                                    $cond: [
-                                                        {
-                                                            $or: [
-                                                                { $eq: ["$topLevelCategoria", null] },
-                                                                { $eq: ["$topLevelCategoria", "NULL"] }
-                                                            ]
-                                                        },
-                                                        "Sin categoría",
-                                                        "$topLevelCategoria"
-                                                    ]
-                                                }
-                                            ]
-                                        }
-                                    ]
-                                },
-                                count: { $sum: 1 }
-                            }
-                        },
-                        {
-                            $group: {
-                                _id: null,
-                                categorias: {
-                                    $push: {
-                                        k: { $ifNull: ["$_id", "Sin categoría"] },
-                                        v: "$count"
-                                    }
-                                }
-                            }
-                        },
-                        {
-                            $project: {
-                                _id: 0,
-                                categorias: { $arrayToObject: "$categorias" }
-                            }
-                        }
-                    ],
-
-                    zonas: [
-                        {
-                            $group: {
-                                _id: {
-                                    $cond: [
-                                        { $ifNull: ["$nestedescaleras.nestedinmuebles.zona", false] },
-                                        {
-                                            $cond: [
-                                                { $or: [{ $eq: ["$nestedescaleras.nestedinmuebles.zona", ""] }, { $eq: ["$nestedescaleras.nestedinmuebles.zona", "NULL"] }] },
-                                                "NULL",
-                                                "$nestedescaleras.nestedinmuebles.zona"
-                                            ]
-                                        },
-                                        {
-                                            $cond: [
-                                                { $ifNull: ["$nestedinmuebles.zona", false] },
-                                                {
-                                                    $cond: [
-                                                        { $or: [{ $eq: ["$nestedinmuebles.zona", ""] }, { $eq: ["$nestedinmuebles.zona", "NULL"] }] },
-                                                        "NULL",
-                                                        "$nestedinmuebles.zona"
-                                                    ]
-                                                },
-                                                {
-                                                    $cond: [
-                                                        { $or: [{ $eq: ["$zona", ""] }, { $eq: ["$zona", "NULL"] }] },
-                                                        "NULL",
-                                                        "$zona"
-                                                    ]
-                                                }
-                                            ]
-                                        }
-                                    ]
-                                },
-                                count: { $sum: 1 }
-                            }
-                        },
-                        {
-                            $group: {
-                                _id: null,
-                                zonas: {
-                                    $push: {
-                                        k: { $ifNull: ["$_id", "NULL"] },
-                                        v: "$count"
-                                    }
-                                }
-                            }
-                        },
-                        {
-                            $project: {
-                                _id: 0,
-                                zonas: { $arrayToObject: "$zonas" }
-                            }
-                        }
-                    ],
-
-
-                    noticiastate: [
-                        {
-                            $group: {
-                                _id: "$noticiastate",
-                                count: { $sum: 1 }
-                            }
-                        },
-                        {
-                            $project: {
-                                _id: 0,
-                                value: "$_id",
-                                count: 1
-                            }
-                        }
-                    ],
-                    encargostate: [
-                        {
-                            $group: {
-                                _id: "$encargostate",
-                                count: { $sum: 1 }
-                            }
-                        },
-                        {
-                            $project: {
-                                _id: 0,
-                                value: "$_id",
-                                count: 1
-                            }
-                        }
-                    ],
-                    localizado: [
-                        {
-                            $group: {
-                                _id: "$localizado",
-                                count: { $sum: 1 }
-                            }
-                        },
-                        {
-                            $project: {
-                                _id: 0,
-                                value: "$_id",
-                                count: 1
-                            }
-                        }
-                    ],
-                    totalInmuebles: [
-                        {
-                            $count: "total"
-                        }
-                    ]
-                }
-            },
-            {
-                $project: {
-                    _id: 0,
-                    responsables: { $first: "$responsables.responsables" },
-                    categorias: { $first: "$categorias.categorias" },
-                    zonas: { $first: "$zonas.zonas" },
-                    noticiastate: "$noticiastate",
-                    encargostate: "$encargostate",
-                    localizado: "$localizado",
-                    totalInmuebles: { $arrayElemAt: ["$totalInmuebles.total", 0] }
+                    },
+                    totalInmuebles: 1
                 }
             }
         ]).toArray();
 
-        console.log('analyticsResults', result);
+        const result2 = await db.collection('inmuebles').aggregate([
+            // Filtramos los documentos donde la dirección coincide con el patrón proporcionado
+            {
+                $match: {
+                    'direccion': {
+                        $regex: pattern,
+                        $options: 'i'
+                    },
+                    'tipoagrupacion': 2
+                }
+            },
+
+            // Desenrollamos el array de nestedescaleras.nestedinmuebles para aplicar filtros a cada subdocumento
+            {
+                $unwind: {
+                    path: "$nestedescaleras",
+                    preserveNullAndEmptyArrays: true
+                }
+            },
+            {
+                $unwind: {
+                    path: "$nestedescaleras.nestedinmuebles",
+                    preserveNullAndEmptyArrays: true
+                }
+            },
+
+            // Aplicamos los filtros solicitados a los subdocumentos de nestedescaleras.nestedinmuebles
+            {
+                $match: {
+                    ...(selectedZone !== '' ? { "nestedescaleras.nestedinmuebles.zona": selectedZone } : {}),
+                    ...(selectedResponsable !== '' ? {
+                        $or: [
+                            { "nestedescaleras.nestedinmuebles.responsable": selectedResponsable },
+                            { "nestedescaleras.nestedinmuebles.responsable": { $exists: false } },
+                            { "nestedescaleras.nestedinmuebles.responsable": null }
+                        ]
+                    } : {}),
+                    ...(filterNoticiaValue !== null ? {
+                        $or: [
+                            { "nestedescaleras.nestedinmuebles.noticiastate": filterNoticiaValue },
+                            { "nestedescaleras.nestedinmuebles.noticiastate": { $exists: false } },
+                            { "nestedescaleras.nestedinmuebles.noticiastate": null }
+                        ]
+                    } : {}),
+                    ...(filterEncargoValue !== null ? {
+                        $or: [
+                            { "nestedescaleras.nestedinmuebles.encargostate": filterEncargoValue },
+                            { "nestedescaleras.nestedinmuebles.encargostate": { $exists: false } },
+                            { "nestedescaleras.nestedinmuebles.encargostate": null }
+                        ]
+                    } : {}),
+                    ...(selectedCategoria !== '' ? { "nestedescaleras.nestedinmuebles.categoria": selectedCategoria } : {}),
+                    ...(localizadoValue !== null ? { "nestedescaleras.nestedinmuebles.localizado": localizadoValue } : {}),
+                    ...(aireacondicionadoValue !== 'undefined' ? { "nestedescaleras.nestedinmuebles.aireacondicionado": aireacondicionadoValue } : {}),
+                    ...(ascensorValue !== 'undefined' ? { "nestedescaleras.nestedinmuebles.ascensor": ascensorValue } : {}),
+                    ...(garajeValue !== 'undefined' ? { "nestedescaleras.nestedinmuebles.garaje": garajeValue } : {}),
+                    ...(trasteroValue !== 'undefined' ? { "nestedescaleras.nestedinmuebles.trastero": trasteroValue } : {}),
+                    ...(terrazaValue !== 'undefined' ? { "nestedescaleras.nestedinmuebles.terraza": terrazaValue } : {}),
+                    ...(jardinValue !== 'undefined' ? { "nestedescaleras.nestedinmuebles.jardin": jardinValue } : {}),
+                    ...(habitaciones !== 'undefined' ? { "nestedescaleras.nestedinmuebles.habitaciones": habitaciones } : {}),
+                    ...(banos !== 'undefined' ? { "nestedescaleras.nestedinmuebles.banyos": banos } : {})
+                }
+            },
+
+            // Agrupamos los resultados por responsables, categorias, zonas, y los estados booleanos, contando el número de coincidencias
+            {
+                $group: {
+                    _id: null,
+                    responsables: {
+                        $push: "$nestedescaleras.nestedinmuebles.responsable"
+                    },
+                    categorias: {
+                        $push: "$nestedescaleras.nestedinmuebles.categoria"
+                    },
+                    zonas: {
+                        $push: "$nestedescaleras.nestedinmuebles.zona"
+                    },
+                    noticiastate: {
+                        $push: "$nestedescaleras.nestedinmuebles.noticiastate"
+                    },
+                    encargostate: {
+                        $push: "$nestedescaleras.nestedinmuebles.encargostate"
+                    },
+                    localizado: {
+                        $push: "$nestedescaleras.nestedinmuebles.localizado"
+                    },
+                    totalInmuebles: {
+                        $sum: 1
+                    }
+                }
+            },
+
+            // Desenrollamos y contamos las ocurrencias de cada responsable, categoría, zona, y estados booleanos
+            {
+                $project: {
+                    responsables: {
+                        $arrayToObject: {
+                            $map: {
+                                input: { $setUnion: ["$responsables", []] }, // Eliminamos duplicados
+                                as: "responsable",
+                                in: {
+                                    k: "$$responsable",
+                                    v: {
+                                        $size: {
+                                            $filter: {
+                                                input: "$responsables",
+                                                as: "r",
+                                                cond: { $eq: ["$$r", "$$responsable"] }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    categorias: {
+                        $arrayToObject: {
+                            $map: {
+                                input: { $setUnion: ["$categorias", []] }, // Eliminamos duplicados
+                                as: "categoria",
+                                in: {
+                                    k: "$$categoria",
+                                    v: {
+                                        $size: {
+                                            $filter: {
+                                                input: "$categorias",
+                                                as: "c",
+                                                cond: { $eq: ["$$c", "$$categoria"] }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    zonas: {
+                        $arrayToObject: {
+                            $map: {
+                                input: { $setUnion: ["$zonas", []] }, // Eliminamos duplicados
+                                as: "zona",
+                                in: {
+                                    k: "$$zona",
+                                    v: {
+                                        $size: {
+                                            $filter: {
+                                                input: "$zonas",
+                                                as: "z",
+                                                cond: { $eq: ["$$z", "$$zona"] }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    noticiastate: {
+                        $arrayToObject: {
+                            $map: {
+                                input: [true, false],
+                                as: "state",
+                                in: {
+                                    k: { $toString: "$$state" }, // Clave: "true" o "false"
+                                    v: {
+                                        $size: {
+                                            $filter: {
+                                                input: "$noticiastate",
+                                                as: "n",
+                                                cond: { $eq: ["$$n", "$$state"] }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    encargostate: {
+                        $arrayToObject: {
+                            $map: {
+                                input: [true, false],
+                                as: "state",
+                                in: {
+                                    k: { $toString: "$$state" }, // Clave: "true" o "false"
+                                    v: {
+                                        $size: {
+                                            $filter: {
+                                                input: "$encargostate",
+                                                as: "e",
+                                                cond: { $eq: ["$$e", "$$state"] }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    localizado: {
+                        $arrayToObject: {
+                            $map: {
+                                input: [true, false],
+                                as: "state",
+                                in: {
+                                    k: { $toString: "$$state" }, // Clave: "true" o "false"
+                                    v: {
+                                        $size: {
+                                            $filter: {
+                                                input: "$localizado",
+                                                as: "l",
+                                                cond: { $eq: ["$$l", "$$state"] }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    totalInmuebles: 1
+                }
+            }
+        ]).toArray();
+
+        const result3 = await db.collection('inmuebles').aggregate([
+            // Filtramos los documentos donde la dirección coincide con el patrón proporcionado y el tipo de agrupación es 1
+            {
+                $match: {
+                    'direccion': {
+                        $regex: pattern,
+                        $options: 'i'
+                    },
+                    'tipoagrupacion': 1
+                }
+            },
+
+            // Aplicamos los filtros solicitados a los fields del propio documento
+            {
+                $match: {
+                    ...(selectedZone !== '' ? { "zona": selectedZone } : {}),
+                    ...(selectedResponsable !== '' ? {
+                        $or: [
+                            { "responsable": selectedResponsable },
+                            { "responsable": { $exists: false } },
+                            { "responsable": null }
+                        ]
+                    } : {}),
+                    ...(filterNoticiaValue !== null ? {
+                        $or: [
+                            { "noticiastate": filterNoticiaValue },
+                            { "noticiastate": { $exists: false } },
+                            { "noticiastate": null }
+                        ]
+                    } : {}),
+                    ...(filterEncargoValue !== null ? {
+                        $or: [
+                            { "encargostate": filterEncargoValue },
+                            { "encargostate": { $exists: false } },
+                            { "encargostate": null }
+                        ]
+                    } : {}),
+                    ...(selectedCategoria !== '' ? { "categoria": selectedCategoria } : {}),
+                    ...(localizadoValue !== null ? { "localizado": localizadoValue } : {}),
+                    ...(aireacondicionadoValue !== 'undefined' ? { "aireacondicionado": aireacondicionadoValue } : {}),
+                    ...(ascensorValue !== 'undefined' ? { "ascensor": ascensorValue } : {}),
+                    ...(garajeValue !== 'undefined' ? { "garaje": garajeValue } : {}),
+                    ...(trasteroValue !== 'undefined' ? { "trastero": trasteroValue } : {}),
+                    ...(terrazaValue !== 'undefined' ? { "terraza": terrazaValue } : {}),
+                    ...(jardinValue !== 'undefined' ? { "jardin": jardinValue } : {}),
+                    ...(habitaciones !== 'undefined' ? { "habitaciones": habitaciones } : {}),
+                    ...(banos !== 'undefined' ? { "banyos": banos } : {})
+                }
+            },
+
+            // Agrupamos los resultados por responsables, categorias, zonas, y los estados booleanos, contando el número de coincidencias
+            {
+                $group: {
+                    _id: null,
+                    responsables: {
+                        $push: {
+                            $ifNull: [{ $toString: "$responsable" }, "NULL"]
+                        }
+                    },
+                    categorias: {
+                        $push: {
+                            $ifNull: [{ $toString: "$categoria" }, "Sin categoría"]
+                        }
+                    },
+                    zonas: {
+                        $push: {
+                            $ifNull: [{ $toString: "$zona" }, "NULL"]
+                        }
+                    },
+                    noticiastate: {
+                        $push: {
+                            $ifNull: [{ $toString: "$noticiastate" }, "NULL"]
+                        }
+                    },
+                    encargostate: {
+                        $push: {
+                            $ifNull: [{ $toString: "$encargostate" }, "NULL"]
+                        }
+                    },
+                    localizado: {
+                        $push: {
+                            $ifNull: [{ $toString: "$localizado" }, "NULL"]
+                        }
+                    },
+                    totalInmuebles: {
+                        $sum: 1
+                    }
+                }
+            },
+
+            // Desenrollamos y contamos las ocurrencias de cada responsable, categoría, zona, y estados booleanos
+            {
+                $project: {
+                    responsables: {
+                        $arrayToObject: {
+                            $map: {
+                                input: { $setUnion: ["$responsables", []] }, // Eliminamos duplicados
+                                as: "responsable",
+                                in: {
+                                    k: "$$responsable",
+                                    v: {
+                                        $size: {
+                                            $filter: {
+                                                input: "$responsables",
+                                                as: "r",
+                                                cond: { $eq: ["$$r", "$$responsable"] }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    categorias: {
+                        $arrayToObject: {
+                            $map: {
+                                input: { $setUnion: ["$categorias", []] }, // Eliminamos duplicados
+                                as: "categoria",
+                                in: {
+                                    k: "$$categoria",
+                                    v: {
+                                        $size: {
+                                            $filter: {
+                                                input: "$categorias",
+                                                as: "c",
+                                                cond: { $eq: ["$$c", "$$categoria"] }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    zonas: {
+                        $arrayToObject: {
+                            $map: {
+                                input: { $setUnion: ["$zonas", []] }, // Eliminamos duplicados
+                                as: "zona",
+                                in: {
+                                    k: "$$zona",
+                                    v: {
+                                        $size: {
+                                            $filter: {
+                                                input: "$zonas",
+                                                as: "z",
+                                                cond: { $eq: ["$$z", "$$zona"] }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    noticiastate: {
+                        $arrayToObject: {
+                            $map: {
+                                input: ["true", "false", "NULL"],
+                                as: "state",
+                                in: {
+                                    k: "$$state", // Clave: "true", "false", o "NULL"
+                                    v: {
+                                        $size: {
+                                            $filter: {
+                                                input: "$noticiastate",
+                                                as: "n",
+                                                cond: { $eq: ["$$n", "$$state"] }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    encargostate: {
+                        $arrayToObject: {
+                            $map: {
+                                input: ["true", "false", "NULL"],
+                                as: "state",
+                                in: {
+                                    k: "$$state", // Clave: "true", "false", o "NULL"
+                                    v: {
+                                        $size: {
+                                            $filter: {
+                                                input: "$encargostate",
+                                                as: "e",
+                                                cond: { $eq: ["$$e", "$$state"] }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    localizado: {
+                        $arrayToObject: {
+                            $map: {
+                                input: ["true", "false", "NULL"],
+                                as: "state",
+                                in: {
+                                    k: "$$state", // Clave: "true", "false", o "NULL"
+                                    v: {
+                                        $size: {
+                                            $filter: {
+                                                input: "$localizado",
+                                                as: "l",
+                                                cond: { $eq: ["$$l", "$$state"] }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    totalInmuebles: 1
+                }
+            }
+        ]).toArray();
+
+        const result4 = await db.collection('inmuebles').aggregate([
+            // Desenrollamos el array de nestedinmuebles para aplicar el filtro de dirección en los subdocumentos
+            {
+                $unwind: {
+                    path: "$nestedinmuebles",
+                    preserveNullAndEmptyArrays: true
+                }
+            },
+
+            // Filtramos los subdocumentos donde la dirección coincide con el patrón proporcionado
+            {
+                $match: {
+                    'nestedinmuebles.direccion': {
+                        $regex: pattern,
+                        $options: 'i'
+                    }
+                }
+            },
+
+            // Aplicamos los filtros solicitados a los subdocumentos de nestedinmuebles
+            {
+                $match: {
+                    ...(selectedZone !== '' ? { "nestedinmuebles.zona": selectedZone } : {}),
+                    ...(selectedResponsable !== '' ? {
+                        $or: [
+                            { "nestedinmuebles.responsable": selectedResponsable },
+                            { "nestedinmuebles.responsable": { $exists: false } },
+                            { "nestedinmuebles.responsable": null }
+                        ]
+                    } : {}),
+                    ...(filterNoticiaValue !== null ? {
+                        $or: [
+                            { "nestedinmuebles.noticiastate": filterNoticiaValue },
+                            { "nestedinmuebles.noticiastate": { $exists: false } },
+                            { "nestedinmuebles.noticiastate": null }
+                        ]
+                    } : {}),
+                    ...(filterEncargoValue !== null ? {
+                        $or: [
+                            { "nestedinmuebles.encargostate": filterEncargoValue },
+                            { "nestedinmuebles.encargostate": { $exists: false } },
+                            { "nestedinmuebles.encargostate": null }
+                        ]
+                    } : {}),
+                    ...(selectedCategoria !== '' ? { "nestedinmuebles.categoria": selectedCategoria } : {}),
+                    ...(localizadoValue !== null ? { "nestedinmuebles.localizado": localizadoValue } : {}),
+                    ...(aireacondicionadoValue !== 'undefined' ? { "nestedinmuebles.aireacondicionado": aireacondicionadoValue } : {}),
+                    ...(ascensorValue !== 'undefined' ? { "nestedinmuebles.ascensor": ascensorValue } : {}),
+                    ...(garajeValue !== 'undefined' ? { "nestedinmuebles.garaje": garajeValue } : {}),
+                    ...(trasteroValue !== 'undefined' ? { "nestedinmuebles.trastero": trasteroValue } : {}),
+                    ...(terrazaValue !== 'undefined' ? { "nestedinmuebles.terraza": terrazaValue } : {}),
+                    ...(jardinValue !== 'undefined' ? { "nestedinmuebles.jardin": jardinValue } : {}),
+                    ...(habitaciones !== 'undefined' ? { "nestedinmuebles.habitaciones": habitaciones } : {}),
+                    ...(banos !== 'undefined' ? { "nestedinmuebles.banyos": banos } : {})
+                }
+            },
+
+            // Agrupamos los resultados por responsables, categorias, zonas, y los estados booleanos, contando el número de coincidencias
+            {
+                $group: {
+                    _id: null,
+                    responsables: {
+                        $push: {
+                            $ifNull: [{ $toString: "$nestedinmuebles.responsable" }, "NULL"]
+                        }
+                    },
+                    categorias: {
+                        $push: {
+                            $ifNull: [{ $toString: "$nestedinmuebles.categoria" }, "Sin categoría"]
+                        }
+                    },
+                    zonas: {
+                        $push: {
+                            $ifNull: [{ $toString: "$nestedinmuebles.zona" }, "NULL"]
+                        }
+                    },
+                    noticiastate: {
+                        $push: {
+                            $ifNull: [{ $toString: "$nestedinmuebles.noticiastate" }, "NULL"]
+                        }
+                    },
+                    encargostate: {
+                        $push: {
+                            $ifNull: [{ $toString: "$nestedinmuebles.encargostate" }, "NULL"]
+                        }
+                    },
+                    localizado: {
+                        $push: {
+                            $ifNull: [{ $toString: "$nestedinmuebles.localizado" }, "NULL"]
+                        }
+                    },
+                    totalInmuebles: {
+                        $sum: 1
+                    }
+                }
+            },
+
+            // Desenrollamos y contamos las ocurrencias de cada responsable, categoría, zona, y estados booleanos
+            {
+                $project: {
+                    responsables: {
+                        $arrayToObject: {
+                            $map: {
+                                input: { $setUnion: ["$responsables", []] }, // Eliminamos duplicados
+                                as: "responsable",
+                                in: {
+                                    k: "$$responsable",
+                                    v: {
+                                        $size: {
+                                            $filter: {
+                                                input: "$responsables",
+                                                as: "r",
+                                                cond: { $eq: ["$$r", "$$responsable"] }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    categorias: {
+                        $arrayToObject: {
+                            $map: {
+                                input: { $setUnion: ["$categorias", []] }, // Eliminamos duplicados
+                                as: "categoria",
+                                in: {
+                                    k: "$$categoria",
+                                    v: {
+                                        $size: {
+                                            $filter: {
+                                                input: "$categorias",
+                                                as: "c",
+                                                cond: { $eq: ["$$c", "$$categoria"] }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    zonas: {
+                        $arrayToObject: {
+                            $map: {
+                                input: { $setUnion: ["$zonas", []] }, // Eliminamos duplicados
+                                as: "zona",
+                                in: {
+                                    k: "$$zona",
+                                    v: {
+                                        $size: {
+                                            $filter: {
+                                                input: "$zonas",
+                                                as: "z",
+                                                cond: { $eq: ["$$z", "$$zona"] }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    noticiastate: {
+                        $arrayToObject: {
+                            $map: {
+                                input: ["true", "false", "NULL"],
+                                as: "state",
+                                in: {
+                                    k: "$$state", // Clave: "true", "false", o "NULL"
+                                    v: {
+                                        $size: {
+                                            $filter: {
+                                                input: "$noticiastate",
+                                                as: "n",
+                                                cond: { $eq: ["$$n", "$$state"] }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    encargostate: {
+                        $arrayToObject: {
+                            $map: {
+                                input: ["true", "false", "NULL"],
+                                as: "state",
+                                in: {
+                                    k: "$$state", // Clave: "true", "false", o "NULL"
+                                    v: {
+                                        $size: {
+                                            $filter: {
+                                                input: "$encargostate",
+                                                as: "e",
+                                                cond: { $eq: ["$$e", "$$state"] }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    localizado: {
+                        $arrayToObject: {
+                            $map: {
+                                input: ["true", "false", "NULL"],
+                                as: "state",
+                                in: {
+                                    k: "$$state", // Clave: "true", "false", o "NULL"
+                                    v: {
+                                        $size: {
+                                            $filter: {
+                                                input: "$localizado",
+                                                as: "l",
+                                                cond: { $eq: ["$$l", "$$state"] }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    totalInmuebles: 1
+                }
+            }
+        ]).toArray();
+
+        const result5 = await db.collection('inmuebles').aggregate([
+            // Desenrollamos el array de nestedescaleras para aplicar el filtro de dirección en los subdocumentos
+            {
+                $unwind: {
+                    path: "$nestedescaleras",
+                    preserveNullAndEmptyArrays: true
+                }
+            },
+            {
+                $unwind: {
+                    path: "$nestedescaleras.nestedinmuebles",
+                    preserveNullAndEmptyArrays: true
+                }
+            },
+
+            // Filtramos los subdocumentos donde la dirección coincide con el patrón proporcionado
+            {
+                $match: {
+                    'nestedescaleras.nestedinmuebles.direccion': {
+                        $regex: pattern,
+                        $options: 'i'
+                    }
+                }
+            },
+
+            // Aplicamos los filtros solicitados a los subdocumentos de nestedescaleras.nestedinmuebles
+            {
+                $match: {
+                    ...(selectedZone !== '' ? { "nestedescaleras.nestedinmuebles.zona": selectedZone } : {}),
+                    ...(selectedResponsable !== '' ? {
+                        $or: [
+                            { "nestedescaleras.nestedinmuebles.responsable": selectedResponsable },
+                            { "nestedescaleras.nestedinmuebles.responsable": { $exists: false } },
+                            { "nestedescaleras.nestedinmuebles.responsable": null }
+                        ]
+                    } : {}),
+                    ...(filterNoticiaValue !== null ? {
+                        $or: [
+                            { "nestedescaleras.nestedinmuebles.noticiastate": filterNoticiaValue },
+                            { "nestedescaleras.nestedinmuebles.noticiastate": { $exists: false } },
+                            { "nestedescaleras.nestedinmuebles.noticiastate": null }
+                        ]
+                    } : {}),
+                    ...(filterEncargoValue !== null ? {
+                        $or: [
+                            { "nestedescaleras.nestedinmuebles.encargostate": filterEncargoValue },
+                            { "nestedescaleras.nestedinmuebles.encargostate": { $exists: false } },
+                            { "nestedescaleras.nestedinmuebles.encargostate": null }
+                        ]
+                    } : {}),
+                    ...(selectedCategoria !== '' ? { "nestedescaleras.nestedinmuebles.categoria": selectedCategoria } : {}),
+                    ...(localizadoValue !== null ? { "nestedescaleras.nestedinmuebles.localizado": localizadoValue } : {}),
+                    ...(aireacondicionadoValue !== 'undefined' ? { "nestedescaleras.nestedinmuebles.aireacondicionado": aireacondicionadoValue } : {}),
+                    ...(ascensorValue !== 'undefined' ? { "nestedescaleras.nestedinmuebles.ascensor": ascensorValue } : {}),
+                    ...(garajeValue !== 'undefined' ? { "nestedescaleras.nestedinmuebles.garaje": garajeValue } : {}),
+                    ...(trasteroValue !== 'undefined' ? { "nestedescaleras.nestedinmuebles.trastero": trasteroValue } : {}),
+                    ...(terrazaValue !== 'undefined' ? { "nestedescaleras.nestedinmuebles.terraza": terrazaValue } : {}),
+                    ...(jardinValue !== 'undefined' ? { "nestedescaleras.nestedinmuebles.jardin": jardinValue } : {}),
+                    ...(habitaciones !== 'undefined' ? { "nestedescaleras.nestedinmuebles.habitaciones": habitaciones } : {}),
+                    ...(banos !== 'undefined' ? { "nestedescaleras.nestedinmuebles.banyos": banos } : {})
+                }
+            },
+
+            // Agrupamos los resultados por responsables, categorias, zonas, y los estados booleanos, contando el número de coincidencias
+            {
+                $group: {
+                    _id: null,
+                    responsables: {
+                        $push: {
+                            $ifNull: [{ $toString: "$nestedescaleras.nestedinmuebles.responsable" }, "NULL"]
+                        }
+                    },
+                    categorias: {
+                        $push: {
+                            $ifNull: [{ $toString: "$nestedescaleras.nestedinmuebles.categoria" }, "Sin categoría"]
+                        }
+                    },
+                    zonas: {
+                        $push: {
+                            $ifNull: [{ $toString: "$nestedescaleras.nestedinmuebles.zona" }, "NULL"]
+                        }
+                    },
+                    noticiastate: {
+                        $push: {
+                            $ifNull: [{ $toString: "$nestedescaleras.nestedinmuebles.noticiastate" }, "NULL"]
+                        }
+                    },
+                    encargostate: {
+                        $push: {
+                            $ifNull: [{ $toString: "$nestedescaleras.nestedinmuebles.encargostate" }, "NULL"]
+                        }
+                    },
+                    localizado: {
+                        $push: {
+                            $ifNull: [{ $toString: "$nestedescaleras.nestedinmuebles.localizado" }, "NULL"]
+                        }
+                    },
+                    totalInmuebles: {
+                        $sum: 1
+                    }
+                }
+            },
+
+            // Desenrollamos y contamos las ocurrencias de cada responsable, categoría, zona, y estados booleanos
+            {
+                $project: {
+                    responsables: {
+                        $arrayToObject: {
+                            $map: {
+                                input: { $setUnion: ["$responsables", []] }, // Eliminamos duplicados
+                                as: "responsable",
+                                in: {
+                                    k: "$$responsable",
+                                    v: {
+                                        $size: {
+                                            $filter: {
+                                                input: "$responsables",
+                                                as: "r",
+                                                cond: { $eq: ["$$r", "$$responsable"] }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    categorias: {
+                        $arrayToObject: {
+                            $map: {
+                                input: { $setUnion: ["$categorias", []] }, // Eliminamos duplicados
+                                as: "categoria",
+                                in: {
+                                    k: "$$categoria",
+                                    v: {
+                                        $size: {
+                                            $filter: {
+                                                input: "$categorias",
+                                                as: "c",
+                                                cond: { $eq: ["$$c", "$$categoria"] }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    zonas: {
+                        $arrayToObject: {
+                            $map: {
+                                input: { $setUnion: ["$zonas", []] }, // Eliminamos duplicados
+                                as: "zona",
+                                in: {
+                                    k: "$$zona",
+                                    v: {
+                                        $size: {
+                                            $filter: {
+                                                input: "$zonas",
+                                                as: "z",
+                                                cond: { $eq: ["$$z", "$$zona"] }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    noticiastate: {
+                        $arrayToObject: {
+                            $map: {
+                                input: ["true", "false", "NULL"],
+                                as: "state",
+                                in: {
+                                    k: "$$state", // Clave: "true", "false", o "NULL"
+                                    v: {
+                                        $size: {
+                                            $filter: {
+                                                input: "$noticiastate",
+                                                as: "n",
+                                                cond: { $eq: ["$$n", "$$state"] }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    encargostate: {
+                        $arrayToObject: {
+                            $map: {
+                                input: ["true", "false", "NULL"],
+                                as: "state",
+                                in: {
+                                    k: "$$state", // Clave: "true", "false", o "NULL"
+                                    v: {
+                                        $size: {
+                                            $filter: {
+                                                input: "$encargostate",
+                                                as: "e",
+                                                cond: { $eq: ["$$e", "$$state"] }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    localizado: {
+                        $arrayToObject: {
+                            $map: {
+                                input: ["true", "false", "NULL"],
+                                as: "state",
+                                in: {
+                                    k: "$$state", // Clave: "true", "false", o "NULL"
+                                    v: {
+                                        $size: {
+                                            $filter: {
+                                                input: "$localizado",
+                                                as: "l",
+                                                cond: { $eq: ["$$l", "$$state"] }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    totalInmuebles: 1
+                }
+            }
+        ]).toArray();
+
+        console.log('result 1', result1);
+
+        console.log('result 2', result2);
+
+        console.log('result 3', result3);
+
+        console.log('result 4', result4);
+
+        console.log('result 5', result5);
+
+
+        function combineResults(results) {
+            // Inicializamos un objeto para acumular los resultados
+            const combined = {
+                totalInmuebles: 0,
+                responsables: {},
+                categorias: {},
+                zonas: {},
+                noticiastate: { true: 0, false: 0, NULL: 0 },
+                encargostate: { true: 0, false: 0, NULL: 0 },
+                localizado: { true: 0, false: 0, NULL: 0 }
+            };
+
+            // Función auxiliar para sumar los valores de un campo
+            function addFields(target, source) {
+                for (const key in source) {
+                    if (source.hasOwnProperty(key)) {
+                        if (!target[key]) {
+                            target[key] = 0;
+                        }
+                        target[key] += source[key];
+                    }
+                }
+            }
+
+            // Iteramos sobre cada resultado
+            for (const result of results) {
+                if (result && result.length > 0) {
+                    const data = result[0];
+
+                    // Sumamos el total de inmuebles
+                    combined.totalInmuebles += data.totalInmuebles;
+
+                    // Sumamos los valores de responsables, categorías, zonas y estados booleanos
+                    addFields(combined.responsables, data.responsables);
+                    addFields(combined.categorias, data.categorias);
+                    addFields(combined.zonas, data.zonas);
+                    addFields(combined.noticiastate, data.noticiastate);
+                    addFields(combined.encargostate, data.encargostate);
+                    addFields(combined.localizado, data.localizado);
+                }
+            }
+
+            // Retornamos el resultado combinado en un array como en los resultados originales
+            return [combined];
+        }
+
+        // escribe contrabarra
+
+
+
+
+        const finalResultAnalytics = combineResults([result1, result2, result3, result4, result5]);
+
+        console.log('\nFINAL RESULTS', finalResultAnalytics);
+
 
 
 
         console.timeEnd("Fetch Duration");
 
-        res.status(200).json({ totalPages, currentPage: page, results: finalResults, analyitics: result });
+        res.status(200).json({ totalPages, currentPage: page, results: finalResults, analyitics: finalResultAnalytics });
     } catch (e) {
         console.error('API Error:', e.message, e.stack);
         res.status(500).json({ error: 'An error occurred while processing your request.' });
