@@ -6,13 +6,21 @@ const SimpleBarChart = ({ analyticsData }) => {
     const responsablesData = analyticsData?.responsables || [];
     const totalItems = Object.values(responsablesData).reduce((sum, value) => sum + value, 0);
 
-    // Prepare data for the charts
-    const chartData = Object.entries(responsablesData).map(([key, count], index) => ({
-        name: key === 'NULL' || key === '' ? 'Sin asignar' : key,
-        value: (count / totalItems) * 100, // Calculate percentage
-        count: count,
-        gradientId: `colorGradient${index % 8}`, // Unique gradient ID for each slice, cycling through 8 gradients
-    }));
+    const chartData = Object.entries(responsablesData).map(([key, count], index) => {
+        // Normalizamos el nombre del responsable
+        const normalizedKey = key === 'null' || key === '' ? 'Sin asignar' : key;
+
+        // Convertimos la primera letra de cada palabra en mayúscula
+        const name = normalizedKey.replace(/\w\S*/g, (txt) => txt.charAt(0).toUpperCase() + txt.slice(1).toLowerCase());
+
+        return {
+            name,
+            value: (count / totalItems) * 100, // Calcular porcentaje
+            count: count,
+            gradientId: `colorGradient${index % 8}`, // ID de gradiente único para cada slice, ciclo a través de 8 gradientes
+        };
+    });
+
 
     // 8 Balanced Color Palettes with Three Gradient Colors
     const gradients = [

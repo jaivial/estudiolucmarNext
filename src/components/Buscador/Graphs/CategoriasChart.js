@@ -6,10 +6,18 @@ const CategoriasChart = ({ analyticsData }) => {
     const categoriasData = analyticsData?.categorias || {};
 
     // Convert the categorias object into an array of { name, count } objects
-    const rawBarChartData = Object.entries(categoriasData).map(([key, count]) => ({
-        name: key === 'NULL' || key === '' ? 'Sin categoria' : key,
-        count,
-    }));
+    const rawBarChartData = Object.entries(categoriasData).map(([key, count]) => {
+        // Normalizamos el nombre de la categoría
+        const normalizedKey = key === 'NULL' || key === '' ? 'Sin categoria' : key;
+        // Convertimos la primera letra en mayúscula y el resto en minúsculas
+        const name = normalizedKey.charAt(0).toUpperCase() + normalizedKey.slice(1).toLowerCase();
+
+        return {
+            name,
+            count,
+        };
+    });
+
 
     // Determine the maximum count value
     const maxCount = Math.max(...rawBarChartData.map(item => item.count));

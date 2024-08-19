@@ -9,12 +9,18 @@ const CustomActiveShapePieChart = ({ analyticsData }) => {
     console.log('zonasData', zonasData);
 
     // Process the data to replace "NULL" with "Sin zona" and convert object to array
-    const processedZonasData = Object.keys(zonasData).map(key => ({
-        zona: key === 'NULL' ? 'Sin zona' : key,
-        count: zonasData[key],
-    }));
+    const processedZonasData = Object.keys(zonasData).map(key => {
+        // Reemplazamos "null" por "Sin zona"
+        const normalizedKey = key === 'null' ? 'Sin zona' : key;
 
-    console.log('processedZonasData', processedZonasData);
+        // Convertimos la primera letra de cada palabra en mayúscula
+        const zona = normalizedKey.replace(/\w\S*/g, (txt) => txt.charAt(0).toUpperCase() + txt.slice(1).toLowerCase());
+
+        return {
+            zona,
+            count: zonasData[key],
+        };
+    });
 
     // State to track active index for custom active shape
     const [activeIndex, setActiveIndex] = useState(0);

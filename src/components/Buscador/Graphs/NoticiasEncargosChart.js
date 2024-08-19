@@ -1,14 +1,14 @@
 import React from 'react';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, LabelList } from 'recharts';
+import { BarChart, Bar, XAxis, Tooltip, ResponsiveContainer, LabelList } from 'recharts';
 
 const SimpleBarChart = ({ analyticsData }) => {
     // Extract "Noticias" and "Encargos" data from analyticsData
-    const noticiastateData = analyticsData.noticiastate || [];
-    const encargostateData = analyticsData.encargostate || [];
+    const noticiastateData = analyticsData.noticiastate || {};
+    const encargostateData = analyticsData.encargostate || {};
 
     // Find the count for true values in noticiastate and encargostate
-    const noticiasData = noticiastateData.find(item => item.value === true)?.count || 0;
-    const encargosData = encargostateData.find(item => item.value === true)?.count || 0;
+    const noticiasData = noticiastateData.true || 0;
+    const encargosData = encargostateData.true || 0;
 
     // Prepare raw data for the bar chart
     const rawBarChartData = [
@@ -38,6 +38,29 @@ const SimpleBarChart = ({ analyticsData }) => {
         }
         return null;
     };
+
+    // Function to capitalize the first letter of each word
+    const capitalizeWords = (str) => {
+        return str.replace(/\w\S*/g, (txt) => txt.charAt(0).toUpperCase() + txt.slice(1).toLowerCase());
+    };
+
+    // Process zonas data to replace "null" with "Sin zona" and capitalize words
+    const processedZonasData = Object.keys(analyticsData.zonas).map(key => {
+        const zona = key === 'null' || key === 'NULL' ? 'Sin zona' : capitalizeWords(key);
+        return {
+            zona,
+            count: analyticsData.zonas[key],
+        };
+    });
+
+    // Process responsables data to capitalize words
+    const processedResponsablesData = Object.keys(analyticsData.responsables).map(key => {
+        const responsable = key === 'null' || key === 'NULL' ? 'Sin asignar' : capitalizeWords(key);
+        return {
+            responsable,
+            count: analyticsData.responsables[key],
+        };
+    });
 
     return (
         <div className="flex flex-col gap-1 justify-center items-center bg-slate-100 rounded-xl p-4 shadow-lg w-full h-auto">
