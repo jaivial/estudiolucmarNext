@@ -19,22 +19,37 @@ function isPointInPolygon(point, polygon) {
 
 export default async function handler(req, res) {
     if (req.method === 'GET') {
+        const { codeID } = req.query;
+
+        if (!codeID) {
+            return res.status(400).json({ message: 'codeID is required' });
+        }
+
         try {
             const client = await clientPromise;
             const db = client.db('inmoprocrm');
 
-            // Fetch inmuebles and zones, projecting only the necessary fields
-            const inmuebles = await db.collection('inmuebles').find({}, { projection: { id: 1, coordinates: 1 } }).toArray();
-            const zones = await db.collection('map_zones').find({}, { projection: { code_id: 1, zone_name: 1, zone_responsable: 1, latlngs: 1 } }).toArray();
+            // Fetch the specific zone by zone_name
+            const zone = await db.collection('map_zones').findOne(
+                { code_id: codeID },
+                { projection: { code_id: 1, zone_name: 1, zone_responsable: 1, latlngs: 1 } }
+            );
 
-            if (!inmuebles.length || !zones.length) {
-                return res.status(200).json([]); // Return empty array if no zones or inmuebles found
+            if (!zone) {
+                return res.status(404).json({ message: 'Zone not found' });
+            }
+
+            // Fetch inmuebles, projecting only the necessary fields
+            const inmuebles = await db.collection('inmuebles').find({}, { projection: { id: 1, coordinates: 1 } }).toArray();
+
+            if (!inmuebles.length) {
+                return res.status(200).json([]); // Return empty array if no inmuebles found
             }
 
             const inmueblesInZones = [];
             const inmueblesIdsInZones = new Set();
 
-            // Determine which inmuebles are in which zones
+            // Determine which inmuebles are in the specified zone
             for (const inmueble of inmuebles) {
                 const { coordinates } = inmueble;
 
@@ -49,19 +64,16 @@ export default async function handler(req, res) {
                     // Single point case
                     const point = { lat: coordinates[0], lng: coordinates[1] };
 
-                    for (const zone of zones) {
-                        const polygon = zone.latlngs[0]; // Assume latlngs[0] is a polygon
-                        if (isPointInPolygon(point, polygon)) {
-                            inmueblesInZones.push({
-                                inmueble_id: inmueble.id,
-                                zone_id: zone.code_id,
-                                zone_name: zone.zone_name,
-                                zone_responsable: zone.zone_responsable,
-                            });
-                            inmueblesIdsInZones.add(inmueble.id);
-                            pointInZone = true;
-                            break;
-                        }
+                    const polygon = zone.latlngs[0]; // Assume latlngs[0] is a polygon
+                    if (isPointInPolygon(point, polygon)) {
+                        inmueblesInZones.push({
+                            inmueble_id: inmueble.id,
+                            zone_id: zone.code_id,
+                            zone_name: zone.zone_name,
+                            zone_responsable: zone.zone_responsable,
+                        });
+                        inmueblesIdsInZones.add(inmueble.id);
+                        pointInZone = true;
                     }
                 } else if (coordinates.length === 4) {
                     // Bounding box case
@@ -72,19 +84,16 @@ export default async function handler(req, res) {
                         { lat: coordinates[1], lng: coordinates[3] }, // bottom-right
                     ];
 
-                    for (const zone of zones) {
-                        const polygon = zone.latlngs[0]; // Assume latlngs[0] is a polygon
-                        if (boundingBox.some(point => isPointInPolygon(point, polygon))) {
-                            inmueblesInZones.push({
-                                inmueble_id: inmueble.id,
-                                zone_id: zone.code_id,
-                                zone_name: zone.zone_name,
-                                zone_responsable: zone.zone_responsable,
-                            });
-                            inmueblesIdsInZones.add(inmueble.id);
-                            pointInZone = true;
-                            break;
-                        }
+                    const polygon = zone.latlngs[0]; // Assume latlngs[0] is a polygon
+                    if (boundingBox.some(point => isPointInPolygon(point, polygon))) {
+                        inmueblesInZones.push({
+                            inmueble_id: inmueble.id,
+                            zone_id: zone.code_id,
+                            zone_name: zone.zone_name,
+                            zone_responsable: zone.zone_responsable,
+                        });
+                        inmueblesIdsInZones.add(inmueble.id);
+                        pointInZone = true;
                     }
                 } else {
                     console.error(`Unexpected coordinates format for inmueble: ${inmueble.id}`);
@@ -95,7 +104,7 @@ export default async function handler(req, res) {
                 }
             }
 
-            // Update inmuebles that are in zones
+            // Update inmuebles that are in the specified zone
             if (inmueblesInZones.length > 0) {
                 const bulkUpdateOps = inmueblesInZones.map(({ inmueble_id, zone_name, zone_responsable }) => ({
                     updateOne: {
@@ -106,7 +115,7 @@ export default async function handler(req, res) {
                 await db.collection('inmuebles').bulkWrite(bulkUpdateOps);
             }
 
-            // Set zona and responsable to null for inmuebles not in zones
+            // Set zona and responsable to null for inmuebles not in the specified zone
             const allInmuebleIds = inmuebles.map(inmueble => inmueble.id);
             const inmueblesNotInZones = allInmuebleIds.filter(id => !inmueblesIdsInZones.has(id));
             if (inmueblesNotInZones.length > 0) {

@@ -159,7 +159,7 @@ const MapComponent = () => {
                 const layer = e.layers._layers[layerId];
 
                 if (layer.options && layer.options.code_id) {
-                    console.log('Draw Deleted Event! ID:', layer.options.code_id);
+                    console.log('Draw Deleted Event! ID:', layer.options.zone_name);
                     handleDelete(layer.options.code_id);
                 }
             }
@@ -187,7 +187,7 @@ const MapComponent = () => {
             const response = await axios.post('/api/updateZone', { code_id: codeID, latlngs });
             console.log('Zone updated in backend:', response.data);
             fetchZones();
-            handleCheckInmuebleInZone();
+            handleCheckInmuebleInZone(codeID);
 
         } catch (error) {
             console.error('Error updating zone:', error);
@@ -198,10 +198,13 @@ const MapComponent = () => {
     const handleDelete = async (zoneCodeId) => {
         console.log('zoneCodeId', zoneCodeId);
         try {
-            // Properly pass the params with axios.delete
+            // Step 1: Set `zona` to null for all inmuebles with the matching `zoneCodeId`
+            await axios.post('/api/setNullZoneInmuebleInZone', null, { params: { codeID: zoneCodeId } });
+            console.log('Inmuebles updated to set zona to null');
+
+            // Step 2: Proceed to delete the zone
             const response = await axios.delete('/api/deleteZone', { data: { zoneCodeId } });
             setZones((prevZones) => prevZones.filter((zone) => zone.code_id !== zoneCodeId));
-            handleCheckInmuebleInZone();
             console.log('Zone deleted:', response.data);
 
         } catch (error) {
@@ -210,14 +213,19 @@ const MapComponent = () => {
     };
 
 
-    const handleCheckInmuebleInZone = async () => {
+
+    const handleCheckInmuebleInZone = async (codeID) => {
         try {
-            const response = await axios.get('/api/checkInmuebleInZone');
+            // Send a GET request to the API with the zoneName as a query parameter
+            const response = await axios.get('/api/checkInmuebleInZone', {
+                params: { codeID }, // Pass zoneName as a query parameter
+            });
             console.log('Check inmueble in zone:', response.data);
         } catch (error) {
             console.error('Error checking inmueble in zone:', error);
         }
     };
+
 
 
     const handleSave = async () => {
@@ -243,7 +251,9 @@ const MapComponent = () => {
             setColor(colors[0]);
             setResponsable('');
             setIsPopupOpen(false);
-            handleCheckInmuebleInZone();
+            console.log('code_id', code_id);
+            handleCheckInmuebleInZone(code_id);
+            fetchZones();
         } catch (error) {
             console.error('Error saving zone:', error);
         }
