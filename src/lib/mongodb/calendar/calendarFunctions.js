@@ -1,5 +1,6 @@
 import clientPromise from '../../mongodb.js';
 import { format, startOfMonth, endOfMonth, parseISO } from 'date-fns';
+import { ObjectId } from 'mongodb';
 
 // Function to get tasks by day for a specific user
 export const getTasksByDay = async (day, userId) => {
@@ -53,25 +54,22 @@ export const getTasksByDaySSR = async (day, userId) => {
     }
 };
 
-// Function to mark a task as completed for a specific user
 export const markTaskAsCompleted = async (taskId, userId) => {
     const client = await clientPromise;
-    const db = client.db('inmoprocrm'); // Use the correct database name
+    const db = client.db('inmoprocrm');
+
+    console.log('taskId', taskId);
+    console.log('userId', userId);
 
     try {
         const result = await db.collection('tasks').updateOne(
-            { _id: taskId, user_id: userId },
+            { id: parseInt(taskId), user_id: parseInt(userId) },
             { $set: { completed: true } }
         );
 
-        if (result.matchedCount === 0) {
-            console.error("No matching task found");
-            return false;
-        }
-
-        return true;
+        return result.matchedCount > 0;
     } catch (error) {
-        console.error("Error updating task: ", error);
+        console.error("Error updating task:", error);
         return false;
     }
 };
@@ -141,18 +139,32 @@ export const getTasksSSR = async (userId) => {
 };
 
 
+
+
 // Function to add a new task for a specific user
 export const addTask = async (date, task, userId, taskTime = null) => {
     const client = await clientPromise;
     const db = client.db('inmoprocrm'); // Use the correct database name
 
     try {
+        // Find the highest existing 'id' in the tasks collection
+        const highestTask = await db.collection('tasks')
+            .find({})
+            .sort({ id: -1 }) // Sort by id in descending order
+            .limit(1)
+            .toArray();
+
+        // Determine the new task ID
+        const newTaskId = highestTask.length > 0 ? highestTask[0].id + 1 : 1;
+
+        // Insert the new task with the calculated ID
         const result = await db.collection('tasks').insertOne({
-            task_date: date,
+            id: newTaskId, // Auto-incremented ID
             task: task,
+            task_date: date,
+            task_time: taskTime,
             completed: false,
-            user_id: userId,
-            task_time: taskTime
+            user_id: parseInt(userId) // Ensure user_id is stored as an integer
         });
 
         return result.insertedId !== null;
@@ -164,54 +176,18 @@ export const addTask = async (date, task, userId, taskTime = null) => {
 
 export const deleteTask = async (taskId, userId) => {
     const client = await clientPromise;
-    const db = client.db('inmoprocrm'); // Use the correct database name
+    const db = client.db('inmoprocrm');
 
     try {
         const result = await db.collection('tasks').deleteOne({
-            _id: taskId,
-            user_id: userId
+            id: parseInt(taskId),
+            user_id: parseInt(userId)
         });
 
-        if (result.deletedCount === 0) {
-            console.error("No matching task found");
-            return false;
-        }
-
-        return true;
+        return result.deletedCount > 0;
     } catch (error) {
         console.error("Error deleting task:", error);
         return false;
     }
 };
 
-export const moveIncompleteTasksToNextDay = async () => {
-    const client = await clientPromise;
-    const db = client.db('inmoprocrm'); // Use the correct database name
-
-    // Get the current date in local time (Spain)
-    const now = new Date();
-    const madridDate = new Date(now.toLocaleString('en-US', { timeZone: 'Europe/Madrid' }));
-    const currentDateString = madridDate.toISOString().split('T')[0];
-
-    try {
-        // Fetch incomplete tasks for the current date
-        const tasks = await db.collection('tasks').find({
-            completed: false,
-            task_date: currentDateString
-        }).toArray();
-
-        // Calculate the next date
-        madridDate.setDate(madridDate.getDate() + 1);
-        const nextDateString = madridDate.toISOString().split('T')[0];
-
-        // Update tasks to the next date
-        for (const task of tasks) {
-            await db.collection('tasks').updateOne(
-                { _id: task._id },
-                { $set: { task_date: nextDateString } }
-            );
-        }
-    } catch (error) {
-        console.error('Error moving tasks to next day:', error);
-    }
-};

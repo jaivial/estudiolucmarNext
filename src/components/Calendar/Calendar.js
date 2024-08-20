@@ -37,8 +37,6 @@ const CalendarApp = ({ tasksSSR, allTasksSSR, datesWithCompletedTasks, datesWith
         if (selectedDay) {
             setFilteredTasksByDate(filterAndSortTasksByDate(allTasks, selectedDay));
         }
-        console.log('selectedDay', selectedDay);
-        console.log('allTasks updated', allTasks);
     }, [selectedDay, allTasks]);
 
     useEffect(() => {
@@ -99,7 +97,6 @@ const CalendarApp = ({ tasksSSR, allTasksSSR, datesWithCompletedTasks, datesWith
             const allTasks = response.data.tasks;
             setAllTasks(allTasks);
             datesCompleteIncompleteTasks(allTasks);
-            console.log('All tasks HERE:', allTasks);
         } catch (error) {
             console.error('Error fetching all tasks:', error);
         }
@@ -111,7 +108,8 @@ const CalendarApp = ({ tasksSSR, allTasksSSR, datesWithCompletedTasks, datesWith
     };
 
     const refreshTasks = () => {
-        fetchAllTasks();
+        console.log(displayedMonth)
+        fetchAllTasks(displayedMonth);
     };
 
     const tileClassName = ({ date, view }) => {
@@ -138,21 +136,6 @@ const CalendarApp = ({ tasksSSR, allTasksSSR, datesWithCompletedTasks, datesWith
         return null;
     };
 
-    const scheduleDailyTask = () => {
-        const now = new Date();
-        const currentTime = now.toLocaleString('en-US', { timeZone: 'Europe/Madrid' }).split(' ')[1];
-        const [currentHour, currentMinute, currentSecond] = currentTime.split(':').map(Number);
-        const millisecondsUntilMidnight = ((23 - currentHour) * 3600 + (59 - currentMinute) * 60 + (60 - currentSecond)) * 1000;
-
-        setTimeout(() => {
-            axios.post(`/api/tasks`);
-            setInterval(() => axios.post(`/api/tasks`), 24 * 60 * 60 * 1000);
-        }, millisecondsUntilMidnight);
-    };
-
-    useEffect(() => {
-        scheduleDailyTask();
-    }, []);
 
     return (
         <div className="pb-36 flex flex-col items-center justify-center gap-6  ">
@@ -165,7 +148,7 @@ const CalendarApp = ({ tasksSSR, allTasksSSR, datesWithCompletedTasks, datesWith
                 tileClassName={tileClassName}
                 tileContent={renderTileContent}
             />
-            {selectedDay && <TaskList day={selectedDay} tasks={tasks} refreshTasks={refreshTasks} filteredTasksByDate={filteredTasksByDate} />}
+            {selectedDay && <TaskList day={selectedDay} tasks={tasks} refreshTasks={refreshTasks} filteredTasksByDate={filteredTasksByDate} setDisplayedMonth={setDisplayedMonth} />}
         </div>
     );
 };
