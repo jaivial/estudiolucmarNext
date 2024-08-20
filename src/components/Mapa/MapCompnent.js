@@ -182,7 +182,8 @@ const MapComponent = () => {
         try {
             const response = await axios.post('/api/updateZone', { code_id: codeID, latlngs });
             console.log('Zone updated in backend:', response.data);
-            window.location.reload();
+            fetchZones();
+
         } catch (error) {
             console.error('Error updating zone:', error);
             throw error;
@@ -190,17 +191,19 @@ const MapComponent = () => {
     };
 
     const handleDelete = async (zoneCodeId) => {
+        console.log('zoneCodeId', zoneCodeId);
         try {
-            const response = await axios.delete(`/api/deleteZone?zoneCodeId=${zoneCodeId}`);
+            // Properly pass the params with axios.delete
+            const response = await axios.delete('/api/deleteZone', { data: { zoneCodeId } });
             setZones((prevZones) => prevZones.filter((zone) => zone.code_id !== zoneCodeId));
 
             console.log('Zone deleted:', response.data);
-            handleCheckInmuebleInZone();
-            fetchZoneStatistics();
+
         } catch (error) {
             console.error('Error deleting zone:', error);
         }
     };
+
 
     const handleCheckInmuebleInZone = async () => {
         try {

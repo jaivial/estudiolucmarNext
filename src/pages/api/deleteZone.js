@@ -1,11 +1,9 @@
-// pages/api/deleteZone.js
-
 import clientPromise from '../../lib/mongodb';
 
 export default async function handler(req, res) {
-    if (req.method === 'GET') {
+    if (req.method === 'DELETE') {
         try {
-            const { zoneCodeId } = req.query; // Assuming ID is passed as query parameter
+            const { zoneCodeId } = req.body; // Extract zoneCodeId from the body of the DELETE request
 
             // Connect to MongoDB
             const client = await clientPromise;
@@ -24,7 +22,7 @@ export default async function handler(req, res) {
             res.status(500).json({ message: 'Internal Server Error' });
         }
     } else {
-        res.setHeader('Allow', ['GET']);
+        res.setHeader('Allow', ['DELETE']);
         res.status(405).end(`Method ${req.method} Not Allowed`);
     }
 }
