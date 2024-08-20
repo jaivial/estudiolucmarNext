@@ -219,16 +219,6 @@ const MapComponent = () => {
         }
     };
 
-    // const fetchZoneStatistics = async (zoneId) => {
-    //     try {
-    //         const response = await axios.get('/api/calculateZoneStatistics', { params: { zoneId } });
-    //         console.log('Zone statistics fetched:', response.data);
-    //         setZoneStatistics(response.data);
-    //     } catch (error) {
-    //         console.error('Error fetching zone statistics:', error);
-    //     }
-    // };
-
 
     const handleSave = async () => {
         const code_id = uuidv4();

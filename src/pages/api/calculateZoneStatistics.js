@@ -29,6 +29,8 @@ export default async function handler(req, res) {
                         zone_name: 1,
                         zone_responsable: 1,
                         totalInmuebles: { $size: '$inmuebles' },
+
+                        // Count states within the primary inmuebles
                         noticiaState1: {
                             $size: {
                                 $filter: {
@@ -100,6 +102,346 @@ export default async function handler(req, res) {
                                     cond: { $eq: ['$$inmueble.categoria', null] }
                                 }
                             }
+                        },
+
+                        // Count states within nested inmuebles
+                        nestedNoticiaState1: {
+                            $sum: {
+                                $map: {
+                                    input: '$inmuebles',
+                                    as: 'inmueble',
+                                    in: {
+                                        $size: {
+                                            $filter: {
+                                                input: '$$inmueble.nestedinmuebles',
+                                                as: 'nested',
+                                                cond: { $eq: ['$$nested.noticiastate', '1'] }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        nestedNoticiaState0: {
+                            $sum: {
+                                $map: {
+                                    input: '$inmuebles',
+                                    as: 'inmueble',
+                                    in: {
+                                        $size: {
+                                            $filter: {
+                                                input: '$$inmueble.nestedinmuebles',
+                                                as: 'nested',
+                                                cond: { $eq: ['$$nested.noticiastate', '0'] }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        nestedEncargoState1: {
+                            $sum: {
+                                $map: {
+                                    input: '$inmuebles',
+                                    as: 'inmueble',
+                                    in: {
+                                        $size: {
+                                            $filter: {
+                                                input: '$$inmueble.nestedinmuebles',
+                                                as: 'nested',
+                                                cond: { $eq: ['$$nested.encargoState', '1'] }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        nestedEncargoState0: {
+                            $sum: {
+                                $map: {
+                                    input: '$inmuebles',
+                                    as: 'inmueble',
+                                    in: {
+                                        $size: {
+                                            $filter: {
+                                                input: '$$inmueble.nestedinmuebles',
+                                                as: 'nested',
+                                                cond: { $eq: ['$$nested.encargoState', '0'] }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        nestedCategoriaInquilino: {
+                            $sum: {
+                                $map: {
+                                    input: '$inmuebles',
+                                    as: 'inmueble',
+                                    in: {
+                                        $size: {
+                                            $filter: {
+                                                input: '$$inmueble.nestedinmuebles',
+                                                as: 'nested',
+                                                cond: { $eq: ['$$nested.categoria', 'Inquilino'] }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        nestedCategoriaVacio: {
+                            $sum: {
+                                $map: {
+                                    input: '$inmuebles',
+                                    as: 'inmueble',
+                                    in: {
+                                        $size: {
+                                            $filter: {
+                                                input: '$$inmueble.nestedinmuebles',
+                                                as: 'nested',
+                                                cond: { $eq: ['$$nested.categoria', 'Vacio'] }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        nestedCategoriaPropietario: {
+                            $sum: {
+                                $map: {
+                                    input: '$inmuebles',
+                                    as: 'inmueble',
+                                    in: {
+                                        $size: {
+                                            $filter: {
+                                                input: '$$inmueble.nestedinmuebles',
+                                                as: 'nested',
+                                                cond: { $eq: ['$$nested.categoria', 'Propietario'] }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        nestedCategoriaNull: {
+                            $sum: {
+                                $map: {
+                                    input: '$inmuebles',
+                                    as: 'inmueble',
+                                    in: {
+                                        $size: {
+                                            $filter: {
+                                                input: '$$inmueble.nestedinmuebles',
+                                                as: 'nested',
+                                                cond: { $eq: ['$$nested.categoria', null] }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        },
+
+                        // Count states within nested escalera nested inmuebles
+                        escaleraNestedNoticiaState1: {
+                            $sum: {
+                                $map: {
+                                    input: '$inmuebles',
+                                    as: 'inmueble',
+                                    in: {
+                                        $sum: {
+                                            $map: {
+                                                input: '$$inmueble.nestedescaleras',
+                                                as: 'escalera',
+                                                in: {
+                                                    $size: {
+                                                        $filter: {
+                                                            input: '$$escalera.nestedinmuebles',
+                                                            as: 'nested',
+                                                            cond: { $eq: ['$$nested.noticiastate', '1'] }
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        escaleraNestedNoticiaState0: {
+                            $sum: {
+                                $map: {
+                                    input: '$inmuebles',
+                                    as: 'inmueble',
+                                    in: {
+                                        $sum: {
+                                            $map: {
+                                                input: '$$inmueble.nestedescaleras',
+                                                as: 'escalera',
+                                                in: {
+                                                    $size: {
+                                                        $filter: {
+                                                            input: '$$escalera.nestedinmuebles',
+                                                            as: 'nested',
+                                                            cond: { $eq: ['$$nested.noticiastate', '0'] }
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        escaleraNestedEncargoState1: {
+                            $sum: {
+                                $map: {
+                                    input: '$inmuebles',
+                                    as: 'inmueble',
+                                    in: {
+                                        $sum: {
+                                            $map: {
+                                                input: '$$inmueble.nestedescaleras',
+                                                as: 'escalera',
+                                                in: {
+                                                    $size: {
+                                                        $filter: {
+                                                            input: '$$escalera.nestedinmuebles',
+                                                            as: 'nested',
+                                                            cond: { $eq: ['$$nested.encargoState', '1'] }
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        escaleraNestedEncargoState0: {
+                            $sum: {
+                                $map: {
+                                    input: '$inmuebles',
+                                    as: 'inmueble',
+                                    in: {
+                                        $sum: {
+                                            $map: {
+                                                input: '$$inmueble.nestedescaleras',
+                                                as: 'escalera',
+                                                in: {
+                                                    $size: {
+                                                        $filter: {
+                                                            input: '$$escalera.nestedinmuebles',
+                                                            as: 'nested',
+                                                            cond: { $eq: ['$$nested.encargoState', '0'] }
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        escaleraNestedCategoriaInquilino: {
+                            $sum: {
+                                $map: {
+                                    input: '$inmuebles',
+                                    as: 'inmueble',
+                                    in: {
+                                        $sum: {
+                                            $map: {
+                                                input: '$$inmueble.nestedescaleras',
+                                                as: 'escalera',
+                                                in: {
+                                                    $size: {
+                                                        $filter: {
+                                                            input: '$$escalera.nestedinmuebles',
+                                                            as: 'nested',
+                                                            cond: { $eq: ['$$nested.categoria', 'Inquilino'] }
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        escaleraNestedCategoriaVacio: {
+                            $sum: {
+                                $map: {
+                                    input: '$inmuebles',
+                                    as: 'inmueble',
+                                    in: {
+                                        $sum: {
+                                            $map: {
+                                                input: '$$inmueble.nestedescaleras',
+                                                as: 'escalera',
+                                                in: {
+                                                    $size: {
+                                                        $filter: {
+                                                            input: '$$escalera.nestedinmuebles',
+                                                            as: 'nested',
+                                                            cond: { $eq: ['$$nested.categoria', 'Vacio'] }
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        escaleraNestedCategoriaPropietario: {
+                            $sum: {
+                                $map: {
+                                    input: '$inmuebles',
+                                    as: 'inmueble',
+                                    in: {
+                                        $sum: {
+                                            $map: {
+                                                input: '$$inmueble.nestedescaleras',
+                                                as: 'escalera',
+                                                in: {
+                                                    $size: {
+                                                        $filter: {
+                                                            input: '$$escalera.nestedinmuebles',
+                                                            as: 'nested',
+                                                            cond: { $eq: ['$$nested.categoria', 'Propietario'] }
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        escaleraNestedCategoriaNull: {
+                            $sum: {
+                                $map: {
+                                    input: '$inmuebles',
+                                    as: 'inmueble',
+                                    in: {
+                                        $sum: {
+                                            $map: {
+                                                input: '$$inmueble.nestedescaleras',
+                                                as: 'escalera',
+                                                in: {
+                                                    $size: {
+                                                        $filter: {
+                                                            input: '$$escalera.nestedinmuebles',
+                                                            as: 'nested',
+                                                            cond: { $eq: ['$$nested.categoria', null] }
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
                 }
@@ -110,12 +452,12 @@ export default async function handler(req, res) {
 
                 // Calculate percentages
                 const totalElements = result.totalInmuebles || 0;
-                const percentageNoticias = totalElements > 0 ? (result.noticiaState1 / totalElements) * 100 : 0;
-                const percentageEncargos = totalElements > 0 ? (result.encargoState1 / totalElements) * 100 : 0;
-                const percentageInquilino = totalElements > 0 ? (result.categoriaInquilino / totalElements) * 100 : 0;
-                const percentageVacio = totalElements > 0 ? (result.categoriaVacio / totalElements) * 100 : 0;
-                const percentagePropietario = totalElements > 0 ? (result.categoriaPropietario / totalElements) * 100 : 0;
-                const percentageNull = totalElements > 0 ? (result.categoriaNull / totalElements) * 100 : 0;
+                const percentageNoticias = totalElements > 0 ? (result.noticiaState1 + result.nestedNoticiaState1 + result.escaleraNestedNoticiaState1) / totalElements * 100 : 0;
+                const percentageEncargos = totalElements > 0 ? (result.encargoState1 + result.nestedEncargoState1 + result.escaleraNestedEncargoState1) / totalElements * 100 : 0;
+                const percentageInquilino = totalElements > 0 ? (result.categoriaInquilino + result.nestedCategoriaInquilino + result.escaleraNestedCategoriaInquilino) / totalElements * 100 : 0;
+                const percentageVacio = totalElements > 0 ? (result.categoriaVacio + result.nestedCategoriaVacio + result.escaleraNestedCategoriaVacio) / totalElements * 100 : 0;
+                const percentagePropietario = totalElements > 0 ? (result.categoriaPropietario + result.nestedCategoriaPropietario + result.escaleraNestedCategoriaPropietario) / totalElements * 100 : 0;
+                const percentageNull = totalElements > 0 ? (result.categoriaNull + result.nestedCategoriaNull + result.escaleraNestedCategoriaNull) / totalElements * 100 : 0;
 
                 // Attach the calculated percentages to the result
                 result.percentageNoticias = percentageNoticias.toFixed(2);
