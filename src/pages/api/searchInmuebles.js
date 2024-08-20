@@ -16,6 +16,10 @@ export default async function handler(req, res) {
         const limit = parseInt(itemsPerPage, 10);
         const skip = (page - 1) * limit;
 
+        const localizadoValueResults = localizado === 'true' ? true : localizado === 'false' ? false : null;
+        const filterNoticiaValueResults = filterNoticia === 'true' ? true : filterNoticia === 'false' ? false : null;
+        const filterEncargoValueResults = filterEncargo === 'true' ? true : filterEncargo === 'false' ? false : null;
+
         // Construir el objeto de consulta para coincidir con el patrón en los campos deseados
         const query = {
             $or: [
@@ -32,10 +36,10 @@ export default async function handler(req, res) {
                 ...(selectedResponsable !== '' ? [{ $or: [{ responsable: selectedResponsable }, { responsable: { $exists: false } }] }] : []),
 
                 // Filtro para noticiastate
-                ...(filterNoticia !== null ? [{ $or: [{ noticiastate: filterNoticia === 'true' ? true : false }, { noticiastate: { $exists: false } }] }] : []),
+                ...(filterNoticiaValueResults !== null ? [{ $or: [{ noticiastate: filterNoticiaValueResults }, { noticiastate: { $exists: false } }] }] : []),
 
                 // Filtro para encargostate
-                ...(filterEncargo !== null ? [{ $or: [{ encargostate: filterEncargo === 'true' ? true : false }, { encargostate: { $exists: false } }] }] : []),
+                ...(filterEncargoValueResults !== null ? [{ $or: [{ encargostate: filterEncargoValueResults }, { encargostate: { $exists: false } }] }] : []),
 
                 // // Filtro para superficie
                 ...(superficieMin !== null && superficieMax !== null ? [{ $or: [{ superficie: { $gte: parseInt(superficieMin, 10), $lte: parseInt(superficieMax, 10) } }, { superficie: { $exists: false } }] }] : []),
@@ -43,8 +47,8 @@ export default async function handler(req, res) {
                 // // Filtro para categoria
                 ...(selectedCategoria !== '' ? [{ $or: [{ categoria: selectedCategoria === null ? { $exists: false } : selectedCategoria }, { categoria: { $exists: false } }] }] : []),
 
-                // // // Filtro para localizado
-                ...(localizado !== null ? [{ $or: [{ localizado: localizado === 'true' ? true : false }, { localizado: { $exists: false } }] }] : []),
+                // Filtro para localizado
+                ...(localizadoValueResults !== null ? [{ $or: [{ localizado: localizadoValueResults }, { localizado: { $exists: false } }] }] : []),
 
                 // // // Filtro para aireacondicionado
                 ...(aireacondicionado !== 'undefined' ? [{ $or: [{ aireacondicionado: aireacondicionado === 'true' ? true : false }, { aireacondicionado: { $exists: false } }] }] : []),
@@ -126,35 +130,22 @@ export default async function handler(req, res) {
             .limit(limit)
             .toArray();
 
+
+
         const finalResults = results.map(result => {
             const applyNoticiaFilter = (inmueble) => {
-                if (filterNoticia !== null) {
-                    // Si filterNoticia es 'true', se comparará con inmuebles que tienen noticiastate como true
-                    if (filterNoticia === 'true') {
-                        return inmueble.noticiastate === true;
-                    }
-                    // Si filterNoticia es 'false', se comparará con inmuebles que tienen noticiastate como false
-                    if (filterNoticia === 'false') {
-                        return inmueble.noticiastate === false;
-                    }
+                if (filterNoticiaValueResults !== null) {
+                    return inmueble.noticiastate === filterNoticiaValueResults;
                 }
-                // Si filterNoticia es null, no se aplica el filtro y todos los inmuebles pasan
+                // If filterNoticiaValueResults is null, all inmuebles pass the filter
                 return true;
             };
 
-
             const applyEncargoFilter = (inmueble) => {
-                if (filterEncargo !== null) {
-                    // Si filterEncargo es 'true', se comparará con inmuebles que tengan encargo
-                    if (filterEncargo === 'true') {
-                        return inmueble.encargostate === true;
-                    }
-                    // Si filterEncargo es 'false', se comparará con inmuebles que no tengan encargo
-                    if (filterEncargo === 'false') {
-                        return inmueble.encargostate === false;
-                    }
+                if (filterEncargoValueResults !== null) {
+                    return inmueble.encargostate === filterEncargoValueResults;
                 }
-                // Si filterEncargo es null, no se aplica el filtro y todos los inmuebles pasan
+                // If filterEncargoValueResults is null, all inmuebles pass the filter
                 return true;
             };
 
@@ -184,17 +175,14 @@ export default async function handler(req, res) {
                 }
             };
 
+
             const applyLocalizadoFilter = (inmueble) => {
-                if (localizado !== null) {
-                    if (localizado === 'true') {
-                        return inmueble.localizado === true;
-                    }
-                    if (localizado === 'false') {
-                        return inmueble.localizado === false;
-                    }
+                if (localizadoValueResults !== null) {
+                    return inmueble.localizado === localizadoValueResults;
                 }
-                return true;
+                return true; // If localizadoValueResults is null, include all inmuebles.
             };
+
 
             const applySuperficieFilter = (inmueble) => {
                 if (superficieMin === null && superficieMax === null) {
@@ -1143,7 +1131,7 @@ export default async function handler(req, res) {
                     'nestedinmuebles.direccion': {
                         $regex: pattern,
                         $options: 'i'
-                    }
+                    },
                 }
             },
 

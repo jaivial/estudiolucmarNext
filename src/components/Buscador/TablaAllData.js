@@ -127,7 +127,8 @@ const Table = ({ parentsEdificioProps }) => {
             setLoading(true);
             const params = new URLSearchParams({
                 pattern: searchTerm,
-                itemsPerPage: 4,
+                itemsPerPage: 4
+                ,
                 currentPage: currentPage,
                 selectedZone: filters.selectedZone,
                 selectedCategoria: filters.selectedCategoria,

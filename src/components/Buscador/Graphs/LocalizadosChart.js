@@ -13,11 +13,11 @@ const StraightAnglePieChart = ({ analyticsData }) => {
     const noLocalizadosValue = totalValue - localizadosValue;
 
     // Adjust localizadosValue if it is less than 40
-    const adjustedLocalizadosValue = localizadosValue < 40 ? localizadosValue + (40 - localizadosValue) / 2 : localizadosValue;
+    const adjustedLocalizadosValue = localizadosValue < 1 ? localizadosValue + (5 - localizadosValue) / 2 : localizadosValue;
 
     // Apply log10 to values for better visual balance if necessary
-    const logLocalizados = adjustedLocalizadosValue > 0 ? Math.log10(adjustedLocalizadosValue) : 0;
-    const logNoLocalizados = noLocalizadosValue > 0 ? Math.log10(noLocalizadosValue) : 0;
+    const logLocalizados = adjustedLocalizadosValue > 0 ? Math.sqrt(adjustedLocalizadosValue) : 0;
+    const logNoLocalizados = noLocalizadosValue > 0 ? Math.sqrt(noLocalizadosValue) : 0;
 
     // Function to capitalize the first letter of each word
     const capitalizeWords = (str) => {
