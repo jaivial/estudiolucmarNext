@@ -2,13 +2,11 @@ import React, { useState, useEffect } from 'react';
 import Calendar from 'react-calendar';
 import 'react-calendar/dist/Calendar.css';
 import './calendar.css';
-import TaskList from './TaskList'; // Adjust the import path as needed
+import TaskList from './TaskList';
 import Cookies from 'js-cookie';
-import { getTasksByDay, getTasks, moveIncompleteTasksToNextDay } from '../../lib/supabase/calendar/calendarFunctions';
-import { format, startOfDay } from 'date-fns';
+import { format, set, startOfDay } from 'date-fns';
 import { IoMdCheckmarkCircleOutline } from "react-icons/io";
-
-
+import axios from 'axios';
 
 const CalendarApp = ({ tasksSSR, allTasksSSR, datesWithCompletedTasks, datesWithIncompleteTasks }) => {
     const [date, setDate] = useState(new Date());
@@ -18,6 +16,13 @@ const CalendarApp = ({ tasksSSR, allTasksSSR, datesWithCompletedTasks, datesWith
     const [selectedDay, setSelectedDay] = useState(format(new Date(), 'yyyy-MM-dd'));
     const [incompletedTasksDates, setIncompletedTasksDates] = useState(new Set(datesWithIncompleteTasks));
     const [completedTasksDates, setCompletedTasksDates] = useState(new Set(datesWithCompletedTasks));
+    const [displayedMonth, setDisplayedMonth] = useState(format(new Date(), 'yyyy-MM')); // Initialize with the current month
+
+    const onActiveStartDateChange = ({ activeStartDate }) => {
+        setDisplayedMonth(format(activeStartDate, 'yyyy-MM')); // Update the displayed month
+        fetchAllTasks(format(activeStartDate, 'yyyy-MM')); // Fetch tasks for the new month
+        console.log('THE MONTH', displayedMonth);
+    };
 
     // Get user ID from cookies
     const userId = Cookies.get('user_id');
@@ -41,42 +46,19 @@ const CalendarApp = ({ tasksSSR, allTasksSSR, datesWithCompletedTasks, datesWith
     }, [filteredTasksByDate]);
 
     const filterAndSortTasksByDate = (tasks, selectedDate) => {
-        // Format the selected date to 'YYYY-MM-DD'
         const formattedDate = format(selectedDate, 'yyyy-MM-dd');
-        // Filter tasks that match the selected date
         const filteredTasks = tasks.filter(task => task.task_date === formattedDate);
-
         return filteredTasks;
-    };
-
-    const fetchTasksByDay = async (day) => {
-        try {
-            const tasksForDate = await getTasksByDay(day, userId);
-            console.log('tasksForDate', tasksForDate);
-
-            if (Array.isArray(tasksForDate)) {
-                setTasks(tasksForDate);
-            } else {
-                console.warn('Fetched data is not an array:', tasksForDate);
-                setTasks([]);
-            }
-
-            console.log('Tasks for day:', tasksForDate);
-        } catch (error) {
-            console.error('Error fetching tasks:', error);
-            setTasks([]);
-        }
     };
 
     const datesCompleteIncompleteTasks = async (allTasks) => {
         try {
-            datesWithIncompleteTasks =
+            const datesWithIncompleteTasks =
                 new Set(
                     allTasks
-                        .filter((task) => task.completed === false) // Filter tasks that are not completed
-                        .map((task) => new Date(task.task_date).toISOString().split('T')[0]), // Extract and format the date
-                )
-
+                        .filter((task) => task.completed === false)
+                        .map((task) => new Date(task.task_date).toISOString().split('T')[0]),
+                );
 
             const groupTasksByDate = (tasks) => {
                 return tasks.reduce((acc, task) => {
@@ -89,20 +71,17 @@ const CalendarApp = ({ tasksSSR, allTasksSSR, datesWithCompletedTasks, datesWith
                 }, {});
             };
 
-            // Group tasks by date
             const tasksByDate = groupTasksByDate(allTasks);
 
-            // Filter dates where all tasks are completed
             const datesWithAllTasksCompleted = Object.keys(tasksByDate).filter(date => {
                 return tasksByDate[date].every(task => task.completed === true);
             });
 
-            // Convert the result to a Set
             const datesWithCompletedTasksSet = new Set(datesWithAllTasksCompleted);
 
             setIncompletedTasksDates(datesWithIncompleteTasks);
             setCompletedTasksDates(datesWithCompletedTasksSet);
-            // Output the set of dates with incomplete and completed tasks
+
             console.log('Incomplete task dates:', datesWithIncompleteTasks);
             console.log('Completed task dates:', datesWithCompletedTasks);
 
@@ -111,13 +90,16 @@ const CalendarApp = ({ tasksSSR, allTasksSSR, datesWithCompletedTasks, datesWith
         }
     };
 
-    const fetchAllTasks = async () => {
+    const fetchAllTasks = async (month) => {
         try {
-            const allTasks = await getTasks(userId);
+            const functionToActivate = 'getTasks';
+            const response = await axios.get(`/api/calendar_functions`, {
+                params: { userId, functionToActivate, month }, // Pass the month parameter
+            });
+            const allTasks = response.data.tasks;
             setAllTasks(allTasks);
             datesCompleteIncompleteTasks(allTasks);
-            console.log('All tasks:', allTasks);
-
+            console.log('All tasks HERE:', allTasks);
         } catch (error) {
             console.error('Error fetching all tasks:', error);
         }
@@ -125,10 +107,10 @@ const CalendarApp = ({ tasksSSR, allTasksSSR, datesWithCompletedTasks, datesWith
 
     const onDateClick = (value) => {
         setSelectedDay(format(value, 'yyyy-MM-dd'));
-        setDate(value); // Update calendar view date
+        setDate(value);
     };
 
-    const refreshTasks = (day) => {
+    const refreshTasks = () => {
         fetchAllTasks();
     };
 
@@ -138,7 +120,6 @@ const CalendarApp = ({ tasksSSR, allTasksSSR, datesWithCompletedTasks, datesWith
             if (incompletedTasksDates.has(dateString)) {
                 return 'has-tasks';
             }
-
         }
         return null;
     };
@@ -157,20 +138,17 @@ const CalendarApp = ({ tasksSSR, allTasksSSR, datesWithCompletedTasks, datesWith
         return null;
     };
 
-    // Schedule the function to run at 00:00 local time in Spain
-    function scheduleDailyTask() {
+    const scheduleDailyTask = () => {
         const now = new Date();
         const currentTime = now.toLocaleString('en-US', { timeZone: 'Europe/Madrid' }).split(' ')[1];
         const [currentHour, currentMinute, currentSecond] = currentTime.split(':').map(Number);
         const millisecondsUntilMidnight = ((23 - currentHour) * 3600 + (59 - currentMinute) * 60 + (60 - currentSecond)) * 1000;
 
         setTimeout(() => {
-            moveIncompleteTasksToNextDay();
-
-            // Schedule to run every 24 hours
-            setInterval(moveIncompleteTasksToNextDay, 24 * 60 * 60 * 1000);
+            axios.post(`/api/tasks`);
+            setInterval(() => axios.post(`/api/tasks`), 24 * 60 * 60 * 1000);
         }, millisecondsUntilMidnight);
-    }
+    };
 
     useEffect(() => {
         scheduleDailyTask();
@@ -179,7 +157,14 @@ const CalendarApp = ({ tasksSSR, allTasksSSR, datesWithCompletedTasks, datesWith
     return (
         <div className="pb-36 flex flex-col items-center justify-center gap-6  ">
             <h1 className="text-center text-2xl font-bold">Calendario de tareas</h1>
-            <Calendar value={date} onClickDay={onDateClick} className="w-full bg-purple-400 rounded-xl" tileClassName={tileClassName} tileContent={renderTileContent} />
+            <Calendar
+                value={date}
+                onClickDay={onDateClick}
+                onActiveStartDateChange={onActiveStartDateChange} // Listen for month change
+                className="w-full bg-purple-400 rounded-xl"
+                tileClassName={tileClassName}
+                tileContent={renderTileContent}
+            />
             {selectedDay && <TaskList day={selectedDay} tasks={tasks} refreshTasks={refreshTasks} filteredTasksByDate={filteredTasksByDate} />}
         </div>
     );

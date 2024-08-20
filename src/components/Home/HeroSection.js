@@ -1,6 +1,4 @@
 import React, { useEffect, useState } from 'react';
-import { parse } from 'cookie';
-import Cookies from 'js-cookie';
 import '../Home/HeroSection.css';
 import CalendarApp from '../Calendar/Calendar';
 

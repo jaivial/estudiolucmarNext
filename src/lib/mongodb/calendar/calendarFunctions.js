@@ -1,5 +1,5 @@
 import clientPromise from '../../mongodb.js';
-import { format } from 'date-fns';
+import { format, startOfMonth, endOfMonth, parseISO } from 'date-fns';
 
 // Function to get tasks by day for a specific user
 export const getTasksByDay = async (day, userId) => {
@@ -76,18 +76,28 @@ export const markTaskAsCompleted = async (taskId, userId) => {
     }
 };
 
-// Function to get all tasks for a specific user
-export const getTasks = async (userId) => {
+export const getTasks = async (userId, month) => {
     const client = await clientPromise;
     const db = client.db('inmoprocrm'); // Use the correct database name
 
     try {
+        // Parse the month parameter to get the first and last day of the month
+        const [year, monthNumber] = month.split('-').map(Number);
+        const firstDayOfMonth = new Date(year, monthNumber - 1, 1); // monthNumber - 1 because Date months are 0-indexed
+        const lastDayOfMonth = new Date(year, monthNumber, 0); // Day 0 gives us the last day of the previous month
+
         const tasks = await db.collection('tasks').find({
-            user_id: userId
+            user_id: parseInt(userId),
+            task_date: {
+                $gte: firstDayOfMonth.toISOString().split('T')[0],
+                $lte: lastDayOfMonth.toISOString().split('T')[0]
+            }
         }).toArray();
 
+        console.log('tasks', tasks);
+
         return tasks.map(task => ({
-            id: task._id,
+            id: task.id,
             task: task.task,
             completed: task.completed,
             task_date: task.task_date,
@@ -98,6 +108,7 @@ export const getTasks = async (userId) => {
         return [];
     }
 };
+
 
 export const getTasksSSR = async (userId) => {
     const client = await clientPromise;
