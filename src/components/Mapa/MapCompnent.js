@@ -8,6 +8,7 @@ import { v4 as uuidv4 } from 'uuid';
 
 import { GeoSearchControl, OpenStreetMapProvider } from 'leaflet-geosearch';
 import L from 'leaflet'; // Ensure Leaflet is imported correctly
+import SmallLoadingScreen from '../LoadingScreen/SmallLoadingScreen';
 
 const icon = L.icon({
     iconUrl: 'https://cdn.jsdelivr.net/npm/leaflet@1.7.1/dist/images/marker-icon.png',
@@ -107,6 +108,7 @@ const MapComponent = () => {
     const [nombres, setNombres] = useState([]);
     const [zoneStatistics, setZoneStatistics] = useState({});
     const [zonesOrganized, setZonesOrganized] = useState({});
+    const [smallLoadingScreen, setSmallLoadingScreen] = useState(false);
 
     useEffect(() => {
         const fetchResponsables = async () => {
@@ -128,9 +130,11 @@ const MapComponent = () => {
 
     const fetchZones = async () => {
         try {
+            setSmallLoadingScreen(true);
             const response = await axios.get('/api/fetchAllZones'); // Adjust the API endpoint to match your Next.js setup
             console.log('Zones fetched:', response.data);
             setZones(response.data);
+            setSmallLoadingScreen(false);
         } catch (error) {
             console.error('Error fetching zones:', error);
         }
@@ -183,6 +187,7 @@ const MapComponent = () => {
             const response = await axios.post('/api/updateZone', { code_id: codeID, latlngs });
             console.log('Zone updated in backend:', response.data);
             fetchZones();
+            handleCheckInmuebleInZone();
 
         } catch (error) {
             console.error('Error updating zone:', error);
@@ -196,7 +201,7 @@ const MapComponent = () => {
             // Properly pass the params with axios.delete
             const response = await axios.delete('/api/deleteZone', { data: { zoneCodeId } });
             setZones((prevZones) => prevZones.filter((zone) => zone.code_id !== zoneCodeId));
-
+            handleCheckInmuebleInZone();
             console.log('Zone deleted:', response.data);
 
         } catch (error) {
@@ -214,20 +219,16 @@ const MapComponent = () => {
         }
     };
 
-    const fetchZoneStatistics = async () => {
-        try {
-            const response = await axios.get('/api/calculateZoneStatistics');
-            console.log('Zone statistics fetched:', response.data);
-            setZoneStatistics(response.data);
-        } catch (error) {
-            console.error('Error fetching zone statistics:', error);
-        }
-    };
+    // const fetchZoneStatistics = async (zoneId) => {
+    //     try {
+    //         const response = await axios.get('/api/calculateZoneStatistics', { params: { zoneId } });
+    //         console.log('Zone statistics fetched:', response.data);
+    //         setZoneStatistics(response.data);
+    //     } catch (error) {
+    //         console.error('Error fetching zone statistics:', error);
+    //     }
+    // };
 
-    useEffect(() => {
-        handleCheckInmuebleInZone();
-        fetchZoneStatistics();
-    }, [zones]);
 
     const handleSave = async () => {
         const code_id = uuidv4();
@@ -253,119 +254,66 @@ const MapComponent = () => {
             setResponsable('');
             setIsPopupOpen(false);
             handleCheckInmuebleInZone();
-            fetchZoneStatistics();
         } catch (error) {
             console.error('Error saving zone:', error);
         }
     };
 
-    useEffect(() => {
-        const organizeZonesData = async (zones, zoneStatistics) => {
-            const zonesOrganized = zones.map((zone) => {
-                const zoneId = zone.code_id;
-                const statistics = zoneStatistics.filter((statistic) => statistic.zone_id === zoneId);
 
-                let encargoState0 = 0;
-                let encargoState1 = 0;
-                let noticiaState0 = 0;
-                let noticiaState1 = 0;
-                let categoriaInquilino = 0;
-                let categoriaVacio = 0;
-                let categoriaPropietario = 0;
-                let categoriaNull = 0;
+    const handleZoneClick = async (zone, layer) => {
+        try {
+            // Step 1: Fetch the statistics for the clicked zone
+            const zoneName = zone.zone_name;
+            console.log('zoneName', zoneName);
+            const response = await axios.get('/api/calculateZoneStatistics', { params: { zoneName } });
+            console.log('Zone statistics fetched:', response.data);
 
-                statistics.forEach((stat) => {
-                    if (stat.encargoState === '0') encargoState0 += 1;
-                    if (stat.encargoState === '1') encargoState1 += 1;
-                    if (stat.noticiastate === '0') noticiaState0 += 1;
-                    if (stat.noticiastate === '1') noticiaState1 += 1;
-                    if (stat.categoria === 'Inquilino') categoriaInquilino += 1;
-                    if (stat.categoria === 'Vacio') categoriaVacio += 1;
-                    if (stat.categoria === 'Propietario') categoriaPropietario += 1;
-                    if (stat.categoria === null) categoriaNull += 1;
-                });
 
-                const totalElements = statistics.length;
+            const zoneStatistics = response.data;
+            const totalElements = zoneStatistics.totalInmuebles || 0;
+            const zoneResponsable = zoneStatistics.zone_responsable;
+            const noticiasTrue = zoneStatistics.noticiaState1 || 0;
+            const percentageNoticias = zoneStatistics.percentageNoticias || 0;
+            const encargosTrue = zoneStatistics.encargoState1 || 0;
+            const percentageEncargos = zoneStatistics.percentageEncargos || 0;
+            const categoriaInquilino = zoneStatistics.categoriaInquilino || 0;
+            const percentageInquilino = zoneStatistics.percentageInquilino || 0;
+            const categoriaVacio = zoneStatistics.categoriaVacio || 0;
+            const percentageVacio = zoneStatistics.percentageVacio || 0;
+            const categoriaPropietario = zoneStatistics.categoriaPropietario || 0;
+            const percentagePropietario = zoneStatistics.percentagePropietario || 0;
+            const categoriaNull = zoneStatistics.categoriaNull || 0;
+            const percentageNull = zoneStatistics.percentageNull || 0;
 
-                return {
-                    ...zone,
-                    encargoState0,
-                    encargoState1,
-                    noticiaState0,
-                    noticiaState1,
-                    categoriaInquilino,
-                    categoriaVacio,
-                    categoriaPropietario,
-                    categoriaNull,
-                    totalElements,
-                };
-            });
 
-            return zonesOrganized;
-        };
 
-        organizeZonesData(zones, zoneStatistics)
-            .then((y) => {
-                console.log('zones organized', y);
-                setZonesOrganized(y);
-            })
-            .catch((error) => {
-                console.error('Error organizing zones:', error);
-            });
-
-        console.log('zones organized', zonesOrganized);
-    }, [zoneStatistics]);
-
-    const handleZoneClick = (zone, layer) => {
-        console.log('Zone clicked:', zone);
-        console.log('Searching for code_id:', zone.code_id);
-        console.log('zonesOrganized:', zonesOrganized);
-
-        const matchedZone = zonesOrganized.find((z) => z.code_id === zone.code_id);
-
-        if (!matchedZone) {
-            console.error('Zone not found. Searched for:', zone.code_id);
-            return;
-        }
-
-        const totalElements = matchedZone.totalElements || 0;
-        const noticiasFalse = matchedZone.noticiaState0 || 0;
-        const noticiasTrue = matchedZone.noticiaState1 || 0;
-        const percentageNoticias = (noticiasTrue / totalElements) * 100;
-        const encargosTrue = matchedZone.encargoState1 || 0;
-        const encargosFalse = matchedZone.encargoState0 || 0;
-        const percentageEncargos = (encargosTrue / totalElements) * 100;
-        const categoriaInquilino = matchedZone.categoriaInquilino || 0;
-        const percentageInquilino = (categoriaInquilino / totalElements) * 100;
-        const categoriaVacio = matchedZone.categoriaVacio || 0;
-        const percentageVacio = (categoriaVacio / totalElements) * 100;
-        const categoriaPropietario = matchedZone.categoriaPropietario || 0;
-        const percentagePropietario = (categoriaPropietario / totalElements) * 100;
-        const categoriaNull = matchedZone.categoriaNull || 0;
-        const percentageNull = (categoriaNull / totalElements) * 100;
-
-        if (layer) {
-            layer
-                .bindPopup(
-                    `
-            <div class="flex flex-col items-center pt-2">
-            <h3 class="line-height: 20px; text-center font-sans font-bold gap-4" style="margin: 6px;">Nombre: <br> ${matchedZone.zone_name}</h3>
-              <p class="text-center" style="line-height: 20px; margin: 6px;">Responsable: <br> ${matchedZone.zone_responsable}</p>
-              <p class="text-center" style="line-height: 20px; margin: 6px;">Total Inmuebles: ${totalElements}</p>
-              <p class="text-center" style="line-height: 20px; margin: 6px;">Noticias: ${noticiasTrue} <br> ${percentageNoticias.toFixed(2)}%</p>
-              <p class="text-center" style="line-height: 20px; margin: 6px;">Encargos: ${encargosTrue} <br> ${percentageEncargos.toFixed(2)}%</p>
-              <p class="text-center" style="line-height: 20px; margin: 6px;">Propietario: ${categoriaPropietario} <br> ${percentagePropietario.toFixed(2)}%</p>
-              <p class="text-center" style="line-height: 20px; margin: 6px;">Inquilino: ${categoriaInquilino} <br> ${percentageInquilino.toFixed(2)}%</p>
-              <p class="text-center" style="line-height: 20px; margin: 6px;">Vacio: ${categoriaVacio} <br> ${percentageVacio.toFixed(2)}%</p>
-              <p class="text-center" style="line-height: 20px; margin: 6px;">Sin Categoria: ${categoriaNull} <br> ${percentageNull.toFixed(2)}%</p>
-            </div>`,
-                )
-                .openPopup();
+            if (layer) {
+                layer
+                    .bindPopup(
+                        `
+                    <div class="flex flex-col items-center pt-2">
+                        <h3 class="line-height: 20px; text-center font-sans font-bold gap-4" style="margin: 6px;">Nombre: <br> ${zoneName}</h3>
+                        <p class="text-center" style="line-height: 20px; margin: 6px;">Responsable: <br> ${zoneResponsable}</p>
+                        <p class="text-center" style="line-height: 20px; margin: 6px;">Total Inmuebles: ${totalElements}</p>
+                        <p class="text-center" style="line-height: 20px; margin: 6px;">Noticias: ${noticiasTrue} <br> ${percentageNoticias}%</p>
+                        <p class="text-center" style="line-height: 20px; margin: 6px;">Encargos: ${encargosTrue} <br> ${percentageEncargos}%</p>
+                        <p class="text-center" style="line-height: 20px; margin: 6px;">Propietario: ${categoriaPropietario} <br> ${percentagePropietario}%</p>
+                        <p class="text-center" style="line-height: 20px; margin: 6px;">Inquilino: ${categoriaInquilino} <br> ${percentageInquilino}%</p>
+                        <p class="text-center" style="line-height: 20px; margin: 6px;">Vacio: ${categoriaVacio} <br> ${percentageVacio}%</p>
+                        <p class="text-center" style="line-height: 20px; margin: 6px;">Sin Categoria: ${categoriaNull} <br> ${percentageNull}%</p>
+                    </div>`,
+                    )
+                    .openPopup();
+            }
+        } catch (error) {
+            console.error('Error handling zone click:', error);
         }
     };
 
+
     return (
         <div className="w-full flex flex-col items-center justify-start h-dvh bg-red-100">
+            {smallLoadingScreen && <SmallLoadingScreen />}
             <MapContainer center={center} zoom={ZOOM_LEVEL} ref={mapRef} className="w-full h-dvh z-0">
                 <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
                 <SearchField />
