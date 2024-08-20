@@ -8,7 +8,7 @@ import { useRouter } from 'next/navigation'
 import { useEffect } from "react";
 import 'toastify-js/src/toastify.css'; // Import Toastify CSS
 import Toastify from 'toastify-js';
-import { checkLogin } from "../lib/supabase/login/checkLogin.js";
+import { checkLogin } from "../lib/mongodb/login/checkLogin.js";
 import HeroSection from "../components/Home/HeroSection.js";
 import { parse } from 'cookie';
 import { fetchUserName } from "../lib/supabase/users/fetchusers.js";
@@ -37,7 +37,7 @@ export async function getServerSideProps(context) {
 
     try {
         user = await checkLogin(req); // Pass the request object to checkActiveUser
-        console.log('here'); // Debugging line
+        console.log('here', user); // Debugging line
         if (!user || user.length === 0) {
             return {
                 redirect: {
