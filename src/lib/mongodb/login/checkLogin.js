@@ -1,4 +1,4 @@
-import clientPromise from '../../lib/mongodb';
+import clientPromise from '../../mongodb';
 import Cookies from 'js-cookie';
 import cookie from 'cookie'; // Import cookie module
 
