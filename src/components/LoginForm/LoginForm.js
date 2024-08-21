@@ -13,10 +13,11 @@ const LoginForm = () => {
 
   const login = async () => {
     try {
-      const response = await axios.post('https://lucmarcloud.netlify.app/api/login', {
+      const response = await axios.post('/api/login', {
         email,
         password
-      });
+      },
+        { timeout: 50000 });
       console.log('response', response.data);
 
 
