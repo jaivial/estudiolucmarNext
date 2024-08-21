@@ -31,10 +31,12 @@ const LoginForm = () => {
         // Get the sessionID from the response
         const sessionID = response.data.sessionID;
         const user_id = response.data.user_id;
+        const admin = response.data.admin;
 
         // Set the cookie with an expiration time of 3 hours
         Cookies.set('sessionID', sessionID, { expires: 3 / 24, path: '/' }); // 3/24 = 3 hours
         Cookies.set('user_id', user_id, { expires: 3 / 24, path: '/' }); // 3/24 = 3 hours
+        Cookies.set('admin', admin, { expires: 3 / 24, path: '/' }); // 3/24 = 3 hours
         router.push('/home');
 
       }

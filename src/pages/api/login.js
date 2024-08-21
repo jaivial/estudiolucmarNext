@@ -40,7 +40,7 @@ export default async function handler(req, res) {
 
         if (result.acknowledged === true) {
             console.log('hola');
-            res.status(200).json({ success: true, message: 'User session set', sessionID: sessionIDHex, user_id: user.user_id });
+            res.status(200).json({ success: true, message: 'User session set', sessionID: sessionIDHex, user_id: user.user_id, admin: user.admin });
         } else {
             res.status(500).json({ success: false, message: 'Internal server error' });
         }
