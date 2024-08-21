@@ -114,6 +114,7 @@ El equipo de InmoProCRM
         `,
     };
 
+
     // Enviar el correo electrónico
     try {
         await transporter.sendMail(mailOptions);
