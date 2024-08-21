@@ -21,9 +21,12 @@ try {
         clientPromise = global._mongoClientPromise;
     } else {
         // In production mode, it's best to not use a global variable
-        client = new MongoClient(uri, options);
-        clientPromise = client.connect();
-        console.log('MongoDB connection established (production)');
+        if (!global._mongoClientPromise) {
+            client = new MongoClient(uri, options);
+            global._mongoClientPromise = client.connect();
+            console.log('MongoDB connection established (development)');
+        }
+        clientPromise = global._mongoClientPromise;
     }
 } catch (error) {
     console.error('MongoDB connection error:', error);
