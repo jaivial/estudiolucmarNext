@@ -8,11 +8,11 @@ import { useRouter } from 'next/navigation'
 import { useEffect } from "react";
 import 'toastify-js/src/toastify.css'; // Import Toastify CSS
 import Toastify from 'toastify-js';
-import { checkLogin } from "../lib/supabase/login/checkLogin.js";
+import { checkLogin } from "../lib/mongodb/login/checkLogin.js";
 import HeroSection from "../components/Home/HeroSection.js";
 import { parse } from 'cookie';
-import { fetchUserName } from "../lib/supabase/users/fetchusers.js";
-import { getTasksByDaySSR, getTasksSSR } from "../lib/supabase/calendar/calendarFunctions.js";
+import { fetchUserName } from "../lib/mongodb/home/fetchuserHome.js";
+import { getTasksByDaySSR, getTasksSSR } from "../lib/mongodb/calendar/calendarFunctions.js";
 
 
 
@@ -37,7 +37,7 @@ export async function getServerSideProps(context) {
 
     try {
         user = await checkLogin(req); // Pass the request object to checkActiveUser
-        console.log('here'); // Debugging line
+        console.log('here', user); // Debugging line
         if (!user || user.length === 0) {
             return {
                 redirect: {
@@ -57,6 +57,7 @@ export async function getServerSideProps(context) {
     try {
         if (user_id) {
             initialUserName = await fetchUserName(user_id);
+            console.log('initialUserName', initialUserName);
         } else {
             console.log('User ID not found in cookies'); // Debugging line
         }

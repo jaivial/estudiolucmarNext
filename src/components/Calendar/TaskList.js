@@ -2,58 +2,61 @@ import React, { useState } from 'react';
 import { FaTrash } from 'react-icons/fa';
 import Toastify from 'toastify-js';
 import Cookies from 'js-cookie';
-import { addTask as addTaskToDB, markTaskAsCompleted, deleteTask } from '../../lib/supabase/calendar/calendarFunctions';
+import axios from 'axios';
 import { format, parseISO } from 'date-fns';
 import { es } from 'date-fns/locale';
-
-
 
 const showToast = (message, backgroundColor) => {
     Toastify({
         text: message,
         duration: 2500,
-        gravity: 'top', // `top` or `bottom`
-        position: 'center', // `left`, `center` or `right`
-        stopOnFocus: true, // Prevents dismissing of toast on hover
+        gravity: 'top',
+        position: 'center',
+        stopOnFocus: true,
         style: {
             borderRadius: '10px',
             backgroundImage: backgroundColor,
             textAlign: 'center',
         },
-        onClick: function () { }, // Callback after click
     }).showToast();
 };
 
-// Helper function to format time
 const formatTime = (time) => {
     if (!time) return '';
     const [hours, minutes] = time.split(':');
     return `${hours}:${minutes}`;
 };
 
-const TaskList = ({ day, tasks, refreshTasks, filteredTasksByDate }) => {
+const TaskList = ({ day, tasks, refreshTasks, filteredTasksByDate, setDisplayedMonth }) => {
     const [isAdding, setIsAdding] = useState(false);
     const [taskInput, setTaskInput] = useState('');
-    const [taskTimeInput, setTaskTimeInput] = useState(''); // New state for task time input
+    const [taskTimeInput, setTaskTimeInput] = useState('');
     const userId = Cookies.get('user_id');
 
-    // Handle task completion by toggling the completed state
     const handleTaskCompletion = async (taskId) => {
+        console.log('taskId', taskId);
+        console.log('userId', userId);
         try {
-            const result = await markTaskAsCompleted(taskId, userId);
+            const functionToActivate = 'markTaskAsCompleted';
+            await axios.post(`/api/calendar_functions`, { taskId, userId, functionToActivate });
             showToast('Tarea completada', 'linear-gradient(to right bottom, #00603c, #006f39, #007d31, #008b24, #069903)');
-            refreshTasks(day);
+            // Convert day (YYYY-MM-DD) to YYYY-MM
+            const month = format(parseISO(day), 'yyyy-MM');
+            refreshTasks(month);
+            setDisplayedMonth(month);
         } catch (error) {
             console.error('Error marking task as completed:', error);
         }
     };
 
-    // Handle task deletion
     const handleDeleteTask = async (taskId) => {
         try {
-            const result = await deleteTask(taskId, userId);
+            const functionToActivate = 'deleteTask';
+            await axios.post(`/api/calendar_functions`, { taskId, userId, functionToActivate });
             showToast('Tarea eliminada', 'linear-gradient(to right bottom, #c62828, #b92125, #ac1a22, #a0131f, #930b1c)');
-            refreshTasks(day);
+            const month = format(parseISO(day), 'yyyy-MM');
+            refreshTasks(month);
+            setDisplayedMonth(month);
         } catch (error) {
             console.error('Error deleting task:', error);
         }
@@ -74,13 +77,17 @@ const TaskList = ({ day, tasks, refreshTasks, filteredTasksByDate }) => {
     const handleTaskSubmit = async (event) => {
         event.preventDefault();
         try {
-            const addTask = await addTaskToDB(day, taskInput, userId, taskTimeInput);
-            console.log('addTask', addTask);
-
-
+            const functionToActivate = 'addTask';
+            await axios.post(`/api/calendar_functions`, {
+                userId,
+                task: taskInput,
+                taskDate: day,
+                taskTime: taskTimeInput,
+                functionToActivate,
+            });
             showToast('Tarea añadida', 'linear-gradient(to right bottom, #00603c, #006f39, #007d31, #008b24, #069903)');
             setTaskInput('');
-            setTaskTimeInput(''); // Clear task time input
+            setTaskTimeInput('');
             setIsAdding(false);
             refreshTasks(day);
         } catch (error) {
@@ -97,16 +104,12 @@ const TaskList = ({ day, tasks, refreshTasks, filteredTasksByDate }) => {
         return `${dayOfWeek.charAt(0).toUpperCase() + dayOfWeek.slice(1)} - ${day} - ${month} - ${year}`;
     };
 
-
     const SpanishDateString = formatDateString(day);
 
-
-    // Sort tasks by time, with tasks without time last
     const sortedTasks = [...filteredTasksByDate].sort((a, b) => {
         if (!a.task_time && !b.task_time) return 0;
         if (!a.task_time) return 1;
         if (!b.task_time) return -1;
-
         return a.task_time.localeCompare(b.task_time);
     });
 
@@ -155,11 +158,6 @@ const TaskList = ({ day, tasks, refreshTasks, filteredTasksByDate }) => {
             )}
         </div>
     );
-};
-
-const startOfDayUTC = (date) => {
-    const utcDate = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
-    return utcDate;
 };
 
 export default TaskList;

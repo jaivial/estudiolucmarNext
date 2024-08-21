@@ -1,12 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { parse } from 'cookie';
-import Cookies from 'js-cookie';
 import '../Home/HeroSection.css';
-import { fetchUserName } from '../../lib/supabase/users/fetchusers.js';
 import CalendarApp from '../Calendar/Calendar';
 
 const HeroSection = ({ initialUserName, tasksSSR, allTasksSSR, datesWithCompletedTasks, datesWithIncompleteTasks }) => {
-    const [userName, setUserName] = useState(initialUserName);
     const [time, setTime] = useState('');
 
     useEffect(() => {
@@ -38,7 +34,7 @@ const HeroSection = ({ initialUserName, tasksSSR, allTasksSSR, datesWithComplete
 
     return (
         <div className="h-full w-full flex flex-col justify-start items-center pt-40 overflow-y-auto overflow-x-hidden bg-gradient-to-t from-slate-400 via-slate-300 to-slate-200 relative z-[100]">
-            <div id="clock" className="text-lg font-sans font-medium text-zinc-800 absolute top-10 z-10">{time}</div>
+            <div id="clock" className="text-lg font-sans font-medium text-zinc-800 absolute top-10 z-10 w-full text-center">{time}</div>
 
             <div id="nombre-header" className="flex flex-col items-center justify-center w-full h-[60px] pb-10">
                 <p className="font-sans text-xl font-medium text-zinc-800 fade-in">Hola,</p>

@@ -3,20 +3,31 @@ import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 
 const StraightAnglePieChart = ({ analyticsData }) => {
     // Extract "Localizados" and "Total" data from analyticsData
-    const localizadosValue = analyticsData.find(data => data.name === 'Localizados')?.value || 0;
-    const totalValue = analyticsData.find(data => data.name === 'Total')?.value || 0;
+    const localizadoData = analyticsData.localizado || {};
+    const totalValue = analyticsData.totalInmuebles || 0;
+
+    // Find the count for true values in localizado
+    const localizadosValue = localizadoData.true || 0;
 
     // Calculate "No Localizados" value
     const noLocalizadosValue = totalValue - localizadosValue;
 
+    // Adjust localizadosValue if it is less than 40
+    const adjustedLocalizadosValue = localizadosValue < 1 ? localizadosValue + (5 - localizadosValue) / 2 : localizadosValue;
+
     // Apply log10 to values for better visual balance if necessary
-    const logLocalizados = localizadosValue > 0 ? Math.log10(localizadosValue) : 0;
-    const logNoLocalizados = noLocalizadosValue > 0 ? Math.log10(noLocalizadosValue) : 0;
+    const logLocalizados = adjustedLocalizadosValue > 0 ? Math.sqrt(adjustedLocalizadosValue) : 0;
+    const logNoLocalizados = noLocalizadosValue > 0 ? Math.sqrt(noLocalizadosValue) : 0;
+
+    // Function to capitalize the first letter of each word
+    const capitalizeWords = (str) => {
+        return str.replace(/\w\S*/g, (txt) => txt.charAt(0).toUpperCase() + txt.slice(1).toLowerCase());
+    };
 
     // Prepare data for the pie chart, including both log10 values and the original values for tooltip
     const pieChartData = [
-        { name: 'Localizados', value: logLocalizados, originalValue: localizadosValue },
-        { name: 'No Localizados', value: logNoLocalizados, originalValue: noLocalizadosValue },
+        { name: capitalizeWords('localizados'), value: logLocalizados, originalValue: localizadosValue },
+        { name: capitalizeWords('no localizados'), value: logNoLocalizados, originalValue: noLocalizadosValue },
     ];
 
     // Custom Tooltip Component showing the original total value
@@ -42,8 +53,8 @@ const StraightAnglePieChart = ({ analyticsData }) => {
                         <div
                             className="w-4 h-4 rounded-lg mr-2"
                             style={{
-                                backgroundColor: entry.name === 'Localizados' ? '#224AAE' : '#C0C0C0',
-                                backgroundImage: entry.name === 'Localizados'
+                                backgroundColor: entry.name === capitalizeWords('localizados') ? '#224AAE' : '#C0C0C0',
+                                backgroundImage: entry.name === capitalizeWords('localizados')
                                     ? 'linear-gradient(180deg, #0B0785, #388DD6)'
                                     : 'none'
                             }}
@@ -85,7 +96,7 @@ const StraightAnglePieChart = ({ analyticsData }) => {
                             {pieChartData.map((entry, index) => (
                                 <Cell
                                     key={`cell-${index}`}
-                                    fill={entry.name === 'Localizados' ? 'url(#colorGradient)' : '#C0C0C0'}
+                                    fill={entry.name === capitalizeWords('localizados') ? 'url(#colorGradient)' : '#C0C0C0'}
                                 />
                             ))}
                         </Pie>

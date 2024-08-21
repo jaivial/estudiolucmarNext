@@ -1,94 +1,30 @@
-import { metadata } from "../components/layouts/IndexLayout.js";
 import Layout from "../components/layouts/IndexLayout.js";
 import Image from "next/image";
 import logoLucmar from "../../public/assets/icons/icon-256.webp";
 import "../app/globals.css";
 import LoginForm from "../components/LoginForm/LoginForm.js";
-import { checkLogin } from "../lib/supabase/login/checkLogin.js";
-import { redirect, useRouter } from 'next/navigation'
 import { useEffect, useState } from "react";
 import 'toastify-js/src/toastify.css'; // Import Toastify CSS
 import Toastify from 'toastify-js';
 import Cookies from 'js-cookie';
 import LoadingScreen from "../components/LoadingScreen/LoadingScreen.js";
+import { useRouter } from 'next/router';
+import { checkLogin } from "../lib/mongodb/login/checkLogin.js";
 
-
-const showToast = (message, backgroundColor) => {
-  Toastify({
-    text: message,
-    duration: 2500,
-    gravity: 'top',
-    position: 'center',
-    stopOnFocus: true,
-    style: {
-      borderRadius: '10px',
-      backgroundImage: backgroundColor,
-      textAlign: 'center',
-    },
-  }).showToast();
-};
-
-
-export async function getServerSideProps(context) {
-  const { req } = context;
-  let user = null;
-  let shouldRedirect = false;
-  try {
-    user = await checkLogin(req); // Pass the request object to checkActiveUser
-    console.log('user', user); // Debugging line
-    if (user && user.length > 0) {
-      shouldRedirect = true;
-    }
-  } catch (error) {
-    console.error('Error during server-side data fetching:', error.message);
-  }
-
-  return {
-    props: {
-      user,
-      shouldRedirect,
-    },
-  };
-}
-
-export default function Index({ user, shouldRedirect }) {
-  const router = useRouter();
+export default function Index() {
   const [loading, setLoading] = useState(true);
-
-
-
-  useEffect(() => {
-    const toastMessage = localStorage.getItem('toastMessage');
-    if (toastMessage) {
-      const { message, style } = JSON.parse(toastMessage);
-      // Display the toast message
-      showToast(message, style);
-      // Remove the message from localStorage
-      localStorage.removeItem('toastMessage');
-    }
-  }, []);
+  const router = useRouter();
 
   useEffect(() => {
     const timeout = setTimeout(() => {
       setLoading(false);
-    }, 800); // Set the timeout duration to 3 seconds (3000 milliseconds) or any other desired duration
+    }, 300);
 
-    // Cleanup the timeout if the component unmounts
     return () => clearTimeout(timeout);
   }, []);
 
-  useEffect(() => {
-    if (shouldRedirect) {
-      localStorage.setItem('toastMessage', JSON.stringify({
-        message: 'Sesión iniciada',
-        style: 'linear-gradient(to right bottom, #00603c, #006f39, #007d31, #008b24, #069903)'
-      }));
-      router.push('/home'); // Navigate to the home page
-    }
-  }, [router, shouldRedirect]);
-
   return (
-    <Layout title={metadata.title} description={metadata.description}>
+    <Layout title="Lucmar Cloud" description="Panel de administración">
       {loading && <LoadingScreen />}
       <div style={{ paddingTop: 'var(--safe-area-inset-top)' }}>
         <main>
@@ -116,4 +52,26 @@ export default function Index({ user, shouldRedirect }) {
       </div>
     </Layout>
   );
+}
+
+export async function getServerSideProps(context) {
+  const { req, res } = context;
+
+  // Assuming checkLogin returns a boolean indicating login status
+  const isLoggedIn = await checkLogin(req, res);
+
+  if (isLoggedIn) {
+    // Redirect to /home if the user is logged in
+    return {
+      redirect: {
+        destination: '/home',
+        permanent: false,
+      },
+    };
+  }
+
+  // If not logged in, do nothing and return the default props
+  return {
+    props: {}, // No props required for this page
+  };
 }

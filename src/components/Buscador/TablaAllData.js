@@ -1,19 +1,22 @@
-import React, { useEffect, useState } from 'react';
+import React, { use, useEffect, useState } from 'react';
 // import ItemDetails from './itemDetails/ItemDetails.jsx';
+import dynamic from 'next/dynamic';
+const AddNewInmueble = dynamic(() => import('./AddNewInmueble'), { ssr: false });
 import LoadingScreen from '../LoadingScreen/LoadingScreen.js';
-// import AddNewInmueble from './AddNewInmueble';
-import Select from 'react-select';
 import Toastify from 'toastify-js';
 import './stylesBuscador.css';
 import axios from 'axios';
-import { fetchAllData } from '../../lib/supabase/buscador/functionsBuscador.js';
 import FilterMenu from './FilterMenu.js';
 import { IoAnalytics } from "react-icons/io5";
 import Analytics from './Analytics.js';
+import SmallLoadingScreen from '../LoadingScreen/SmallLoadingScreen.js';
+import Select from 'react-select';
+import Skeleton from 'react-loading-skeleton';
+import 'react-loading-skeleton/dist/skeleton.css';
+import { Icon } from '@iconify/react';
 
 
-
-const Table = () => {
+const Table = ({ parentsEdificioProps }) => {
     const [loading, setLoading] = useState(true);
     const [data, setData] = useState([]);
     const [currentPage, setCurrentPage] = useState(1);
@@ -22,8 +25,8 @@ const Table = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [childsEscalera, setChildsEscalera] = useState([]);
     const [childsEdificio, setChildsEdificio] = useState([]);
-    const [parentsEscalera, setParentsEscalera] = useState([]);
-    const [parentsEdificio, setParentsEdificio] = useState([]);
+    const [parentsEscalera, setParentsEscalera] = useState(parentsEdificioProps.escaleras);
+    const [parentsEdificio, setParentsEdificio] = useState(parentsEdificioProps.edificios);
     const [expandedItems, setExpandedItems] = useState({});
     const [showExtraButtons, setShowExtraButtons] = useState(false);
     const [showUngroupButtons, setShowUngroupButtons] = useState(false);
@@ -32,7 +35,6 @@ const Table = () => {
     const [showPopup, setShowPopup] = useState(false);
     const [showPopupUngroup, setShowPopupUngroup] = useState(false);
     const [showFormType, setShowFormType] = useState(null); // New state to manage form type
-    const [selectedType, setSelectedType] = useState('Edificio'); // For radio button selection in the assign to existing form
     const [formData, setFormData] = useState({
         tipo: '',
         nombre: '',
@@ -58,100 +60,194 @@ const Table = () => {
         filterNoticia: null,
         filterEncargo: null,
         superficieMin: 0,
-        superficieMax: 2000000,
+        superficieMax: 800000,
         yearMin: 1800,
         yearMax: new Date().getFullYear(),
         localizado: null,
-        garaje: null,
-        aireacondicionado: null,
-        ascensor: null,
-        trastero: null,
-        jardin: null,
-        terraza: null,
-        tipo: null,
-        banos: null,
-        habitaciones: null,
+        garaje: undefined,
+        aireacondicionado: undefined,
+        ascensor: undefined,
+        trastero: undefined,
+        jardin: undefined,
+        terraza: undefined,
+        tipo: undefined,
+        banos: undefined,
+        habitaciones: undefined,
     });
     const [showFilters, setShowFilters] = useState(false);
     const [resetFiltersKey, setResetFiltersKey] = useState(0);
     const [totalItems, setTotalItems] = useState(0);
     const [showAnalytics, setShowAnalytics] = useState(false);
     const [analyticsData, setAnalyticsData] = useState([]);
+    const [selectedType, setSelectedType] = useState();
+    const [options, setOptions] = useState([]);
+    const [smallLoadingScreen, setSmallLoadingScreen] = useState(false);
+    const [nestedElements, setNestedElements] = useState([]);
+    const [loadingTotalItems, setLoadingTotalItems] = useState(false);
+
+    const fetchData = async (currentPage, searchTerm) => {
+        // Function to determine the value for each filter
+        const determineFilterValue = (filterValue) => {
+            if (typeof filterValue === 'undefined' || filterValue === 'undefined') {
+                return 'undefined';
+            } else if (isNaN(filterValue) || filterValue === '' || filterValue === null) {
+                return 'undefined';
+            } else {
+                return filterValue;
+            }
+        };
+        // Apply the function to each filter
+        let aireacondicionadoValue = determineFilterValue(filters.aireacondicionado);
+        let ascensorValue = determineFilterValue(filters.ascensor);
+        let garajeValue = determineFilterValue(filters.garaje);
+        let jardinValue = determineFilterValue(filters.jardin);
+        let terrazaValue = determineFilterValue(filters.terraza);
+        let trasteroValue = determineFilterValue(filters.trastero);
 
 
-    // useEffect(() => {
-    //     fetchParentsAndChilds();
-    // }, []);
+        // Always set value to undefined or to inerger value
+        const determineFilterValueInterger = (filterValue) => {
+            if (typeof filterValue === 'undefined' || filterValue === 'undefined') {
+                return 'undefined';
+            } else if (isNaN(filterValue) || filterValue === '' || filterValue === null) {
+                return 'undefined';
+            } else {
+                return parseInt(filterValue, 10);
+            }
+        };
+        let tipoValue = determineFilterValueInterger(filters.tipo);
+        let banosValue = determineFilterValueInterger(filters.banos);
+        let habitacionesValue = determineFilterValueInterger(filters.habitaciones);
+        console.log('habitacionesValue', habitacionesValue);
+        console.log('typeof habitacionesValue', typeof habitacionesValue);
 
-    const fetchData = async () => {
+        console.log('filters', filters);
+
         try {
-            const {
-                selectedZone,
-                selectedResponsable,
-                selectedCategoria,
-                filterNoticia,
-                filterEncargo,
-                superficieMin,
-                superficieMax,
-                yearMin,
-                yearMax,
-                localizado,
-                habitaciones,
-                banos,
-                tipo,
-                aireacondicionado,
-                ascensor,
-                garaje,
-                jardin,
-                terraza,
-                trastero
-            } = filters;
+            setLoadingTotalItems(true);
+            setLoading(true);
+            const params = new URLSearchParams({
+                pattern: searchTerm,
+                itemsPerPage: 4
+                ,
+                currentPage: currentPage,
+                selectedZone: filters.selectedZone,
+                selectedCategoria: filters.selectedCategoria,
+                selectedResponsable: filters.selectedResponsable,
+                filterNoticia: filters.filterNoticia,
+                filterEncargo: filters.filterEncargo,
+                superficieMin: filters.superficieMin,
+                superficieMax: filters.superficieMax,
+                yearMin: filters.yearMin,
+                yearMax: filters.yearMax,
+                localizado: filters.localizado,
+                garaje: garajeValue,
+                aireacondicionado: aireacondicionadoValue,
+                ascensor: ascensorValue,
+                trastero: trasteroValue,
+                jardin: jardinValue,
+                terraza: terrazaValue,
+                tipo: tipoValue,
+                banos: banosValue,
+                habitaciones: habitacionesValue,
+            });
+            axios.get('api/searchInmuebles', { params }).then((response) => {
+                const data = response.data;
+                console.log('searchInmuebles Response:', data); // Log the entire API response
+                setData(data.results);
+                setTotalPages(data.totalPages);
+                setCurrentPage(data.currentPage);
+                console.log('analyticsData', data.analyitics[0]);
+                setAnalyticsData(data.analyitics[0]);
+                setTotalItems(data.analyitics[0].totalInmuebles);
+                console.log('totalItems', data.analyitics[0].totalInmuebles);
 
+            }).catch((error) => {
+                console.error('Error fetching data:', error.message || error);
+                setLoading(false);
+            });
 
-            const response = await fetchAllData(
-                currentPage,
-                searchTerm,
-                6,
-                selectedZone,
-                selectedResponsable,
-                selectedCategoria,
-                filterNoticia,
-                filterEncargo,
-                superficieMin,
-                superficieMax,
-                yearMin,
-                yearMax,
-                localizado,
-                habitaciones,
-                banos,
-                tipo,
-                aireacondicionado,
-                ascensor,
-                garaje,
-                jardin,
-                terraza,
-                trastero
-            );
+            if (!data) {
+                throw new Error("Invalid data format received from the API");
+            }
 
-            setData(response.mergedData || []);
-            setTotalPages(response.totalPages || 1);
-            setTotalItems(response.total || 0);
-            setAnalyticsData(response.analyticsData || []);
             setLoading(false);
+            setLoadingTotalItems(false);
+
+
         } catch (error) {
-            console.error('Error fetching data:', error);
+            console.error('Error fetching data:', error.message || error);
             setLoading(false);
         }
     };
 
+
+    const fetchParentsEdificio = async () => {
+        try {
+            const { data } = await axios.get('/api/fetch_parents'); // Use axios to fetch parents
+
+            setParentsEdificio(data.edificios || []); // Set the state with fetched data
+            setParentsEscalera(data.escaleras || []); // Set the state with fetched data
+        } catch (error) {
+            console.error('Error fetching parents:', error);
+        }
+    };
+
+    // UseEffect to update options whenever selectedType changes
+    useEffect(() => {
+        if (selectedType === 'Edificio') {
+            setOptions(
+                parentsEdificio?.map((parent) => ({
+                    value: parent.id,
+                    label: parent.direccion,
+                })) || []
+            );
+        } else if (selectedType === 'Escalera') {
+            setOptions(
+                parentsEscalera?.map((parent) => ({
+                    value: parent.id,
+                    label: parent.direccion,
+                })) || []
+            );
+        } else if (selectedType === 'undefined' || selectedType === null || selectedType === '') {
+            setOptions([]);
+        }
+    }, [selectedType, parentsEdificio, parentsEscalera]);
+    // Handle the change event for react-select
+    const handleChangeExistingGroup = (selectedOption) => {
+        handleFormChange({
+            target: {
+                name: 'existingGroup',
+                value: selectedOption ? selectedOption.value : '',
+            },
+        });
+    };
+
+    // OPTIONS AND HANDECHANGE FOR NUEVO GRUPO ESCALERA
+    const optionsNuevoGrupoEscalera = parentsEdificio?.map((parent) => ({
+        value: parent.id,
+        label: parent.direccion,
+    }));
+    // Handle the change event for react-select
+    const handleChange = (selectedOption) => {
+        // Update the formData with the selected value
+        handleFormChange({
+            target: {
+                name: 'grupo',
+                value: selectedOption ? selectedOption.value : '',
+            },
+        });
+    };
+
+
     useEffect(() => {
         const fetchAndSetData = async () => {
-            await fetchData();
+            await fetchData(currentPage, searchTerm);
             if (currentPage > totalPages) {
                 setCurrentPage(totalPages > 0 ? totalPages : 1); // Ensure currentPage is set to a valid page number
             }
         };
-
+        console.log('analyticsData', analyticsData);
         fetchAndSetData();
     }, [
         currentPage,
@@ -200,6 +296,8 @@ const Table = () => {
         setSearchTerm('');
         setCurrentPage(1);
         fetchData(1, '');
+        handleResetFilters();
+        setShowFilters(false);
     };
 
     const handleToggle = (itemId) => {
@@ -318,8 +416,8 @@ const Table = () => {
         setShowPopupUngroup(!showPopupUngroup);
     };
 
-    const handlePopupToggleDeleteInmueble = () => {
-        // Example: Send DELETE request to backend
+    const handlePopupToggleDeleteInmueble = async () => {
+
         if (selectedItems.size === 0) {
             Toastify({
                 text: 'Selecciona un inmueble',
@@ -339,29 +437,26 @@ const Table = () => {
             }).showToast();
             return;
         }
-
-        axios
-            .get('http://localhost:8000/backend/inmuebles/checkChildrenDelete.php', {
-                params: {
-                    inmuebles: Array.from(selectedItems),
-                },
-            })
-            .then((response) => {
-                console.log(response.data);
-                if (response.data.status === 'success') {
-                    setKeepChildren(response.data.data);
-                    setParentData(response.data.parentdata);
-                    setThereAreChildrenDelete(true);
-                } else {
-                    setThereAreChildrenDelete(false);
-                }
-            })
-            .catch((error) => {
-                console.error('Error deleting orphan:', error);
-                alert('Error deleting orphan: ' + error.message);
+        try {
+            console.log('selectedItems', selectedItems);
+            const response = await axios.post('/api/check_children_nested', {
+                inmuebles: Array.from(selectedItems) // Transform Set to Array
             });
 
-        setShowPopupDeleteInmueble(!showPopupDeleteInmueble);
+            console.log('response', response.data);
+
+            if (response.data.empty) {
+                setShowPopupDeleteInmueble(!showPopupDeleteInmueble);
+            } else {
+                setShowPopupDeleteInmueble(!showPopupDeleteInmueble);
+                setThereAreChildrenDelete(true);
+                setNestedElements(response.data.nestedElements);
+                console.log('nested Elements HERE', response.data.nestedElements);
+            }
+        } catch (error) {
+            console.error('Error checking nested elements:', error);
+            // Handle the error appropriately
+        }
     };
 
     const handleFormChange = (e) => {
@@ -375,8 +470,6 @@ const Table = () => {
 
     const handleSubmitForm = async (e) => {
         e.preventDefault();
-        let url = '';
-        let payload = {};
 
         if (showFormType === 'new') {
             if (formData.tipo === '') {
@@ -419,12 +512,52 @@ const Table = () => {
                     }).showToast();
                     return;
                 } else {
-                    url = 'http://localhost:8000/backend/inmuebles/agruparNuevoEdificio.php';
-                    payload = {
-                        type: formData.tipo,
-                        name: formData.nombre,
-                        inmuebles: Array.from(selectedItems),
-                    };
+                    // Call API using Axios
+                    try {
+                        setSmallLoadingScreen(true);
+                        const response = await axios.post('/api/create_new_edificio_agrupacion', {
+                            name: formData.nombre,
+                            selectedInmuebles: Array.from(selectedItems),
+                        });
+
+                        console.log('response data', response.data); // Debugging line
+
+                        Toastify({
+                            text: 'Edificio creado.',
+                            duration: 2500,
+                            gravity: 'top',
+                            position: 'center',
+                            style: {
+                                borderRadius: '10px',
+                                backgroundImage: 'linear-gradient(to right bottom, #00603c, #006f39, #007d31, #008b24, #069903)',
+                                textAlign: 'center',
+                            },
+                        }).showToast();
+
+                        setShowPopup(false);
+                        setSelectedItems(new Set());
+                        setFormData({ tipo: '', nombre: '', existingGroup: '', grupo: '' });
+                        handleIconClick();
+                        fetchData(currentPage, searchTerm);
+                        setShowExtraButtons(false);
+                        setShowUngroupButtons(false);
+                        fetchParentsEdificio();
+                        setSmallLoadingScreen(false);
+                    } catch (error) {
+                        console.error('Error performing operation:', error);
+                        Toastify({
+                            text: 'Error performing operation.',
+                            duration: 2500,
+                            gravity: 'top',
+                            position: 'center',
+                            style: {
+                                borderRadius: '10px',
+                                backgroundImage: 'linear-gradient(to right top, #c62828, #b92125, #ac1a22, #a0131f, #930b1c)',
+                                textAlign: 'center',
+                            },
+                        }).showToast();
+                        setSmallLoadingScreen(false);
+                    }
                 }
             } else if (formData.tipo === 'Escalera') {
                 if (formData.nombre === '' || formData.grupo === '') {
@@ -445,14 +578,57 @@ const Table = () => {
                         onClick: function () { }, // Callback after click
                     }).showToast();
                     return;
+                } else {
+                    // Call Supabase function
+                    setSmallLoadingScreen(true);
+                    console.log('selectedItems', selectedItems);
+                    const { data, error } = await axios.post('/api/create_new_escalera_agrupacion', {
+                        name: formData.nombre,
+                        selectedInmuebles: Array.from(selectedItems),
+                        grupo: parseInt(formData.grupo, 10), // Convert grupo to an integer
+                    });
+                    console.log('data', data); // Debugging line
+
+                    if (error) {
+                        console.error('Error performing operation:', error);
+                        Toastify({
+                            text: 'Error performing operation.',
+                            duration: 2500,
+                            gravity: 'top',
+                            position: 'center',
+                            style: {
+                                borderRadius: '10px',
+                                backgroundImage: 'linear-gradient(to right top, #c62828, #b92125, #ac1a22, #a0131f, #930b1c)',
+                                textAlign: 'center',
+                            },
+                        }).showToast();
+                        setSmallLoadingScreen(false);
+                        return;
+                    }
+
+                    Toastify({
+                        text: 'Escalera creada.',
+                        duration: 2500,
+                        gravity: 'top',
+                        position: 'center',
+                        style: {
+                            borderRadius: '10px',
+                            backgroundImage: 'linear-gradient(to right bottom, #00603c, #006f39, #007d31, #008b24, #069903)',
+                            textAlign: 'center',
+                        },
+                    }).showToast();
+
+                    setSmallLoadingScreen(false);
+
+                    setShowPopup(false);
+                    setSelectedItems(new Set());
+                    setFormData({ tipo: '', nombre: '', existingGroup: '', grupo: '' });
+                    handleIconClick();
+                    fetchData(currentPage, searchTerm);
+                    setShowExtraButtons(false);
+                    setShowUngroupButtons(false);
+                    fetchParentsEdificio();
                 }
-                url = 'http://localhost:8000/backend/inmuebles/agruparNuevaEscalera.php';
-                payload = {
-                    type: formData.tipo,
-                    name: formData.nombre,
-                    inmuebles: Array.from(selectedItems),
-                    grupo: formData.grupo,
-                };
             }
         } else if (showFormType === 'existing') {
             if (formData.tipo === '') {
@@ -495,12 +671,42 @@ const Table = () => {
                     }).showToast();
                     return;
                 }
-                url = 'http://localhost:8000/backend/inmuebles/agruparExistenteEdificio.php';
-                payload = {
+                setSmallLoadingScreen(true);
+                // Use axios to make the API call
+                const { data, error } = await axios.post('/api/existing_edificio_agrupacion', {
                     type: formData.tipo,
                     inmuebles: Array.from(selectedItems),
-                    existingGroup: formData.existingGroup,
-                };
+                    existingGroup: parseInt(formData.existingGroup, 10),
+                });
+                console.log('data', data);
+                if (error) {
+                    console.error('Error performing operation:', error);
+                    Toastify({
+                        text: 'Error performing operation.',
+                        duration: 2500,
+                        gravity: 'top',
+                        position: 'center',
+                        style: {
+                            borderRadius: '10px',
+                            backgroundImage: 'linear-gradient(to right top, #c62828, #b92125, #ac1a22, #a0131f, #930b1c)',
+                            textAlign: 'center',
+                        },
+                    }).showToast();
+                    setSmallLoadingScreen(false);
+                    return;
+                }
+
+                setSmallLoadingScreen(false);
+                setShowPopup(false);
+                setSelectedItems(new Set());
+                setFormData({ tipo: '', nombre: '', existingGroup: '', grupo: '' });
+                handleIconClick();
+                fetchData(currentPage, searchTerm);
+                setShowExtraButtons(false);
+                setShowUngroupButtons(false);
+                fetchParentsEdificio();
+
+
             } else if (formData.tipo === 'Escalera') {
                 if (formData.existingGroup === '') {
                     Toastify({
@@ -521,57 +727,68 @@ const Table = () => {
                     }).showToast();
                     return;
                 }
-                url = 'http://localhost:8000/backend/inmuebles/agruparExistenteEscalera.php';
-                payload = {
+                setSmallLoadingScreen(true);
+                // Use axios to make the API call
+                const { data, error } = await axios.post('/api/existing_escalera_agrupacion', {
                     type: formData.tipo,
                     inmuebles: Array.from(selectedItems),
-                    existingGroup: formData.existingGroup,
-                };
+                    existingGroup: parseInt(formData.existingGroup, 10),
+                });
+                if (error) {
+                    console.error('Error performing operation:', error);
+                    Toastify({
+                        text: 'Error performing operation.',
+                        duration: 2500,
+                        gravity: 'top',
+                        position: 'center',
+                        style: {
+                            borderRadius: '10px',
+                            backgroundImage: 'linear-gradient(to right top, #c62828, #b92125, #ac1a22, #a0131f, #930b1c)',
+                            textAlign: 'center',
+                        },
+                    }).showToast();
+                    setSmallLoadingScreen(false);
+                    return;
+                }
+
+                setSmallLoadingScreen(false);
+                setShowPopup(false);
+                setSelectedItems(new Set());
+                setFormData({ tipo: '', nombre: '', existingGroup: '', grupo: '' });
+                handleIconClick();
+                fetchData(currentPage, searchTerm);
+                setShowExtraButtons(false);
+                setShowUngroupButtons(false);
+                fetchParentsEdificio();
             }
         }
-
-        try {
-            await axios.post(url, payload);
-            Toastify({
-                text: 'Inmueble agrupado.',
-                duration: 2500,
-                destination: 'https://github.com/apvarun/toastify-js',
-                newWindow: true,
-                close: false,
-                gravity: 'top', // `top` or `bottom`
-                position: 'center', // `left`, `center` or `right`
-                stopOnFocus: true, // Prevents dismissing of toast on hover
-                style: {
-                    borderRadius: '10px',
-                    backgroundImage: 'linear-gradient(to right bottom, #00603c, #006f39, #007d31, #008b24, #069903)',
-                    textAlign: 'center',
-                },
-                onClick: function () { }, // Callback after click
-            }).showToast();
-            setShowPopup(false);
-            setSelectedItems(new Set());
-            setFormData({ tipo: '', nombre: '', existingGroup: '', grupo: '' });
-            handleIconClick();
-            fetchData(currentPage, searchTerm);
-            fetchParentsAndChilds();
-            setShowExtraButtons(false);
-            setShowUngroupButtons(false);
-        } catch (error) {
-            console.error('Error performing operation:', error);
-        }
+        Toastify({
+            text: 'Inmueble agrupado.',
+            duration: 2500,
+            destination: 'https://github.com/apvarun/toastify-js',
+            newWindow: true,
+            close: false,
+            gravity: 'top', // `top` or `bottom`
+            position: 'center', // `left`, `center` or `right`
+            stopOnFocus: true, // Prevents dismissing of toast on hover
+            style: {
+                borderRadius: '10px',
+                backgroundImage: 'linear-gradient(to right bottom, #00603c, #006f39, #007d31, #008b24, #069903)',
+                textAlign: 'center',
+            },
+            onClick: function () { }, // Callback after click
+        }).showToast();
     };
 
     const handleSubmitFormUngroup = async (e) => {
         e.preventDefault();
-        const url = 'http://localhost:8000/backend/inmuebles/desagrupar.php';
-        const payload = { inmuebles: Array.from(selectedItemsUngroup) };
-
         try {
-            const response = await axios.post(url, payload);
+            setSmallLoadingScreen(true);
+            const response = await axios.post('/api/ungroup', { inmuebles: Array.from(selectedItemsUngroup) });
             console.log(response.data);
-            if (response.data.status === 'failure') {
-                setShowAskForDeleteOrphan(true);
-                setOrphanInfo(response.data.data);
+            if (response.data.empty === true) {
+                setOrphanInfo(response.data.emptyParents);
+                setShowAskForDeleteOrphan(true)
             }
             Toastify({
                 text: 'Inmueble desagrupado',
@@ -589,13 +806,13 @@ const Table = () => {
                 },
                 onClick: function () { }, // Callback after click
             }).showToast();
-
+            setSmallLoadingScreen(false);
             setShowPopupUngroup(false);
             setSelectedItemsUngroup(new Set());
             fetchData(currentPage, searchTerm);
-            fetchParentsAndChilds();
             setShowExtraButtons(false);
             setShowUngroupButtons(false);
+            console.log('orphanInfo', orphanInfo);
         } catch (error) {
             console.error('Error performing operation:', error);
         }
@@ -606,18 +823,16 @@ const Table = () => {
             console.error('Orphan info is empty or undefined');
             return;
         }
+        setSmallLoadingScreen(true);
+        const orphanIds = orphanInfo.map(orphan => orphan.id);
 
         axios
-            .get('http://localhost:8000/backend/inmuebles/deleteOrphan.php', {
-                params: {
-                    id: orphanInfo[0].id,
-                },
-            })
+            .post('/api/delete_orphan', { orphanIds }) // Use POST request
             .then((response) => {
                 console.log(response.data);
                 if (response.data.status === 'success') {
                     Toastify({
-                        text: 'Grupo eliminado',
+                        text: 'Grupos eliminados',
                         duration: 2500,
                         destination: 'https://github.com/apvarun/toastify-js',
                         newWindow: true,
@@ -634,7 +849,6 @@ const Table = () => {
                     }).showToast();
                     setShowAskForDeleteOrphan(false);
                     fetchData(currentPage, searchTerm);
-                    fetchParentsAndChilds();
                 } else {
                     console.error('Error deleting orphan:', response.data.message);
                     alert('Error deleting orphan: ' + response.data.message);
@@ -644,7 +858,10 @@ const Table = () => {
             .catch((error) => {
                 console.error('Error deleting orphan:', error);
                 alert('Error deleting orphan: ' + error.message);
+                setSmallLoadingScreen(false);
             });
+        setSmallLoadingScreen(false);
+
     };
 
     const handleKeepOrphan = () => {
@@ -654,18 +871,16 @@ const Table = () => {
     };
 
     const handleKeepDeleteInmueble = () => {
-        // Implement logic to keep the orphan item
         setShowPopupDeleteInmueble(false);
         setSelectedId(null);
     };
 
     const handleDeleteInmueble = () => {
         console.log('handleDeleteInmueble', Array.from(selectedItems));
+        setSmallLoadingScreen(true);
         axios
-            .get('http://localhost:8000/backend/inmuebles/deleteInmueble.php', {
-                params: {
-                    inmuebles: Array.from(selectedItems),
-                },
+            .post('/api/delete_inmueble', { // Use POST request
+                inmuebles: Array.from(selectedItems),
             })
             .then((response) => {
                 console.log(response.data);
@@ -689,62 +904,65 @@ const Table = () => {
                     setShowDeleteInmuebleButtons(false);
                     setShowPopupDeleteInmueble(false);
                     fetchData(currentPage, searchTerm);
-                    fetchParentsAndChilds();
                     setShowExtraButtons(false);
                     setShowUngroupButtons(false);
                     setSelectedItems(new Set());
                     setKeepChildren(new Set());
                     setParentData([]);
                     setThereAreChildrenDelete(false);
+                    setSmallLoadingScreen(false);
                 } else {
-                    console.error('Error deleting orphan:', response.data.message);
-                    alert('Error deleting orphan: ' + response.data.message);
+                    console.error('Error deleting element:', response.data.message);
+                    alert('Error deleting element: ' + response.data.message);
+                    setShowPopupDeleteInmueble(false);
+                    setSmallLoadingScreen(false);
+                }
+            })
+            .catch((error) => {
+                console.error('Error deleting orphan:', error);
+                alert('Error deleting orphan here: ' + error.message);
+            });
+    };
+    const handleDeleteKeepChildren = () => {
+        axios
+            .post('/api/delete_keep_children', { // Use POST request
+                inmuebles: nestedElements,
+            })
+            .then((response) => {
+                console.log(response.data);
+                if (response.data.status === 'success') {
+                    Toastify({
+                        text: 'Grupo eliminado',
+                        duration: 2500,
+                        destination: 'https://github.com/apvarun/toastify-js',
+                        newWindow: true,
+                        close: false,
+                        gravity: 'top', // `top` or `bottom`
+                        position: 'center', // `left`, `center` or `right`
+                        stopOnFocus: true, // Prevents dismissing of toast on hover
+                        style: {
+                            borderRadius: '10px',
+                            backgroundImage: 'linear-gradient(to right bottom, #00603c, #006f39, #007d31, #008b24, #069903)',
+                            textAlign: 'center',
+                        },
+                        onClick: function () { }, // Callback after click
+                    }).showToast();
+                    setShowDeleteInmuebleButtons(false);
+                    setShowPopupDeleteInmueble(false);
+                    fetchData(currentPage, searchTerm);
+                    setShowExtraButtons(false);
+                    setShowUngroupButtons(false);
+                    setSelectedItems(new Set());
+                    setKeepChildren(new Set());
+                } else {
+                    console.error('Error deleting element:', response.data.message);
+                    alert('Error deleting element: ' + response.data.message);
                     setShowPopupDeleteInmueble(false);
                 }
             })
             .catch((error) => {
                 console.error('Error deleting orphan:', error);
-                alert('Error deleting orphan: ' + error.message);
-            });
-    };
-
-    const handleDeleteKeepChildren = () => {
-        axios
-            .get('http://localhost:8000/backend/inmuebles/deleteKeepChildren.php', {
-                params: {
-                    inmuebles: Array.from(keepChildren),
-                    parentdata: parentData,
-                },
-            })
-            .then((response) => {
-                Toastify({
-                    text: 'Grupo eliminado',
-                    duration: 2500,
-                    destination: 'https://github.com/apvarun/toastify-js',
-                    newWindow: true,
-                    close: false,
-                    gravity: 'top', // `top` or `bottom`
-                    position: 'center', // `left`, `center` or `right`
-                    stopOnFocus: true, // Prevents dismissing of toast on hover
-                    style: {
-                        borderRadius: '10px',
-                        backgroundImage: 'linear-gradient(to right bottom, #00603c, #006f39, #007d31, #008b24, #069903)',
-                        textAlign: 'center',
-                    },
-                    onClick: function () { }, // Callback after click
-                }).showToast();
-                setShowDeleteInmuebleButtons(false);
-                setShowPopupDeleteInmueble(false);
-                fetchData(currentPage, searchTerm);
-                fetchParentsAndChilds();
-                setShowExtraButtons(false);
-                setShowUngroupButtons(false);
-                setSelectedItems(new Set());
-                setKeepChildren(new Set());
-            })
-            .catch((error) => {
-                console.error('Error deleting orphan:', error);
-                alert('Error deleting orphan: ' + error.message);
+                alert('Error deleting orphan here: ' + error.message);
             });
     };
 
@@ -755,27 +973,6 @@ const Table = () => {
     const handleClose = () => {
         setSelectedId(null);
     };
-
-    const findOrphansEdificio = (parentEdificios, childEdificios) => {
-        const childAgrupacionIds = new Set(childEdificios.map((child) => child.AgrupacionID_Edificio));
-        return parentEdificios.filter((parent) => !childAgrupacionIds.has(parent.AgrupacionID_Edificio));
-    };
-
-    const findOrphansEscalera = (parentEscaleras, childEscaleras) => {
-        const childAgrupacionIds = new Set(childEscaleras.map((child) => child.AgrupacionID_Escalera));
-        return parentEscaleras.filter((parent) => !childAgrupacionIds.has(parent.AgrupacionID_Escalera));
-    };
-
-    useEffect(() => {
-        const fetchOrphans = async () => {
-            const orphansEdificio = await findOrphansEdificio(parentsEdificio, childsEdificio);
-            console.log('orphans edificio', orphansEdificio);
-            const orphansEscalera = await findOrphansEscalera(parentsEscalera, childsEscalera);
-            console.log('orphans escalera', orphansEscalera);
-        };
-
-        fetchOrphans();
-    }, [parentsEdificio, childsEdificio, parentsEscalera, childsEscalera]);
 
     // Handle toggling the edit table
     const handleEditTable = () => {
@@ -804,7 +1001,7 @@ const Table = () => {
             filterNoticia: null,
             filterEncargo: null,
             superficieMin: 0,
-            superficieMax: 200000,
+            superficieMax: 20000,
             yearMin: 1800,
             yearMax: new Date().getFullYear(),
             localizado: null,
@@ -814,20 +1011,12 @@ const Table = () => {
             trastero: null,
             jardin: null,
             terraza: null,
-            tipo: null,
-            banos: null,
-            habitaciones: null,
+            tipo: undefined,
+            banos: undefined,
+            habitaciones: undefined,
 
         });
     };
-
-    // Synchronize `shouldRender` with `showEditTable`
-
-    const options = parentsEdificio.map((parent) => ({
-        value: parent.AgrupacionID_Edificio,
-        label: `${parent.direccion}`,
-    }));
-
 
     const escalerasChildren = (item) => {
         console.log('escalerasChildren', item);
@@ -853,20 +1042,10 @@ const Table = () => {
                             </div>
                             <div className="flex flex-row justify-end items-center gap-3 w-[40%]">
                                 {child.noticiastate === true && (
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="2.1em" height="2.1em" viewBox="0 0 24 24">
-                                        <path
-                                            fill="currentColor"
-                                            d="M10 7h4V5.615q0-.269-.173-.442T13.385 5h-2.77q-.269 0-.442.173T10 5.615zm8 15q-1.671 0-2.835-1.164Q14 19.67 14 18t1.165-2.835T18 14t2.836-1.165T22 18t-1.164 2.836T18 22M4.615 20q-.69 0-1.153-.462T3 18.384V8.616q0-.691.463-1.153T4.615 7H9V5.615q0-.69.463-1.153T10.616 4h2.769q.69 0 1.153.462T15 5.615V7h4.385q.69 0 1.152.463T21 8.616v4.198q-.683-.414-1.448-.614T18 12q-2.496 0-4.248 1.752T12 18q0 .506.086 1.009t.262.991zM18 20.423q.2 0 .33-.13t.132-.331t-.131-.331t-.331-.13t-.33.13t-.132.332t.131.33t.331.131m-.385-1.846h.77v-3h-.77z"
-                                        />
-                                    </svg>
+                                    <Icon icon="material-symbols:work-alert" />
                                 )}
                                 {child.encargostate === true && (
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="2em" height="2em" viewBox="0 0 20 20">
-                                        <path
-                                            fill="currentColor"
-                                            d="M2 3a1 1 0 0 1 2 0h13a1 1 0 1 1 0 2H4v12.5a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5zm3 3.5a.5.5 0 0 1 .5-.5h11a.5.5 0 0 1 .5.5v7a2.5 2.5 0 0 1-2.5 2.5h-7A2.5 2.5 0 0 1 5 13.5zm3 7a.5.5 0 0 0 .5.5h1a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 0 .5.5h1a.5.5 0 0 0 .5-.5v-2.55a1 1 0 0 0-.336-.748L11.332 8.13a.5.5 0 0 0-.664 0L8.336 10.2a1 1 0 0 0-.336.75z"
-                                        />
-                                    </svg>
+                                    <Icon icon="fluent:real-estate-24-filled" />
                                 )}
                                 <div onClick={() => handleItemClick(child.id)} className="cursor-pointer w-[20%] mr-4">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="2.1em" height="2.1em" viewBox="0 0 16 16" className="text-cyan-800 bg-white rounded-full hover:w-[2.5em] hover:h-[2.5em] hover:shadow-lg hover:text-cyan-600">
@@ -882,6 +1061,7 @@ const Table = () => {
 
     const edifciosChildren = (item) => {
 
+        console.log('edifciosChildren', item.nestedescaleras);
 
         if (item.nestedinmuebles && item.nestedinmuebles.length === 0 && item.nestedescaleras.length === 0) {
             return <p>No hay detalles disponibles</p>;
@@ -1001,8 +1181,11 @@ const Table = () => {
         return <LoadingScreen />;
     }
 
+
+
     return (
         <div>
+            {smallLoadingScreen && <SmallLoadingScreen />}
             {selectedId ? (
                 // <ItemDetails id={selectedId} onClose={handleClose} />
                 <div className="container mx-auto p-4 pb-24 pt-8">
@@ -1159,12 +1342,19 @@ const Table = () => {
                             </button>
                         </div>
                     )}
+                    <div>
+                        <p className="text-center font-sans text-lg text-slate-800 font-bold">Total de inmuebles: <br />
+                            {loadingTotalItems ? (
+                                <Skeleton width={120} height={30}>
+                                    Analizando...
+                                </Skeleton>
+                            ) : (
+                                <span><p>{totalItems}</p></span>
+                            )}
+                        </p>
+                    </div>
+
                     <div className="flex flex-col gap-2 pt-3">
-                        <div>
-                            <p className="text-center font-sans text-lg text-slate-800">
-                                <strong>Total de inmuebles: <br /> {totalItems}</strong>
-                            </p>
-                        </div>
                         <div className="tableheader relative px-2 py-1 mt-2 rounded-xl shadow-xl flex items-center flex-row w-full bg-blue-950">
                             <div className="true flex flex-row justify-between w-full">
                                 <div className="flex flex-row justify-start items-center gap-1 w-[80%] py-2 text-white">
@@ -1231,7 +1421,7 @@ const Table = () => {
                                             className={`relative border border-gray-400 px-2 py-4 mb-4 rounded-xl shadow-xl flex items-center flex-row w-full bg-gray-100`}>
                                             <div className="w-full flex flex-col justify-center items-center">
                                                 <div className="flex flex-row justify-start items-center gap-2 w-full  cursor-pointer" onClick={() => handleToggle(item.EdificioID)}>
-                                                    {showDeleteInmuebleButtons && <input type="checkbox" checked={selectedItems.has(item.EdificioID)} onChange={() => handleCheckboxChange(item.EdificioID)} className="mr-4 w-[25px] h-[25px]" />}
+                                                    {showDeleteInmuebleButtons && <input type="checkbox" checked={selectedItems.has(item.id)} onChange={() => handleCheckboxChange(item.id)} className="mr-4 w-[25px] h-[25px]" />}
                                                     <div className="flex flex-row justify-start items-center w-[80%] py-2">
                                                         <span className="flex flex-row justify-start items-center w-[75%] pl-1">
                                                             <svg xmlns="http://www.w3.org/2000/svg" width="3em" height="3em" viewBox="0 0 24 24">
@@ -1347,14 +1537,16 @@ const Table = () => {
                                                         <input type="text" name="nombre" value={formData.nombre} onChange={handleFormChange} className="border p-2 rounded w-full" placeholder="Dirección de la escalera" />{' '}
                                                     </div>
                                                     <label className="block">Grupo:</label>
-                                                    <select name="grupo" value={formData.grupo} onChange={handleFormChange} className="border border-gray-300 p-2 rounded w-full">
-                                                        <option value="">Seleccione un grupo</option>
-                                                        {parentsEdificio.map((parent) => (
-                                                            <option key={parent.id} value={parent.AgrupacionID_Edificio}>
-                                                                {parent.direccion}
-                                                            </option>
-                                                        ))}
-                                                    </select>
+                                                    <Select
+                                                        name="grupo"
+                                                        value={optionsNuevoGrupoEscalera.find(option => option.value === formData.grupo) || null} onChange={handleChange}
+                                                        options={optionsNuevoGrupoEscalera}
+                                                        className="w-full"
+                                                        classNamePrefix="react-select"
+                                                        placeholder="Seleccione un grupo"
+                                                        isClearable
+                                                        isSearchable
+                                                    />
                                                 </div>
                                             ) : (
                                                 <div>
@@ -1398,7 +1590,7 @@ const Table = () => {
                                                             value="Edificio"
                                                             checked={selectedType === 'Edificio'}
                                                             onChange={(e) => {
-                                                                setSelectedType(e.target.value);
+                                                                setSelectedType('Edificio');
                                                                 handleFormChange(e);
                                                             }}
                                                         />
@@ -1411,7 +1603,7 @@ const Table = () => {
                                                             value="Escalera"
                                                             checked={selectedType === 'Escalera'}
                                                             onChange={(e) => {
-                                                                setSelectedType(e.target.value);
+                                                                setSelectedType('Escalera');
                                                                 handleFormChange(e);
                                                             }}
                                                         />
@@ -1421,20 +1613,17 @@ const Table = () => {
                                             </div>
                                             <div>
                                                 <label className="block mb-2">Elige un grupo:</label>
-                                                <select name="existingGroup" value={formData.existingGroup} onChange={handleFormChange} className="border border-gray-300 p-2 rounded w-full">
-                                                    <option value="">Seleccione un grupo</option>
-                                                    {selectedType === 'Edificio'
-                                                        ? parentsEdificio.map((parent) => (
-                                                            <option key={parent.id} value={parent.AgrupacionID_Edificio}>
-                                                                {parent.direccion}
-                                                            </option>
-                                                        ))
-                                                        : parentsEscalera.map((parent) => (
-                                                            <option key={parent.id} value={parent.AgrupacionID_Escalera}>
-                                                                {parent.direccion}
-                                                            </option>
-                                                        ))}
-                                                </select>
+                                                <Select
+                                                    name="existingGroup"
+                                                    value={options.find(option => option.value === formData.existingGroup) || null}
+                                                    onChange={handleChangeExistingGroup}
+                                                    options={options}
+                                                    className="w-full"
+                                                    classNamePrefix="react-select"
+                                                    placeholder="Seleccione un grupo"
+                                                    isClearable
+                                                    isSearchable
+                                                />
                                             </div>
                                             <div className="flex gap-4 mt-4 flex-row justify-center items-center">
                                                 <button type="button" onClick={handlePopupToggle} className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded">
@@ -1484,9 +1673,11 @@ const Table = () => {
             {showAskForDeleteOrphan && (
                 <div className="popup-container fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-75 z-50">
                     <div className="popup-content bg-white p-4 shadow-lg flex flex-col justify-center items-center gap-4 rounded-lg w-4/6">
-                        <h2 className="text-lg font-bold w-[80%] text-center flex justify-center">El siguiente grupo se ha quedado vacío:</h2>
-                        <p>{`${orphanInfo[0].direccion}`}</p>
-                        <p>¿Desea eliminarlo?</p>
+                        <h2 className="text-lg font-bold w-[80%] text-center flex justify-center">Los siguientes grupos se han quedado vacíos:</h2>
+                        {orphanInfo.map((info, index) => (
+                            <p key={index}>{info.direccion}</p>
+                        ))}
+                        <p>¿Desea eliminarlos?</p>
                         <div className="flex justify-center gap-4">
                             <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded w-[120px]" onClick={handleKeepOrphan}>
                                 Mantener
@@ -1534,17 +1725,16 @@ const Table = () => {
                     </div>
                 </div>
             )}
-            {/* {showAddNewInmueble && (
+            {showAddNewInmueble && (
                 <AddNewInmueble
                     showAddNewInmueble={showAddNewInmueble}
                     setShowAddNewInmueble={setShowAddNewInmueble}
                     fetchData={fetchData}
                     currentPage={currentPage}
                     searchTerm={searchTerm}
-                    fetchParentsAndChilds={fetchParentsAndChilds}
                     handleIconAddInmueble={handleIconAddInmueble}
                 />
-            )} */}
+            )}
         </div>
     );
 };

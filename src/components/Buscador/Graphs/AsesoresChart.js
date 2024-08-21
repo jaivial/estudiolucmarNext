@@ -3,28 +3,38 @@ import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer } from 'recha
 
 const SimpleBarChart = ({ analyticsData }) => {
     // Safely extract data using optional chaining and provide default values if data is undefined
-    const responsablesData = analyticsData.find(data => data.name === 'Responsables')?.value || [];
-    const totalItems = analyticsData.find(data => data.name === 'Total')?.value || 0;
+    const responsablesData = analyticsData?.responsables || [];
+    const totalItems = Object.values(responsablesData).reduce((sum, value) => sum + value, 0);
 
-    // Prepare data for the charts
-    const chartData = responsablesData.map((item, index) => ({
-        name: item.responsable === 'NULL' ? 'Sin asignar' : item.responsable,
-        value: (item.count / totalItems) * 100, // Calculate percentage
-        count: item.count,
-        gradientId: `colorGradient${index % 8}`, // Unique gradient ID for each slice, cycling through 8 gradients
-    }));
+    const chartData = Object.entries(responsablesData).map(([key, count], index) => {
+        // Normalizamos el nombre del responsable
+        const normalizedKey = key === 'null' || key === '' ? 'Sin asignar' : key;
 
-    // 8 Diverse Color Palettes
+        // Convertimos la primera letra de cada palabra en mayúscula
+        const name = normalizedKey.replace(/\w\S*/g, (txt) => txt.charAt(0).toUpperCase() + txt.slice(1).toLowerCase());
+
+        return {
+            name,
+            value: (count / totalItems) * 100, // Calcular porcentaje
+            count: count,
+            gradientId: `colorGradient${index % 8}`, // ID de gradiente único para cada slice, ciclo a través de 8 gradientes
+        };
+    });
+
+
+    // 8 Balanced Color Palettes with Three Gradient Colors
     const gradients = [
-        ['#0B0785', '#388DD6'],  // Deep Blue to Light Blue
-        ['#1E1E1E', '#585858'],  // Black to Grey
-        ['#172B3C', '#62727B'],  // Dark Slate to Slate Grey
-        ['#005F73', '#94D2BD'],  // Teal to Mint
-        ['#3A0CA3', '#F72585'],  // Purple to Pink
-        ['#FF6700', '#FFC300'],  // Orange to Yellow
-        ['#283618', '#606C38'],  // Olive to Moss Green
-        ['#6D597A', '#B56576'],  // Dusty Rose to Mauve
+        ['#1A237E', '#3949AB', '#7986CB'],  // Dark Indigo to Medium Blue to Light Blue
+        ['#B71C1C', '#E53935', '#EF9A9A'],  // Dark Red to Bright Red to Light Red
+        ['#1B5E20', '#4CAF50', '#A5D6A7'],  // Dark Green to Bright Green to Light Green
+        ['#4A148C', '#8E24AA', '#CE93D8'],  // Dark Purple to Medium Purple to Light Purple
+        ['#6A1B9A', '#AB47BC', '#D1C4E9'],  // Dark Violet to Bright Violet to Soft Violet
+        ['#F57F17', '#FFB300', '#FFE082'],  // Dark Amber to Bright Amber to Light Amber
+        ['#0D47A1', '#2196F3', '#90CAF9'],  // Dark Blue to Medium Blue to Light Blue
+        ['#3E2723', '#795548', '#D7CCC8'],  // Dark Brown to Medium Brown to Light Brown
     ];
+
+
 
     const renderCustomLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, index }) => {
         const RADIAN = Math.PI / 180;
@@ -65,7 +75,7 @@ const SimpleBarChart = ({ analyticsData }) => {
         );
     };
 
-    const isPieChartDataAvailable = chartData.length > 0 && totalItems > 0 && responsablesData.length > 0;
+    const isPieChartDataAvailable = chartData.length > 0 && totalItems > 0;
 
     return (
         <div className="flex flex-col gap-1 justify-center items-center bg-slate-100 rounded-xl p-4 shadow-lg w-full h-auto">

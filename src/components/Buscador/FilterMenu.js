@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { supabase } from '../../lib/supabase/supabaseClient.js';
 import Select from 'react-select';
 import axios from 'axios';
 import Slider from 'react-slider';
@@ -11,6 +10,8 @@ import { FaPhone } from "react-icons/fa6";
 import { CgMoreO } from "react-icons/cg";
 import MoreFilters from './MoreFilters.js';
 import { motion, AnimatePresence } from 'framer-motion';
+import Skeleton from 'react-loading-skeleton';
+import 'react-loading-skeleton/dist/skeleton.css';
 
 const FilterMenu = ({ setFilters, currentPage, filters, data, setData, setCurrentPage, setTotalPages, setLoading, resetFiltersKey }) => {
     const [filterLocalizado, setFilterLocalizado] = useState(null);
@@ -25,6 +26,8 @@ const FilterMenu = ({ setFilters, currentPage, filters, data, setData, setCurren
     const [categorias, setCategorias] = useState([]);
     const [selectedCategoria, setSelectedCategoria] = useState(null);
     const [showMoreFilters, setShowMoreFilters] = useState(false);
+    const [loadingTotalItems, setLoadingTotalItems] = useState(false);
+    const [totalItems, setTotalItems] = useState();
 
 
     const handleChangeSuperficieRange = (values) => {
@@ -68,14 +71,13 @@ const FilterMenu = ({ setFilters, currentPage, filters, data, setData, setCurren
 
     const zoneOptions = zones.map((zone) => ({ value: zone, label: zone }));
     const responsableOptions = responsables.map((responsable) => ({ value: responsable.nombre_completo, label: responsable.nombre_completo }));
-    const categoriaOptions = categorias.map((categoria) => ({ value: categoria, label: categoria }));
-    console.log('categoriaOptions', categoriaOptions);
+    const categoriaOptions = categorias.map((categoria) => ({ value: categoria, label: categoria === null ? 'Sin información' : categoria }));
 
     // Fetch zones and responsables
     const fetchOptions = async () => {
         try {
-            const { data, error } = await supabase.rpc('fetchdatafiltermenu');
-            console.log('data', data); // Debugging line
+            const { data, error } = await axios.get('/api/fetch_data_filter_menu');
+            console.log('data fetch data filter menu', data);
             setZones(data.zones);
             setResponsables(data.responsables);
             setCategorias(data.categorias);
@@ -92,6 +94,7 @@ const FilterMenu = ({ setFilters, currentPage, filters, data, setData, setCurren
     useEffect(() => {
         fetchOptions();
     }, []);
+
 
     useEffect(() => {
         setFilters({
@@ -115,7 +118,7 @@ const FilterMenu = ({ setFilters, currentPage, filters, data, setData, setCurren
         setSelectedCategoria(null);
         setFilterNoticia(null); // Assuming the default is false
         setFilterEncargo(null); // Assuming the default is false
-        setSuperficieRange([0, 2000000]);
+        setSuperficieRange([0, 2000]);
         setYearRange([1800, new Date().getFullYear()]);
     };
 
@@ -136,6 +139,7 @@ const FilterMenu = ({ setFilters, currentPage, filters, data, setData, setCurren
     const handleFilterLocalizadoChange = (selectedOption) => {
         setFilterLocalizado(selectedOption ? selectedOption.value : null);
     };
+
 
     return (
         <div className="flex flex-col gap-4 p-2">
