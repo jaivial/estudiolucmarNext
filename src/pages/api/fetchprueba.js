@@ -1,9 +1,10 @@
 import clientPromise from '../../lib/mongodb';
+import getConnection from "../../lib/db.js";
 
 export default async function handler(req, res) {
     try {
         // Connect to the MongoDB client
-        const client = await clientPromise;
+        const client = await getConnection();
         const db = client.db('inmoprocrm'); // Use the correct database name
 
         // Query the 'inmuebles' collection to select only the 'direccion' field, limit to 10 results
