@@ -1,8 +1,5 @@
 import { ObjectId } from 'mongodb';
 import clientPromise from '../../lib/mongodb';
-import sharp from 'sharp';
-import fs from 'fs';
-import path from 'path';
 import nodemailer from 'nodemailer';
 
 export const config = {
@@ -21,14 +18,9 @@ export default async function handler(req, res) {
 
             const { nombre, apellido, email, password, admin, profilePhoto } = req.body;
 
-            // Procesar la imagen si existe
-            let profilePhotoPath = null;
-            if (profilePhoto) {
-                profilePhotoPath = await processImage(profilePhoto);
-            }
-
             const user_id = Math.floor(Math.random() * 900000000) + 100000000;
 
+            // Create the new user object with the image provided in the request
             const newUser = {
                 _id: new ObjectId(),
                 id: new ObjectId(),
@@ -38,13 +30,14 @@ export default async function handler(req, res) {
                 admin: admin === true,
                 nombre: nombre || null,
                 apellido: apellido || null,
-                profile_photo: profilePhotoPath || null,
+                profile_photo: profilePhoto || null,  // Save the image as it is provided in the request
                 creation_date: new Date()
             };
 
+            // Insert the new user into the database
             await db.collection('users').insertOne(newUser);
 
-            // Enviar un correo electrónico de confirmación al usuario
+            // Send a confirmation email to the user
             await sendConfirmationEmail(email, nombre, apellido, password);
 
             res.status(201).json({ message: 'Usuario agregado con éxito', user: newUser });
@@ -56,38 +49,6 @@ export default async function handler(req, res) {
         res.status(405).json({ message: 'Método no permitido' });
     }
 }
-
-// Función para procesar y convertir la imagen a .webp y comprimirla a un tamaño máximo de 100kb
-async function processImage(profilePhoto) {
-    const outputDir = path.join(process.cwd(), 'public', 'uploads');
-    const outputFilePath = path.join(outputDir, `${new ObjectId()}.webp`);
-
-    // Verificar si el directorio `uploads` existe, y si no, crearlo
-    if (!fs.existsSync(outputDir)) {
-        fs.mkdirSync(outputDir, { recursive: true });
-    }
-
-    const buffer = Buffer.from(profilePhoto.split(',')[1], 'base64');
-
-    try {
-        await sharp(buffer)
-            .rotate() // Corrige la orientación basada en los metadatos EXIF
-            .webp({ quality: 70 }) // Ajusta la calidad para reducir el tamaño del archivo
-            .resize({
-                width: 800, // Ajusta el tamaño de la imagen
-                height: 800,
-                fit: sharp.fit.inside,
-                withoutEnlargement: true,
-            })
-            .toFile(outputFilePath);
-
-        return `/uploads/${path.basename(outputFilePath)}`;
-    } catch (error) {
-        console.error('Error al procesar la imagen:', error);
-        return null;
-    }
-}
-
 
 async function sendConfirmationEmail(email, nombre, apellido, password) {
     // Configuración del transporte de Nodemailer

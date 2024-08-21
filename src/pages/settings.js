@@ -348,6 +348,24 @@ export default function Settings({ loggedInUser, otherUsers, isAdmin: initialIsA
         );
     };
 
+    const handleDeleteUser = async (userId) => {
+        try {
+            const response = await axios.delete('/api/delete_user', {
+                data: { user_id: userId },
+            });
+
+            if (response.status === 200) {
+                // Show success notification or remove the user from the UI
+                showToast('Usuario eliminado.', 'linear-gradient(to right bottom, #00603c, #006f39, #007d31, #008b24, #069903)');
+                setFilteredUsers(filteredUsers.filter(user => user.user_id !== userId));
+            }
+        } catch (error) {
+            console.error('Error al eliminar el usuario:', error);
+            alert('Error al eliminar el usuario');
+        }
+    };
+
+
 
     return (
         <GeneralLayout title="Configuración de Usuarios" description="Panel de administración de usuarios">
@@ -545,12 +563,22 @@ export default function Settings({ loggedInUser, otherUsers, isAdmin: initialIsA
                                                             </Uploader>
                                                             {profilePhoto && <Avatar src={profilePhoto} size="lg" circle className="mt-4" />}
                                                         </Form.Group>
-                                                        <Button onClick={handleUpdateUser} appearance="primary">
-                                                            Guardar Cambios
-                                                        </Button>
-                                                        <Button onClick={() => setIsEditing(null)} appearance="subtle">
-                                                            Cancelar
-                                                        </Button>
+                                                        <div className="flex justify-end mt-4">
+                                                            <Button onClick={handleUpdateUser} appearance="primary" className="mr-2">
+                                                                Guardar Cambios
+                                                            </Button>
+                                                            <Button onClick={() => setIsEditing(null)} appearance="subtle">
+                                                                Cancelar
+                                                            </Button>
+                                                            <Button
+                                                                onClick={() => handleDeleteUser(user.user_id)}
+                                                                appearance="primary"
+                                                                className="bg-red-600 hover:bg-red-700 text-white"
+                                                            >
+                                                                <Icon icon="mdi:trash-can-outline" className="mr-2" />
+                                                                Eliminar
+                                                            </Button>
+                                                        </div>
                                                     </>
                                                 )}
                                             </div>

@@ -1,8 +1,5 @@
 import { ObjectId } from 'mongodb';
 import clientPromise from '../../lib/mongodb';
-import sharp from 'sharp';
-import fs from 'fs';
-import path from 'path'; // Import the 'path' module
 
 export const config = {
     api: {
@@ -21,22 +18,14 @@ export default async function handler(req, res) {
             const { user_id, nombre, apellido, email, password, admin, profilePhoto } = req.body;
             const sessionId = req.cookies['sessionID'];
 
-            let profilePhotoPath = null;
-            if (profilePhoto) {
-                profilePhotoPath = await processImage(profilePhoto);
-            }
-
             const updateFields = {
                 nombre: nombre || null,
                 apellido: apellido || null,
                 email: email || null,
                 password: password || null,
                 admin: admin === true,
+                profile_photo: profilePhoto || null,  // Use the profilePhoto as passed in the request
             };
-
-            if (profilePhotoPath) {
-                updateFields.profile_photo = profilePhotoPath;
-            }
 
             await db.collection('users').updateOne(
                 { user_id: parseInt(user_id) },
@@ -55,34 +44,5 @@ export default async function handler(req, res) {
         }
     } else {
         res.status(405).json({ message: 'Método no permitido' });
-    }
-}
-
-async function processImage(profilePhoto) {
-    const outputDir = path.join(process.cwd(), 'public', 'uploads');
-    const outputFilePath = path.join(outputDir, `${new ObjectId()}.webp`);
-
-    if (!fs.existsSync(outputDir)) {
-        fs.mkdirSync(outputDir, { recursive: true });
-    }
-
-    const buffer = Buffer.from(profilePhoto.split(',')[1], 'base64');
-
-    try {
-        await sharp(buffer)
-            .rotate()
-            .webp({ quality: 70 })
-            .resize({
-                width: 800,
-                height: 800,
-                fit: sharp.fit.inside,
-                withoutEnlargement: true,
-            })
-            .toFile(outputFilePath);
-
-        return `/uploads/${path.basename(outputFilePath)}`;
-    } catch (error) {
-        console.error('Error al procesar la imagen:', error);
-        return null;
     }
 }

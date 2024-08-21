@@ -6,9 +6,12 @@ export default async function handler(req, res) {
             const client = await clientPromise;
             const db = client.db('inmoprocrm');
 
-            // Obtener todos los usuarios excepto el usuario logueado
+            // Get the user_id from the cookies
+            const userIdCookie = req.cookies['user_id'];
+
+            // Fetch all users except the logged-in user
             const users = await db.collection('users').find(
-                {},
+                { user_id: { $ne: parseInt(userIdCookie) } }, // Exclude the logged-in user
                 {
                     projection: { _id: 0, user_id: 1, nombre: 1, apellido: 1, email: 1, password: 1, admin: 1, profile_photo: 1 }
                 }
