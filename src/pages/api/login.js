@@ -1,14 +1,12 @@
-import getConnection from "../../lib/db.js";
-import { ObjectId } from "mongodb";
-import Cookies from 'cookies';
+import clientPromise from '../../lib/mongodb';
 
 export default async function handler(req, res) {
     try {
-        const client = await getConnection();
+        const client = await clientPromise;
 
         const { email, password } = req.body;
 
-        const db = client.db(process.env.MONGODB_DATABASE);
+        const db = client.db('inmoprocrm'); // Use the correct database name
         const user = await db.collection('users').findOne({ email, password });
 
 
