@@ -369,335 +369,353 @@ export default function Settings({ loggedInUser, otherUsers, isAdmin: initialIsA
 
     return (
         <GeneralLayout title="Configuración de Usuarios" description="Panel de administración de usuarios">
+            <div className="h-full w-full flex flex-col items-center justify-start pt-20 overflow-y-scroll bg-gradient-to-t from-slate-400 via-slate-300 to-slate-200">
+                <h1 className="text-3xl font-bold text-center font-sans w-80 mb-8">Administración de Usuarios</h1>
 
-            <CustomModal
-                show={showLogoutModal}
-                onClose={() => setShowLogoutModal(false)}
-                onConfirm={handleConfirmEdit}
-            />
+                <CustomModal
+                    show={showLogoutModal}
+                    onClose={() => setShowLogoutModal(false)}
+                    onConfirm={handleConfirmEdit}
+                />
 
-            {/* Sección del usuario logueado */}
-            <Container className="p-4 pb-24 pt-8">
-                <h1 className="text-3xl font-bold text-center font-sans w-full mb-8">Tu Perfil</h1>
-                <PanelGroup accordion bordered activeKey={activeKey} onSelect={setActiveKey}>
-                    <Panel header="Tu Perfil" eventKey="0">
-                        <div className="relative">
-                            {isAdministrador && (
-                                <div className="absolute top-0 right-0">
-                                    <Icon
-                                        icon={isEditing?.user_id === loggedInUser.user_id ? "pajamas:close-xs" : "fa-regular:edit"}
-                                        onClick={() => toggleEditMode(loggedInUser)}
-                                        style={{ cursor: 'pointer', fontSize: '1.5rem' }}
-                                    />
-                                </div>
-                            )}
-                            {!isEditing || isEditing.user_id !== loggedInUser.user_id ? (
-                                <>
-                                    <p><strong>Nombre completo:</strong> {loggedInUser.nombre} {loggedInUser.apellido}</p>
-                                    <p><strong>Email:</strong> {loggedInUser.email}</p>
-                                    <div><strong>Contraseña:</strong>
-                                        <InputGroup inside>
-                                            <Input value={renderPassword(loggedInUser.password, passwordVisible)} type="text" readOnly />
-                                            <InputGroup.Button onClick={togglePasswordVisibility}>
-                                                <Icon icon={passwordVisible ? "codicon:eye-closed" : "codicon:eye"} />
-                                            </InputGroup.Button>
-                                        </InputGroup>
-                                    </div>
-                                    <p><strong>Rol:</strong> {getRole(loggedInUser.admin)}</p>
-                                    {loggedInUser.profile_photo ? (
-                                        <Avatar src={loggedInUser.profile_photo} size="lg" circle className="mt-4" />
-                                    ) : (
-                                        <p><strong>Foto de perfil:</strong> Sin imagen</p>
-                                    )}
-                                </>
-                            ) : (
-                                <>
-                                    <InlineEdit value={nombre} onChange={setNombre} placeholder="Nombre" />
-                                    <InlineEdit value={apellido} onChange={setApellido} placeholder="Apellido" />
-                                    <InlineEdit value={email} onChange={setEmail} placeholder="Email" />
-                                    <div><strong>Contraseña:</strong>
-                                        <InputGroup inside>
-                                            <Input
-                                                name="password"
-                                                type={newUserPasswordVisible ? "text" : "password"}
-                                                placeholder="Introduce la contraseña"
-                                                required
-                                                value={password}
-                                                onChange={(value) => setPassword(value)}
-                                            />
-                                            <InputGroup.Button onClick={() => setNewUserPasswordVisible(!newUserPasswordVisible)}>
-                                                <Icon icon={newUserPasswordVisible ? "codicon:eye-closed" : "codicon:eye"} />
-                                            </InputGroup.Button>
-                                        </InputGroup>
-                                    </div>
-                                    <Form.Group>
-                                        <Form.ControlLabel>Rol</Form.ControlLabel>
-                                        <Toggle
-                                            checked={isAdmin}
-                                            onChange={setIsAdmin}
-                                            checkedChildren="Administrador"
-                                            unCheckedChildren="Asesor"
-                                            size="lg"
+                {/* Sección del usuario logueado */}
+                <Container className="p-4 pt-8 w-[90%]">
+                    <PanelGroup accordion bordered activeKey={activeKey} onSelect={setActiveKey}>
+                        <Panel header="Tu Perfil" eventKey="0" className="bg-slate-50 rounded-lg shadow-xl">
+                            <div className="relative flex flex-col items-center gap-4 py-3 w-full">
+                                {isAdministrador && (
+                                    <div className="absolute top-0 right-0">
+                                        <Icon
+                                            icon={isEditing?.user_id === loggedInUser.user_id ? "pajamas:close-xs" : "fa-regular:edit"}
+                                            onClick={() => toggleEditMode(loggedInUser)}
+                                            style={{ cursor: 'pointer', fontSize: '1.5rem' }}
                                         />
-                                    </Form.Group>
-                                    <Form.Group>
-                                        <Form.ControlLabel>Foto de Perfil</Form.ControlLabel>
-                                        <Uploader
-                                            action=""
-                                            autoUpload={false}
-                                            listType="picture"
-                                            onChange={handleImageUploadEdit}
-                                        >
-                                            <Button appearance="ghost">Seleccionar archivo</Button>
-                                        </Uploader>
-                                        {profilePhoto && <Avatar src={profilePhoto} size="lg" circle className="mt-4" />}
-                                    </Form.Group>
-                                    <div className="flex justify-end mt-4">
-                                        <Button onClick={() => setShowLogoutModal(true)} appearance="primary" className="mr-2">
-                                            Guardar Cambios
-                                        </Button>
-                                        <Button onClick={() => setIsEditing(null)} appearance="subtle">
-                                            Cancelar
-                                        </Button>
                                     </div>
-                                </>
-                            )}
-                        </div>
-                    </Panel>
-                </PanelGroup>
-            </Container>
-
-
-            {/* Sección de gestionar usuarios y agregar nuevo usuario, solo si es admin */}
-            {isAdministrador && (
-                <>
-                    <Container className="p-4 pb-24 pt-8">
-                        <h1 className="text-3xl font-bold text-center font-sans w-full mb-8">Gestionar Usuarios</h1>
-                        <PanelGroup accordion bordered>
-                            <Panel header="Gestionar Usuarios" eventKey="1">
-                                <Form layout="inline" className="mb-4 d-flex">
-                                    <Form.Group>
-                                        <Form.ControlLabel>Buscar:</Form.ControlLabel>
-                                        <Form.Control
-                                            name="search"
-                                            value={searchTerm}
-                                            onChange={(value) => handleSearch(value)}
-                                            placeholder="Buscar por nombre o apellido..."
-                                        />
-                                    </Form.Group>
-                                    <Button appearance="primary">
-                                        Buscar
-                                    </Button>
-                                </Form>
-                                {filteredUsers.length > 0 ? (
-                                    filteredUsers.map(user => (
-                                        <Panel key={user.user_id} header={`${user.nombre} ${user.apellido}`} bordered className="mb-4">
-                                            <div className="relative">
-                                                {isAdministrador && (
-                                                    <div className="absolute top-0 right-0">
-                                                        <Icon
-                                                            icon={isEditing?.user_id === user.user_id ? "pajamas:close-xs" : "fa-regular:edit"}
-                                                            onClick={() => toggleEditMode(user)}
-                                                            style={{ cursor: 'pointer', fontSize: '1.5rem' }}
-                                                        />
-                                                    </div>
-                                                )}
-                                                {!isEditing || isEditing.user_id !== user.user_id ? (
-                                                    <>
-                                                        <p><strong>Nombre completo:</strong> {user.nombre} {user.apellido}</p>
-                                                        <p><strong>Email:</strong> {user.email}</p>
-                                                        <div><strong>Contraseña:</strong>
-                                                            <InputGroup inside>
-                                                                <Input value={renderPassword(user.password, passwordVisible)} type="text" readOnly />
-                                                                <InputGroup.Button onClick={togglePasswordVisibility}>
-                                                                    <Icon icon={passwordVisible ? "codicon:eye-closed" : "codicon:eye"} />
-                                                                </InputGroup.Button>
-                                                            </InputGroup>
-                                                        </div>
-                                                        <p><strong>Rol:</strong> {getRole(user.admin)}</p>
-                                                        {user.profile_photo ? (
-                                                            <Avatar src={user.profile_photo} size="lg" circle className="mt-4" />
-                                                        ) : (
-                                                            <p><strong>Foto de perfil:</strong> Sin imagen</p>
-                                                        )}
-                                                    </>
-                                                ) : (
-                                                    <>
-                                                        <InlineEdit value={nombre} onChange={setNombre} placeholder="Nombre" />
-                                                        <InlineEdit value={apellido} onChange={setApellido} placeholder="Apellido" />
-                                                        <InlineEdit value={email} onChange={setEmail} placeholder="Email" />
-                                                        <div><strong>Contraseña:</strong>
-                                                            <InputGroup inside>
-                                                                <Input
-                                                                    name="password"
-                                                                    type={newUserPasswordVisible ? "text" : "password"}
-                                                                    placeholder="Introduce la contraseña"
-                                                                    required
-                                                                    value={password}
-                                                                    onChange={(value) => setPassword(value)}
-                                                                />
-                                                                <InputGroup.Button onClick={() => setNewUserPasswordVisible(!newUserPasswordVisible)}>
-                                                                    <Icon icon={newUserPasswordVisible ? "codicon:eye-closed" : "codicon:eye"} />
-                                                                </InputGroup.Button>
-                                                            </InputGroup>
-                                                        </div>
-                                                        <Form.Group>
-                                                            <Form.ControlLabel>Rol</Form.ControlLabel>
-                                                            <Toggle
-                                                                checked={isAdmin}
-                                                                onChange={setIsAdmin}
-                                                                checkedChildren="Administrador"
-                                                                unCheckedChildren="Asesor"
-                                                                size="lg"
-                                                            />
-                                                        </Form.Group>
-                                                        <Form.Group>
-                                                            <Form.ControlLabel>Foto de Perfil</Form.ControlLabel>
-                                                            <Uploader
-                                                                action=""
-                                                                autoUpload={false}
-                                                                listType="picture"
-                                                                onChange={handleImageUploadEdit}
-                                                            >
-                                                                <Button appearance="ghost">Seleccionar archivo</Button>
-                                                            </Uploader>
-                                                            {profilePhoto && <Avatar src={profilePhoto} size="lg" circle className="mt-4" />}
-                                                        </Form.Group>
-                                                        <div className="flex justify-end mt-4">
-                                                            <Button onClick={handleUpdateUser} appearance="primary" className="mr-2">
-                                                                Guardar Cambios
-                                                            </Button>
-                                                            <Button onClick={() => setIsEditing(null)} appearance="subtle">
-                                                                Cancelar
-                                                            </Button>
-                                                            <Button
-                                                                onClick={() => handleDeleteUser(user.user_id)}
-                                                                appearance="primary"
-                                                                className="bg-red-600 hover:bg-red-700 text-white"
-                                                            >
-                                                                <Icon icon="mdi:trash-can-outline" className="mr-2" />
-                                                                Eliminar
-                                                            </Button>
-                                                        </div>
-                                                    </>
-                                                )}
-                                            </div>
-                                        </Panel>
-                                    ))
-                                ) : (
-                                    <p className="text-danger">No se encontraron usuarios.</p>
                                 )}
-                            </Panel>
-                        </PanelGroup>
-                    </Container>
+                                {!isEditing || isEditing.user_id !== loggedInUser.user_id ? (
+                                    <>
+                                        {loggedInUser.profile_photo ? (
+                                            <Avatar src={loggedInUser.profile_photo} size="xl" circle className="mt-4" />
+                                        ) : (
+                                            <p><strong>Foto de perfil:</strong> Sin imagen</p>
+                                        )}
+                                        <p className="w-full text-center"><strong>Nombre:</strong> <br /> {loggedInUser.nombre} {loggedInUser.apellido}</p>
+                                        <p className="w-full text-center"><strong>Email:</strong> <br /> {loggedInUser.email}</p>
+                                        <div className="w-[80%] flex flex-col gap-2 text-center"><strong>Contraseña:</strong>
+                                            <InputGroup inside>
+                                                <Input value={renderPassword(loggedInUser.password, passwordVisible)} type="text" readOnly />
+                                                <InputGroup.Button onClick={togglePasswordVisibility} >
+                                                    <Icon icon={passwordVisible ? "codicon:eye-closed" : "codicon:eye"} />
+                                                </InputGroup.Button>
+                                            </InputGroup>
+                                        </div>
+                                        <p className="w-full text-center"><strong>Rol:</strong> <br /> {getRole(loggedInUser.admin)}</p>
+                                    </>
+                                ) : (
+                                    <>
+                                        <div className="w-[100%] rounded-lg shadow-xl flex flex-col items-center gap-4 py-6 px-4 mb-4 mt-2">
+                                            <Form.Group className="w-[100%] flex flex-col items-center gap-4">
+                                                <Form.ControlLabel>Foto de Perfil</Form.ControlLabel>
+                                                {profilePhoto && <Avatar src={profilePhoto} size="lg" circle className="mt-4" />}
+                                                <Uploader
+                                                    action=""
+                                                    autoUpload={false}
+                                                    listType="picture"
+                                                    onChange={handleImageUploadEdit}
+                                                >
+                                                    <Button appearance="ghost" style={{ width: '100%', padding: '0.9rem', backgroundColor: '#edebeb' }}>Seleccionar archivo</Button>
+                                                </Uploader>
+                                            </Form.Group>
+
+                                            <InlineEdit value={nombre} onChange={setNombre} placeholder="Nombre" />
+                                            <InlineEdit value={apellido} onChange={setApellido} placeholder="Apellido" />
+                                            <InlineEdit value={email} onChange={setEmail} placeholder="Email" />
+                                        </div>
+                                        <div className="w-[100%] rounded-lg shadow-xl flex flex-col items-center gap-8 py-6 px-4 mb-4 mt-2">
+                                            <div className="w-[100%] flex flex-col items-center gap-1">
+                                                <strong>Contraseña:</strong>
+                                                <InputGroup inside>
+                                                    <Input
+                                                        name="password"
+                                                        type={newUserPasswordVisible ? "text" : "password"}
+                                                        placeholder="Introduce la contraseña"
+                                                        required
+                                                        value={password}
+                                                        onChange={(value) => setPassword(value)}
+                                                    />
+                                                    <InputGroup.Button onClick={() => setNewUserPasswordVisible(!newUserPasswordVisible)}>
+                                                        <Icon icon={newUserPasswordVisible ? "codicon:eye-closed" : "codicon:eye"} />
+                                                    </InputGroup.Button>
+                                                </InputGroup>
+                                            </div>
+                                            <Form.Group className="w-[100%] flex flex-col items-center gap-1">
+                                                <Form.ControlLabel>Rol</Form.ControlLabel>
+                                                <Toggle
+                                                    checked={isAdmin}
+                                                    onChange={setIsAdmin}
+                                                    checkedChildren="Administrador"
+                                                    unCheckedChildren="&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Asesor&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"
+                                                    size="lg"
+                                                />
+                                            </Form.Group>
+                                        </div>
+
+                                        <div className="flex flex-col gap-4 justify-end mt-4">
+                                            <Button onClick={() => setShowLogoutModal(true)} appearance="primary">
+                                                Guardar Cambios
+                                            </Button>
+                                            <Button onClick={() => setIsEditing(null)} appearance="subtle">
+                                                Cancelar
+                                            </Button>
+                                        </div>
+                                    </>
+                                )}
+                            </div>
+                        </Panel>
+                    </PanelGroup>
+                </Container>
 
 
-                    <Container className="p-4 pb-24 pt-8">
-                        <h1 className="text-3xl font-bold text-center font-sans w-full mb-8">Agregar Nuevo Usuario</h1>
-                        <PanelGroup accordion bordered activeKey={activeKey} onSelect={setActiveKey} >
-                            <Panel header="Agregar Nuevo Usuario" eventKey="2">
-                                <Form fluid onSubmit={handleAddUser}>
-                                    <Form.Group>
-                                        <Form.ControlLabel>Nombre</Form.ControlLabel>
-                                        <Form.Control
-                                            name="nombre"
-                                            type="text"
-                                            placeholder="Introduce el nombre"
-                                            required
-                                            value={nombre}
-                                            onChange={(value) => setNombre(value)}
-                                        />
-                                    </Form.Group>
-                                    <Form.Group>
-                                        <Form.ControlLabel>Apellido</Form.ControlLabel>
-                                        <Form.Control
-                                            name="apellido"
-                                            type="text"
-                                            placeholder="Introduce el apellido"
-                                            required
-                                            value={apellido}
-                                            onChange={(value) => setApellido(value)}
-                                        />
-                                    </Form.Group>
-                                    <Form.Group>
-                                        <Form.ControlLabel>Email</Form.ControlLabel>
-                                        <Form.Control
-                                            name="email"
-                                            type="email"
-                                            placeholder="Introduce el correo electrónico"
-                                            required
-                                            value={email}
-                                            onChange={(value) => setEmail(value)}
-                                        />
-                                    </Form.Group>
-                                    <Form.Group>
-                                        <Form.ControlLabel>Contraseña</Form.ControlLabel>
-                                        <InputGroup inside>
-                                            <Input
-                                                name="password"
-                                                type={newUserPasswordVisible ? "text" : "password"}
-                                                placeholder="Introduce la contraseña"
-                                                required
-                                                value={password}
-                                                onChange={(value) => setPassword(value)}
+                {/* Sección de gestionar usuarios y agregar nuevo usuario, solo si es admin */}
+                {isAdministrador && (
+                    <>
+                        <Container className="p-4 w-[90%]">
+                            <PanelGroup accordion bordered>
+                                <Panel header="Gestionar Usuarios" eventKey="1" className="bg-slate-50 rounded-lg shadow-xl">
+                                    <Form layout="inline" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', width: '100%' }}>
+                                        <Form.Group style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', width: '100%', marginBottom: '10px', marginTop: '0px', marginRight: '0px', gap: '5px' }}>
+                                            <Form.ControlLabel>Buscar:</Form.ControlLabel>
+                                            <Form.Control
+                                                name="search"
+                                                value={searchTerm}
+                                                onChange={(value) => handleSearch(value)}
+                                                placeholder="Buscar por nombre o apellido..."
+                                                style={{ width: '250px' }}
                                             />
-                                            <InputGroup.Button onClick={() => setNewUserPasswordVisible(!newUserPasswordVisible)}>
-                                                <Icon icon={newUserPasswordVisible ? "codicon:eye-closed" : "codicon:eye"} />
-                                            </InputGroup.Button>
-                                        </InputGroup>
-                                    </Form.Group>
-                                    <Form.Group>
-                                        <Form.ControlLabel>Rol</Form.ControlLabel>
-                                        <Toggle
-                                            name="admin"
-                                            checked={isAdmin}
-                                            onChange={setIsAdmin}
-                                            checkedChildren="Administrador"
-                                            unCheckedChildren="Asesor"
-                                            size="lg"
-                                        />
-                                    </Form.Group>
-                                    <Form.Group>
-                                        <Form.ControlLabel>Foto de Perfil</Form.ControlLabel>
-                                        <Uploader
-                                            action=""
-                                            autoUpload={false}
-                                            listType="picture"
-                                            onChange={(fileList) => {
-                                                if (fileList.length > 0) {
-                                                    const file = fileList[0].blobFile;
+                                        </Form.Group>
+                                        <Button appearance="primary" style={{ marginRight: '0px', marginLeft: '0px' }}>
+                                            Buscar
+                                        </Button>
+                                    </Form>
+                                    {filteredUsers.length > 0 ? (
+                                        filteredUsers.map(user => (
+                                            <Panel key={user.user_id} header={`${user.nombre} ${user.apellido}`} bordered className="mb-4 bg-slate-300 bg-opacity-60">
+                                                <div className="relative flex flex-col items-center gap-4 py-3 w-full">
+                                                    {isAdministrador && (
+                                                        <div className="absolute top-0 right-0">
+                                                            <Icon
+                                                                icon={isEditing?.user_id === user.user_id ? "pajamas:close-xs" : "fa-regular:edit"}
+                                                                onClick={() => toggleEditMode(user)}
+                                                                style={{ cursor: 'pointer', fontSize: '1.5rem' }}
+                                                            />
+                                                        </div>
+                                                    )}
+                                                    {!isEditing || isEditing.user_id !== user.user_id ? (
+                                                        <>
+                                                            {user.profile_photo ? (
+                                                                <Avatar src={user.profile_photo} size="xl" circle className="mt-4" />
+                                                            ) : (
+                                                                <p><strong>Foto de perfil:</strong> Sin imagen</p>
+                                                            )}
+                                                            <p className="w-full text-center"><strong>Nombre:</strong> <br /> {user.nombre} {user.apellido}</p>
+                                                            <p className="w-full text-center"><strong>Email:</strong><br /> {user.email}</p>
+                                                            <div className="w-[80%] flex flex-col gap-2 text-center"><strong>Contraseña:</strong>
+                                                                <InputGroup inside>
+                                                                    <Input value={renderPassword(user.password, passwordVisible)} type="text" readOnly />
+                                                                    <InputGroup.Button onClick={togglePasswordVisibility}>
+                                                                        <Icon icon={passwordVisible ? "codicon:eye-closed" : "codicon:eye"} />
+                                                                    </InputGroup.Button>
+                                                                </InputGroup>
+                                                            </div>
+                                                            <p className="w-full text-center"><strong>Rol:</strong><br /> {getRole(user.admin)}</p>
 
-                                                    const supportedFormats = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
-                                                    if (!supportedFormats.includes(file.type)) {
-                                                        handleUnsupportedFile();
-                                                        setIsImageValid(false);
-                                                        return;
+                                                        </>
+                                                    ) : (
+                                                        <>
+                                                            <div className="w-[100%] rounded-lg shadow-xl flex flex-col items-center gap-4 py-6 px-4 mb-4 mt-4 bg-slate-50">
+                                                                <Form.Group className="w-[100%] flex flex-col items-center gap-4">
+                                                                    <Form.ControlLabel>Foto de Perfil</Form.ControlLabel>
+                                                                    {profilePhoto && <Avatar src={profilePhoto} size="lg" circle className="mt-4" />}
+                                                                    <Uploader
+                                                                        action=""
+                                                                        autoUpload={false}
+                                                                        listType="picture"
+                                                                        onChange={handleImageUploadEdit}
+                                                                    >
+                                                                        <Button appearance="ghost" style={{ width: '100%', padding: '0.6rem', backgroundColor: '#edebeb' }}>Seleccionar archivo</Button>
+                                                                    </Uploader>
+
+                                                                </Form.Group>
+                                                                <InlineEdit value={nombre} onChange={setNombre} placeholder="Nombre" />
+                                                                <InlineEdit value={apellido} onChange={setApellido} placeholder="Apellido" />
+                                                                <InlineEdit value={email} onChange={setEmail} placeholder="Email" />
+                                                            </div>
+                                                            <div className="w-[100%] rounded-lg shadow-xl flex flex-col items-center gap-8 py-6 px-4 mb-4 mt-2 bg-slate-50">
+                                                                <div className="w-[100%] flex flex-col items-center gap-1">
+                                                                    <strong>Contraseña:</strong>
+                                                                    <InputGroup inside>
+                                                                        <Input
+                                                                            name="password"
+                                                                            type={newUserPasswordVisible ? "text" : "password"}
+                                                                            placeholder="Introduce la contraseña"
+                                                                            required
+                                                                            value={password}
+                                                                            onChange={(value) => setPassword(value)}
+                                                                        />
+                                                                        <InputGroup.Button onClick={() => setNewUserPasswordVisible(!newUserPasswordVisible)}>
+                                                                            <Icon icon={newUserPasswordVisible ? "codicon:eye-closed" : "codicon:eye"} />
+                                                                        </InputGroup.Button>
+                                                                    </InputGroup>
+                                                                </div>
+                                                                <Form.Group className="w-[100%] flex flex-col items-center gap-1">
+                                                                    <Form.ControlLabel>Rol</Form.ControlLabel>
+                                                                    <Toggle
+                                                                        checked={isAdmin}
+                                                                        onChange={setIsAdmin}
+                                                                        checkedChildren="Administrador"
+                                                                        unCheckedChildren="&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Asesor&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"
+                                                                        size="lg"
+                                                                    />
+                                                                </Form.Group>
+                                                            </div>
+
+                                                            <div className="flex flex-col gap-4 justify-center mt-4">
+                                                                <Button onClick={handleUpdateUser} appearance="primary">
+                                                                    Guardar Cambios
+                                                                </Button>
+                                                                <Button
+                                                                    onClick={() => handleDeleteUser(user.user_id)}
+                                                                    appearance="default"
+                                                                    className="bg-red-600 hover:bg-red-700 text-white"
+                                                                >
+                                                                    <Icon icon="mdi:trash-can-outline" className="mr-2" />
+                                                                    Eliminar
+                                                                </Button>
+                                                                <Button onClick={() => setIsEditing(null)} appearance="subtle">
+                                                                    Cancelar
+                                                                </Button>
+                                                            </div>
+
+                                                        </>
+                                                    )}
+                                                </div>
+                                            </Panel>
+                                        ))
+                                    ) : (
+                                        <p className="text-danger">No se encontraron usuarios.</p>
+                                    )}
+                                </Panel>
+                            </PanelGroup>
+                        </Container>
+
+
+                        <Container className="p-4 mb-32 w-[90%]">
+                            <PanelGroup accordion bordered activeKey={activeKey} onSelect={setActiveKey} >
+                                <Panel header="Agregar Nuevo Usuario" eventKey="2" className="bg-slate-50 rounded-lg shadow-xl">
+                                    <Form fluid onSubmit={handleAddUser} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', width: '100%' }}>
+                                        <Form.Group style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', width: '100%', marginBottom: '10px', marginTop: '0px', marginRight: '0px', gap: '5px' }}>
+                                            <Form.ControlLabel>Foto de Perfil</Form.ControlLabel>
+                                            <Uploader
+                                                action=""
+                                                autoUpload={false}
+                                                listType="picture"
+                                                onChange={(fileList) => {
+                                                    if (fileList.length > 0) {
+                                                        const file = fileList[0].blobFile;
+
+                                                        const supportedFormats = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+                                                        if (!supportedFormats.includes(file.type)) {
+                                                            handleUnsupportedFile();
+                                                            setIsImageValid(false);
+                                                            return;
+                                                        }
+
+                                                        setIsImageValid(true);
+                                                        const reader = new FileReader();
+                                                        reader.onload = (e) => {
+                                                            setProfilePhoto(e.target.result);
+                                                        };
+                                                        reader.readAsDataURL(file);
+                                                    } else {
+                                                        setProfilePhoto(null);
+                                                        setIsImageValid(true);
                                                     }
+                                                }}
+                                            >
+                                                <Button appearance="ghost" style={{ width: '100%', paddingTop: '0.2rem', paddingBottom: '0.2rem', paddingLeft: '0.6rem', paddingRight: '0.6rem', backgroundColor: '#edebeb' }}>Seleccionar archivo</Button>
+                                            </Uploader>
+                                        </Form.Group>
+                                        <Form.Group style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', width: '100%', marginBottom: '10px', marginTop: '0px', marginRight: '0px', gap: '5px' }}>
+                                            <Form.ControlLabel>Nombre</Form.ControlLabel>
+                                            <Form.Control
+                                                name="nombre"
+                                                type="text"
+                                                placeholder="Introduce el nombre"
+                                                required
+                                                value={nombre}
+                                                onChange={(value) => setNombre(value)}
+                                            />
+                                        </Form.Group>
+                                        <Form.Group style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', width: '100%', marginBottom: '10px', marginTop: '0px', marginRight: '0px', gap: '5px' }}>
+                                            <Form.ControlLabel>Apellido</Form.ControlLabel>
+                                            <Form.Control
+                                                name="apellido"
+                                                type="text"
+                                                placeholder="Introduce el apellido"
+                                                required
+                                                value={apellido}
+                                                onChange={(value) => setApellido(value)}
+                                            />
+                                        </Form.Group>
+                                        <Form.Group style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', width: '100%', marginBottom: '10px', marginTop: '0px', marginRight: '0px', gap: '5px' }}>
+                                            <Form.ControlLabel>Email</Form.ControlLabel>
+                                            <Form.Control
+                                                name="email"
+                                                type="email"
+                                                placeholder="Introduce el correo electrónico"
+                                                required
+                                                value={email}
+                                                onChange={(value) => setEmail(value)}
+                                            />
+                                        </Form.Group>
+                                        <Form.Group style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', width: '100%', marginBottom: '10px', marginTop: '0px', marginRight: '0px', gap: '5px' }}>
+                                            <Form.ControlLabel>Contraseña</Form.ControlLabel>
+                                            <InputGroup inside>
+                                                <Input
+                                                    name="password"
+                                                    type={newUserPasswordVisible ? "text" : "password"}
+                                                    placeholder="Introduce la contraseña"
+                                                    required
+                                                    value={password}
+                                                    onChange={(value) => setPassword(value)}
+                                                />
+                                                <InputGroup.Button onClick={() => setNewUserPasswordVisible(!newUserPasswordVisible)}>
+                                                    <Icon icon={newUserPasswordVisible ? "codicon:eye-closed" : "codicon:eye"} />
+                                                </InputGroup.Button>
+                                            </InputGroup>
+                                        </Form.Group>
+                                        <Form.Group style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', width: '100%', marginBottom: '10px', marginTop: '0px', marginRight: '0px', gap: '5px' }}>
+                                            <Form.ControlLabel>Rol</Form.ControlLabel>
+                                            <Toggle
+                                                name="admin"
+                                                checked={isAdmin}
+                                                onChange={setIsAdmin}
+                                                checkedChildren="Administrador"
+                                                unCheckedChildren="&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Asesor&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"
+                                                size="lg"
+                                            />
+                                        </Form.Group>
 
-                                                    setIsImageValid(true);
-                                                    const reader = new FileReader();
-                                                    reader.onload = (e) => {
-                                                        setProfilePhoto(e.target.result);
-                                                    };
-                                                    reader.readAsDataURL(file);
-                                                } else {
-                                                    setProfilePhoto(null);
-                                                    setIsImageValid(true);
-                                                }
-                                            }}
-                                        >
-                                            <Button appearance="ghost">Seleccionar archivo</Button>
-                                        </Uploader>
-                                    </Form.Group>
-                                    <Button appearance="primary" type="submit">
-                                        Agregar Usuario
-                                    </Button>
-                                </Form>
-                            </Panel>
-                        </PanelGroup>
-                    </Container>
-                </>
-            )}
-        </GeneralLayout>
+                                        <Button appearance="primary" type="submit" style={{ marginTop: '20px', marginBottom: '10px' }}>
+                                            Agregar Usuario
+                                        </Button>
+                                    </Form>
+                                </Panel>
+                            </PanelGroup>
+                        </Container>
+                    </>
+                )}
+            </div>
+        </GeneralLayout >
     );
 }
