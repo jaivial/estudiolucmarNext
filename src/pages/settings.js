@@ -1,7 +1,7 @@
 import GeneralLayout from "../components/layouts/GeneralLayout.js";
 import { useEffect, useState } from "react";
 import axios from 'axios';
-import { Button, Input, Container, Form, Uploader, Avatar, Panel, PanelGroup, InputGroup, Toggle, Progress, Notification, useToaster, InlineEdit } from 'rsuite';
+import { Button, Input, Container, Form, Uploader, Avatar, Panel, PanelGroup, InputGroup, Toggle, Progress, Notification, useToaster, InlineEdit, Modal } from 'rsuite';
 import { Icon } from '@iconify/react';
 import Toastify from 'toastify-js';
 import clientPromise from '../lib/mongodb.js';
@@ -62,6 +62,7 @@ export default function Settings({ loggedInUser, otherUsers, isAdmin: initialIsA
 
     // State for edit mode
     const [isEditing, setIsEditing] = useState(null);
+    const [showLogoutModal, setShowLogoutModal] = useState(false);
 
     // User data states
     const [nombre, setNombre] = useState('');
@@ -277,9 +278,86 @@ export default function Settings({ loggedInUser, otherUsers, isAdmin: initialIsA
         }
     };
 
+    // Function to show the modal when editing the logged-in user's information
+    const handleEditLoggedInUser = () => {
+        setShowLogoutModal(true);
+    };
+
+    // Function to handle user confirmation to edit their own information
+    const handleConfirmEdit = async () => {
+        await handleUpdateUser(); // Call the update function
+        // Call the logout function
+        await handleLogout();
+    };
+
+    // Function to handle user logout
+    const handleLogout = async () => {
+        try {
+            // Make the API call to update the information and log out
+            const response = await axios.post('/api/update_user_information_logged', {
+                user_id: loggedInUser.user_id,
+                nombre,
+                apellido,
+                email,
+                password,
+                admin: isAdmin,
+                profilePhoto,
+            });
+
+            if (response.status === 200) {
+                // Clear cookies
+                document.cookie.split(";").forEach((c) => {
+                    document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/");
+                });
+
+                // Redirect to the homepage
+                window.location.href = '/';
+            }
+        } catch (error) {
+            console.error('Error al cerrar sesión:', error);
+        }
+    };
+
+    const CustomModal = ({ show, onClose, onConfirm }) => {
+        if (!show) return null;
+
+        return (
+            <div className="fixed inset-0 bg-slate-900 bg-opacity-50 flex items-center justify-center z-50">
+                <div className="bg-white rounded-lg shadow-xl p-6 w-80">
+                    <div className="mb-4">
+                        <p className="text-lg text-center">La edición de los datos del usuario con sesión iniciada requiere volver a iniciar sesión.</p>
+                        <p className="text-lg text-center">¿Está de acuerdo?</p>
+                    </div>
+                    <div className="flex justify-center mt-4 gap-4">
+
+                        <button
+                            onClick={onConfirm}
+                            className="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded"
+                        >
+                            Aceptar
+                        </button>
+                        <button
+                            onClick={onClose}
+                            className="bg-gray-300 hover:bg-gray-400 text-gray-700 font-semibold py-2 px-4 rounded"
+                        >
+                            Cerrar
+                        </button>
+                    </div>
+                </div>
+            </div>
+        );
+    };
+
 
     return (
         <GeneralLayout title="Configuración de Usuarios" description="Panel de administración de usuarios">
+
+            <CustomModal
+                show={showLogoutModal}
+                onClose={() => setShowLogoutModal(false)}
+                onConfirm={handleConfirmEdit}
+            />
+
             {/* Sección del usuario logueado */}
             <Container className="p-4 pb-24 pt-8">
                 <h1 className="text-3xl font-bold text-center font-sans w-full mb-8">Tu Perfil</h1>
@@ -357,7 +435,7 @@ export default function Settings({ loggedInUser, otherUsers, isAdmin: initialIsA
                                         {profilePhoto && <Avatar src={profilePhoto} size="lg" circle className="mt-4" />}
                                     </Form.Group>
                                     <div className="flex justify-end mt-4">
-                                        <Button onClick={handleUpdateUser} appearance="primary" className="mr-2">
+                                        <Button onClick={() => setShowLogoutModal(true)} appearance="primary" className="mr-2">
                                             Guardar Cambios
                                         </Button>
                                         <Button onClick={() => setIsEditing(null)} appearance="subtle">
