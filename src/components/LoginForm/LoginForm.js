@@ -45,6 +45,7 @@ const LoginForm = () => {
       }
 
     } catch (error) {
+      console.log(error);
       console.error('Error during login:', error);
       showToast('Error en el servidor. Inténtalo más tarde.', 'linear-gradient(to right, #ff416c, #ff4b2b)');
     }

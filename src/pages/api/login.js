@@ -46,6 +46,9 @@ export default async function handler(req, res) {
 
     } catch (error) {
         console.error('Error fetching user:', error.message);
-        res.status(500).json({ success: false, message: 'Internal server error' });
+        return {
+            statusCode: 500,
+            body: `Internal Server Error: ${error.toString()}`,
+        };
     }
 }
