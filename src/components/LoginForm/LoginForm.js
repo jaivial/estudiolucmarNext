@@ -13,7 +13,7 @@ const LoginForm = () => {
 
   const login = async () => {
     try {
-      const response = await axios.post('/api/login', {
+      const response = await axios.post('https://lucmarcloud.netlify.app/api/login', {
         email,
         password
       });
