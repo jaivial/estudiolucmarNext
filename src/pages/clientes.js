@@ -156,6 +156,7 @@ export default function Clientes() {
     };
 
 
+
     const handleUpdateCliente = async () => {
         if (newCliente.dni && !dniValidator(newCliente.dni)) {
             showToast('El DNI no es válido', 'linear-gradient(to right, #ff416c, #ff4b2b)');
