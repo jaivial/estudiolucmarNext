@@ -86,6 +86,9 @@ const MobileMenuBar = () => {
                                 <Link href="/settings" className={`${isActive('Settings')} w-full flex justify-center px-3.5 py-2 rounded-3xl shadow-lg`}>
                                     <FaCog size="1.8em" />
                                 </Link>
+                                <Link href="/clientes" className={`${isActive('Clientes')} w-full flex justify-center px-3.5 py-2 rounded-3xl shadow-lg`}>
+                                    <Icon icon="bi:people-fill" className='text-3xl' />
+                                </Link>
                                 <div
                                     id="mobile-itemLogOut"
                                     className="w-full flex justify-center py-2 bg-white text-black rounded-3xl shadow-lg hover:cursor-pointer hover:bg-blue-400 hover:text-white"
