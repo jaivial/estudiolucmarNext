@@ -40,6 +40,10 @@ export default function Clientes() {
         fetchInmuebles();
     }, []);
 
+    useEffect(() => {
+        console.log('clientes', clientes);
+    }, [clientes]);
+
     const fetchClientes = async () => {
         try {
             const response = await axios.get('/api/fetch_clientes');
@@ -135,17 +139,22 @@ export default function Clientes() {
     };
 
     const handleDeleteCliente = async (clienteId) => {
+        console.log('clienteId', clienteId);
+        console.log('typeof clienteId', typeof clienteId);
         try {
             const response = await axios.delete('/api/delete_cliente', { data: { id: clienteId } });
             if (response.status === 200) {
                 showToast('Cliente eliminado.', 'linear-gradient(to right bottom, #00603c, #006f39, #007d31, #008b24, #069903)');
-                fetchClientes();
+
+                // Eliminar el cliente del array de clientes en el estado
+                setClientes(prevClientes => prevClientes.filter(cliente => cliente.client_id !== clienteId));
             }
         } catch (error) {
             console.error('Error al eliminar cliente:', error);
             showToast('Error al eliminar el cliente.', 'linear-gradient(to right, #ff416c, #ff4b2b)');
         }
     };
+
 
     const handleUpdateCliente = async () => {
         if (newCliente.dni && !dniValidator(newCliente.dni)) {
@@ -266,7 +275,7 @@ export default function Clientes() {
                                     <HeaderCell>Acciones</HeaderCell>
                                     <Cell>
                                         {rowData => (
-                                            <div>
+                                            <div className="flex flex-row gap-4">
                                                 <Whisper
                                                     placement="top"
                                                     trigger="hover"
@@ -292,7 +301,8 @@ export default function Clientes() {
                                                     <Icon
                                                         icon="mdi:trash-can-outline"
                                                         style={{ cursor: 'pointer', fontSize: '1.5rem', color: 'red' }}
-                                                        onClick={() => handleDeleteCliente(rowData._id)}
+                                                        onClick={() => handleDeleteCliente(rowData.client_id)}
+
                                                     />
                                                 </Whisper>
                                             </div>
