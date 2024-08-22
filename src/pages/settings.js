@@ -1,5 +1,6 @@
 import GeneralLayout from "../components/layouts/GeneralLayout.js";
-import { useEffect, useState } from "react";
+import imageCompression from 'browser-image-compression';
+import { use, useEffect, useState } from "react";
 import axios from 'axios';
 import { Button, Input, Container, Form, Uploader, Avatar, Panel, PanelGroup, InputGroup, Toggle, Progress, Notification, useToaster, InlineEdit, Modal } from 'rsuite';
 import { Icon } from '@iconify/react';
@@ -9,54 +10,52 @@ import clientPromise from '../lib/mongodb.js';
 import 'rsuite/dist/rsuite.min.css';
 import '../app/globals.css';
 import '../components/ProgressCircle/progresscircle.css';
+import LoadingScreen from "../components/LoadingScreen/LoadingScreen.js";
+import Cookies from 'js-cookie';  // Import js-cookie to access cookies
 
 
 export const getServerSideProps = async (context) => {
     try {
         const client = await clientPromise;
         const db = client.db('inmoprocrm');
+        const adminCookie = context.req.cookies['admin'] === 'true';
+        // Serialize the loggedInUser object to JSON
+        const serializedData = JSON.stringify({ isAdmin: adminCookie });
+        // Calculate the size in bytes
+        const sizeInBytes = Buffer.byteLength(serializedData, 'utf8');
+        // Convert bytes to KB
+        const sizeInKB = sizeInBytes / 1024;
 
-        const userIdCookie = context.req.cookies['user_id'];
-        const adminCookie = context.req.cookies['admin'] === 'true';  // Leer la cookie 'admin'
-
-        const loggedInUser = await db.collection('users').findOne(
-            { user_id: parseInt(userIdCookie) },
-            { projection: { _id: 0, user_id: 1, nombre: 1, apellido: 1, email: 1, password: 1, admin: 1, profile_photo: 1 } }
-        );
-
-        const otherUsers = await db.collection('users').find(
-            { user_id: { $ne: parseInt(userIdCookie) } },
-            { projection: { _id: 0, user_id: 1, nombre: 1, apellido: 1, email: 1, password: 1, admin: 1, profile_photo: 1 } }
-        ).toArray();
+        console.log('Serialized props size:', sizeInBytes, 'bytes');
+        console.log('Serialized props size:', sizeInKB.toFixed(2), 'KB');
 
         return {
             props: {
-                loggedInUser: loggedInUser,
-                otherUsers: otherUsers,
-                isAdmin: adminCookie,  // Pasar el valor de la cookie como prop
+                isAdmin: adminCookie,  // Passing the admin status to props
             },
         };
     } catch (error) {
         console.error('Error al obtener los datos del usuario:', error);
         return {
             props: {
-                loggedInUser: null,
-                otherUsers: [],
                 isAdmin: false,
             },
         };
     }
 };
 
-export default function Settings({ loggedInUser, otherUsers, isAdmin: initialIsAdmin }) {
+export default function Settings({ isAdmin: initialIsAdmin }) {
     const [searchTerm, setSearchTerm] = useState('');
-    const [filteredUsers, setFilteredUsers] = useState(otherUsers);
     const [passwordVisible, setPasswordVisible] = useState(false);
     const [newUserPasswordVisible, setNewUserPasswordVisible] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [uploadProgress, setUploadProgress] = useState(0);
     const [showSuccess, setShowSuccess] = useState(false);
     const [activeKey, setActiveKey] = useState(null);
+    const [loggedInUser, setLoggedInUser] = useState([]);
+    const [otherUsers, setOtherUsers] = useState([]);
+    const [filteredUsers, setFilteredUsers] = useState([]);
+    const [Loading, setLoading] = useState(true);
 
     const [isAdmin, setIsAdmin] = useState(false);
     const [isAdministrador, setIsAdministrador] = useState(initialIsAdmin);
@@ -75,6 +74,46 @@ export default function Settings({ loggedInUser, otherUsers, isAdmin: initialIsA
     const [editUserId, setEditUserId] = useState(null); // Store the user_id of the user being edited
 
     const toaster = useToaster();
+
+    useEffect(() => {
+        const fetchLoggedInUser = async () => {
+            try {
+                // Get the user_id cookie
+                const userId = Cookies.get('user_id');
+
+                if (!userId) {
+                    throw new Error('User ID cookie not found');
+                }
+
+                // Make the API request with user_id as a query parameter
+                const response = await axios.get(`/api/fetch_loggedIn_user`, {
+                    params: {
+                        user_id: userId,
+                    },
+                });
+
+                console.log('loggedInUser', response.data.loggedInUser);
+                setLoggedInUser(response.data.loggedInUser);
+            } catch (error) {
+                console.error('Error fetching logged-in user:', error);
+            }
+        };
+
+        const fetchOtherUsers = async () => {
+            try {
+                const response = await axios.get('/api/fetch_other_users');
+                setOtherUsers(response.data);
+                setFilteredUsers(response.data);
+            } catch (error) {
+                console.error('Error fetching other users:', error);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchLoggedInUser();
+        fetchOtherUsers();
+    }, []);
 
     const showToast = (message, backgroundColor) => {
         Toastify({
@@ -151,8 +190,7 @@ export default function Settings({ loggedInUser, otherUsers, isAdmin: initialIsA
         }
     };
 
-    // Handle image upload and validation during edit mode
-    const handleImageUploadEdit = (fileList) => {
+    const handleImageUploadEdit = async (fileList) => {
         if (fileList.length > 0) {
             const file = fileList[0].blobFile;
 
@@ -164,16 +202,43 @@ export default function Settings({ loggedInUser, otherUsers, isAdmin: initialIsA
             }
 
             setIsImageValid(true);
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                setProfilePhoto(e.target.result);
-            };
-            reader.readAsDataURL(file);
+
+            try {
+                // Compress the image
+                const options = {
+                    maxSizeMB: 0.1, // 0.1 MB = 100KB
+                    maxWidthOrHeight: 1920,
+                    useWebWorker: true,
+                };
+                const compressedFile = await imageCompression(file, options);
+
+                // Log and store the size of the compressed file
+                const compressedSizeKB = compressedFile.size / 1024;
+                console.log('Compressed file size:', compressedSizeKB, 'KB');
+
+                // Convert the compressed image to Base64
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    setProfilePhoto(e.target.result);
+                    const base64 = e.target.result;
+                    // Calculate the size of the Base64 string
+                    const stringLength = base64.length;
+                    const sizeInBytes = 4 * Math.ceil((stringLength / 3)) * 0.5624896334383812; // Size in bytes
+
+                    console.log('Base64 encoded image:', base64);
+                    console.log('Base64 encoded image size:', sizeInBytes / 1024, 'KB');
+
+                };
+                reader.readAsDataURL(compressedFile);
+            } catch (error) {
+                console.error('Error during compression:', error);
+            }
         } else {
             setProfilePhoto(null);
             setIsImageValid(true);
         }
     };
+
 
 
     const handleUpdateUser = async () => {
@@ -194,6 +259,14 @@ export default function Settings({ loggedInUser, otherUsers, isAdmin: initialIsA
                 setIsEditing(null);
                 const updatedUsers = await axios.get('/api/fetch_other_users');
                 setFilteredUsers(updatedUsers.data);
+
+                // Calculate the size of the response data from /api/fetch_other_users
+                const responseData = JSON.stringify(updatedUsers.data);
+                const sizeInBytes = new TextEncoder().encode(responseData).length;
+                const sizeInKB = sizeInBytes / 1024;
+
+                console.log('API response size for /api/fetch_other_users:', sizeInBytes, 'bytes');
+                console.log('API response size for /api/fetch_other_users:', sizeInKB.toFixed(2), 'KB');
             }
         } catch (error) {
             console.error('Error al actualizar el usuario:', error);
@@ -258,6 +331,13 @@ export default function Settings({ loggedInUser, otherUsers, isAdmin: initialIsA
             });
 
             if (response.status === 201) {
+
+                // Calculate the size of the response data from /api/fetch_other_users
+                const responseAddNewUser = JSON.stringify(response.data);
+                const sizeInBytesAddNewUser = new TextEncoder().encode(responseAddNewUser).length;
+                const sizeInKBAddNewUser = sizeInBytesAddNewUser / 1024;
+                console.log('API response size for /api/add_new_user:', sizeInBytesAddNewUser, 'bytes');
+                console.log('API response size for /api/add_new_user:', sizeInKBAddNewUser.toFixed(2), 'KB');
                 setIsLoading(false);
                 setShowSuccess(false);
                 setUploadProgress(0);
@@ -267,6 +347,14 @@ export default function Settings({ loggedInUser, otherUsers, isAdmin: initialIsA
                 showToast('Usuario agregado.', 'linear-gradient(to right bottom, #00603c, #006f39, #007d31, #008b24, #069903)');
 
                 const updatedUsers = await axios.get('/api/fetch_other_users');
+
+                // Calculate the size of the response data from /api/fetch_other_users
+                const responseData = JSON.stringify(updatedUsers.data);
+                const sizeInBytes = new TextEncoder().encode(responseData).length;
+                const sizeInKB = sizeInBytes / 1024;
+
+                console.log('API response size for /api/fetch_other_users:', sizeInBytes, 'bytes');
+                console.log('API response size for /api/fetch_other_users:', sizeInKB.toFixed(2), 'KB');
                 setFilteredUsers(updatedUsers.data);
             }
 
@@ -368,6 +456,7 @@ export default function Settings({ loggedInUser, otherUsers, isAdmin: initialIsA
 
     return (
         <GeneralLayout title="Configuración de Usuarios" description="Panel de administración de usuarios">
+            {Loading && <LoadingScreen />}
             {isLoading && (
                 <div className="fixed inset-0 bg-slate-800 bg-opacity-30 flex items-center justify-center z-50">
                     <div className="bg-white rounded-xl bg-opacity-100 shadow-xl flex flex-col items-center justify-center p-6 transition-opacity duration-1000">
@@ -631,7 +720,7 @@ export default function Settings({ loggedInUser, otherUsers, isAdmin: initialIsA
                                                 action=""
                                                 autoUpload={false}
                                                 listType="picture"
-                                                onChange={(fileList) => {
+                                                onChange={async (fileList) => {
                                                     if (fileList.length > 0) {
                                                         const file = fileList[0].blobFile;
 
@@ -643,11 +732,24 @@ export default function Settings({ loggedInUser, otherUsers, isAdmin: initialIsA
                                                         }
 
                                                         setIsImageValid(true);
-                                                        const reader = new FileReader();
-                                                        reader.onload = (e) => {
-                                                            setProfilePhoto(e.target.result);
-                                                        };
-                                                        reader.readAsDataURL(file);
+
+                                                        try {
+                                                            // Compress the image
+                                                            const options = {
+                                                                maxSizeMB: 0.08, // 0.08 MB = 80KB
+                                                                maxWidthOrHeight: 1920,
+                                                                useWebWorker: true,
+                                                            };
+                                                            const compressedFile = await imageCompression(file, options);
+                                                            // Convert the compressed image to Base64
+                                                            const reader = new FileReader();
+                                                            reader.onload = (e) => {
+                                                                setProfilePhoto(e.target.result);
+                                                            };
+                                                            reader.readAsDataURL(compressedFile);
+                                                        } catch (error) {
+                                                            console.error('Error during compression:', error);
+                                                        }
                                                     } else {
                                                         setProfilePhoto(null);
                                                         setIsImageValid(true);
