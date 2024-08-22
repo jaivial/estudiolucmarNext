@@ -4,6 +4,7 @@ import axios from 'axios';
 import { Button, Input, Container, Form, Uploader, Avatar, Panel, PanelGroup, InputGroup, Toggle, Progress, Notification, useToaster, InlineEdit, Modal } from 'rsuite';
 import { Icon } from '@iconify/react';
 import Toastify from 'toastify-js';
+import 'toastify-js/src/toastify.css'; // Import Toastify CSS
 import clientPromise from '../lib/mongodb.js';
 import 'rsuite/dist/rsuite.min.css';
 import '../app/globals.css';
@@ -252,18 +253,16 @@ export default function Settings({ loggedInUser, otherUsers, isAdmin: initialIsA
                         if (percentCompleted === 100) {
                             setShowSuccess(true);
                         }
-                    }, 400);
+                    }, 100);
                 }
             });
 
             if (response.status === 201) {
-                setTimeout(() => {
-                    setIsLoading(false);
-                    setShowSuccess(false);
-                    setUploadProgress(0);
-                    resetForm();
-                    setActiveKey(null);
-                }, 100);
+                setIsLoading(false);
+                setShowSuccess(false);
+                setUploadProgress(0);
+                resetForm();
+                setActiveKey(null);
 
                 showToast('Usuario agregado.', 'linear-gradient(to right bottom, #00603c, #006f39, #007d31, #008b24, #069903)');
 
@@ -369,6 +368,19 @@ export default function Settings({ loggedInUser, otherUsers, isAdmin: initialIsA
 
     return (
         <GeneralLayout title="Configuración de Usuarios" description="Panel de administración de usuarios">
+            {isLoading && (
+                <div className="fixed inset-0 bg-slate-800 bg-opacity-30 flex items-center justify-center z-50">
+                    <div className="bg-white rounded-xl bg-opacity-100 shadow-xl flex flex-col items-center justify-center p-6 transition-opacity duration-1000">
+                        <Progress.Circle
+                            percent={uploadProgress}
+                            status={showSuccess ? 'success' : 'active'}
+                            strokeWidth={8}
+                            strokeColor={showSuccess ? "#28a745" : "#ffc107"}
+                            style={{ width: 100, height: 100 }}
+                        />
+                    </div>
+                </div>
+            )}
             <div className="h-full w-full flex flex-col items-center justify-start pt-20 overflow-y-scroll bg-gradient-to-t from-slate-400 via-slate-300 to-slate-200">
                 <h1 className="text-3xl font-bold text-center font-sans w-80 mb-8">Administración de Usuarios</h1>
 
