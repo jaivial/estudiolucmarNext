@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react';
-import { logout } from '../../lib/supabase/login/logout.js';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
 import { FaHome, FaSearch, FaMapMarkedAlt, FaTasks, FaNewspaper, FaCog, FaEllipsisV, FaSignOutAlt } from 'react-icons/fa';

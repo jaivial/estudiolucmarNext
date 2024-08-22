@@ -379,7 +379,7 @@ export default function Settings({ loggedInUser, otherUsers, isAdmin: initialIsA
                 />
 
                 {/* Sección del usuario logueado */}
-                <Container className="p-4 pt-8 w-[90%]">
+                <div className="p-4 pt-8 w-[90%]">
                     <PanelGroup accordion bordered activeKey={activeKey} onSelect={setActiveKey}>
                         <Panel header="Tu Perfil" eventKey="0" className="bg-slate-50 rounded-lg shadow-xl">
                             <div className="relative flex flex-col items-center gap-4 py-3 w-full">
@@ -473,13 +473,13 @@ export default function Settings({ loggedInUser, otherUsers, isAdmin: initialIsA
                             </div>
                         </Panel>
                     </PanelGroup>
-                </Container>
+                </div>
 
 
                 {/* Sección de gestionar usuarios y agregar nuevo usuario, solo si es admin */}
                 {isAdministrador && (
                     <>
-                        <Container className="p-4 w-[90%]">
+                        <div className="p-4 w-[90%]">
                             <PanelGroup accordion bordered>
                                 <Panel header="Gestionar Usuarios" eventKey="1" className="bg-slate-50 rounded-lg shadow-xl">
                                     <Form layout="inline" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', width: '100%' }}>
@@ -606,10 +606,10 @@ export default function Settings({ loggedInUser, otherUsers, isAdmin: initialIsA
                                     )}
                                 </Panel>
                             </PanelGroup>
-                        </Container>
+                        </div>
 
 
-                        <Container className="p-4 mb-32 w-[90%]">
+                        <div className="p-4 mb-32 w-[90%]">
                             <PanelGroup accordion bordered activeKey={activeKey} onSelect={setActiveKey} >
                                 <Panel header="Agregar Nuevo Usuario" eventKey="2" className="bg-slate-50 rounded-lg shadow-xl">
                                     <Form fluid onSubmit={handleAddUser} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', width: '100%' }}>
@@ -712,7 +712,7 @@ export default function Settings({ loggedInUser, otherUsers, isAdmin: initialIsA
                                     </Form>
                                 </Panel>
                             </PanelGroup>
-                        </Container>
+                        </div>
                     </>
                 )}
             </div>

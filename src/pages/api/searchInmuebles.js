@@ -402,22 +402,38 @@ export default async function handler(req, res) {
                 $group: {
                     _id: null,
                     responsables: {
-                        $push: "$nestedinmuebles.responsable"
+                        $push: {
+                            $ifNull: [{ $toString: "$nestedinmuebles.responsable" }, "NULL"]
+                        }
                     },
                     categorias: {
-                        $push: "$nestedinmuebles.categoria"
+                        $push: {
+                            $cond: {
+                                if: { $or: [{ $eq: ["$nestedinmuebles.categoria", null] }, { $eq: ["$nestedinmuebles.categoria", "NULL"] }] },
+                                then: "Sin Categoría",
+                                else: { $ifNull: [{ $toString: "$nestedinmuebles.categoria" }, "Sin Categoría"] }
+                            }
+                        }
                     },
                     zonas: {
-                        $push: "$nestedinmuebles.zona"
+                        $push: {
+                            $ifNull: [{ $toString: "$nestedinmuebles.zona" }, "NULL"]
+                        }
                     },
                     noticiastate: {
-                        $push: "$nestedinmuebles.noticiastate"
+                        $push: {
+                            $ifNull: [{ $toString: "$nestedinmuebles.noticiastate" }, "NULL"]
+                        }
                     },
                     encargostate: {
-                        $push: "$nestedinmuebles.encargostate"
+                        $push: {
+                            $ifNull: [{ $toString: "$nestedinmuebles.encargostate" }, "NULL"]
+                        }
                     },
                     localizado: {
-                        $push: "$nestedinmuebles.localizado"
+                        $push: {
+                            $ifNull: [{ $toString: "$nestedinmuebles.localizado" }, "NULL"]
+                        }
                     },
                     totalInmuebles: {
                         $sum: 1
@@ -480,7 +496,7 @@ export default async function handler(req, res) {
                                 in: {
                                     k: {
                                         $cond: {
-                                            if: { $or: [{ $eq: ["$$categoria", "NULL"] }, { $eq: ["$$categoria", null] }] },
+                                            if: { $or: [{ $eq: ["$$categoria", null] }, { $eq: ["$$categoria", "NULL"] }] },
                                             then: "Sin Categoría",
                                             else: { $toString: "$$categoria" }
                                         }
@@ -494,14 +510,14 @@ export default async function handler(req, res) {
                                                     $eq: [
                                                         {
                                                             $cond: {
-                                                                if: { $or: [{ $eq: ["$$c", "NULL"] }, { $eq: ["$$c", null] }] },
+                                                                if: { $or: [{ $eq: ["$$c", null] }, { $eq: ["$$c", "NULL"] }] },
                                                                 then: "Sin Categoría",
                                                                 else: { $toString: "$$c" }
                                                             }
                                                         },
                                                         {
                                                             $cond: {
-                                                                if: { $or: [{ $eq: ["$$categoria", "NULL"] }, { $eq: ["$$categoria", null] }] },
+                                                                if: { $or: [{ $eq: ["$$categoria", null] }, { $eq: ["$$categoria", "NULL"] }] },
                                                                 then: "Sin Categoría",
                                                                 else: { $toString: "$$categoria" }
                                                             }
@@ -539,10 +555,10 @@ export default async function handler(req, res) {
                     noticiastate: {
                         $arrayToObject: {
                             $map: {
-                                input: [true, false],
+                                input: ["true", "false", "NULL"],
                                 as: "state",
                                 in: {
-                                    k: { $toString: "$$state" }, // Clave: "true" o "false"
+                                    k: "$$state", // Clave: "true", "false", o "NULL"
                                     v: {
                                         $size: {
                                             $filter: {
@@ -559,10 +575,10 @@ export default async function handler(req, res) {
                     encargostate: {
                         $arrayToObject: {
                             $map: {
-                                input: [true, false],
+                                input: ["true", "false", "NULL"],
                                 as: "state",
                                 in: {
-                                    k: { $toString: "$$state" }, // Clave: "true" o "false"
+                                    k: "$$state", // Clave: "true", "false", o "NULL"
                                     v: {
                                         $size: {
                                             $filter: {
@@ -579,10 +595,10 @@ export default async function handler(req, res) {
                     localizado: {
                         $arrayToObject: {
                             $map: {
-                                input: [true, false],
+                                input: ["true", "false", "NULL"],
                                 as: "state",
                                 in: {
-                                    k: { $toString: "$$state" }, // Clave: "true" o "false"
+                                    k: "$$state", // Clave: "true", "false", o "NULL"
                                     v: {
                                         $size: {
                                             $filter: {
@@ -665,27 +681,43 @@ export default async function handler(req, res) {
                 }
             },
 
-            // Agrupamos los resultados por responsables, categorias, zonas, y los estados booleanos, contando el número de coincidencias
+            // Agrupamos los resultados por responsables, categorías, zonas, y los estados booleanos, contando el número de coincidencias
             {
                 $group: {
                     _id: null,
                     responsables: {
-                        $push: "$nestedescaleras.nestedinmuebles.responsable"
+                        $push: {
+                            $ifNull: [{ $toString: "$nestedescaleras.nestedinmuebles.responsable" }, "NULL"]
+                        }
                     },
                     categorias: {
-                        $push: "$nestedescaleras.nestedinmuebles.categoria"
+                        $push: {
+                            $cond: {
+                                if: { $or: [{ $eq: ["$nestedescaleras.nestedinmuebles.categoria", null] }, { $eq: ["$nestedescaleras.nestedinmuebles.categoria", "NULL"] }] },
+                                then: "Sin Categoría",
+                                else: { $ifNull: [{ $toString: "$nestedescaleras.nestedinmuebles.categoria" }, "Sin Categoría"] }
+                            }
+                        }
                     },
                     zonas: {
-                        $push: "$nestedescaleras.nestedinmuebles.zona"
+                        $push: {
+                            $ifNull: [{ $toString: "$nestedescaleras.nestedinmuebles.zona" }, "NULL"]
+                        }
                     },
                     noticiastate: {
-                        $push: "$nestedescaleras.nestedinmuebles.noticiastate"
+                        $push: {
+                            $ifNull: [{ $toString: "$nestedescaleras.nestedinmuebles.noticiastate" }, "NULL"]
+                        }
                     },
                     encargostate: {
-                        $push: "$nestedescaleras.nestedinmuebles.encargostate"
+                        $push: {
+                            $ifNull: [{ $toString: "$nestedescaleras.nestedinmuebles.encargostate" }, "NULL"]
+                        }
                     },
                     localizado: {
-                        $push: "$nestedescaleras.nestedinmuebles.localizado"
+                        $push: {
+                            $ifNull: [{ $toString: "$nestedescaleras.nestedinmuebles.localizado" }, "NULL"]
+                        }
                     },
                     totalInmuebles: {
                         $sum: 1
@@ -748,7 +780,7 @@ export default async function handler(req, res) {
                                 in: {
                                     k: {
                                         $cond: {
-                                            if: { $or: [{ $eq: ["$$categoria", "NULL"] }, { $eq: ["$$categoria", null] }] },
+                                            if: { $or: [{ $eq: ["$$categoria", null] }, { $eq: ["$$categoria", "NULL"] }] },
                                             then: "Sin Categoría",
                                             else: { $toString: "$$categoria" }
                                         }
@@ -762,14 +794,14 @@ export default async function handler(req, res) {
                                                     $eq: [
                                                         {
                                                             $cond: {
-                                                                if: { $or: [{ $eq: ["$$c", "NULL"] }, { $eq: ["$$c", null] }] },
+                                                                if: { $or: [{ $eq: ["$$c", null] }, { $eq: ["$$c", "NULL"] }] },
                                                                 then: "Sin Categoría",
                                                                 else: { $toString: "$$c" }
                                                             }
                                                         },
                                                         {
                                                             $cond: {
-                                                                if: { $or: [{ $eq: ["$$categoria", "NULL"] }, { $eq: ["$$categoria", null] }] },
+                                                                if: { $eq: ["$$categoria", null] },
                                                                 then: "Sin Categoría",
                                                                 else: { $toString: "$$categoria" }
                                                             }
@@ -807,10 +839,10 @@ export default async function handler(req, res) {
                     noticiastate: {
                         $arrayToObject: {
                             $map: {
-                                input: [true, false],
+                                input: ["true", "false", "NULL"],
                                 as: "state",
                                 in: {
-                                    k: { $toString: "$$state" }, // Clave: "true" o "false"
+                                    k: "$$state", // Clave: "true", "false", o "NULL"
                                     v: {
                                         $size: {
                                             $filter: {
@@ -827,10 +859,10 @@ export default async function handler(req, res) {
                     encargostate: {
                         $arrayToObject: {
                             $map: {
-                                input: [true, false],
+                                input: ["true", "false", "NULL"],
                                 as: "state",
                                 in: {
-                                    k: { $toString: "$$state" }, // Clave: "true" o "false"
+                                    k: "$$state", // Clave: "true", "false", o "NULL"
                                     v: {
                                         $size: {
                                             $filter: {
@@ -847,10 +879,10 @@ export default async function handler(req, res) {
                     localizado: {
                         $arrayToObject: {
                             $map: {
-                                input: [true, false],
+                                input: ["true", "false", "NULL"],
                                 as: "state",
                                 in: {
-                                    k: { $toString: "$$state" }, // Clave: "true" o "false"
+                                    k: "$$state", // Clave: "true", "false", o "NULL"
                                     v: {
                                         $size: {
                                             $filter: {
@@ -868,6 +900,7 @@ export default async function handler(req, res) {
                 }
             }
         ]).toArray();
+
 
         const result3 = await db.collection('inmuebles').aggregate([
             // Filtramos los documentos donde la dirección coincide con el patrón proporcionado y el tipo de agrupación es 1
@@ -919,7 +952,7 @@ export default async function handler(req, res) {
                 }
             },
 
-            // Agrupamos los resultados por responsables, categorias, zonas, y los estados booleanos, contando el número de coincidencias
+            // Agrupamos los resultados por responsables, categorías, zonas, y los estados booleanos, contando el número de coincidencias
             {
                 $group: {
                     _id: null,
@@ -931,7 +964,7 @@ export default async function handler(req, res) {
                     categorias: {
                         $push: {
                             $cond: {
-                                if: { $or: [{ $eq: ["$categoria", "NULL"] }, { $eq: ["$categoria", null] }] },
+                                if: { $or: [{ $eq: ["$categoria", null] }, { $eq: ["$categoria", "NULL"] }] },
                                 then: "Sin Categoría",
                                 else: { $ifNull: [{ $toString: "$categoria" }, "Sin Categoría"] }
                             }
@@ -1017,7 +1050,13 @@ export default async function handler(req, res) {
                                 input: { $setUnion: ["$categorias", []] }, // Eliminamos duplicados
                                 as: "categoria",
                                 in: {
-                                    k: "$$categoria",
+                                    k: {
+                                        $cond: {
+                                            if: { $or: [{ $eq: ["$$categoria", null] }, { $eq: ["$$categoria", "NULL"] }] },
+                                            then: "Sin Categoría",
+                                            else: { $toString: "$$categoria" }
+                                        }
+                                    },
                                     v: {
                                         $size: {
                                             $filter: {
@@ -1116,6 +1155,7 @@ export default async function handler(req, res) {
             }
         ]).toArray();
 
+
         const result4 = await db.collection('inmuebles').aggregate([
             // Desenrollamos el array de nestedinmuebles para aplicar el filtro de dirección en los subdocumentos
             {
@@ -1173,7 +1213,7 @@ export default async function handler(req, res) {
                 }
             },
 
-            // Agrupamos los resultados por responsables, categorias, zonas, y los estados booleanos, contando el número de coincidencias
+            // Agrupamos los resultados por responsables, categorías, zonas, y los estados booleanos, contando el número de coincidencias
             {
                 $group: {
                     _id: null,
@@ -1185,7 +1225,7 @@ export default async function handler(req, res) {
                     categorias: {
                         $push: {
                             $cond: {
-                                if: { $or: [{ $eq: ["$nestedinmuebles.categoria", "NULL"] }, { $eq: ["$nestedinmuebles.categoria", null] }] },
+                                if: { $or: [{ $eq: ["$nestedinmuebles.categoria", null] }, { $eq: ["$nestedinmuebles.categoria", "NULL"] }] },
                                 then: "Sin categoría",
                                 else: { $ifNull: [{ $toString: "$nestedinmuebles.categoria" }, "Sin categoría"] }
                             }
@@ -1271,7 +1311,13 @@ export default async function handler(req, res) {
                                 input: { $setUnion: ["$categorias", []] }, // Eliminamos duplicados
                                 as: "categoria",
                                 in: {
-                                    k: "$$categoria",
+                                    k: {
+                                        $cond: {
+                                            if: { $or: [{ $eq: ["$$categoria", null] }, { $eq: ["$$categoria", "NULL"] }] },
+                                            then: "Sin categoría",
+                                            else: { $toString: "$$categoria" }
+                                        }
+                                    },
                                     v: {
                                         $size: {
                                             $filter: {
@@ -1370,6 +1416,7 @@ export default async function handler(req, res) {
             }
         ]).toArray();
 
+
         const result5 = await db.collection('inmuebles').aggregate([
             // Desenrollamos el array de nestedescaleras para aplicar el filtro de dirección en los subdocumentos
             {
@@ -1433,7 +1480,7 @@ export default async function handler(req, res) {
                 }
             },
 
-            // Agrupamos los resultados por responsables, categorias, zonas, y los estados booleanos, contando el número de coincidencias
+            // Agrupamos los resultados por responsables, categorías, zonas, y los estados booleanos, contando el número de coincidencias
             {
                 $group: {
                     _id: null,
@@ -1445,7 +1492,7 @@ export default async function handler(req, res) {
                     categorias: {
                         $push: {
                             $cond: {
-                                if: { $or: [{ $eq: ["$nestedescaleras.nestedinmuebles.categoria", "NULL"] }, { $eq: ["$nestedescaleras.nestedinmuebles.categoria", null] }] },
+                                if: { $or: [{ $eq: ["$nestedescaleras.nestedinmuebles.categoria", null] }, { $eq: ["$nestedescaleras.nestedinmuebles.categoria", "NULL"] }] },
                                 then: "Sin categoría",
                                 else: { $ifNull: [{ $toString: "$nestedescaleras.nestedinmuebles.categoria" }, "Sin categoría"] }
                             }
@@ -1531,7 +1578,13 @@ export default async function handler(req, res) {
                                 input: { $setUnion: ["$categorias", []] }, // Eliminamos duplicados
                                 as: "categoria",
                                 in: {
-                                    k: "$$categoria",
+                                    k: {
+                                        $cond: {
+                                            if: { $or: [{ $eq: ["$$categoria", null] }, { $eq: ["$$categoria", "NULL"] }] },
+                                            then: "Sin categoría",
+                                            else: { $toString: "$$categoria" }
+                                        }
+                                    },
                                     v: {
                                         $size: {
                                             $filter: {
@@ -1629,6 +1682,7 @@ export default async function handler(req, res) {
                 }
             }
         ]).toArray();
+
 
         console.log('result 1', result1);
 
