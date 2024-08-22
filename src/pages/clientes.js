@@ -215,11 +215,11 @@ export default function Clientes() {
                                     <Cell dataKey="apellido" />
                                 </Column>
 
-                                <Column width={200} align="center">
+                                <Column width={350} align="center">
                                     <HeaderCell>Tipo de Cliente</HeaderCell>
                                     <Cell>
                                         {rowData => (
-                                            <div>
+                                            <div className="flex flex-row">
                                                 {rowData.tipo_de_cliente.map(tipo => (
                                                     <Tag
                                                         key={tipo}
@@ -313,6 +313,15 @@ export default function Clientes() {
                                     <Form.ControlLabel>Apellido</Form.ControlLabel>
                                     <Form.Control name="apellido" value={newCliente.apellido} onChange={value => setNewCliente({ ...newCliente, apellido: value })} />
                                 </Form.Group>
+                                <Form.Group>
+                                    <Form.ControlLabel>Teléfono</Form.ControlLabel>
+                                    <Form.Control
+                                        name="telefono"
+                                        value={newCliente.telefono}
+                                        onChange={value => setNewCliente({ ...newCliente, telefono: value })}
+                                    />
+                                </Form.Group>
+
 
                                 <Form.Group>
                                     <Form.ControlLabel>DNI</Form.ControlLabel>
