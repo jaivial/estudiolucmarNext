@@ -13,8 +13,6 @@ import Select from 'react-select'; // Import React Select
 import { GeoSearchControl, OpenStreetMapProvider } from 'leaflet-geosearch';
 import L from 'leaflet'; // Ensure Leaflet is imported correctly
 import SmallLoadingScreen from '../LoadingScreen/SmallLoadingScreen';
-import { id } from 'date-fns/locale';
-import { max } from 'date-fns';
 
 const icon = L.icon({
     iconUrl: 'https://cdn.jsdelivr.net/npm/leaflet@1.7.1/dist/images/marker-icon.png',
