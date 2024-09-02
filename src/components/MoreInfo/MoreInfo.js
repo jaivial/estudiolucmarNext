@@ -183,8 +183,8 @@ const ItemDetails = ({ id, onClose, showModal, setShowModal }) => {
                 <DetailsInfoTwo data={data} descripcion={descripcion} setDescripcion={setDescripcion} newDescripcion={newDescripcion} setNewDescripcion={setNewDescripcion} />
                 <DetailsInfoThree data={data} />
                 <ComentariosDetails data={data} />
-                {/* <NoticiasDetails data={data} setOnAddNoticiaRefreshKey={setOnAddNoticiaRefreshKey} onAddNoticiaRefreshKey={onAddNoticiaRefreshKey} />
-                <EncargosDetails data={data} setOnAddEncargoRefreshKey={setOnAddEncargoRefreshKey} onAddEncargoRefreshKey={onAddEncargoRefreshKey} /> */}
+                <NoticiasDetails data={data} setOnAddNoticiaRefreshKey={setOnAddNoticiaRefreshKey} onAddNoticiaRefreshKey={onAddNoticiaRefreshKey} />
+                {/* <EncargosDetails data={data} setOnAddEncargoRefreshKey={setOnAddEncargoRefreshKey} onAddEncargoRefreshKey={onAddEncargoRefreshKey} /> */}
             </Modal.Body>
             <Modal.Footer>
                 <Button onClick={onClose} appearance="default">Close</Button>

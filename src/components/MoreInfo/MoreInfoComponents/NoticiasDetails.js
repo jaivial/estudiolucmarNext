@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, use } from 'react';
 import axios from 'axios';
 import Slider from 'react-slider';
 import { AiOutlineDown, AiOutlineUp, AiOutlinePlus, AiOutlineClose } from 'react-icons/ai';
@@ -62,14 +62,20 @@ const NoticiasDetails = ({ data, setOnAddNoticiaRefreshKey, onAddNoticiaRefreshK
     const [isEditing, setIsEditing] = useState(false); // New state for editing
     const [currentNoticiaId, setCurrentNoticiaId] = useState(null); // New state for current noticia ID
 
+    useEffect(() => {
+        console.log('data.inmueble.noticiastate', data.inmueble.noticiastate);
+    }, []);
+
     const fetchNoticias = async () => {
         if (data.inmueble.noticiastate === 0) {
             console.log('No hay noticias para mostrar');
             return;
         } else {
             try {
-                const response = await axios.get('http://localhost:8000/backend/noticias/fetchallnoticias.php', {
-                    params: { id: data.inmueble.id },
+                const parsedInmuebleId = parseInt(data.inmueble.id);
+                console.log('parsedInmuebleId', parsedInmuebleId);
+                const response = await axios.get('/api/fetchAllNoticias', {
+                    params: { id: parsedInmuebleId },
                 });
 
                 if (response.data.status === 'success') {
@@ -81,8 +87,6 @@ const NoticiasDetails = ({ data, setOnAddNoticiaRefreshKey, onAddNoticiaRefreshK
                         console.error('No noticia data available');
                         setNoticias([]); // Set to empty array if there's no noticia
                     }
-                } else {
-                    console.error('Error fetching noticias:', response.data.message);
                 }
             } catch (error) {
                 console.error('Error fetching noticias:', error);
@@ -93,10 +97,12 @@ const NoticiasDetails = ({ data, setOnAddNoticiaRefreshKey, onAddNoticiaRefreshK
 
     const fetchAsesores = async () => {
         try {
-            const response = await axios.get('http://localhost:8000/backend/users/fetchusersdatabase.php');
-            if (Array.isArray(response.data)) {
+            const response = await axios.get('/api/fetchAsesores');
+            const asesores = response.data.asesores;
+            console.log('response', response.data.asesores);
+            if (Array.isArray(asesores)) {
                 setAsesorOptions(
-                    response.data.map((user) => ({
+                    asesores.map((user) => ({
                         value: `${user.name} ${user.apellido}`,
                         label: `${user.name} ${user.apellido}`,
                     })),
@@ -129,6 +135,7 @@ const NoticiasDetails = ({ data, setOnAddNoticiaRefreshKey, onAddNoticiaRefreshK
     };
 
     const handleAddNoticia = async () => {
+        // Validate the input fields
         if (!tipoVenta) {
             showToast('Selecciona el tipo de venta', 'linear-gradient(to right bottom, #c62828, #b92125, #ac1a22, #a0131f, #930b1c)');
             return;
@@ -148,6 +155,8 @@ const NoticiasDetails = ({ data, setOnAddNoticiaRefreshKey, onAddNoticiaRefreshK
             showToast('Introduce el precio y la fecha de valoración', 'linear-gradient(to right bottom, #c62828, #b92125, #ac1a22, #a0131f, #930b1c)');
             return;
         }
+
+        // Prepare parameters
         const params = {
             id: isEditing ? currentNoticiaId : data.inmueble.id,
             tipoPVA: tipoVenta,
@@ -162,26 +171,29 @@ const NoticiasDetails = ({ data, setOnAddNoticiaRefreshKey, onAddNoticiaRefreshK
         try {
             console.log('Sending params:', params);
 
+            // Determine the endpoint based on whether we are editing or adding
             const endpoint = isEditing
-                ? 'http://localhost:8000/backend/noticias/updatenoticia.php' // Replace with your editing endpoint
-                : 'http://localhost:8000/backend/noticias/agregarnoticia.php';
+                ? '/api/updateNoticia' // Use Next.js API route
+                : '/api/agregarNoticia'; // Use Next.js API route
 
-            const response = await axios.get(endpoint, { params });
-            console.log('response updated', response.data);
+            // Send POST request
+            const response = await axios.post(endpoint, params);
+            console.log('Response data:', response.data);
 
-            if (response.data) {
-                console.log('response.data', response.data);
+            if (response.data.success) {
                 showToast(isEditing ? 'Noticia actualizada' : 'Noticia añadida', 'linear-gradient(to right bottom, #00603c, #006f39, #007d31, #008b24, #069903)');
                 handlePopupClose(); // Close the popup and reset fields
                 await fetchNoticias(); // Refresh noticias
                 setOnAddNoticiaRefreshKey(onAddNoticiaRefreshKey + 1); // Refresh the key to trigger a re-render
             } else {
-                alert(response.data.message);
+                alert(response.data.error || 'An error occurred');
             }
         } catch (error) {
             console.error('Error adding/updating noticia:', error);
+            showToast('Error al añadir/actualizar la noticia', 'linear-gradient(to right bottom, #c62828, #b92125, #ac1a22, #a0131f, #930b1c)');
         }
     };
+
 
     const handleEditNoticia = (noticia) => {
         setTipoVenta(noticia.tipo_PV);
@@ -244,7 +256,7 @@ const NoticiasDetails = ({ data, setOnAddNoticiaRefreshKey, onAddNoticiaRefreshK
                 </div>
                 {isOpen && (
                     <div className="py-1 px-2 relative">
-                        {data.inmueble.noticiastate === 1 ? (
+                        {data.inmueble.noticiastate === true ? (
                             noticias.map((noticia) => (
                                 <div key={noticia.id} className="py-2 my-3 flex flex-col items-center gap-2">
                                     <div className="flex items-center gap-2 flex-col w-full">
