@@ -18,8 +18,9 @@ function isPointInPolygon(point, polygon) {
 }
 
 export default async function handler(req, res) {
-    if (req.method === 'GET') {
-        const { codeID } = req.query;
+    if (req.method === 'POST') {
+        const { codeID } = req.body;
+        console.log('codeID', codeID);
 
         if (!codeID) {
             return res.status(400).json({ message: 'codeID is required' });
@@ -124,14 +125,15 @@ export default async function handler(req, res) {
                     { $set: { zona: null, responsable: null } }
                 );
             }
-
+            const responsePayload = inmueblesInZones;
+            res.setHeader('Content-Length', Buffer.byteLength(JSON.stringify(responsePayload)));
             res.status(200).json(inmueblesInZones);
         } catch (error) {
             console.error('Error processing request:', error);
             res.status(500).json({ message: 'Internal Server Error', error: error.message });
         }
     } else {
-        res.setHeader('Allow', ['GET']);
+        res.setHeader('Allow', ['POST']);
         res.status(405).end(`Method ${req.method} Not Allowed`);
     }
 }
