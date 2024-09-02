@@ -184,7 +184,7 @@ const ItemDetails = ({ id, onClose, showModal, setShowModal }) => {
                 <DetailsInfoThree data={data} />
                 <ComentariosDetails data={data} />
                 <NoticiasDetails data={data} setOnAddNoticiaRefreshKey={setOnAddNoticiaRefreshKey} onAddNoticiaRefreshKey={onAddNoticiaRefreshKey} />
-                {/* <EncargosDetails data={data} setOnAddEncargoRefreshKey={setOnAddEncargoRefreshKey} onAddEncargoRefreshKey={onAddEncargoRefreshKey} /> */}
+                <EncargosDetails data={data} setOnAddEncargoRefreshKey={setOnAddEncargoRefreshKey} onAddEncargoRefreshKey={onAddEncargoRefreshKey} />
             </Modal.Body>
             <Modal.Footer>
                 <Button onClick={onClose} appearance="default">Close</Button>

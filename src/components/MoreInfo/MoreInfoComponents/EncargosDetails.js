@@ -72,17 +72,21 @@ const EncargosDetails = ({ data, setOnAddEncargoRefreshKey, onAddEncargoRefreshK
     const [matchingCliente, setMatchingCliente] = useState([null]);
     const [nombreCliente, setNombreCliente] = useState('');
 
+
+    console.log('data.inmueble.encargostate', data.inmueble.encargostate);
     const fetchEncargos = async () => {
-        if (data.inmueble.encargoState === 0) {
+        if (data.inmueble.encargoState === false) {
             console.log('No hay encargos para mostrar');
             return;
         } else {
             try {
-                const response = await axios.get('http://localhost:8000/backend/encargos/encargosfetch.php', {
-                    params: { id: data.inmueble.id },
+                const inmuebleId = data.inmueble.id;
+                console.log('inmuebleId', inmuebleId);
+                const response = await axios.get('/api/encargosFetch', {
+                    params: { id: inmuebleId },
                 });
                 console.log('Encargos fetched:', response.data);
-                if (response.data.id) {
+                if (response.data !== null) {
                     const encargo = response.data;
                     if (encargo) {
                         setEncargos([encargo]);
@@ -90,8 +94,6 @@ const EncargosDetails = ({ data, setOnAddEncargoRefreshKey, onAddEncargoRefreshK
                         console.error('No encargo data available');
                         setEncargos([]);
                     }
-                } else {
-                    console.error('Error fetching encargos:', response.data.message);
                 }
             } catch (error) {
                 console.error('Error fetching encargos:', error);
@@ -102,10 +104,11 @@ const EncargosDetails = ({ data, setOnAddEncargoRefreshKey, onAddEncargoRefreshK
 
     const fetchAsesores = async () => {
         try {
-            const response = await axios.get('http://localhost:8000/backend/users/fetchusersdatabase.php');
-            if (Array.isArray(response.data)) {
+            const response = await axios.get('/api/fetchAsesores');
+            const asesores = response.data.asesores;
+            if (Array.isArray(asesores)) {
                 setAsesorOptions(
-                    response.data.map((user) => ({
+                    asesores.map((user) => ({
                         value: `${user.name} ${user.apellido}`,
                         label: `${user.name} ${user.apellido}`,
                     })),
@@ -120,7 +123,7 @@ const EncargosDetails = ({ data, setOnAddEncargoRefreshKey, onAddEncargoRefreshK
 
     const fetchClientes = async () => {
         try {
-            const response = await axios.get('http://localhost:8000/backend/clientes/seleccionaCliente.php');
+            const response = await axios.get('/api/seleccionaClienteEncargos');
             if (Array.isArray(response.data)) {
                 setClienteOptions(
                     response.data.map((cliente) => ({
@@ -202,7 +205,7 @@ const EncargosDetails = ({ data, setOnAddEncargoRefreshKey, onAddEncargoRefreshK
         try {
             console.log('Sending params:', params);
 
-            const endpoint = isEditing ? 'http://localhost:8000/backend/encargos/updateEncargo.php' : 'http://localhost:8000/backend/encargos/agregarEncargo.php';
+            const endpoint = isEditing ? '/api/updateEncargo' : '/api/agregarEncargo';
 
             const response = await axios.get(endpoint, { params });
             console.log('response updated', response.data);
@@ -241,20 +244,32 @@ const EncargosDetails = ({ data, setOnAddEncargoRefreshKey, onAddEncargoRefreshK
     };
 
     const handleDeleteEncargo = async () => {
-        if (!isEditing || !currentEncargoId) {
-            console.error('Encargo ID is missing or not in editing mode.');
+        if (!isEditing || !currentEncargoId || !encargos.length) {
+            console.error('Encargo ID is missing, not in editing mode, or encargos array is empty.');
             return;
         }
 
         try {
-            const response = await axios.get('http://localhost:8000/backend/encargos/deleteEncargo.php', {
+            const encargoIdToDelete = encargos[0].encargo_id;
+
+            // Make DELETE request to API endpoint with encargo_id as a query parameter
+            const response = await axios.delete('/api/deleteEncargo', {
                 params: {
-                    id: encargos[0].encargo_id,
+                    id: encargoIdToDelete,
                 },
             });
+
             console.log('response deleted', response.data);
+
             if (response.data.success) {
-                alert('Encargo eliminado correctamente.');
+                showToast('Encargo eliminado correctamente', 'linear-gradient(to right bottom, #00603c, #006f39, #007d31, #008b24, #069903)');
+
+                // Optional: Filter out the deleted encargo from the array
+                const updatedEncargos = encargos.filter(encargo => encargo.encargo_id !== encargoIdToDelete);
+
+                // Update state with the new list of encargos
+                setEncargos(updatedEncargos);
+
                 handlePopupClose();
                 setIsEditing(false);
                 setOnAddEncargoRefreshKey(onAddEncargoRefreshKey + 1);
@@ -266,6 +281,7 @@ const EncargosDetails = ({ data, setOnAddEncargoRefreshKey, onAddEncargoRefreshK
         }
     };
 
+
     const formatDate = (dateString) => {
         return moment(dateString).format('DD/MM/YYYY');
     };
@@ -275,7 +291,7 @@ const EncargosDetails = ({ data, setOnAddEncargoRefreshKey, onAddEncargoRefreshK
     }, [encargos]);
 
     return (
-        data.inmueble.noticiastate === 1 && (
+        data.inmueble.noticiastate === true && (
             <div className="p-4">
                 <div className="bg-white border border-gray-300 rounded-md">
                     <div onClick={() => setIsOpen(!isOpen)} className="flex items-center justify-between p-4 cursor-pointer bg-gray-100 rounded-t-md">
