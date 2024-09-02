@@ -7,8 +7,9 @@ import 'rsuite/dist/rsuite.min.css'; // Import the rsuite CSS
 import './ItemsDetailsHeader.css';
 import EditButton from './EditButton';
 import imageCompression from 'browser-image-compression';
+import { FaEye, FaEyeSlash } from 'react-icons/fa'; // Import eye icons
 
-const ItemDetailsHeader = ({ inmuebleId, onClose, address, setImages, setIsSliderLoading }) => {
+const ItemDetailsHeader = ({ inmuebleId, onClose, address, setImages, setIsSliderLoading, isVisible, setIsVisible }) => {
     const [selectedFiles, setSelectedFiles] = useState([]);
     const [uploadStatus, setUploadStatus] = useState('');
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -26,13 +27,18 @@ const ItemDetailsHeader = ({ inmuebleId, onClose, address, setImages, setIsSlide
     const [editModalOpen, setEditModalOpen] = useState(false);
     const [isImageValid, setIsImageValid] = useState(true);
 
+
+    const toggleVisibility = () => {
+        setIsVisible(!isVisible);
+    };
+
     useEffect(() => {
         const loadImages = async () => {
             try {
                 const response = await axios.get('/api/getImages', {
                     params: { inmueble_id: inmuebleId },
                 });
-
+                console.log('response', response);
                 if (response.data.status === 'success') {
                     const images = response.data.images || [];
                     setUploadedImages(images);
@@ -200,14 +206,10 @@ const ItemDetailsHeader = ({ inmuebleId, onClose, address, setImages, setIsSlide
 
     const handleDeleteImage = async (index) => {
         try {
-            const formData = new FormData();
-            formData.append('inmueble_id', inmuebleId);
-            formData.append('image_id', uploadedImages[index].id);
-
-            const response = await axios.post('http://localhost:8000/backend/itemDetails/deleteImage.php', formData, {
-                headers: {
-                    'Content-Type': 'multipart/form-data',
-                },
+            console.log('handleDeleteImage', inmuebleId, uploadedImages[index].id);
+            const response = await axios.post('/api/deleteImageInmueble', {
+                inmueble_id: inmuebleId,
+                image_id: uploadedImages[index].id,
             });
 
             if (response.data.status === 'success') {
@@ -228,7 +230,7 @@ const ItemDetailsHeader = ({ inmuebleId, onClose, address, setImages, setIsSlide
                     newImages[index] = null;
                     return newImages;
                 });
-                setGetImageRefreshKey(getImageRefreshKey + 1);
+                setGetImageRefreshKey((prevKey) => prevKey + 1);
             } else {
                 Toastify({
                     text: 'Failed to delete image',
@@ -244,12 +246,22 @@ const ItemDetailsHeader = ({ inmuebleId, onClose, address, setImages, setIsSlide
             }
         } catch (error) {
             console.error('Error deleting image:', error);
+            Toastify({
+                text: 'Error occurred while deleting image',
+                duration: 2500,
+                gravity: 'top',
+                position: 'center',
+                style: {
+                    borderRadius: '10px',
+                    backgroundImage: 'linear-gradient(to right top, #c62828, #b92125, #ac1a22, #a0131f, #930b1c)',
+                    textAlign: 'center',
+                },
+            }).showToast();
         }
     };
-
     const openEditModal = () => setEditModalOpen(true);
     const closeEditModal = () => setEditModalOpen(false);
-    const openFileInput = () => getFileRef.current.click(); // Function to open file input
+
 
     const renderSlots = () => {
         const slots = [];
@@ -291,31 +303,40 @@ const ItemDetailsHeader = ({ inmuebleId, onClose, address, setImages, setIsSlide
         }
         return slots;
     };
+    const openFileInput = () => getFileRef.current.click(); // Function to open file input
 
     return (
         <div className="header-container">
             {isModalOpen && <EditModal closeModal={closeModal} />}
-            <div className='flex flex-row justify-center gap-3'>
+            <div className='flex flex-row justify-center gap-3 pb-6'>
                 <EditButton onClick={() => setIsModalOpen(true)} />
                 <div>
                     <button onClick={openEditModal} className="p-3 rounded-full border border-gray-300 hover:bg-gray-100">
                         <AiOutlineCamera className="text-gray-500 text-2xl" />
                     </button>
                 </div>
+                <div>
+                    <button
+                        onClick={toggleVisibility}
+                        className="p-3 rounded-full border border-gray-300 hover:bg-gray-100"
+                    >
+                        {isVisible ? <FaEye size={24} /> : <FaEyeSlash size={24} />}
+                    </button>
+                </div>
             </div>
-            <Modal open={editModalOpen} onClose={closeEditModal} size="lg" overflow={false} backdrop="static" style={{ backgroundColor: 'rgba(0,0,0,0.15)' }}>
+            <Modal open={editModalOpen} onClose={closeEditModal} size="lg" overflow={false} backdrop="static" style={{ backgroundColor: 'rgba(0,0,0,0.15)', padding: '0px 2px' }}>
                 <Modal.Header>
-                    <Modal.Title>Upload Images</Modal.Title>
+                    <Modal.Title className='text-center'>Subir imágenes</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
-                    <div className="modal-body">
+                    <div className="modal-body p-6">
                         {isUploading ? (
                             <div className="flex w-full flex-row items-center justify-center h-80">
                                 <AiOutlineLoading className="text-blue-500 text-5xl animate-spin" />
                                 <span className="ml-3 text-gray-800 font-sans text-lg font-semibold">Subiendo imágenes...</span>
                             </div>
                         ) : (
-                            <div ref={containerRef} className="grid grid-cols-3 gap-6 mb-4">
+                            <div ref={containerRef} className="grid grid-cols-3 gap-5 mb-4">
                                 {renderSlots()}
                             </div>
                         )}
@@ -354,10 +375,7 @@ const ItemDetailsHeader = ({ inmuebleId, onClose, address, setImages, setIsSlide
                     </div>
                 </Modal.Body>
                 <Modal.Footer className="flex flex-row justify-center gap-4">
-                    <Button onClick={handleUpload} appearance="primary" disabled={isUploading}>
-                        {isUploading ? <AiOutlineLoading className="loading-icon" /> : 'Subir'}
-                    </Button>
-                    <Button onClick={() => setIsModalOpen(false)} appearance="subtle">
+                    <Button onClick={() => setEditModalOpen(false)} appearance="subtle">
                         Cancelar
                     </Button>
                 </Modal.Footer>

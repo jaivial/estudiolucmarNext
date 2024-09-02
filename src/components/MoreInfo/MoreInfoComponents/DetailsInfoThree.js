@@ -148,10 +148,12 @@ const DetailsInfoThree = ({ data }) => {
                             {renderListItem(terraza === 1 ? 'Con terraza y balcón' : null)}
                         </ul>
                     </div>
-                    <div>
-                        <h2 className="font-bold text-xl pb-2 mt-6">Equipamiento</h2>
-                        <ul className="list-none pl-2">{renderListItem(aireAcondicionado === 1 ? 'Aire acondicionado' : null)}</ul>
-                    </div>
+                    {aireAcondicionado === 1 && (
+                        <div>
+                            <h2 className="font-bold text-xl pb-2 mt-6">Equipamiento</h2>
+                            <ul className="list-none pl-2">{renderListItem(aireAcondicionado === 1 ? 'Aire acondicionado' : null)}</ul>
+                        </div>
+                    )}
                 </div>
 
                 {/* Right Column: Equipment and Commercial Information */}

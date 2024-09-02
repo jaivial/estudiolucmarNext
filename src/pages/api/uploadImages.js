@@ -5,7 +5,13 @@ import clientPromise from '../../lib/mongodb';
 function calculateFileSizeInKB(buffer) {
     return (buffer.length / 1024).toFixed(2); // Size in KB with two decimal places
 }
-
+export const config = {
+    api: {
+        bodyParser: {
+            sizeLimit: '500mb', // Establece un límite de tamaño para las solicitudes
+        },
+    },
+};
 
 export default async function handler(req, res) {
     try {

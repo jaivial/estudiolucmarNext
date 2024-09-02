@@ -27,16 +27,18 @@
   }
   
   .arrow--left {
-    left: -3px;
+    left: -5px;
     filter: drop-shadow(0 0 0.07rem rgba(0, 0, 0, 1));
   }
   
   .arrow--right {
     left: auto;
-    right: -3px;
+    right: -5px;
     filter: drop-shadow(0 0 0.07rem rgba(0, 0, 0, 1));
   }
-  
+  .rs-modal-content {
+    @apply px-0;
+  }
   /* .arrow--disabled {
     @apply fill-blue-400 opacity-50;
   }

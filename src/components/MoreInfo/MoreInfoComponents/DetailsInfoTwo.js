@@ -21,34 +21,10 @@ const showToast = (message, backgroundColor) => {
     }).showToast();
 };
 
-const DetailsInfoTwo = ({ data }) => {
-    const [descripcion, setDescripcion] = useState('');
+const DetailsInfoTwo = ({ data, descripcion, setDescripcion, newDescripcion, setNewDescripcion }) => {
     const [isEditing, setIsEditing] = useState(false);
-    const [newDescripcion, setNewDescripcion] = useState('');
 
-    useEffect(() => {
-        // Fetch description from database
-        const fetchDescripcion = async () => {
-            try {
-                const response = await axios.get('http://localhost:8000/backend/itemDetails/getDescripcion.php', {
-                    params: {
-                        id: data.inmueble.id,
-                    },
-                });
-                if (response.data.status === 'success') {
-                    setDescripcion(response.data.descripcion || '');
-                    setNewDescripcion(response.data.descripcion || '');
-                } else {
-                    showToast(response.data.message, 'linear-gradient(to right bottom, #c62828, #b92125, #ac1a22, #a0131f, #930b1c)');
-                }
-            } catch (error) {
-                console.error('Error fetching description:', error);
-                showToast('Error fetching description', 'linear-gradient(to right bottom, #c62828, #b92125, #ac1a22, #a0131f, #930b1c)');
-            }
-        };
 
-        fetchDescripcion();
-    }, [data]);
 
     const handleEditClick = () => {
         setIsEditing(true);
@@ -59,11 +35,16 @@ const DetailsInfoTwo = ({ data }) => {
         setNewDescripcion(descripcion); // Reset newDescripcion to the original descripcion
     };
 
+    // Function to handle save button click
     const handleSaveClick = async () => {
+        const inmuebleId = data.inmueble.id;
+        console.log('inmuebleId', inmuebleId);
+        console.log('newDescripcion', newDescripcion);
         try {
-            const response = await axios.get('http://localhost:8000/backend/itemDetails/updateDescripcion.php', {
+            // Make a PUT request to the new API endpoint
+            const response = await axios.get('/api/updateDescripcionInmueble', {
                 params: {
-                    id: data.inmueble.id,
+                    id: inmuebleId,
                     descripcion: newDescripcion,
                 },
             });
@@ -81,6 +62,7 @@ const DetailsInfoTwo = ({ data }) => {
         }
     };
 
+    // Function to handle input change
     const handleInputChange = (e) => {
         setNewDescripcion(e.target.value);
     };
@@ -100,8 +82,8 @@ const DetailsInfoTwo = ({ data }) => {
         <div className="p-4">
             {descripcion !== '' && descripcion !== null ? (
                 <div className="relative px-2">
-                    <div className="font-bold text-xl pb-2">
-                        <h1>Descripción del inmueble</h1>
+                    <div className="font-bold text-lg pb-2">
+                        <h1 className='text-start text-2xl'>Descripción del inmueble</h1>
                     </div>
                     {isEditing ? (
                         <>
@@ -118,7 +100,7 @@ const DetailsInfoTwo = ({ data }) => {
                     ) : (
                         <>
                             <p className="text-justify py-2">{formatDescription(descripcion)}</p>
-                            <button onClick={handleEditClick} className="absolute top-3 right-1 text-blue-500 hover:text-blue-700">
+                            <button onClick={handleEditClick} className="absolute top-1 right-3 text-blue-500 hover:text-blue-700">
                                 <AiOutlineEdit className="text-2xl" />
                             </button>
                         </>

@@ -19,6 +19,8 @@ import EncargosDetails from './MoreInfoComponents/EncargosDetails';
 import { Modal, Button } from 'rsuite';
 import 'rsuite/dist/rsuite.min.css';
 
+import SmallLoadingScreen from '../LoadingScreen/SmallLoadingScreen';
+
 const ItemDetails = ({ id, onClose, showModal, setShowModal }) => {
     const [data, setData] = useState(null);
     const [images, setImages] = useState([]);
@@ -29,7 +31,31 @@ const ItemDetails = ({ id, onClose, showModal, setShowModal }) => {
     const [encargoData, setEncargoData] = useState([]);
     const [onAddNoticiaRefreshKey, setOnAddNoticiaRefreshKey] = useState(1);
     const [onAddEncargoRefreshKey, setOnAddEncargoRefreshKey] = useState(1);
+    const [isVisible, setIsVisible] = useState(false); // Initial state
+    const [descripcion, setDescripcion] = useState('');
+    const [newDescripcion, setNewDescripcion] = useState('');
 
+
+    const fetchDescripcion = async () => {
+        try {
+            const response = await axios.get('/api/getDescripcionInmueble', {
+                params: {
+                    id: id,
+                },
+            });
+
+            console.log('response', response.data);
+            if (response.data.status === 'success') {
+                setDescripcion(response.data.descripcion || '');
+                setNewDescripcion(response.data.descripcion || '');
+            } else {
+                showToast(response.data.message, 'linear-gradient(to right bottom, #c62828, #b92125, #ac1a22, #a0131f, #930b1c)');
+            }
+        } catch (error) {
+            console.error('Error fetching description:', error);
+            showToast('Error fetching description', 'linear-gradient(to right bottom, #c62828, #b92125, #ac1a22, #a0131f, #930b1c)');
+        }
+    };
 
 
     const [sliderRef, slider] = useKeenSlider({
@@ -89,6 +115,7 @@ const ItemDetails = ({ id, onClose, showModal, setShowModal }) => {
         };
 
         fetchEncargoData();
+        fetchDescripcion();
     }, [id, onAddNoticiaRefreshKey, onAddEncargoRefreshKey]);
 
     function Arrow(props) {
@@ -102,7 +129,7 @@ const ItemDetails = ({ id, onClose, showModal, setShowModal }) => {
     }
 
     if (!data) {
-        return <div>Loading Jjaja...</div>;
+        return <SmallLoadingScreen />;
     }
 
     return (
@@ -123,34 +150,40 @@ const ItemDetails = ({ id, onClose, showModal, setShowModal }) => {
                     address={data.inmueble.direccion}
                     inmuebleId={data.inmueble.id}
                     setImages={setImages}
-                    setIsSliderLoading={setIsSliderLoading} // Pass the callback
+                    setIsSliderLoading={setIsSliderLoading}
+                    isVisible={isVisible}
+                    setIsVisible={setIsVisible}
                 />
-                <div className="p-4 h-[300px] w-full rounded-lg">
-                    {/* Slider Component */}
-                    {images.length > 0 && (
-                        <div ref={sliderRef} className="keen-slider h-full">
-                            {images.map((image, index) => (
-                                <div key={index} className="keen-slider__slide h-full flex justify-center items-center">
-                                    <img src={`data:${image.type};base64,${image.data}`} alt={`Slide ${index}`} className="w-auto h-full object-contain" />
-                                </div>
-                            ))}
-                            {loaded && slider.current && (
-                                <>
-                                    <Arrow left onClick={(e) => e.stopPropagation() || slider.current?.prev()} disabled={currentSlide === 0} />
+                {isVisible && (
+                    <>
+                        <div className="py-4 h-[300px] w-full rounded-lg">
+                            {/* Slider Component */}
+                            {images.length > 0 && (
+                                <div ref={sliderRef} className="keen-slider h-full">
+                                    {images.map((image, index) => (
+                                        <div key={index} className="keen-slider__slide h-full flex justify-center items-center">
+                                            <img src={`data:${image.type};base64,${image.data}`} alt={`Slide ${index}`} className="w-auto h-full object-contain" />
+                                        </div>
+                                    ))}
+                                    {loaded && slider.current && (
+                                        <>
+                                            <Arrow left onClick={(e) => e.stopPropagation() || slider.current?.prev()} disabled={currentSlide === 0} />
 
-                                    <Arrow onClick={(e) => e.stopPropagation() || slider.current?.next()} disabled={currentSlide === slider.current.track.details.slides.length - 1} />
-                                </>
+                                            <Arrow onClick={(e) => e.stopPropagation() || slider.current?.next()} disabled={currentSlide === slider.current.track.details.slides.length - 1} />
+                                        </>
+                                    )}
+                                </div>
                             )}
+                            {images.length === 0 && <p className="text-center h-full flex flex-row justify-center items-center">No hay fotos disponibles</p>}
                         </div>
-                    )}
-                    {images.length === 0 && <p className="text-center h-full flex flex-row justify-center items-center">No hay fotos disponibles</p>}
-                </div>
-                <h1 className="text-xl font-semibold text-start w-full leading-6 px-6">{data.inmueble.direccion}</h1>
-                <DetailsInfoOne data={data} encargoData={encargoData} />
-                <DetailsInfoTwo data={data} />
-                {/* <DetailsInfoThree data={data} />
+                    </>
+                )}
+                <h1 className="text-xl font-semibold text-start w-full leading-7 px-6">{data.inmueble.direccion}</h1>
+                <DetailsInfoOne data={data} encargoData={encargoData} isVisible={isVisible} setIsVisible={setIsVisible} />
+                <DetailsInfoTwo data={data} descripcion={descripcion} setDescripcion={setDescripcion} newDescripcion={newDescripcion} setNewDescripcion={setNewDescripcion} />
+                <DetailsInfoThree data={data} />
                 <ComentariosDetails data={data} />
-                <NoticiasDetails data={data} setOnAddNoticiaRefreshKey={setOnAddNoticiaRefreshKey} onAddNoticiaRefreshKey={onAddNoticiaRefreshKey} />
+                {/* <NoticiasDetails data={data} setOnAddNoticiaRefreshKey={setOnAddNoticiaRefreshKey} onAddNoticiaRefreshKey={onAddNoticiaRefreshKey} />
                 <EncargosDetails data={data} setOnAddEncargoRefreshKey={setOnAddEncargoRefreshKey} onAddEncargoRefreshKey={onAddEncargoRefreshKey} /> */}
             </Modal.Body>
             <Modal.Footer>

@@ -5,7 +5,12 @@ import 'leaflet/dist/leaflet.css';
 import { AiOutlineClose, AiOutlinePlus } from 'react-icons/ai';
 import axios from 'axios';
 
-const DetailsInfoOne = ({ data, encargoData }) => {
+const icon = L.icon({ iconUrl: "https://cdn.jsdelivr.net/npm/leaflet@1.7.1/dist/images/marker-icon.png", iconSize: [25, 41], iconAnchor: [12, 41] });
+
+// some other code
+
+
+const DetailsInfoOne = ({ data, encargoData, isVisible, setIsVisible }) => {
     const [showMap, setShowMap] = useState(false);
 
     useEffect(() => {
@@ -25,19 +30,22 @@ const DetailsInfoOne = ({ data, encargoData }) => {
     const centerCoordinates = [centerLat, centerLng];
 
     const { location } = data.inmueble;
+    const { address } = data.inmueble.direccion;
 
     const toggleMap = () => setShowMap(!showMap);
 
     return (
         <div className="w-full p-4">
             <div className="flex flex-col justify-between items-start px-2">
-                <div className="flex items-center">
-                    <p className="text-lg font-semibold mr-2">{location}</p>
-                    <button onClick={toggleMap} className="flex items-center text-blue-500">
-                        <FaMapMarkerAlt className="text-xl mr-1" />
-                        <span>Ver en el mapa</span>
-                    </button>
-                </div>
+                {isVisible && (
+                    <div className="flex items-center">
+                        <p className="text-lg font-semibold mr-2">{location}</p>
+                        <button onClick={toggleMap} className="flex items-center text-blue-500">
+                            <FaMapMarkerAlt className="text-xl mr-1" />
+                            <span>Ver en el mapa</span>
+                        </button>
+                    </div>
+                )}
                 <div>
                     {data.inmueble.encargoState == 1 && (
                         <div className="flex flex-row justify-start items-center gap-2">
@@ -47,7 +55,7 @@ const DetailsInfoOne = ({ data, encargoData }) => {
                     )}
                 </div>
                 <div className="flex flex-wrap flex-row justify-start items-center gap-2">
-                    <p>{data.inmueble.superficie} m²</p>
+                    <p className='mt-[8px]'>{data.inmueble.superficie} m²</p>
                     <p className="text-gray-500 text-2xl font-extralight h-full pb-0.5">|</p>
                     <p>{data.inmueble.habitaciones === null ? '?' : data.inmueble.habitaciones} hab.</p>
                     <p className="text-gray-500 text-2xl font-extralight h-full pb-0.5">|</p>
@@ -74,8 +82,8 @@ const DetailsInfoOne = ({ data, encargoData }) => {
                         </button>
                         <MapContainer center={centerCoordinates} zoom={17} style={{ height: '100%', width: '100%', zIndex: 20 }}>
                             <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors' />
-                            <Marker position={centerCoordinates}>
-                                <Popup>Location: {location}</Popup>
+                            <Marker position={centerCoordinates} icon={icon}>
+                                <Popup> Dirección: {data.inmueble.direccion} <br /> Zona: {data.inmueble.zona ? data.inmueble.zona : 'N/A'} <br /> Responsable: {data.inmueble.responsable ? data.inmueble.responsable : 'N/A'} </Popup>
                             </Marker>
                         </MapContainer>
                     </div>

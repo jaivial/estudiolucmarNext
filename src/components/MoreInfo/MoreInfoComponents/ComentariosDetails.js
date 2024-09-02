@@ -53,17 +53,16 @@ const ComentariosDetails = ({ data }) => {
     const [selectedTime, setSelectedTime] = useState('');
 
     const fetchComments = async () => {
+        const inmuebleId = data.inmueble.id;
         try {
-            const response = await axios.get('http://localhost:8000/backend/comentarios/getcomentarios.php', {
+            const response = await axios.get('/api/getComentarios', {
                 params: {
-                    id: data.inmueble.id,
+                    id: inmuebleId,
                 },
             });
 
             if (response.data.success) {
                 setComentarios(response.data.comments);
-            } else {
-                showToast(response.data.message, 'linear-gradient(to right bottom, #c62828, #b92125, #ac1a22, #a0131f, #930b1c)');
             }
         } catch (error) {
             console.error('Error fetching comments:', error);
@@ -87,12 +86,15 @@ const ComentariosDetails = ({ data }) => {
         return cookies[name] || '';
     };
 
+
     const handleAddComment = async () => {
+        // Basic validation for the comment
         if (newComment.trim() === '') {
             showToast('Debes escribir un comentario', 'linear-gradient(to right bottom, #c62828, #b92125, #ac1a22, #a0131f, #930b1c)');
             return;
         }
 
+        // Validate phone number if comment type is 'Llamada'
         if (commentType === 'Llamada') {
             const phoneNumberValid = /^[0-9]{9}$/.test(phoneNumber);
 
@@ -107,6 +109,7 @@ const ComentariosDetails = ({ data }) => {
             }
         }
 
+        // Validate date and time if comment type is 'Cita'
         if (commentType === 'Cita') {
             if (!selectedDate) {
                 showToast('Debes seleccionar una fecha', 'linear-gradient(to right bottom, #c62828, #b92125, #ac1a22, #a0131f, #930b1c)');
@@ -120,10 +123,11 @@ const ComentariosDetails = ({ data }) => {
         }
 
         // Retrieve user_id from cookies
-        const userId = getCookieByName('userID');
+        const userId = getCookieByName('user_id');
 
         try {
-            const response = await axios.get('http://localhost:8000/backend/comentarios/insertarcomentario.php', {
+            // Call the new API endpoint
+            const response = await axios.get('/api/insertarComentario', {
                 params: {
                     id: data.inmueble.id,
                     comentario: newComment,
@@ -136,6 +140,7 @@ const ComentariosDetails = ({ data }) => {
             });
 
             if (response.data.success) {
+                // Refresh comments and reset form fields
                 await fetchComments();
                 setNewComment('');
                 setPhoneNumber('');
@@ -150,6 +155,7 @@ const ComentariosDetails = ({ data }) => {
             showToast('Error adding comment', 'linear-gradient(to right bottom, #c62828, #b92125, #ac1a22, #a0131f, #930b1c)');
         }
     };
+
 
     const handleDeleteComment = async (commentId) => {
         try {
