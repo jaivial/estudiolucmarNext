@@ -43,13 +43,27 @@ export default async function handler(req, res) {
             const taskId = generateRandomId();
 
 
-            if (insertResult && tipo === 'Cita' && fecha && hora) {
-                // Insert task into 'tasks' collection if the comment type is 'Cita'
+            if (insertResult && (tipo === 'Cita' || tipo === 'Llamada') && fecha && hora) {
+                // Define the task based on TipoComentario
+                let taskDescription;
+                if (tipo === 'Cita') {
+                    taskDescription = `Cita: ${comentario}`;
+                } else if (tipo === 'Llamada') {
+                    taskDescription = `Llamada: ${comentario} ${telefono}`;
+                } else {
+                    taskDescription = comentario; // Default to just the comment if no matching type
+                }
+
+                // Format fecha and hora if provided
+                const formattedFecha = fecha ? new Date(fecha).toISOString().split('T')[0] : null;
+                const formattedHora = hora ? new Date(hora).toISOString().substring(11, 16) : null;
+
+                // Insert task into 'tasks' collection
                 const tasksCollection = db.collection('tasks');
                 const taskInsertResult = await tasksCollection.insertOne({
-                    task_date: fecha,
-                    task_time: hora,
-                    task: `Cita: ${comentario}`,
+                    task_date: formattedFecha,   // Insert formatted fecha as 'YYYY-MM-DD' or null
+                    task_time: formattedHora,    // Insert formatted hora as 'HH:mm' or null
+                    task: taskDescription,       // Use the task description based on TipoComentario
                     completed: false,
                     user_id: parseInt(user_id, 10),
                     id: taskId,

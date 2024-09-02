@@ -1,8 +1,18 @@
 import React, { useState, useEffect } from 'react';
-import { AiOutlineDown, AiOutlineUp, AiOutlineDelete } from 'react-icons/ai';
+import { AiOutlineDelete } from 'react-icons/ai';
+import { Accordion, Panel, Divider, Checkbox } from 'rsuite';
+import { CustomProvider } from 'rsuite';
+import 'rsuite/dist/rsuite.min.css'; // Import rsuite styles
 import axios from 'axios';
 import Toastify from 'toastify-js';
 import 'toastify-js/src/toastify.css'; // Import Toastify CSS
+import Cookies from 'js-cookie';
+import { DatePicker, Stack } from 'rsuite';
+import { FaCalendar, FaClock } from 'react-icons/fa';
+import Select from 'react-select';
+import esES from 'rsuite/locales/es_ES';
+import './comentarios.css';
+
 
 const formatDateTime = (dateTime) => {
     if (!dateTime) return '';
@@ -46,11 +56,37 @@ const ComentariosDetails = ({ data }) => {
     const [isOpen, setIsOpen] = useState(false);
     const [newComment, setNewComment] = useState('');
     const [comentarios, setComentarios] = useState([]);
-    const [isAdmin, setIsAdmin] = useState(false);
+    const [isAdmin, setIsAdmin] = useState(Cookies.get('admin'));
     const [commentType, setCommentType] = useState('Contacto Directo');
     const [phoneNumber, setPhoneNumber] = useState('');
-    const [selectedDate, setSelectedDate] = useState('');
-    const [selectedTime, setSelectedTime] = useState('');
+    const [selectedDate, setSelectedDate] = useState(null);
+    const [selectedTime, setSelectedTime] = useState(null);
+    const [phoneOptions, setPhoneOptions] = useState([]);
+
+    useEffect(() => {
+        const getPhoneNumbers = async () => {
+            try {
+                const response = await fetch('/api/fetchClientPhoneNumber');
+                const data = await response.json();
+                setPhoneOptions(data);
+            } catch (error) {
+                console.error('Error fetching phone numbers:', error);
+            }
+        };
+
+        getPhoneNumbers();
+    }, []);
+
+    const handleDateChange = (date) => {
+        console.log('handleDateChange', date);
+        console.log('handleDateChange', selectedDate);
+        console.log('handleDateChange', typeof selectedDate);
+        setSelectedDate(date);
+    };
+
+    const handleTimeChange = (time) => {
+        setSelectedTime(time);
+    };
 
     const fetchComments = async () => {
         const inmuebleId = data.inmueble.id;
@@ -76,25 +112,12 @@ const ComentariosDetails = ({ data }) => {
 
     const toggleOpen = () => setIsOpen(!isOpen);
 
-    // Utility function to get a cookie by name
-    const getCookieByName = (name) => {
-        const cookies = document.cookie.split(';').reduce((acc, cookie) => {
-            const [key, value] = cookie.split('=');
-            acc[key.trim()] = decodeURIComponent(value.trim());
-            return acc;
-        }, {});
-        return cookies[name] || '';
-    };
-
-
     const handleAddComment = async () => {
-        // Basic validation for the comment
         if (newComment.trim() === '') {
             showToast('Debes escribir un comentario', 'linear-gradient(to right bottom, #c62828, #b92125, #ac1a22, #a0131f, #930b1c)');
             return;
         }
 
-        // Validate phone number if comment type is 'Llamada'
         if (commentType === 'Llamada') {
             const phoneNumberValid = /^[0-9]{9}$/.test(phoneNumber);
 
@@ -109,7 +132,6 @@ const ComentariosDetails = ({ data }) => {
             }
         }
 
-        // Validate date and time if comment type is 'Cita'
         if (commentType === 'Cita') {
             if (!selectedDate) {
                 showToast('Debes seleccionar una fecha', 'linear-gradient(to right bottom, #c62828, #b92125, #ac1a22, #a0131f, #930b1c)');
@@ -122,11 +144,9 @@ const ComentariosDetails = ({ data }) => {
             }
         }
 
-        // Retrieve user_id from cookies
-        const userId = getCookieByName('user_id');
+        const userId = Cookies.get('user_id');
 
         try {
-            // Call the new API endpoint
             const response = await axios.get('/api/insertarComentario', {
                 params: {
                     id: data.inmueble.id,
@@ -140,12 +160,11 @@ const ComentariosDetails = ({ data }) => {
             });
 
             if (response.data.success) {
-                // Refresh comments and reset form fields
                 await fetchComments();
                 setNewComment('');
                 setPhoneNumber('');
-                setSelectedDate('');
-                setSelectedTime('');
+                setSelectedDate(null);
+                setSelectedTime(null);
                 showToast('Comentario añadido', 'linear-gradient(to right bottom, #00603c, #006f39, #007d31, #008b24, #069903)');
             } else {
                 showToast(response.data.message, 'linear-gradient(to right bottom, #c62828, #b92125, #ac1a22, #a0131f, #930b1c)');
@@ -156,10 +175,9 @@ const ComentariosDetails = ({ data }) => {
         }
     };
 
-
     const handleDeleteComment = async (commentId) => {
         try {
-            const response = await axios.get('http://localhost:8000/backend/comentarios/deletecomment.php', {
+            const response = await axios.delete(`/api/deleteComment`, {
                 params: {
                     id: commentId,
                 },
@@ -177,79 +195,231 @@ const ComentariosDetails = ({ data }) => {
         }
     };
 
-    useEffect(() => {
-        const adminStatus = document.cookie.includes('admin=1');
-        setIsAdmin(adminStatus);
-    }, []);
+    const handleCheckboxChange = async (commentId) => {
+        try {
+            const response = await axios.post('/api/updateCommentStatus', {
+                id: commentId,
+                completed: true
+            });
+
+            if (response.data.success) {
+                await fetchComments();
+                showToast('Comentario marcado como completado', 'linear-gradient(to right bottom, #00603c, #006f39, #007d31, #008b24, #069903)');
+            } else {
+                showToast(response.data.message, 'linear-gradient(to right bottom, #c62828, #b92125, #ac1a22, #a0131f, #930b1c)');
+            }
+        } catch (error) {
+            console.error('Error updating comment status:', error);
+            showToast('Error updating comment status', 'linear-gradient(to right bottom, #c62828, #b92125, #ac1a22, #a0131f, #930b1c)');
+        }
+    };
+
+    const programados = comentarios.filter(comment => !comment.completed);
+    const completados = comentarios.filter(comment => comment.completed);
 
     return (
-        <div className="p-4">
-            <div className="bg-white border border-gray-300 rounded-md">
-                <div onClick={toggleOpen} className="flex items-center justify-between p-4 cursor-pointer bg-gray-100 rounded-t-md">
+        <CustomProvider locale={esES}>
+            <Accordion defaultActiveKey={1} bordered style={{ margin: '0px 16px' }}>
+                <Accordion.Panel style={{ backgroundColor: '#f4f4f5', padding: '0px' }} header={
                     <h2 className="font-bold text-xl">Comentarios</h2>
-                    {isOpen ? <AiOutlineUp className="text-2xl" /> : <AiOutlineDown className="text-2xl" />}
-                </div>
-                {isOpen && (
-                    <div className="py-4 px-2">
-                        {comentarios.length > 0 && (
-                            <div>
-                                {comentarios.map((comentario) => (
-                                    <div key={comentario.id} className="comentariocontainer py-2 my-3 relative flex items-start justify-between bg-blue-100 rounded-md">
+                } eventKey="1">
+                    {programados.length > 0 && (
+                        <div>
+                            <h3 className="font-bold text-lg mb-2">Programados</h3>
+                            <div className="py-2 -mx-2">
+                                {programados.map((comentario) => (
+                                    <div key={comentario._id} className="py-2 my-3 relative flex items-start justify-between bg-blue-100 rounded-md">
+                                        <div className="pl-2 pb-4">
+                                            <p className="text-sm text-gray-600 pb-2 -mt-1">{formatDateTime(comentario.date_time)}</p>
+                                            <p className="text-base text-gray-950 py-1">{comentario.texto}</p>
+                                        </div>
+                                        <div className="absolute top-0 right-0 flex flex-row items-center space-x-2">
+                                            <div className={`px-2 py-1 text-white text-xs rounded-md ${commentTypes[comentario.TipoComentario]}`}>
+                                                {comentario.TipoComentario}
+                                            </div>
+                                            {comentario.TipoComentario === 'Cita' && comentario.date_time && (
+                                                <div className="px-2 py-1 text-white text-xs rounded-md bg-yellow-600">
+                                                    {formatDateTime(comentario.date_time)}
+                                                </div>
+                                            )}
+                                            {comentario.TipoComentario === 'Llamada' && comentario.telefono && (
+                                                <div className="px-2 py-1 text-white text-xs rounded-md bg-green-600">
+                                                    {comentario.telefono}
+                                                </div>
+                                            )}
+                                        </div>
+                                        {isAdmin === "true" && (
+                                            <div className="absolute flex flex-row-reverse justify-center items-center gap-4 bottom-1 right-1 bg-slate-50 rounded-md pr-2">
+                                                <AiOutlineDelete
+                                                    className=" text-xl text-red-500 cursor-pointer"
+                                                    onClick={() => handleDeleteComment(comentario._id)}
+                                                />
+                                                <Checkbox
+                                                    className="text-black"
+                                                    onChange={() => handleCheckboxChange(comentario._id)}
+                                                    color='green'
+                                                >
+                                                    Completado
+                                                </Checkbox>
+                                            </div>
+                                        )}
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+
+                    {completados.length > 0 && (
+                        <div>
+                            {programados.length > 0 && <Divider />}
+
+                            <h3 className="font-bold text-lg mb-2">Completados</h3>
+                            <div className="py-4 -mx-2">
+                                {completados.map((comentario) => (
+                                    <div key={comentario._id} className="py-2 my-3 relative flex items-start justify-between bg-gray-100 rounded-md">
                                         <div className="pl-2 pb-2">
                                             <p className="text-sm text-gray-600 pb-2 -mt-1">{formatDateTime(comentario.date_time)}</p>
                                             <p className="text-base text-gray-950 py-1">{comentario.texto}</p>
                                         </div>
                                         <div className="absolute top-0 right-0 flex flex-row items-center space-x-2">
-                                            <div className={`px-2 py-1 text-white text-xs rounded-md ${commentTypes[comentario.TipoComentario]}`}>{comentario.TipoComentario}</div>
-                                            {comentario.TipoComentario === 'Cita' && comentario.date_time && <div className="px-2 py-1 text-white text-xs rounded-md bg-yellow-600">{formatDateTime(comentario.date_time)}</div>}
-                                            {comentario.TipoComentario === 'Llamada' && comentario.telefono && <div className="px-2 py-1 text-white text-xs rounded-md bg-green-600">{comentario.telefono}</div>}
+                                            <div className={`px-2 py-1 text-white text-xs rounded-md ${commentTypes[comentario.TipoComentario]}`}>
+                                                {comentario.TipoComentario}
+                                            </div>
+                                            {comentario.TipoComentario === 'Cita' && comentario.date_time && (
+                                                <div className="px-2 py-1 text-white text-xs rounded-md bg-yellow-600">
+                                                    {formatDateTime(comentario.date_time)}
+                                                </div>
+                                            )}
+                                            {comentario.TipoComentario === 'Llamada' && comentario.telefono && (
+                                                <div className="px-2 py-1 text-white text-xs rounded-md bg-green-600">
+                                                    {comentario.telefono}
+                                                </div>
+                                            )}
                                         </div>
-                                        {isAdmin && <AiOutlineDelete className="absolute bottom-1 right-0.5 text-xl text-red-500 cursor-pointer" onClick={() => handleDeleteComment(comentario.id)} />}
                                     </div>
                                 ))}
                             </div>
-                        )}
-
-                        <div className="mt-4 flex flex-col justify-center items-center gap-2">
-                            <div className="w-full flex flex-row items-start gap-2">
-                                <textarea value={newComment} onChange={(e) => setNewComment(e.target.value)} rows="6" className="w-1/2 border border-gray-300 p-2 rounded-md" placeholder="Escribe tu comentario aquí..." />
-                                <div className="w-1/2">
-                                    <select
-                                        value={commentType}
-                                        onChange={(e) => {
-                                            setCommentType(e.target.value);
-                                            if (e.target.value !== 'Llamada') {
-                                                setPhoneNumber('');
-                                            }
-                                            if (e.target.value !== 'Cita') {
-                                                setSelectedDate('');
-                                                setSelectedTime('');
-                                            }
-                                        }}
-                                        className="border border-gray-300 p-2 rounded bg-white w-full"
-                                    >
-                                        <option value="Contacto Directo">Contacto Directo</option>
-                                        <option value="Llamada">Llamada</option>
-                                        <option value="Cita">Cita</option>
-                                    </select>
-
-                                    {commentType === 'Llamada' && <input type="text" value={phoneNumber} onChange={(e) => setPhoneNumber(e.target.value)} className="w-full border border-gray-300 p-2 rounded mt-2" placeholder="Número de teléfono..." />}
-                                    {commentType === 'Cita' && (
-                                        <div className="w-full flex flex-col gap-2 mt-2">
-                                            <input type="date" value={selectedDate} onChange={(e) => setSelectedDate(e.target.value)} className="w-full border border-gray-300 p-2 rounded" />
-                                            <input type="time" value={selectedTime} onChange={(e) => setSelectedTime(e.target.value)} className="w-full border border-gray-300 p-2 rounded" />
-                                        </div>
-                                    )}
-                                </div>
-                            </div>
-                            <button onClick={handleAddComment} className="bg-blue-500 text-white p-2 rounded mt-2">
-                                Añadir Comentario
-                            </button>
                         </div>
+                    )}
+
+                    <div className="mt-4 flex flex-col justify-center items-center gap-2 -mx-3">
+                        <div className="w-full flex flex-row items-start gap-2">
+                            <textarea
+                                value={newComment}
+                                onChange={(e) => setNewComment(e.target.value)}
+                                rows="6"
+                                className="w-1/2 border border-gray-300 p-2 rounded-md"
+                                placeholder="Escribe tu comentario aquí..."
+                            />
+                            <div className="w-1/2">
+                                <Select
+                                    value={{ label: commentType, value: commentType }}
+                                    onChange={(option) => {
+                                        setCommentType(option.value);
+                                        if (option.value !== 'Llamada') {
+                                            setPhoneNumber('');
+                                        }
+                                        if (option.value !== 'Cita') {
+                                            setSelectedDate(null);
+                                            setSelectedTime(null);
+                                        }
+                                    }}
+                                    options={[
+                                        { label: 'Contacto Directo', value: 'Contacto Directo' },
+                                        { label: 'Llamada', value: 'Llamada' },
+                                        { label: 'Cita', value: 'Cita' }
+                                    ]}
+                                    className="border border-gray-300 rounded bg-white w-full"
+                                />
+
+                                {commentType === 'Contacto Directo' && (
+                                    <>
+                                        <DatePicker
+                                            value={selectedDate}
+                                            onChange={handleDateChange}
+                                            className="w-full border border-gray-300 mt-2 mb-1 rounded"
+                                            placeholder="Fecha"
+                                            format="dd.MM.yyyy"
+                                            placement='topEnd'
+                                            isoWeek
+                                        />
+                                        <DatePicker
+                                            value={selectedTime}
+                                            onChange={handleTimeChange}
+                                            className="w-full border border-gray-300 my-1 rounded"
+                                            placeholder="Hora"
+                                            format="HH:mm"
+                                            caretAs={FaClock}
+                                            placement='topEnd'
+                                        />
+                                    </>
+                                )}
+                                {commentType === 'Llamada' && (
+                                    <>
+                                        <Select
+                                            value={phoneNumber ? { label: phoneNumber, value: phoneNumber } : null}
+                                            onChange={(option) => setPhoneNumber(option?.value || '')}
+                                            options={phoneOptions}
+                                            className="w-full border border-gray-300 rounded mt-2"
+                                            placeholder="Teléfono"
+                                            isSearchable
+                                        />
+
+                                        <DatePicker
+                                            value={selectedDate}
+                                            onChange={handleDateChange}
+                                            className="w-full border border-gray-300 mt-2 mb-1 rounded"
+                                            placeholder="Fecha"
+                                            format="dd.MM.yyyy"
+                                            placement='topEnd'
+                                            isoWeek
+                                        />
+                                        <DatePicker
+                                            value={selectedTime}
+                                            onChange={handleTimeChange}
+                                            className="w-full border border-gray-300 my-1 rounded"
+                                            placeholder="Hora"
+                                            format="HH:mm"
+                                            caretAs={FaClock}
+                                            placement='topEnd'
+                                        />
+                                    </>
+                                )}
+
+                                {commentType === 'Cita' && (
+                                    <>
+                                        <DatePicker
+                                            value={selectedDate}
+                                            onChange={handleDateChange}
+                                            className="w-full border border-gray-300 mt-2 mb-1 rounded"
+                                            placeholder="Fecha"
+                                            format="dd.MM.yyyy"
+                                            placement='topEnd'
+                                            isoWeek
+                                        />
+                                        <DatePicker
+                                            value={selectedTime}
+                                            onChange={handleTimeChange}
+                                            className="w-full border border-gray-300 my-1 rounded"
+                                            placeholder="Hora"
+                                            format="HH:mm"
+                                            caretAs={FaClock}
+                                            placement='topEnd'
+                                        />
+                                    </>
+                                )}
+                            </div>
+                        </div>
+                        <button
+                            onClick={handleAddComment}
+                            className="bg-blue-500 text-white p-2 rounded mt-2"
+                        >
+                            Añadir Comentario
+                        </button>
                     </div>
-                )}
-            </div>
-        </div>
+                </Accordion.Panel>
+            </Accordion>
+        </CustomProvider>
     );
 };
 
