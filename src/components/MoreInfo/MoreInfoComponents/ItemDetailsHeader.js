@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, use } from 'react';
 import axios from 'axios';
-import { AiOutlineCamera, AiOutlinePlus, AiOutlineLoading, AiOutlineDelete, AiOutlineEdit } from 'react-icons/ai';
+import { AiOutlineCamera, AiOutlinePlus, AiOutlineLoading, AiOutlineDelete, AiOutlineEdit, AiOutlinePlusCircle } from 'react-icons/ai';
 import Toastify from 'toastify-js';
 import { Modal, Button } from 'rsuite';
 import 'rsuite/dist/rsuite.min.css'; // Import the rsuite CSS
@@ -10,6 +10,7 @@ import imageCompression from 'browser-image-compression';
 import { FaEye, FaEyeSlash } from 'react-icons/fa'; // Import eye icons
 import dynamic from 'next/dynamic';
 const EditModal = dynamic(() => import('./EditModal'), { ssr: false });
+import DPVComponent from './DPVComponent';
 
 const ItemDetailsHeader = ({ inmuebleId, onClose, address, setImages, setIsSliderLoading, isVisible, setIsVisible, data, onAddEdtMoreInfoRefreshKey, setOnAddEdtMoreInfoRefreshKey }) => {
     const [selectedFiles, setSelectedFiles] = useState([]);
@@ -28,6 +29,7 @@ const ItemDetailsHeader = ({ inmuebleId, onClose, address, setImages, setIsSlide
     const [getImageRefreshKey, setGetImageRefreshKey] = useState(1);
     const [editModalOpen, setEditModalOpen] = useState(false);
     const [isImageValid, setIsImageValid] = useState(true);
+    const [dpvModalOpen, setDPVModalOpen] = useState(false);
 
     const closeModal = () => setIsModalOpen(false);
 
@@ -313,9 +315,15 @@ const ItemDetailsHeader = ({ inmuebleId, onClose, address, setImages, setIsSlide
 
     const openModal = () => setIsModalOpen(true);
 
+    const openDPVModal = () => {
+        setDPVModalOpen(true);
+    };
+
+
     return (
         <div className="header-container">
             <EditModal closeModal={closeModal} isModalOpen={isModalOpen} setIsModalOpen={setIsModalOpen} data={data} onAddEdtMoreInfoRefreshKey={onAddEdtMoreInfoRefreshKey} setOnAddEdtMoreInfoRefreshKey={setOnAddEdtMoreInfoRefreshKey} />
+            <DPVComponent isOpen={dpvModalOpen} setDPVModalOpen={setDPVModalOpen} /> {/* Add DPVComponent modal */}
             <div className='flex flex-row justify-center gap-3 pb-6'>
                 <div>
                     <button onClick={openModal} className="p-3 rounded-full border border-gray-300 hover:bg-gray-100">
@@ -335,6 +343,16 @@ const ItemDetailsHeader = ({ inmuebleId, onClose, address, setImages, setIsSlide
                         {isVisible ? <FaEye size={24} /> : <FaEyeSlash size={24} />}
                     </button>
                 </div>
+                {/* New button to open DPVComponent modal */}
+                <div>
+                    <button
+                        onClick={openDPVModal}
+                        className="px-3 py-3.5 rounded-full border border-gray-300 hover:bg-gray-100 font-semibold text-gray-500 text-md"
+                    >
+                        DPV
+                    </button>
+                </div>
+
             </div>
             <Modal open={editModalOpen} onClose={closeEditModal} size="lg" overflow={false} backdrop="static" style={{ backgroundColor: 'rgba(0,0,0,0.15)', padding: '0px 2px' }}>
                 <Modal.Header>
