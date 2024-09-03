@@ -1,3 +1,4 @@
+import { id } from 'date-fns/locale';
 import clientPromise from '../../lib/mongodb';
 import { ObjectId } from 'mongodb';
 
@@ -22,13 +23,29 @@ export default async function handler(req, res) {
 
             const { min, max } = comprador.rango_precios;
 
+            // Determina el tipo de encargo según el interés del comprador
+            let tipoEncargo;
+            if (comprador.interes === 'comprar') {
+                tipoEncargo = 'Venta';
+            } else if (comprador.interes === 'alquilar') {
+                tipoEncargo = 'Alquiler';
+            } else {
+                tipoEncargo = comprador.interes;
+            }
+
             console.log('comprador.rango_precios', comprador.rango_precios);
             console.log('comprador.interes', comprador.interes);
+            console.log('tipoEncargo', tipoEncargo);
+            console.log('min', min);
+            console.log('max', max);
+            console.log('typeof min', typeof min);
+            console.log('typeof max', typeof max);
+            console.log('comprador_id', comprador_id);
 
             // Busca en la colección encargos los inmuebles que coincidan con el rango de precios y el tipo de encargo
             const encargos = await db.collection('encargos').find({
-                precio1: { $gte: min, $lte: max },
-                tipo_encargo: comprador.interes  // Filtro adicional para coincidir con el interés del comprador
+                precio_1: { $gte: min, $lte: max },
+                tipo_encargo: tipoEncargo  // Filtro adicional para coincidir con el interés del comprador
             }).toArray();
 
             console.log('encargos', encargos);
@@ -46,11 +63,12 @@ export default async function handler(req, res) {
                 if (inmueble) {
                     inmuebles.push({
                         direccion: inmueble.direccion,
-                        precio: encargo.precio1,
-                        precio2: encargo.precio2,
+                        precio: encargo.precio_1,
+                        precio2: encargo.precio_2,
                         superficie: inmueble.superficie,
+                        id: inmueble.id,
                     });
-                    continue; // Skip to the next encargo if found
+                    continue; // Saltar al siguiente encargo si se encontró el inmueble
                 }
 
                 // Buscar en la colección nestedinmuebles
@@ -58,11 +76,12 @@ export default async function handler(req, res) {
                 if (inmueble) {
                     inmuebles.push({
                         direccion: inmueble.direccion,
-                        precio: encargo.precio1,
-                        precio2: encargo.precio2,
+                        precio: encargo.precio_1,
+                        precio2: encargo.precio_2,
                         superficie: inmueble.superficie,
+                        id: inmueble.id,
                     });
-                    continue; // Skip to the next encargo if found
+                    continue; // Saltar al siguiente encargo si se encontró el inmueble
                 }
 
                 // Buscar en la colección nestedescaleras.nestedinmuebles
@@ -70,9 +89,10 @@ export default async function handler(req, res) {
                 if (inmueble) {
                     inmuebles.push({
                         direccion: inmueble.direccion,
-                        precio: encargo.precio1,
-                        precio2: encargo.precio2,
+                        precio: encargo.precio_1,
+                        precio2: encargo.precio_2,
                         superficie: inmueble.superficie,
+                        id: inmueble.id,
                     });
                 }
             }

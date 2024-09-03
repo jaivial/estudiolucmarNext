@@ -1,7 +1,7 @@
 import GeneralLayout from "../components/layouts/GeneralLayout.js";
 import { useState, useEffect } from "react";
 import axios from 'axios';
-import { Button, Form, Modal, SelectPicker, Table, Tag, Panel, PanelGroup, Whisper, Tooltip, Tabs, Radio, RadioGroup, RangeSlider } from 'rsuite';
+import { Button, Form, Modal, SelectPicker, Table, Tag, Panel, PanelGroup, Whisper, Tooltip, Tabs, Radio, RadioGroup, RangeSlider, InputPicker } from 'rsuite';
 import { Icon } from '@iconify/react';
 import Toastify from 'toastify-js';
 import 'toastify-js/src/toastify.css';
@@ -12,6 +12,7 @@ import { dniValidator } from '../lib/mongodb/dniValidator/dniValidator.js';
 import { useToaster, Notification } from 'rsuite';
 import cookie from 'cookie';
 import '../components/Clientes/clients.css';
+import MoreInfo from '../components/MoreInfo/MoreInfo.js';
 
 export async function getServerSideProps(context) {
     // Parse the cookies on the request
@@ -70,6 +71,11 @@ export default function Clientes({ isAdmin }) {
     const [selectedComprador, setSelectedComprador] = useState(null);
     const [inmueblesCompradorInfo, setInmueblesCompradorInfo] = useState([]);
     const [infoModalOpen, setInfoModalOpen] = useState(false);
+    const [viewMore, setViewMore] = useState(false);
+    const [moreInfoInmuebleId, setMoreInfoInmuebleId] = useState(null);
+    const [viewMoreComprador, setViewMoreComprador] = useState(false);
+    const [moreInfoCompradorId, setMoreInfoCompradorId] = useState(null);
+
 
     const handleOpenInfoComprador = async (comprador) => {
         setSelectedComprador(comprador);
@@ -404,9 +410,25 @@ export default function Clientes({ isAdmin }) {
         }).showToast();
     };
 
+    const handleViewMore = (cliente) => {
+        console.log('cliente', cliente.id);
+        setViewMore(true);
+        setMoreInfoInmuebleId(cliente.id);
+    };
+
+    const handleCloseMoreInfo = () => setViewMore(false);
+
+    const handleViewMoreComprador = (comprador) => {
+        console.log('comprador', comprador);
+        setViewMoreComprador(true);
+        setMoreInfoCompradorId(comprador);
+    };
+    const handleCloseMoreInfoComprador = () => setViewMoreComprador(false);
     return (
         <GeneralLayout title="Gestión de Clientes" description="Panel de administración de clientes">
             {loading && <LoadingScreen />}
+            {viewMore && <MoreInfo id={moreInfoInmuebleId} showModal={viewMore} setViewMore={setViewMore} onClose={handleCloseMoreInfo} />}
+            {viewMoreComprador && <MoreInfo id={moreInfoCompradorId} showModal={viewMoreComprador} setViewMore={setViewMoreComprador} onClose={handleCloseMoreInfoComprador} />}
             <div className="h-full w-full flex flex-col items-center justify-start pt-20 overflow-y-scroll bg-gradient-to-t from-slate-400 via-slate-300 to-slate-200">
                 <div className="w-full flex flex-col items-center">
                     <h1 className="text-3xl font-bold text-center font-sans w-80 mb-8">Gestión de Clientes</h1>
@@ -421,7 +443,7 @@ export default function Clientes({ isAdmin }) {
                                 <div className="p-4 w-full">
                                     <PanelGroup accordion bordered>
                                         <Panel header="Clientes" eventKey="1" className="bg-slate-50 rounded-lg shadow-xl">
-                                            <Table data={clientes} autoHeight>
+                                            <Table data={clientes} autoHeight >
                                                 <Column width={200} align="center">
                                                     <HeaderCell>Nombre</HeaderCell>
                                                     <Cell dataKey="nombre" />
@@ -911,200 +933,343 @@ export default function Clientes({ isAdmin }) {
                 {editCliente && editModalOpen && (
                     <Modal open={editModalOpen} onClose={handleCloseEditModal} backdrop={true} size="lg" overflow={true}>
                         <Modal.Header>
-                            <Modal.Title>Editar Cliente</Modal.Title>
+                            <Modal.Title style={{ fontSize: '1.5rem', fontWeight: 'bold', textAlign: 'center' }}>Editar Cliente</Modal.Title>
                         </Modal.Header>
-                        <Modal.Body>
+                        <Modal.Body style={{ padding: '35px', fontSize: '1rem', lineHeight: '1.5', display: 'flex', flexDirection: 'column', gap: '10px' }}>
                             <Form fluid>
                                 <Form.Group>
                                     <Form.ControlLabel>Nombre</Form.ControlLabel>
-                                    <Form.Control name="nombre" value={editComprador.nombre} readOnly />
+                                    <Form.Control name="nombre" value={editCliente.nombre} onChange={value => setEditCliente({ ...editCliente, nombre: value })} />
                                 </Form.Group>
+
                                 <Form.Group>
                                     <Form.ControlLabel>Apellido</Form.ControlLabel>
-                                    <Form.Control name="apellido" value={editComprador.apellido} readOnly />
+                                    <Form.Control name="apellido" value={editCliente.apellido} onChange={value => setEditCliente({ ...editCliente, apellido: value })} />
                                 </Form.Group>
-                                <Form.Group>
-                                    <Form.ControlLabel>Email</Form.ControlLabel>
-                                    <Form.Control name="email" value={editComprador.email} readOnly />
-                                </Form.Group>
+
                                 <Form.Group>
                                     <Form.ControlLabel>DNI</Form.ControlLabel>
-                                    <Form.Control name="dni" value={editComprador.dni} readOnly />
+                                    <Form.Control name="dni" value={editCliente.dni} onChange={value => setEditCliente({ ...editCliente, dni: value })} />
                                 </Form.Group>
+
                                 <Form.Group>
                                     <Form.ControlLabel>Teléfono</Form.ControlLabel>
-                                    <Form.Control name="telefono" value={editComprador.telefono} readOnly />
+                                    <Form.Control name="telefono" value={editCliente.telefono} onChange={value => setEditCliente({ ...editCliente, telefono: value })} />
                                 </Form.Group>
+
                                 <Form.Group>
-                                    <Form.ControlLabel>Interés</Form.ControlLabel>
-                                    <RadioGroup
-                                        name="interes"
-                                        value={editComprador.interes}
-                                        onChange={value => setEditComprador({ ...editComprador, interes: value })}
-                                    >
-                                        <Radio value="comprar">Comprar</Radio>
-                                        <Radio value="alquilar">Alquilar</Radio>
-                                    </RadioGroup>
-                                </Form.Group>
-                                <Form.Group style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', width: '100%', marginBottom: '10px', marginTop: '0px', marginRight: '0px', gap: '5px' }}>
-                                    <Form.ControlLabel style={{ textAlign: 'center' }}>Rango de Precios</Form.ControlLabel>
-                                    <div style={{ marginBottom: '20px', width: '100%', textAlign: 'center', marginTop: '20px' }}>
-                                        <strong>
-                                            {`${editComprador.rango_precios.min}€ - ${editComprador.rango_precios.max}€`}
-                                        </strong>
-                                    </div>
-                                    <RangeSlider
-                                        min={editComprador.interes === 'comprar' ? 0 : 0}
-                                        max={editComprador.interes === 'comprar' ? 1000000 : 2500}
-                                        step={editComprador.interes === 'comprar' ? 10000 : 50}
-                                        value={[editComprador.rango_precios.min, editComprador.rango_precios.max]}
-                                        onChange={value => setEditComprador({
-                                            ...editComprador,
-                                            rango_precios: { min: value[0], max: value[1] }
-                                        })}
-                                        style={{ width: '80%' }}
+                                    <Form.ControlLabel>Tipo de Cliente</Form.ControlLabel>
+                                    <SelectPicker
+                                        data={[
+                                            { label: 'Informador', value: 'informador' },
+                                            { label: 'Propietario', value: 'propietario' },
+                                            { label: 'Co-propietario', value: 'copropietario' },
+                                            { label: 'Inquilino', value: 'inquilino' },
+                                        ]}
+                                        value={editCliente.tipo_de_cliente}
+                                        onChange={value => handleSelectTipoDeCliente(value, 'edit')}
+                                        searchable={false}
+                                        multiple
+                                        block
                                     />
                                 </Form.Group>
+
+                                {/* Secciones para inmuebles asociados según tipo de cliente */}
+                                {editCliente.tipo_de_cliente.includes('informador') && (
+                                    <Form.Group>
+                                        <Form.ControlLabel>Inmuebles Asociados (Informador)</Form.ControlLabel>
+                                        <div style={{ marginBottom: '10px' }}>
+                                            {editCliente.inmuebles_asociados_informador.map(item => (
+                                                <Tag
+                                                    key={item.id}
+                                                    closable
+                                                    onClose={() => handleRemoveInmueble('informador', item.id, 'edit')}
+                                                    style={{ marginRight: '5px', marginBottom: '5px' }}
+                                                >
+                                                    {item.direccion}
+                                                </Tag>
+                                            ))}
+                                        </div>
+                                        <SelectPicker
+                                            data={inmuebles.map(inmueble => ({ label: inmueble.direccion, value: inmueble.id }))}
+                                            onSearch={handleSearchInmuebles}
+                                            onChange={(value) => handleSelectInmueble('informador', value, 'edit')}
+                                            searchable
+                                            block
+                                            menuStyle={{ maxHeight: 200, overflowY: 'auto' }}
+                                            placement="topStart"
+                                        />
+                                    </Form.Group>
+                                )}
+
+                                {editCliente.tipo_de_cliente.includes('propietario') && (
+                                    <Form.Group>
+                                        <Form.ControlLabel>Inmuebles Asociados (Propietario)</Form.ControlLabel>
+                                        <div style={{ marginBottom: '10px' }}>
+                                            {editCliente.inmuebles_asociados_propietario.map(item => (
+                                                <Tag
+                                                    key={item.id}
+                                                    closable
+                                                    onClose={() => handleRemoveInmueble('propietario', item.id, 'edit')}
+                                                    style={{ marginRight: '5px', marginBottom: '5px' }}
+                                                >
+                                                    {item.direccion}
+                                                </Tag>
+                                            ))}
+                                        </div>
+                                        <SelectPicker
+                                            data={inmuebles.map(inmueble => ({ label: inmueble.direccion, value: inmueble.id }))}
+                                            onSearch={handleSearchInmuebles}
+                                            onChange={(value) => handleSelectInmueble('propietario', value, 'edit')}
+                                            searchable
+                                            block
+                                            menuStyle={{ maxHeight: 200, overflowY: 'auto' }}
+                                            placement="topStart"
+                                        />
+                                    </Form.Group>
+                                )}
+
+                                {editCliente.tipo_de_cliente.includes('copropietario') && (
+                                    <Form.Group>
+                                        <Form.ControlLabel>Inmuebles Asociados (Co-propietario)</Form.ControlLabel>
+                                        <div style={{ marginBottom: '10px' }}>
+                                            {editCliente.inmuebles_asociados_copropietario.map(item => (
+                                                <Tag
+                                                    key={item.id}
+                                                    closable
+                                                    onClose={() => handleRemoveInmueble('copropietario', item.id, 'edit')}
+                                                    style={{ marginRight: '5px', marginBottom: '5px' }}
+                                                >
+                                                    {item.direccion}
+                                                </Tag>
+                                            ))}
+                                        </div>
+                                        <SelectPicker
+                                            data={inmuebles.map(inmueble => ({ label: inmueble.direccion, value: inmueble.id }))}
+                                            onSearch={handleSearchInmuebles}
+                                            onChange={(value) => handleSelectInmueble('copropietario', value, 'edit')}
+                                            searchable
+                                            block
+                                            menuStyle={{ maxHeight: 200, overflowY: 'auto' }}
+                                            placement="topStart"
+                                        />
+                                    </Form.Group>
+                                )}
+
+                                {editCliente.tipo_de_cliente.includes('inquilino') && (
+                                    <Form.Group>
+                                        <Form.ControlLabel>Inmuebles Asociados (Inquilino)</Form.ControlLabel>
+                                        <div style={{ marginBottom: '10px' }}>
+                                            {editCliente.inmuebles_asociados_inquilino.map(item => (
+                                                <Tag
+                                                    key={item.id}
+                                                    closable
+                                                    onClose={() => handleRemoveInmueble('inquilino', item.id, 'edit')}
+                                                    style={{ marginRight: '5px', marginBottom: '5px' }}
+                                                >
+                                                    {item.direccion}
+                                                </Tag>
+                                            ))}
+                                        </div>
+                                        <SelectPicker
+                                            data={inmuebles.map(inmueble => ({ label: inmueble.direccion, value: inmueble.id }))}
+                                            onSearch={handleSearchInmuebles}
+                                            onChange={(value) => handleSelectInmueble('inquilino', value, 'edit')}
+                                            searchable
+                                            block
+                                            menuStyle={{ maxHeight: 200, overflowY: 'auto' }}
+                                            placement="topStart"
+                                        />
+                                    </Form.Group>
+                                )}
+
                             </Form>
                         </Modal.Body>
 
-                        <Modal.Footer>
+                        <Modal.Footer style={{ display: 'flex', justifyContent: 'center', gap: '10px' }}>
                             <Button onClick={handleUpdateCliente} appearance="primary">Actualizar</Button>
                             <Button onClick={handleCloseEditModal} appearance="subtle">Cancelar</Button>
                         </Modal.Footer>
                     </Modal>
-                )}
+                )
+                }
                 {/* Modal for editing Comprador */}
-                {editModalCompradorOpen && (
-                    <Modal open={editModalCompradorOpen} onHide={handleCloseEditModalComprador} size="lg">
-                        <Modal.Header>
-                            <Modal.Title>Editar Comprador</Modal.Title>
-                        </Modal.Header>
-                        <Modal.Body>
-                            <Form fluid>
-                                <Form.Group>
-                                    <Form.ControlLabel>Nombre</Form.ControlLabel>
-                                    <Form.Control name="nombre" value={editComprador.nombre} readOnly />
-                                </Form.Group>
-                                <Form.Group>
-                                    <Form.ControlLabel>Apellido</Form.ControlLabel>
-                                    <Form.Control name="apellido" value={editComprador.apellido} readOnly />
-                                </Form.Group>
-                                <Form.Group>
-                                    <Form.ControlLabel>Email</Form.ControlLabel>
-                                    <Form.Control name="email" value={editComprador.email} readOnly />
-                                </Form.Group>
-                                <Form.Group>
-                                    <Form.ControlLabel>Teléfono</Form.ControlLabel>
-                                    <Form.Control
-                                        name="telefono"
-                                        value={editComprador.telefono}
-                                        onChange={value => setEditComprador({ ...editComprador, telefono: value })}
-                                    />
-                                </Form.Group>
-                                <Form.Group>
-                                    <Form.ControlLabel>DNI</Form.ControlLabel>
-                                    <Form.Control name="dni" value={editComprador.dni} readOnly />
-                                </Form.Group>
-                                <Form.Group>
-                                    <Form.ControlLabel>Interés</Form.ControlLabel>
-                                    <RadioGroup
-                                        name="interes"
-                                        value={editComprador.interes}
-                                        onChange={value => setEditComprador({ ...editComprador, interes: value })}
-                                    >
-                                        <Radio value="comprar">Comprar</Radio>
-                                        <Radio value="alquilar">Alquilar</Radio>
-                                    </RadioGroup>
-                                </Form.Group>
-                                <Form.Group style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', width: '100%', marginBottom: '10px', marginTop: '0px', marginRight: '0px', gap: '5px' }}>
-                                    <Form.ControlLabel style={{ textAlign: 'center' }}>Rango de Precios</Form.ControlLabel>
-                                    {/* Display selected price range above the slider */}
-                                    <div style={{ marginBottom: '20px', width: '100%', textAlign: 'center', marginTop: '20px' }}>
-                                        <strong>
-                                            {`${editComprador.rango_precios.min}€ - ${editComprador.rango_precios.max}€`}
-                                        </strong>
+                {
+                    editModalCompradorOpen && (
+                        <Modal open={editModalCompradorOpen} onHide={handleCloseEditModalComprador} size="lg">
+                            <Modal.Header>
+                                <Modal.Title style={{ fontSize: '1.5rem', fontWeight: 'bold', textAlign: 'center' }}>Editar Comprador</Modal.Title>
+                            </Modal.Header>
+                            <Modal.Body style={{ padding: '35px', fontSize: '1rem', lineHeight: '1.5', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                                <Form fluid>
+                                    <Form.Group>
+                                        <Form.ControlLabel>Nombre</Form.ControlLabel>
+                                        <Form.Control name="nombre" value={editComprador.nombre} readOnly />
+                                    </Form.Group>
+                                    <Form.Group>
+                                        <Form.ControlLabel>Apellido</Form.ControlLabel>
+                                        <Form.Control name="apellido" value={editComprador.apellido} readOnly />
+                                    </Form.Group>
+                                    <Form.Group>
+                                        <Form.ControlLabel>Email</Form.ControlLabel>
+                                        <Form.Control name="email" value={editComprador.email} readOnly />
+                                    </Form.Group>
+                                    <Form.Group>
+                                        <Form.ControlLabel>Teléfono</Form.ControlLabel>
+                                        <Form.Control
+                                            name="telefono"
+                                            value={editComprador.telefono}
+                                            onChange={value => setEditComprador({ ...editComprador, telefono: value })}
+                                        />
+                                    </Form.Group>
+                                    <Form.Group>
+                                        <Form.ControlLabel>DNI</Form.ControlLabel>
+                                        <Form.Control name="dni" value={editComprador.dni} readOnly />
+                                    </Form.Group>
+                                    <Form.Group style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', width: '100%', marginBottom: '30px', marginTop: '0px', marginRight: '0px', gap: '5px' }}>
+                                        <Form.ControlLabel>Interés</Form.ControlLabel>
+                                        <RadioGroup
+                                            name="interes"
+                                            value={editComprador.interes}
+                                            onChange={value => setEditComprador({ ...editComprador, interes: value })}
+                                        >
+                                            <Radio value="comprar">Comprar</Radio>
+                                            <Radio value="alquilar">Alquilar</Radio>
+                                        </RadioGroup>
+                                    </Form.Group>
+                                    <Form.Group style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', width: '100%', marginBottom: '10px', marginTop: '0px', marginRight: '0px', gap: '5px' }}>
+                                        <Form.ControlLabel style={{ textAlign: 'center' }}>Rango de Precios</Form.ControlLabel>
+                                        {/* Display selected price range */}
+                                        <div style={{ marginBottom: '20px', width: '100%', textAlign: 'center', marginTop: '20px' }}>
+                                            <strong>
+                                                {`${editComprador.rango_precios.min || 0}€ - ${editComprador.rango_precios.max || (editComprador.interes === 'comprar' ? 600000 : 2500)}€`}
+                                            </strong>
+                                        </div>
+
+                                        <div style={{ display: 'flex', justifyContent: 'space-around', width: '80%' }}>
+                                            <InputPicker
+                                                label="Mínimo"
+                                                value={editComprador.rango_precios.min || 0}
+                                                onChange={value => {
+                                                    const minValue = value || 0;
+                                                    setEditComprador({
+                                                        ...editComprador,
+                                                        rango_precios: {
+                                                            ...editComprador.rango_precios,
+                                                            min: minValue,
+                                                            max: Math.max(minValue, editComprador.rango_precios.max || (editComprador.interes === 'comprar' ? 600000 : 2500))
+                                                        }
+                                                    });
+                                                }}
+                                                data={Array.from({ length: (editComprador.interes === 'comprar' ? 601 : 51) }, (_, i) => ({
+                                                    label: (i * (editComprador.interes === 'comprar' ? 1000 : 50)).toString(),
+                                                    value: i * (editComprador.interes === 'comprar' ? 1000 : 50)
+                                                }))}
+                                            />
+
+                                            <InputPicker
+                                                label="Máximo"
+                                                value={editComprador.rango_precios.max || (editComprador.interes === 'comprar' ? 600000 : 2500)}
+                                                onChange={value => {
+                                                    const maxValue = value || (editComprador.interes === 'comprar' ? 600000 : 2500);
+                                                    setEditComprador({
+                                                        ...editComprador,
+                                                        rango_precios: {
+                                                            ...editComprador.rango_precios,
+                                                            max: maxValue,
+                                                            min: Math.min(editComprador.rango_precios.min || 0, maxValue)
+                                                        }
+                                                    });
+                                                }}
+                                                data={Array.from({ length: (editComprador.interes === 'comprar' ? 601 : 51) }, (_, i) => ({
+                                                    label: (i * (editComprador.interes === 'comprar' ? 1000 : 50)).toString(),
+                                                    value: i * (editComprador.interes === 'comprar' ? 1000 : 50)
+                                                }))}
+                                            />
+                                        </div>
+                                    </Form.Group>
+
+                                </Form>
+                            </Modal.Body>
+                            <Modal.Footer style={{ display: 'flex', justifyContent: 'center', gap: '10px' }}>
+                                <Button onClick={handleUpdateComprador} appearance="primary">Actualizar</Button>
+                                <Button onClick={handleCloseEditModalComprador} appearance="subtle">Cerrar</Button>
+                            </Modal.Footer>
+                        </Modal>
+                    )
+                }
+
+                {
+                    infoModalOpen && (
+                        <Modal open={infoModalOpen} onClose={handleCloseInfoComprador} size="lg">
+                            <Modal.Header>
+                                <Modal.Title style={{ fontSize: '1.5rem', fontWeight: 'bold', textAlign: 'center' }}>Información del Comprador</Modal.Title>
+                            </Modal.Header>
+                            <Modal.Body style={{ padding: '35px', fontSize: '1rem', lineHeight: '1.5', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                                {selectedComprador && (
+                                    <div>
+                                        <div className="flex flex-row items-center justify-start gap-40 ml-12 mb-20">
+                                            <div>
+                                                <p><strong>Nombre:</strong> {selectedComprador.nombre}</p>
+                                                <p><strong>Apellido:</strong> {selectedComprador.apellido}</p>
+                                                <p><strong>Email:</strong> {selectedComprador.email}</p>
+                                                <p><strong>DNI:</strong> {selectedComprador.dni}</p>
+                                                <p><strong>Teléfono:</strong> {selectedComprador.telefono}</p>
+                                            </div>
+                                            <div>
+                                                <p><strong>Interés:</strong> {selectedComprador.interes === 'comprar' ? 'Comprar' : 'Alquilar'}</p>
+                                                <p><strong>Rango de Precios:</strong> {`${selectedComprador.rango_precios.min}€ - ${selectedComprador.rango_precios.max}€`}</p>
+                                            </div>
+                                        </div>
+                                        <Table data={inmueblesCompradorInfo} autoHeight style={{ marginTop: '20px', width: '100%' }}>
+                                            <Column width={320} align="center">
+                                                <HeaderCell>Dirección</HeaderCell>
+                                                <Cell dataKey="direccion" />
+                                            </Column>
+                                            <Column width={150} align="center">
+                                                <HeaderCell>Superficie</HeaderCell>
+                                                <Cell>
+                                                    {rowData => (
+                                                        <span>{rowData.superficie} m²</span>
+                                                    )}
+                                                </Cell>
+                                            </Column>
+
+                                            <Column width={150} align="center">
+                                                <HeaderCell>Precio 1</HeaderCell>
+                                                <Cell dataKey="precio">
+                                                    {rowData => (rowData.precio !== undefined ? `${rowData.precio} €` : '')}
+                                                </Cell>
+                                            </Column>
+                                            <Column width={150} align="center">
+                                                <HeaderCell>Precio 2</HeaderCell>
+                                                <Cell dataKey="precio2">
+                                                    {rowData => (rowData.precio2 !== undefined ? `${rowData.precio2} €` : '')}
+                                                </Cell>
+                                            </Column>
+
+                                            <Column width={100} align="center">
+                                                <HeaderCell>Acciones</HeaderCell>
+                                                <Cell>
+                                                    {rowData => (
+                                                        <Whisper placement="top" trigger="hover" speaker={<Tooltip>Ver más</Tooltip>}>
+                                                            <Icon icon="mdi:eye-outline" style={{ cursor: 'pointer', fontSize: '1.5rem' }} onClick={() => handleViewMoreComprador(rowData.id)} />
+                                                        </Whisper>
+                                                    )}
+                                                </Cell>
+                                            </Column>
+                                        </Table>
                                     </div>
-                                    <RangeSlider
-                                        min={editComprador.interes === 'comprar' ? 0 : 0}
-                                        max={editComprador.interes === 'comprar' ? 1000000 : 2500}
-                                        step={editComprador.interes === 'comprar' ? 10000 : 50}
-                                        value={[editComprador.rango_precios.min, editComprador.rango_precios.max]}
-                                        onChange={value => setEditComprador({
-                                            ...editComprador,
-                                            rango_precios: { min: value[0], max: value[1] }
-                                        })}
-                                        style={{ width: '80%' }}
-                                    />
-                                </Form.Group>
-                            </Form>
-                        </Modal.Body>
-                        <Modal.Footer>
-                            <Button onClick={handleCloseEditModalComprador} appearance="subtle">Cerrar</Button>
-                            <Button onClick={handleUpdateComprador} appearance="primary">Actualizar</Button>
-                        </Modal.Footer>
-                    </Modal>
-                )}
+                                )}
+                            </Modal.Body>
+                            <Modal.Footer style={{ display: 'flex', justifyContent: 'center', gap: '10px' }}>
+                                <Button onClick={handleCloseInfoComprador} appearance="subtle">Cerrar</Button>
+                            </Modal.Footer>
+                        </Modal>
+                    )
+                }
 
-                {infoModalOpen && (
-                    <Modal open={infoModalOpen} onClose={handleCloseInfoComprador} size="lg">
-                        <Modal.Header>
-                            <Modal.Title>Información del Comprador</Modal.Title>
-                        </Modal.Header>
-                        <Modal.Body>
-                            {selectedComprador && (
-                                <div>
-                                    <p><strong>Nombre:</strong> {selectedComprador.nombre}</p>
-                                    <p><strong>Apellido:</strong> {selectedComprador.apellido}</p>
-                                    <p><strong>Email:</strong> {selectedComprador.email}</p>
-                                    <p><strong>DNI:</strong> {selectedComprador.dni}</p>
-                                    <p><strong>Teléfono:</strong> {selectedComprador.telefono}</p>
-                                    <p><strong>Interés:</strong> {selectedComprador.interes === 'comprar' ? 'Comprar' : 'Alquilar'}</p>
-                                    <p><strong>Rango de Precios:</strong> {`${selectedComprador.rango_precios.min}€ - ${selectedComprador.rango_precios.max}€`}</p>
-
-                                    <Table data={inmueblesCompradorInfo} autoHeight>
-                                        <Column width={250} align="center">
-                                            <HeaderCell>Dirección</HeaderCell>
-                                            <Cell dataKey="direccion" />
-                                        </Column>
-                                        <Column width={150} align="center">
-                                            <HeaderCell>Superficie</HeaderCell>
-                                            <Cell>
-                                                {rowData => (
-                                                    <span>{rowData.superficie} m²</span>
-                                                )}
-                                            </Cell>
-                                        </Column>
-
-                                        <Column width={150} align="center">
-                                            <HeaderCell>Precio 1</HeaderCell>
-                                            <Cell dataKey="precio" />
-                                        </Column>
-                                        <Column width={150} align="center">
-                                            <HeaderCell>Precio 2</HeaderCell>
-                                            <Cell dataKey="precio2" />
-                                        </Column>
-                                        <Column width={100} align="center">
-                                            <HeaderCell>Acciones</HeaderCell>
-                                            <Cell>
-                                                {rowData => (
-                                                    <Whisper placement="top" trigger="hover" speaker={<Tooltip>Ver más</Tooltip>}>
-                                                        <Icon icon="mdi:eye-outline" style={{ cursor: 'pointer', fontSize: '1.5rem' }} onClick={() => handleOpen(rowData)} />
-                                                    </Whisper>
-                                                )}
-                                            </Cell>
-                                        </Column>
-                                    </Table>
-                                </div>
-                            )}
-                        </Modal.Body>
-                        <Modal.Footer>
-                            <Button onClick={handleCloseInfoComprador} appearance="subtle">Cerrar</Button>
-                        </Modal.Footer>
-                    </Modal>
-                )}
-
-            </div>
+            </div >
 
         </GeneralLayout >
     );

@@ -14,6 +14,8 @@ import Select from 'react-select';
 import Skeleton from 'react-loading-skeleton';
 import 'react-loading-skeleton/dist/skeleton.css';
 import { Icon } from '@iconify/react';
+import MoreInfo from '../MoreInfo/MoreInfo.js';
+import { set } from 'date-fns';
 
 
 const Table = ({ parentsEdificioProps }) => {
@@ -84,6 +86,8 @@ const Table = ({ parentsEdificioProps }) => {
     const [smallLoadingScreen, setSmallLoadingScreen] = useState(false);
     const [nestedElements, setNestedElements] = useState([]);
     const [loadingTotalItems, setLoadingTotalItems] = useState(false);
+
+    const [showModal, setShowModal] = useState(false); // Controls the modal visibility
 
     const fetchData = async (currentPage, searchTerm) => {
         // Function to determine the value for each filter
@@ -968,10 +972,13 @@ const Table = ({ parentsEdificioProps }) => {
 
     const handleItemClick = (id) => {
         setSelectedId(id);
+        setShowModal(true);
+
     };
 
     const handleClose = () => {
         setSelectedId(null);
+        setShowModal(false);
     };
 
     // Handle toggling the edit table
@@ -1734,6 +1741,9 @@ const Table = ({ parentsEdificioProps }) => {
                     searchTerm={searchTerm}
                     handleIconAddInmueble={handleIconAddInmueble}
                 />
+            )}
+            {selectedId !== null && (
+                <MoreInfo id={selectedId} onClose={handleClose} showModal={showModal} setShowModal={setShowModal} fetchData={fetchData} currentPage={currentPage} searchTerm={searchTerm} />
             )}
         </div>
     );
