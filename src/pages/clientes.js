@@ -12,6 +12,7 @@ import { dniValidator } from '../lib/mongodb/dniValidator/dniValidator.js';
 import { useToaster, Notification } from 'rsuite';
 import cookie from 'cookie';
 import '../components/Clientes/clients.css';
+import MoreInfo from '../components/MoreInfo/MoreInfo.js';
 
 export async function getServerSideProps(context) {
     // Parse the cookies on the request
@@ -70,6 +71,8 @@ export default function Clientes({ isAdmin }) {
     const [selectedComprador, setSelectedComprador] = useState(null);
     const [inmueblesCompradorInfo, setInmueblesCompradorInfo] = useState([]);
     const [infoModalOpen, setInfoModalOpen] = useState(false);
+    const [viewMore, setViewMore] = useState(false);
+    const [moreInfoInmuebleId, setMoreInfoInmuebleId] = useState(null);
 
     const handleOpenInfoComprador = async (comprador) => {
         setSelectedComprador(comprador);
@@ -404,9 +407,15 @@ export default function Clientes({ isAdmin }) {
         }).showToast();
     };
 
+    const handleViewMore = (cliente) => {
+        console.log('cliente', cliente.id);
+        setViewMore(true);
+        setMoreInfoInmuebleId(cliente.id);
+    };
     return (
         <GeneralLayout title="Gestión de Clientes" description="Panel de administración de clientes">
             {loading && <LoadingScreen />}
+            {viewMore && <MoreInfo id={moreInfoInmuebleId} />}
             <div className="h-full w-full flex flex-col items-center justify-start pt-20 overflow-y-scroll bg-gradient-to-t from-slate-400 via-slate-300 to-slate-200">
                 <div className="w-full flex flex-col items-center">
                     <h1 className="text-3xl font-bold text-center font-sans w-80 mb-8">Gestión de Clientes</h1>

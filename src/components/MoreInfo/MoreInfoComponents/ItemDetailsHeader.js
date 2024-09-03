@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, use } from 'react';
 import axios from 'axios';
-import { AiOutlineCamera, AiOutlinePlus, AiOutlineLoading, AiOutlineDelete } from 'react-icons/ai';
+import { AiOutlineCamera, AiOutlinePlus, AiOutlineLoading, AiOutlineDelete, AiOutlineEdit } from 'react-icons/ai';
 import Toastify from 'toastify-js';
 import { Modal, Button } from 'rsuite';
 import 'rsuite/dist/rsuite.min.css'; // Import the rsuite CSS
@@ -8,8 +8,10 @@ import './ItemsDetailsHeader.css';
 import EditButton from './EditButton';
 import imageCompression from 'browser-image-compression';
 import { FaEye, FaEyeSlash } from 'react-icons/fa'; // Import eye icons
+import dynamic from 'next/dynamic';
+const EditModal = dynamic(() => import('./EditModal'), { ssr: false });
 
-const ItemDetailsHeader = ({ inmuebleId, onClose, address, setImages, setIsSliderLoading, isVisible, setIsVisible }) => {
+const ItemDetailsHeader = ({ inmuebleId, onClose, address, setImages, setIsSliderLoading, isVisible, setIsVisible, data, onAddEdtMoreInfoRefreshKey, setOnAddEdtMoreInfoRefreshKey }) => {
     const [selectedFiles, setSelectedFiles] = useState([]);
     const [uploadStatus, setUploadStatus] = useState('');
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -27,6 +29,7 @@ const ItemDetailsHeader = ({ inmuebleId, onClose, address, setImages, setIsSlide
     const [editModalOpen, setEditModalOpen] = useState(false);
     const [isImageValid, setIsImageValid] = useState(true);
 
+    const closeModal = () => setIsModalOpen(false);
 
     const toggleVisibility = () => {
         setIsVisible(!isVisible);
@@ -261,7 +264,7 @@ const ItemDetailsHeader = ({ inmuebleId, onClose, address, setImages, setIsSlide
     };
     const openEditModal = () => setEditModalOpen(true);
     const closeEditModal = () => setEditModalOpen(false);
-
+    const openFileInput = () => getFileRef.current.click(); // Function to open file input
 
     const renderSlots = () => {
         const slots = [];
@@ -303,13 +306,22 @@ const ItemDetailsHeader = ({ inmuebleId, onClose, address, setImages, setIsSlide
         }
         return slots;
     };
-    const openFileInput = () => getFileRef.current.click(); // Function to open file input
+
+    const handleIsModalOpen = () => {
+        setIsModalOpen(true);
+    };
+
+    const openModal = () => setIsModalOpen(true);
 
     return (
         <div className="header-container">
-            {isModalOpen && <EditModal closeModal={closeModal} />}
+            <EditModal closeModal={closeModal} isModalOpen={isModalOpen} setIsModalOpen={setIsModalOpen} data={data} onAddEdtMoreInfoRefreshKey={onAddEdtMoreInfoRefreshKey} setOnAddEdtMoreInfoRefreshKey={setOnAddEdtMoreInfoRefreshKey} />
             <div className='flex flex-row justify-center gap-3 pb-6'>
-                <EditButton onClick={() => setIsModalOpen(true)} />
+                <div>
+                    <button onClick={openModal} className="p-3 rounded-full border border-gray-300 hover:bg-gray-100">
+                        <AiOutlineEdit className="text-gray-500 text-2xl" />
+                    </button>
+                </div>
                 <div>
                     <button onClick={openEditModal} className="p-3 rounded-full border border-gray-300 hover:bg-gray-100">
                         <AiOutlineCamera className="text-gray-500 text-2xl" />

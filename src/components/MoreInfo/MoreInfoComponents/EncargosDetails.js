@@ -52,7 +52,7 @@ const showToast = (message, backgroundColor) => {
     }).showToast();
 };
 
-const EncargosDetails = ({ data, setOnAddEncargoRefreshKey, onAddEncargoRefreshKey }) => {
+const EncargosDetails = ({ data, setOnAddEncargoRefreshKey, onAddEncargoRefreshKey, fetchData, currentPage, searchTerm }) => {
     const [isOpen, setIsOpen] = useState(false);
     const [isPopupOpen, setIsPopupOpen] = useState(false);
     const [encargos, setEncargos] = useState([]);
@@ -109,8 +109,8 @@ const EncargosDetails = ({ data, setOnAddEncargoRefreshKey, onAddEncargoRefreshK
             if (Array.isArray(asesores)) {
                 setAsesorOptions(
                     asesores.map((user) => ({
-                        value: `${user.name} ${user.apellido}`,
-                        label: `${user.name} ${user.apellido}`,
+                        value: `${user.nombre} ${user.apellido}`,
+                        label: `${user.nombre} ${user.apellido}`,
                     })),
                 );
             } else {
@@ -216,6 +216,7 @@ const EncargosDetails = ({ data, setOnAddEncargoRefreshKey, onAddEncargoRefreshK
                 handlePopupClose();
                 await fetchEncargos();
                 setOnAddEncargoRefreshKey(onAddEncargoRefreshKey + 1);
+                fetchData(currentPage, searchTerm);
             } else {
                 alert(response.data.message);
             }
@@ -273,6 +274,7 @@ const EncargosDetails = ({ data, setOnAddEncargoRefreshKey, onAddEncargoRefreshK
                 handlePopupClose();
                 setIsEditing(false);
                 setOnAddEncargoRefreshKey(onAddEncargoRefreshKey + 1);
+                fetchData(currentPage, searchTerm);
             } else {
                 alert('Error al eliminar el encargo.');
             }

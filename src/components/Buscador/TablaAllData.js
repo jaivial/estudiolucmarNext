@@ -1743,7 +1743,7 @@ const Table = ({ parentsEdificioProps }) => {
                 />
             )}
             {selectedId !== null && (
-                <MoreInfo id={selectedId} onClose={handleClose} showModal={showModal} setShowModal={setShowModal} />
+                <MoreInfo id={selectedId} onClose={handleClose} showModal={showModal} setShowModal={setShowModal} fetchData={fetchData} currentPage={currentPage} searchTerm={searchTerm} />
             )}
         </div>
     );

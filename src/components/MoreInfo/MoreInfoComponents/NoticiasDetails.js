@@ -47,7 +47,7 @@ const showToast = (message, backgroundColor) => {
     }).showToast();
 };
 
-const NoticiasDetails = ({ data, setOnAddNoticiaRefreshKey, onAddNoticiaRefreshKey }) => {
+const NoticiasDetails = ({ data, setOnAddNoticiaRefreshKey, onAddNoticiaRefreshKey, fetchData, currentPage, searchTerm }) => {
     const [isOpen, setIsOpen] = useState(false);
     const [isPopupOpen, setIsPopupOpen] = useState(false);
     const [noticias, setNoticias] = useState([]);
@@ -103,8 +103,8 @@ const NoticiasDetails = ({ data, setOnAddNoticiaRefreshKey, onAddNoticiaRefreshK
             if (Array.isArray(asesores)) {
                 setAsesorOptions(
                     asesores.map((user) => ({
-                        value: `${user.name} ${user.apellido}`,
-                        label: `${user.name} ${user.apellido}`,
+                        value: `${user.nombre} ${user.apellido}`,
+                        label: `${user.nombre} ${user.apellido}`,
                     })),
                 );
             } else {
@@ -185,6 +185,7 @@ const NoticiasDetails = ({ data, setOnAddNoticiaRefreshKey, onAddNoticiaRefreshK
                 handlePopupClose(); // Close the popup and reset fields
                 await fetchNoticias(); // Refresh noticias
                 setOnAddNoticiaRefreshKey(onAddNoticiaRefreshKey + 1); // Refresh the key to trigger a re-render
+                fetchData(currentPage, searchTerm);
             } else {
                 alert(response.data.error || 'An error occurred');
             }
@@ -230,6 +231,7 @@ const NoticiasDetails = ({ data, setOnAddNoticiaRefreshKey, onAddNoticiaRefreshK
                 handlePopupClose();
                 setOnAddNoticiaRefreshKey(onAddNoticiaRefreshKey + 1);
                 setIsEditing(false);
+                fetchData(currentPage, searchTerm);
             } else {
                 alert(`Error al eliminar noticia: ${response.data.message}`);
             }

@@ -14,14 +14,14 @@ import DetailsInfoThree from './MoreInfoComponents/DetailsInfoThree';
 import ComentariosDetails from './MoreInfoComponents/ComentariosDetails';
 import NoticiasDetails from './MoreInfoComponents/NoticiasDetails';
 import EncargosDetails from './MoreInfoComponents/EncargosDetails';
-
+import Toastify from 'toastify-js';
 // Import React Suite components
 import { Modal, Button } from 'rsuite';
 import 'rsuite/dist/rsuite.min.css';
 
 import SmallLoadingScreen from '../LoadingScreen/SmallLoadingScreen';
 
-const ItemDetails = ({ id, onClose, showModal, setShowModal }) => {
+const ItemDetails = ({ id, onClose, showModal, setShowModal, fetchData, currentPage, searchTerm }) => {
     const [data, setData] = useState(null);
     const [images, setImages] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -31,10 +31,27 @@ const ItemDetails = ({ id, onClose, showModal, setShowModal }) => {
     const [encargoData, setEncargoData] = useState([]);
     const [onAddNoticiaRefreshKey, setOnAddNoticiaRefreshKey] = useState(1);
     const [onAddEncargoRefreshKey, setOnAddEncargoRefreshKey] = useState(1);
+    const [onAddEdtMoreInfoRefreshKey, setOnAddEdtMoreInfoRefreshKey] = useState(1);
     const [isVisible, setIsVisible] = useState(false); // Initial state
     const [descripcion, setDescripcion] = useState('');
     const [newDescripcion, setNewDescripcion] = useState('');
 
+
+    const showToast = (message, backgroundColor) => {
+        Toastify({
+            text: message,
+            duration: 2500,
+            gravity: 'top',
+            position: 'center',
+            stopOnFocus: true,
+            style: {
+                borderRadius: '10px',
+                backgroundImage: backgroundColor,
+                textAlign: 'center',
+            },
+            onClick: function () { },
+        }).showToast();
+    };
 
     const fetchDescripcion = async () => {
         try {
@@ -48,8 +65,6 @@ const ItemDetails = ({ id, onClose, showModal, setShowModal }) => {
             if (response.data.status === 'success') {
                 setDescripcion(response.data.descripcion || '');
                 setNewDescripcion(response.data.descripcion || '');
-            } else {
-                showToast(response.data.message, 'linear-gradient(to right bottom, #c62828, #b92125, #ac1a22, #a0131f, #930b1c)');
             }
         } catch (error) {
             console.error('Error fetching description:', error);
@@ -93,7 +108,7 @@ const ItemDetails = ({ id, onClose, showModal, setShowModal }) => {
             .catch((error) => {
                 console.error('Error fetching data:', error);
             });
-    }, [id, onAddNoticiaRefreshKey, onAddEncargoRefreshKey]);
+    }, [id, onAddNoticiaRefreshKey, onAddEncargoRefreshKey, onAddEdtMoreInfoRefreshKey]);
 
     useEffect(() => {
         const fetchEncargoData = async () => {
@@ -153,6 +168,9 @@ const ItemDetails = ({ id, onClose, showModal, setShowModal }) => {
                     setIsSliderLoading={setIsSliderLoading}
                     isVisible={isVisible}
                     setIsVisible={setIsVisible}
+                    data={data}
+                    onAddEdtMoreInfoRefreshKey={onAddEdtMoreInfoRefreshKey}
+                    setOnAddEdtMoreInfoRefreshKey={setOnAddEdtMoreInfoRefreshKey}
                 />
                 {isVisible && (
                     <>
@@ -183,8 +201,8 @@ const ItemDetails = ({ id, onClose, showModal, setShowModal }) => {
                 <DetailsInfoTwo data={data} descripcion={descripcion} setDescripcion={setDescripcion} newDescripcion={newDescripcion} setNewDescripcion={setNewDescripcion} />
                 <DetailsInfoThree data={data} />
                 <ComentariosDetails data={data} />
-                <NoticiasDetails data={data} setOnAddNoticiaRefreshKey={setOnAddNoticiaRefreshKey} onAddNoticiaRefreshKey={onAddNoticiaRefreshKey} />
-                <EncargosDetails data={data} setOnAddEncargoRefreshKey={setOnAddEncargoRefreshKey} onAddEncargoRefreshKey={onAddEncargoRefreshKey} />
+                <NoticiasDetails data={data} setOnAddNoticiaRefreshKey={setOnAddNoticiaRefreshKey} onAddNoticiaRefreshKey={onAddNoticiaRefreshKey} fetchData={fetchData} currentPage={currentPage} searchTerm={searchTerm} />
+                <EncargosDetails data={data} setOnAddEncargoRefreshKey={setOnAddEncargoRefreshKey} onAddEncargoRefreshKey={onAddEncargoRefreshKey} fetchData={fetchData} currentPage={currentPage} searchTerm={searchTerm} />
             </Modal.Body>
             <Modal.Footer>
                 <Button onClick={onClose} appearance="default">Close</Button>

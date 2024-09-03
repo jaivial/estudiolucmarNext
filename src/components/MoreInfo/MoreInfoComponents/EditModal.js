@@ -1,200 +1,355 @@
-import React, { useState } from 'react';
-import Slider from 'react-slider';
-import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
+import React, { useState, useEffect } from 'react';
+import { Modal, Form, Button, SelectPicker, InputPicker, Panel, Grid, Row, Col } from 'rsuite';
+import { MapContainer, TileLayer, Marker, Popup, useMapEvents } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import { FaMapPin } from 'react-icons/fa';
+import L from 'leaflet';
+import axios from 'axios';
 
-const EditModal = ({ closeModal }) => {
+const icon = L.icon({
+    iconUrl: 'https://cdn.jsdelivr.net/npm/leaflet@1.7.1/dist/images/marker-icon.png',
+    iconSize: [25, 41],
+    iconAnchor: [12, 41],
+    popupAnchor: [1, -34],
+    shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+    shadowSize: [41, 41],
+    shadowAnchor: [12, 41],
+});
+
+const EditModal = ({ isModalOpen, closeModal, data, onAddEdtMoreInfoRefreshKey, setOnAddEdtMoreInfoRefreshKey }) => {
+    const inmueble = data.inmueble;
     const [formData, setFormData] = useState({
-        direccion: '',
-        tipo: '',
-        uso: '',
-        superficie: '',
-        ano_construccion: '',
-        categoria: '',
-        potencialAdquisicion: '',
-        location: '',
-        habitaciones: '',
-        garaje: '',
-        ascensor: false,
-        banyos: '',
-        trastero: false,
-        jardin: false,
-        terraza: false,
-        aireAcondicionado: false,
+        id: inmueble.id,
+        direccion: inmueble.direccion,
+        tipo: inmueble.tipo ? inmueble.tipo : '',
+        uso: inmueble.uso ? inmueble.uso : '',
+        superficie: inmueble.superficie ? inmueble.superficie : '',
+        ano_construccion: inmueble.ano_construccion ? inmueble.ano_construccion : '',
+        categoria: inmueble.categoria ? inmueble.categoria : '',
+        coordinates: inmueble.coordinates,
+        location: inmueble.location ? inmueble.location : '',
+        habitaciones: inmueble.habitaciones !== null ? inmueble.habitaciones : '',
+        banyos: inmueble.banyos !== null ? inmueble.banyos : '',
+        garaje: inmueble.garaje || false, // Ensure boolean values
+        ascensor: inmueble.ascensor || false,
+        trastero: inmueble.trastero || false,
+        jardin: inmueble.jardin || false,
+        terraza: inmueble.terraza || false,
+        aireAcondicionado: inmueble.aireacondicionado || false,
     });
-    const [mapPosition, setMapPosition] = useState([51.505, -0.09]);
+
+    const [mapPosition, setMapPosition] = useState([39.3968, -0.4189]); // Coordinates for Catarroja, Valencia, Spain
     const [showMap, setShowMap] = useState(false);
+    const [markerPosition, setMarkerPosition] = useState(null);
 
-    // Slider handling functions
-    const handleSuperficieChange = (value) => handleChange({ target: { name: 'superficie', value } });
-    const handleAnoConstruccionChange = (value) => handleChange({ target: { name: 'ano_construccion', value } });
+    useEffect(() => {
+        console.log('data EDIT', formData);
+    }, [formData]);
 
-    // Map click handler
-    const handleMapClick = (event) => {
-        setMapPosition([event.latlng.lat, event.latlng.lng]);
+    // Handle map click
+    const MapClickHandler = () => {
+        useMapEvents({
+            click(event) {
+                if (markerPosition && markerPosition.lat === event.latlng.lat && markerPosition.lng === event.latlng.lng) {
+                    // Remove marker if clicked on the same position
+                    setMarkerPosition(null);
+                    setFormData((prevData) => ({
+                        ...prevData,
+                        coordinates: '',
+                    }));
+                } else {
+                    // Set a new marker position
+                    setMarkerPosition(event.latlng);
+                    setMapPosition([event.latlng.lat, event.latlng.lng]);
+                    setFormData((prevData) => ({
+                        ...prevData,
+                        coordinates: `${event.latlng.lat}, ${event.latlng.lng}`,
+                    }));
+                }
+            },
+        });
+        return null;
     };
 
     // Toggle map visibility
     const toggleMap = () => setShowMap(!showMap);
 
-    const handleChange = (e) => {
-        const { name, value, type, checked } = e.target;
+    const handleChange = (value, name) => {
         setFormData((prevData) => ({
             ...prevData,
-            [name]: type === 'checkbox' ? checked : value,
+            [name]: value,
         }));
     };
 
-    const handleSubmit = (e) => {
-        e.preventDefault();
-        // Handle form submission here
-        console.log(formData);
-        closeModal(); // Close the modal after submitting
+    // Handle checkbox change
+    const handleCheckboxChange = (e) => {
+        const { name, checked } = e.target;
+        setFormData((prevData) => ({
+            ...prevData,
+            [name]: checked,
+        }));
     };
+
+    const handleSubmit = async (e) => {
+        e.preventDefault(); // Prevent default form submission behavior
+        console.log('formData', formData);
+        try {
+            const response = await axios.put('/api/updateInmuebleInfo', {
+                inmuebleID: formData.id, // Assuming formData contains the inmuebleID
+                direccion: formData.direccion,
+                tipo: formData.tipo,
+                uso: formData.uso,
+                superficie: formData.superficie,
+                ano_construccion: formData.ano_construccion,
+                categoria: formData.categoria,
+                coordinates: formData.coordinates,
+                location: formData.location,
+                habitaciones: formData.habitaciones,
+                banyos: formData.banyos,
+                garaje: formData.garaje,
+                ascensor: formData.ascensor,
+                trastero: formData.trastero,
+                jardin: formData.jardin,
+                terraza: formData.terraza,
+                aireacondicionado: formData.aireAcondicionado,
+            });
+
+            setOnAddEdtMoreInfoRefreshKey(onAddEdtMoreInfoRefreshKey + 1);
+            closeModal(); // Close the modal after submitting
+        } catch (error) {
+            console.error('Error updating inmueble:', error.response ? error.response.data : error.message);
+        }
+    };
+
+    // Generate options for InputPicker
+    const generateOptions = (start, end) => {
+        return Array.from({ length: end - start + 1 }, (_, i) => ({
+            label: (start + i).toString(),
+            value: start + i
+        }));
+    };
+
+    useEffect(() => {
+        console.log('formData', formData.coordinates);
+    }, [formData.coordinates]);
+
     return (
-        <div className="fixed inset-0 h-[calc(auto + 300px)] bg-gray-800 bg-opacity-75 flex items-center justify-center overflow-y-auto z-[9999] pb-52">
-            <div className="bg-white p-6 rounded-lg shadow-lg w-full h-auto max-w-4xl flex flex-col items-center justify-center absolute top-12 -mb-64  z-50">
-                <h2 className="text-lg font-bold mb-4">Editar Inmueble</h2>
-                <form onSubmit={handleSubmit}>
-                    <div className="mb-4">
-                        <h3 className="text-md font-semibold mb-2">Características básicas</h3>
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-                            <div>
-                                <label className="block text-sm font-medium mb-1" htmlFor="direccion">
-                                    Dirección
-                                </label>
-                                <input id="direccion" name="direccion" type="text" value={formData.direccion} onChange={handleChange} className="border border-gray-300 p-2 rounded-md w-full" />
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium mb-1" htmlFor="categoria">
-                                    Categoría
-                                </label>
-                                <select id="categoria" name="categoria" value={formData.categoria} onChange={handleChange} className="border border-gray-300 p-2 rounded-md w-full">
-                                    <option value="">Seleccionar</option>
-                                    <option value="Vacio">Vacio</option>
-                                    <option value="Inquilino">Inquilino</option>
-                                    <option value="Propietario">Propietario</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium mb-1" htmlFor="uso">
-                                    Uso
-                                </label>
-                                <input id="uso" name="uso" type="text" value={formData.uso} onChange={handleChange} className="border border-gray-300 p-2 rounded-md w-full" />
-                            </div>
-                        </div>
-                        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
-                            <div>
-                                <label className="block text-sm font-medium mb-1" htmlFor="tipo">
-                                    Tipo
-                                </label>
-                                <input id="tipo" name="tipo" type="text" value={formData.tipo} onChange={handleChange} className="border border-gray-300 p-2 rounded-md w-full" />
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium mb-1" htmlFor="superficie">
-                                    Superficie
-                                </label>
-                                <Slider min={0} max={2000} value={formData.superficie} onChange={handleSuperficieChange} className="w-full" />
-                                <div className="text-center">{formData.superficie} m²</div>
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium mb-1" htmlFor="ano_construccion">
-                                    Año de Construcción
-                                </label>
-                                <Slider min={1850} max={new Date().getFullYear()} value={formData.ano_construccion} onChange={handleAnoConstruccionChange} className="w-full" />
-                                <div className="text-center">{formData.ano_construccion}</div>
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium mb-1" htmlFor="location">
-                                    Ubicación
-                                    <button type="button" onClick={toggleMap} className="flex items-center text-blue-500 mt-2">
-                                        <FaMapPin className="mr-2" /> Seleccionar en el mapa
-                                    </button>
-                                </label>
-                                <input id="location" name="location" type="text" value={formData.location} readOnly className="border border-gray-300 p-2 rounded-md w-full" />
-                            </div>
-                        </div>
+        <>
+            <Modal open={isModalOpen} onClose={closeModal} size="md" overflow={false} backdrop="static" style={{ backgroundColor: 'rgba(0,0,0,0.15)', marginBottom: '70px' }}>
+                <Modal.Header>
+                    <Modal.Title className='text-center' style={{ fontSize: '1.4rem', marginTop: '10px', fontFamily: 'sans-serif' }}>Editar Inmueble</Modal.Title>
+                </Modal.Header>
+                <Modal.Body style={{ padding: '30px' }}>
+                    <Form fluid>
+                        <Form.Group>
+                            <Form.ControlLabel>Dirección</Form.ControlLabel>
+                            <Form.Control name="direccion" value={formData.direccion} onChange={(value) => handleChange(value, 'direccion')} />
+                        </Form.Group>
+                        <Form.Group>
+                            <Form.ControlLabel>Categoría</Form.ControlLabel>
+                            <SelectPicker
+                                data={[
+                                    { label: 'Vacio', value: 'Vacio' },
+                                    { label: 'Inquilino', value: 'Inquilino' },
+                                    { label: 'Propietario', value: 'Propietario' }
+                                ]}
+                                value={formData.categoria}
+                                onChange={(value) => handleChange(value, 'categoria')}
+                                block
+                            />
+                        </Form.Group>
+                        <Form.Group>
+                            <Form.ControlLabel>Uso</Form.ControlLabel>
+                            <SelectPicker
+                                data={[
+                                    { label: 'Residencial', value: 'Residencial' },
+                                    { label: 'Almacén-Estacionamiento', value: 'Almacén-Estacionamiento' },
+                                    { label: 'Industrial', value: 'Industrial' },
+                                    { label: 'Comercial', value: 'Comercial' },
+                                    { label: 'Oficinas', value: 'Oficinas' },
+                                    { label: 'Cultural', value: 'Cultural' },
+                                    { label: 'Sanidad y Beneficencia', value: 'Sanidad y Beneficencia' },
+                                    { label: 'Deportivo', value: 'Deportivo' },
+                                    { label: 'Ocio y hostelería', value: 'Ocio y hostelería' },
+                                    { label: 'Almacén', value: 'Almacén' },
+                                    { label: 'Almacén-Estacionamiento-Industrial', value: 'Almacén-Estacionamiento-Industrial' },
+                                    { label: 'Edificio Singular', value: 'Edificio Singular' },
+                                    { label: 'Suelo sin edif.', value: 'Suelo sin edif.' },
+                                    { label: 'NULL', value: 'NULL' },
+                                    { label: 'Religioso', value: 'Religioso' },
+                                    { label: 'Espectáculos', value: 'Espectáculos' }
+                                ]}
+                                value={formData.uso}
+                                onChange={(value) => handleChange(value, 'uso')}
+                                block
+                            />
+                        </Form.Group>
+                        <Form.Group>
+                            <Form.ControlLabel>Tipo</Form.ControlLabel>
+                            <SelectPicker
+                                data={[
+                                    { label: 'Urbano', value: 'Urbano' },
+                                    { label: 'Rural', value: 'Rural' },
+                                    { label: 'Sin Especificar', value: 'NULL' }
+                                ]}
+                                value={formData.tipo}
+                                onChange={(value) => handleChange(value, 'tipo')}
+                                block
+                            />
+                        </Form.Group>
+                        <Form.Group>
+                            <Form.ControlLabel>Superficie (m²)</Form.ControlLabel>
+                            <InputPicker
+                                data={generateOptions(0, 2000)}
+                                value={formData.superficie}
+                                onChange={(value) => handleChange(value, 'superficie')}
+                                block
+                            />
+                        </Form.Group>
+                        <Form.Group>
+                            <Form.ControlLabel>Año de Construcción</Form.ControlLabel>
+                            <InputPicker
+                                data={generateOptions(1900, new Date().getFullYear())}
+                                value={formData.ano_construccion}
+                                onChange={(value) => handleChange(value, 'ano_construccion')}
+                                block
+                            />
+                        </Form.Group>
+                        <Form.Group>
+                            <Form.ControlLabel>
+                                Ubicación
+                                <Button appearance="link" onClick={toggleMap} className="ml-2">
+                                    <FaMapPin /> Seleccionar en el mapa
+                                </Button>
+                            </Form.ControlLabel>
+                            <Form.Control name="coordinates" value={formData.coordinates} readOnly />
+                        </Form.Group>
                         {showMap && (
-                            <div className="w-full mb-4" style={{ height: '400px' }}>
-                                <MapContainer center={mapPosition} zoom={13} onClick={handleMapClick} style={{ height: '100%', width: '100%' }}>
+                            <div style={{ height: '400px', marginBottom: '20px' }}>
+                                <MapContainer center={mapPosition} zoom={13} style={{ height: '100%', width: '100%' }}>
                                     <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors' />
-                                    <Marker position={mapPosition}>
-                                        <Popup>Ubicación seleccionada</Popup>
-                                    </Marker>
+                                    <MapClickHandler />
+                                    {markerPosition && (
+                                        <Marker position={markerPosition} icon={icon} onDragend={(event) => setMarkerPosition(event.latlng)}>
+                                            <Popup>Ubicación seleccionada</Popup>
+                                        </Marker>
+                                    )}
                                 </MapContainer>
                             </div>
                         )}
-                        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 mb-4">
-                            <div>
-                                <label className="block text-sm font-medium mb-1" htmlFor="localidad">
-                                    Localidad
-                                </label>
-                                <input id="localidad" name="localidad" type="text" value={formData.localidad} onChange={handleChange} className="border border-gray-300 p-2 rounded-md w-full" />
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium mb-1" htmlFor="banyos">
-                                    Baños
-                                </label>
-                                <input id="banyos" name="banyos" type="number" min="0" max="15" value={formData.banyos} onChange={handleChange} className="border border-gray-300 p-2 rounded-md w-full" />
-                            </div>
-                        </div>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                            <div>
-                                <label className="block text-sm font-medium mb-1" htmlFor="garaje">
-                                    Garaje
-                                </label>
-                                <input id="garaje" name="garaje" type="checkbox" checked={formData.garaje} onChange={handleChange} className="mr-2" />
-                                <span>Garaje</span>
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium mb-1" htmlFor="ascensor">
-                                    Ascensor
-                                </label>
-                                <input id="ascensor" name="ascensor" type="checkbox" checked={formData.ascensor} onChange={handleChange} className="mr-2" />
-                                <span>Ascensor</span>
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium mb-1" htmlFor="trastero">
-                                    Trastero
-                                </label>
-                                <input id="trastero" name="trastero" type="checkbox" checked={formData.trastero} onChange={handleChange} className="mr-2" />
-                                <span>Trastero</span>
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium mb-1" htmlFor="jardin">
-                                    Jardín
-                                </label>
-                                <input id="jardin" name="jardin" type="checkbox" checked={formData.jardin} onChange={handleChange} className="mr-2" />
-                                <span>Jardín</span>
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium mb-1" htmlFor="terraza">
-                                    Terraza
-                                </label>
-                                <input id="terraza" name="terraza" type="checkbox" checked={formData.terraza} onChange={handleChange} className="mr-2" />
-                                <span>Terraza</span>
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium mb-1" htmlFor="aireAcondicionado">
-                                    Aire Acondicionado
-                                </label>
-                                <input id="aireAcondicionado" name="aireAcondicionado" type="checkbox" checked={formData.aireAcondicionado} onChange={handleChange} className="mr-2" />
-                                <span>Aire Acondicionado</span>
-                            </div>
-                        </div>
-                    </div>
-                    <div className="flex justify-end">
-                        <button type="submit" className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600">
-                            Guardar
-                        </button>
-                        <button type="button" onClick={closeModal} className="ml-2 bg-gray-300 text-gray-800 px-4 py-2 rounded-md hover:bg-gray-400">
-                            Cancelar
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </div>
+                        <Panel header="Más Opciones" collapsible defaultExpanded={false}>
+                            <Form.Group>
+                                <Form.ControlLabel>Localidad</Form.ControlLabel>
+                                <SelectPicker
+                                    data={[
+                                        { label: 'Catarroja', value: 'Catarroja' }
+                                    ]}
+                                    value={formData.location}
+                                    onChange={(value) => handleChange(value, 'location')}
+                                    block
+                                />
+                            </Form.Group>
+                            <Form.Group>
+                                <Form.ControlLabel>Baños</Form.ControlLabel>
+                                <SelectPicker
+                                    data={Array.from({ length: 11 }, (_, i) => ({ label: i.toString(), value: i }))}
+                                    value={formData.banyos}
+                                    onChange={(value) => handleChange(value, 'banyos')}
+                                    block
+                                />
+                            </Form.Group>
+                            <Form.Group>
+                                <Form.ControlLabel>Habitaciones</Form.ControlLabel>
+                                <SelectPicker
+                                    data={Array.from({ length: 16 }, (_, i) => ({ label: i.toString(), value: i }))}
+                                    value={formData.habitaciones}
+                                    onChange={(value) => handleChange(value, 'habitaciones')}
+                                    block
+                                />
+                            </Form.Group>
+                            <Grid>
+                                <Row>
+                                    <Col xs={12} md={6}>
+                                        <Form.Group>
+                                            <Form.ControlLabel>Garaje</Form.ControlLabel>
+                                            <input
+                                                type="checkbox"
+                                                name="garaje"
+                                                checked={formData.garaje}
+                                                onChange={handleCheckboxChange}
+                                            />
+                                        </Form.Group>
+                                    </Col>
+                                    <Col xs={12} md={6}>
+                                        <Form.Group>
+                                            <Form.ControlLabel>Ascensor</Form.ControlLabel>
+                                            <input
+                                                type="checkbox"
+                                                name="ascensor"
+                                                checked={formData.ascensor}
+                                                onChange={handleCheckboxChange}
+                                            />
+                                        </Form.Group>
+                                    </Col>
+                                    <Col xs={12} md={6}>
+                                        <Form.Group>
+                                            <Form.ControlLabel>Trastero</Form.ControlLabel>
+                                            <input
+                                                type="checkbox"
+                                                name="trastero"
+                                                checked={formData.trastero}
+                                                onChange={handleCheckboxChange}
+                                            />
+                                        </Form.Group>
+                                    </Col>
+                                    <Col xs={12} md={6}>
+                                        <Form.Group>
+                                            <Form.ControlLabel>Jardín</Form.ControlLabel>
+                                            <input
+                                                type="checkbox"
+                                                name="jardin"
+                                                checked={formData.jardin}
+                                                onChange={handleCheckboxChange}
+                                            />
+                                        </Form.Group>
+                                    </Col>
+                                    <Col xs={12} md={6}>
+                                        <Form.Group>
+                                            <Form.ControlLabel>Terraza</Form.ControlLabel>
+                                            <input
+                                                type="checkbox"
+                                                name="terraza"
+                                                checked={formData.terraza}
+                                                onChange={handleCheckboxChange}
+                                            />
+                                        </Form.Group>
+                                    </Col>
+                                    <Col xs={12} md={6}>
+                                        <Form.Group>
+                                            <Form.ControlLabel>Aire Acondicionado</Form.ControlLabel>
+                                            <input
+                                                type="checkbox"
+                                                name="aireAcondicionado"
+                                                checked={formData.aireAcondicionado}
+                                                onChange={handleCheckboxChange}
+                                            />
+                                        </Form.Group>
+                                    </Col>
+                                </Row>
+                            </Grid>
+                        </Panel>
+                    </Form>
+                </Modal.Body>
+                <Modal.Footer>
+                    <Button onClick={handleSubmit} appearance="primary">
+                        Guardar
+                    </Button>
+                    <Button onClick={closeModal} appearance="subtle">
+                        Cancelar
+                    </Button>
+                </Modal.Footer>
+            </Modal>
+        </>
     );
 };
 

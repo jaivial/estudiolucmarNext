@@ -7,7 +7,8 @@ import { FaUserTie } from 'react-icons/fa';
 import { PiMapPinSimpleAreaBold } from 'react-icons/pi';
 
 const DetailsInfoThree = ({ data }) => {
-    const { tipo, uso, superficie, ano_construccion, habitaciones, garaje, ascensor, baños, trastero, jardin, terraza, aireAcondicionado, categoria, potencialAdquisicion, noticiastate, encargoState, responsable, zona } = data.inmueble;
+    console.log('data inmueble', data.inmueble);
+    const { tipo, uso, superficie, ano_construccion, habitaciones, garaje, ascensor, baños, trastero, jardin, terraza, aireAcondicionado, aireacondicionado, categoria, potencialAdquisicion, noticiastate, encargostate, responsable, zona } = data.inmueble;
 
     // Function to render a list item if the value is valid
     const renderListItem = (value) => {
@@ -57,7 +58,7 @@ const DetailsInfoThree = ({ data }) => {
 
     // Function to render noticiastate with appropriate icon
     const renderNoticiaState = (value) => {
-        if (value === 1) {
+        if (value === true) {
             return (
                 <li className="py-1 flex items-center">
                     <svg xmlns="http://www.w3.org/2000/svg" width="2.1em" height="2.1em" viewBox="0 0 24 24">
@@ -73,7 +74,7 @@ const DetailsInfoThree = ({ data }) => {
         return null;
     };
     const renderEncargoState = (value) => {
-        if (value === 1) {
+        if (value === true) {
             return (
                 <li className="py-1 flex items-center">
                     <svg xmlns="http://www.w3.org/2000/svg" width="2em" height="2em" viewBox="0 0 20 20">
@@ -140,18 +141,18 @@ const DetailsInfoThree = ({ data }) => {
                             {renderListItem(superficie ? `${superficie} m²` : null)}
                             {renderListItem(ano_construccion ? `Construido en ${ano_construccion}` : null)}
                             {renderListItem(habitaciones ? `${habitaciones} habitaciones` : null)}
-                            {renderListItem(garaje ? `${garaje} garaje(s)` : null)}
+                            {renderListItem(garaje ? `Con garaje` : null)}
                             {renderListItem(ascensor ? 'Con ascensor' : null)}
                             {renderListItem(baños ? `${baños} baños` : null)}
-                            {renderListItem(trastero === 1 ? 'Trastero' : null)}
-                            {renderListItem(jardin === 1 ? 'Jardín' : null)}
-                            {renderListItem(terraza === 1 ? 'Con terraza y balcón' : null)}
+                            {renderListItem(trastero ? 'Trastero' : null)}
+                            {renderListItem(jardin ? 'Jardín' : null)}
+                            {renderListItem(terraza ? 'Con terraza y balcón' : null)}
                         </ul>
                     </div>
-                    {aireAcondicionado === 1 && (
+                    {aireAcondicionado || aireacondicionado && (
                         <div>
                             <h2 className="font-bold text-xl pb-2 mt-6">Equipamiento</h2>
-                            <ul className="list-none pl-2">{renderListItem(aireAcondicionado === 1 ? 'Aire acondicionado' : null)}</ul>
+                            <ul className="list-none pl-2">{renderListItem(aireAcondicionado || aireacondicionado ? 'Aire acondicionado' : null)}</ul>
                         </div>
                     )}
                 </div>
@@ -168,7 +169,7 @@ const DetailsInfoThree = ({ data }) => {
                                 {renderCategoria(categoria)}
                                 {renderPotencialAdquisicion(potencialAdquisicion)}
                                 {renderNoticiaState(noticiastate)}
-                                {renderEncargoState(encargoState)}
+                                {renderEncargoState(encargostate)}
                                 {renderAsesorState(responsable)}
                                 {renderZoneState(zona)}
                             </ul>
