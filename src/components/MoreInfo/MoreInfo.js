@@ -148,7 +148,7 @@ const ItemDetails = ({ id, onClose, showModal, setShowModal, fetchData, currentP
     }
 
     return (
-        <Modal open={showModal} onClose={onClose} size="full" overflow={false} backdrop="static">
+        <Modal open={showModal} onClose={onClose} size="full" overflow={false} backdrop="static" >
             < Modal.Header >
             </Modal.Header >
             <Modal.Body>
@@ -203,10 +203,11 @@ const ItemDetails = ({ id, onClose, showModal, setShowModal, fetchData, currentP
                 <ComentariosDetails data={data} />
                 <NoticiasDetails data={data} setOnAddNoticiaRefreshKey={setOnAddNoticiaRefreshKey} onAddNoticiaRefreshKey={onAddNoticiaRefreshKey} fetchData={fetchData} currentPage={currentPage} searchTerm={searchTerm} />
                 <EncargosDetails data={data} setOnAddEncargoRefreshKey={setOnAddEncargoRefreshKey} onAddEncargoRefreshKey={onAddEncargoRefreshKey} fetchData={fetchData} currentPage={currentPage} searchTerm={searchTerm} />
+                <div className='flex justify-center gap-4 mt-4 pb-[50px]'>
+                    <Button onClick={onClose} appearance="default" style={{ fontSize: '1rem', padding: '10px 20px' }}>Cerrar</Button>
+                </div>
             </Modal.Body>
-            <Modal.Footer>
-                <Button onClick={onClose} appearance="default">Close</Button>
-            </Modal.Footer>
+
         </Modal >
     );
 };
