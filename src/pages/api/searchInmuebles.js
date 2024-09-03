@@ -9,7 +9,7 @@ export default async function handler(req, res) {
         const db = client.db('inmoprocrm'); // Use the correct database name
         const inmuebles = db.collection('inmuebles');
 
-        const { pattern = '', currentPage = 1, itemsPerPage = 10, selectedZone = '', selectedCategoria = '', selectedResponsable = '', filterNoticia = null, filterEncargo = null, superficieMin = 0, superficieMax = 800000, yearMin = 1800, yearMax = new Date().getFullYear(), localizado = null, garaje = null, aireacondicionado = null, ascensor = null, trastero = null, jardin = null, terraza = null, tipo, banos, habitaciones } = req.query;
+        const { pattern = '', currentPage = 1, itemsPerPage = 10, selectedZone = '', selectedCategoria = '', selectedResponsable = '', filterNoticia = null, filterEncargo = null, superficieMin = 0, superficieMax = 800000, yearMin = 1800, yearMax = new Date().getFullYear(), localizado = null, garaje = null, aireacondicionado = null, ascensor = null, trastero = null, jardin = null, terraza = null, tipo, banos, habitaciones, DPV = null } = req.query;
         console.log('garaje', garaje);
         console.log('typeof garaje', typeof garaje);
         const page = parseInt(currentPage, 10);
@@ -19,6 +19,7 @@ export default async function handler(req, res) {
         const localizadoValueResults = localizado === 'true' ? true : localizado === 'false' ? false : null;
         const filterNoticiaValueResults = filterNoticia === 'true' ? true : filterNoticia === 'false' ? false : null;
         const filterEncargoValueResults = filterEncargo === 'true' ? true : filterEncargo === 'false' ? false : null;
+        const DPVValueResults = DPV === 'true' ? true : DPV === 'false' ? false : null;
 
         // Construir el objeto de consulta para coincidir con el patrón en los campos deseados
         const query = {
@@ -31,7 +32,7 @@ export default async function handler(req, res) {
                 { ano_construccion: { $gte: parseInt(yearMin, 10), $lte: parseInt(yearMax, 10) } },
                 // Filtro para zona
                 ...(selectedZone !== '' ? [{ zona: selectedZone }] : []),
-
+                ...(DPVValueResults !== null ? [{ $or: [{ DPV: DPVValueResults }, { DPV: { $exists: false } }] }] : []),
                 // Filtro para responsable
                 ...(selectedResponsable !== '' ? [{ $or: [{ responsable: selectedResponsable }, { responsable: { $exists: false } }] }] : []),
 
@@ -111,7 +112,8 @@ export default async function handler(req, res) {
             localizado: 1,
             localizado_phone: 1,
             nestedinmuebles: 1,
-            nestedescaleras: 1
+            nestedescaleras: 1,
+            DPV: 1
         };
 
         // Count the total number of matching documents˘
@@ -133,6 +135,13 @@ export default async function handler(req, res) {
 
 
         const finalResults = results.map(result => {
+            const applyDPVFilter = (inmueble) => {
+                if (DPVValueResults !== null) {
+                    return inmueble.DPV === DPVValueResults;
+                }
+                // If DPVValueResults is null, all inmuebles pass the filter
+                return true;
+            };
             const applyNoticiaFilter = (inmueble) => {
                 if (filterNoticiaValueResults !== null) {
                     return inmueble.noticiastate === filterNoticiaValueResults;
@@ -281,7 +290,7 @@ export default async function handler(req, res) {
             const applyFilters = (inmueble) => {
                 return applyHabitacionesFilter(inmueble) && applyBanosFilter(inmueble) &&
                     applyNoticiaFilter(inmueble) && applyEncargoFilter(inmueble) && applyCategoriaFilter(inmueble) && applyZoneFilter(inmueble) && applyResponsableFilter(inmueble) && applyLocalizadoFilter(inmueble) && applySuperficieFilter(inmueble)
-                    && applyAireAcondicionadoFilter(inmueble) && applyAscensorFilter(inmueble) && applyGarajeFilter(inmueble) && applyTrasteroFilter(inmueble) && applyTerrazaFilter(inmueble) && applyJardinFilter(inmueble) && applyTipoAgrupacionFilter(inmueble);
+                    && applyAireAcondicionadoFilter(inmueble) && applyAscensorFilter(inmueble) && applyGarajeFilter(inmueble) && applyTrasteroFilter(inmueble) && applyTerrazaFilter(inmueble) && applyJardinFilter(inmueble) && applyTipoAgrupacionFilter(inmueble) && applyDPVFilter(inmueble);
             };
 
 
@@ -338,25 +347,7 @@ export default async function handler(req, res) {
         const trasteroValue = trastero === 'true' ? true : trastero === 'false' ? false : 'undefined';
         const terrazaValue = terraza === 'true' ? true : terraza === 'false' ? false : 'undefined';
         const jardinValue = jardin === 'true' ? true : jardin === 'false' ? false : 'undefined';
-
-        // const simplifiedResult = await db.collection('inmuebles').aggregate([
-        //     {
-        //         $match: {
-        //             superficie: {
-        //                 $gte: parseInt(superficieMin, 10),
-        //                 $lte: parseInt(superficieMax, 10)
-        //             }
-        //         }
-        //     }
-        // ]).toArray();
-
-        // console.log('El resultado es', simplifiedResult.length);
-
-        const superficieMinAnalytics = parseInt(superficieMin, 10);
-        const superficieMaxAnalytics = parseInt(superficieMax, 10);
-
-        console.log('superficieMinAnalytics', superficieMinAnalytics);
-        console.log('superficieMaxAnalytics', superficieMaxAnalytics);
+        const DPVValue = DPV === 'true' ? true : DPV === 'false' ? false : 'undefined';
 
 
         const result1 = await db.collection('inmuebles').aggregate([
@@ -415,7 +406,8 @@ export default async function handler(req, res) {
                     ...(terrazaValue !== 'undefined' ? { "nestedinmuebles.terraza": terrazaValue } : {}),
                     ...(jardinValue !== 'undefined' ? { "nestedinmuebles.jardin": jardinValue } : {}),
                     ...(habitaciones !== 'undefined' ? { "nestedinmuebles.habitaciones": habitaciones } : {}),
-                    ...(banos !== 'undefined' ? { "nestedinmuebles.banyos": banos } : {})
+                    ...(banos !== 'undefined' ? { "nestedinmuebles.banyos": banos } : {}),
+                    ...(DPVValue !== 'undefined' ? { "nestedinmuebles.DPV": DPVValue } : {})
                 }
             },
 
@@ -455,6 +447,11 @@ export default async function handler(req, res) {
                     localizado: {
                         $push: {
                             $ifNull: [{ $toString: "$nestedinmuebles.localizado" }, "NULL"]
+                        }
+                    },
+                    DPV: {
+                        $push: {
+                            $ifNull: [{ $toString: "$nestedinmuebles.DPV" }, "NULL"]
                         }
                     },
                     totalInmuebles: {
@@ -634,6 +631,26 @@ export default async function handler(req, res) {
                             }
                         }
                     },
+                    DPV: {
+                        $arrayToObject: {
+                            $map: {
+                                input: ["true", "false", "NULL"],
+                                as: "state",
+                                in: {
+                                    k: "$$state",
+                                    v: {
+                                        $size: {
+                                            $filter: {
+                                                input: "$DPV",
+                                                as: "d",
+                                                cond: { $eq: ["$$d", "$$state"] }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
                     totalInmuebles: 1
                 }
             }
@@ -702,7 +719,9 @@ export default async function handler(req, res) {
                     ...(terrazaValue !== 'undefined' ? { "nestedescaleras.nestedinmuebles.terraza": terrazaValue } : {}),
                     ...(jardinValue !== 'undefined' ? { "nestedescaleras.nestedinmuebles.jardin": jardinValue } : {}),
                     ...(habitaciones !== 'undefined' ? { "nestedescaleras.nestedinmuebles.habitaciones": habitaciones } : {}),
-                    ...(banos !== 'undefined' ? { "nestedescaleras.nestedinmuebles.banyos": banos } : {})
+                    ...(banos !== 'undefined' ? { "nestedescaleras.nestedinmuebles.banyos": banos } : {}),
+                    ...(DPVValue !== 'undefined' ? { "nestedescaleras.nestedinmuebles.DPV": DPVValue } : {})
+
                 }
             },
 
@@ -742,6 +761,11 @@ export default async function handler(req, res) {
                     localizado: {
                         $push: {
                             $ifNull: [{ $toString: "$nestedescaleras.nestedinmuebles.localizado" }, "NULL"]
+                        }
+                    },
+                    DPV: {
+                        $push: {
+                            $ifNull: [{ $toString: "$nestedescaleras.nestedinmuebles.DPV" }, "NULL"]
                         }
                     },
                     totalInmuebles: {
@@ -921,6 +945,26 @@ export default async function handler(req, res) {
                             }
                         }
                     },
+                    DPV: {
+                        $arrayToObject: {
+                            $map: {
+                                input: ["true", "false", "NULL"],
+                                as: "state",
+                                in: {
+                                    k: "$$state",
+                                    v: {
+                                        $size: {
+                                            $filter: {
+                                                input: "$DPV",
+                                                as: "d",
+                                                cond: { $eq: ["$$d", "$$state"] }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
                     totalInmuebles: 1
                 }
             }
@@ -975,7 +1019,8 @@ export default async function handler(req, res) {
                     ...(terrazaValue !== 'undefined' ? { "terraza": terrazaValue } : {}),
                     ...(jardinValue !== 'undefined' ? { "jardin": jardinValue } : {}),
                     ...(habitaciones !== 'undefined' ? { "habitaciones": habitaciones } : {}),
-                    ...(banos !== 'undefined' ? { "banyos": banos } : {})
+                    ...(banos !== 'undefined' ? { "banyos": banos } : {}),
+                    ...(DPVValue !== 'undefined' ? { "DPV": DPVValue } : {})
                 }
             },
 
@@ -1016,6 +1061,11 @@ export default async function handler(req, res) {
                     localizado: {
                         $push: {
                             $ifNull: [{ $toString: "$localizado" }, "NULL"]
+                        }
+                    },
+                    DPV: {
+                        $push: {
+                            $ifNull: [{ $toString: "$DPV" }, "NULL"]
                         }
                     },
                     totalInmuebles: {
@@ -1177,6 +1227,26 @@ export default async function handler(req, res) {
                             }
                         }
                     },
+                    DPV: {
+                        $arrayToObject: {
+                            $map: {
+                                input: ["true", "false", "NULL"],
+                                as: "state",
+                                in: {
+                                    k: "$$state",
+                                    v: {
+                                        $size: {
+                                            $filter: {
+                                                input: "$DPV",
+                                                as: "d",
+                                                cond: { $eq: ["$$d", "$$state"] }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
                     totalInmuebles: 1
                 }
             }
@@ -1238,7 +1308,9 @@ export default async function handler(req, res) {
                     ...(terrazaValue !== 'undefined' ? { "nestedinmuebles.terraza": terrazaValue } : {}),
                     ...(jardinValue !== 'undefined' ? { "nestedinmuebles.jardin": jardinValue } : {}),
                     ...(habitaciones !== 'undefined' ? { "nestedinmuebles.habitaciones": habitaciones } : {}),
-                    ...(banos !== 'undefined' ? { "nestedinmuebles.banyos": banos } : {})
+                    ...(banos !== 'undefined' ? { "nestedinmuebles.banyos": banos } : {}),
+                    ...(DPVValue !== 'undefined' ? { "nestedinmuebles.DPV": DPVValue } : {})
+
                 }
             },
 
@@ -1279,6 +1351,12 @@ export default async function handler(req, res) {
                     localizado: {
                         $push: {
                             $ifNull: [{ $toString: "$nestedinmuebles.localizado" }, "NULL"]
+                        }
+                    },
+
+                    DPV: {
+                        $push: {
+                            $ifNull: [{ $toString: "$nestedinmuebles.DPV" }, "NULL"]
                         }
                     },
                     totalInmuebles: {
@@ -1433,6 +1511,26 @@ export default async function handler(req, res) {
                                                 input: "$localizado",
                                                 as: "l",
                                                 cond: { $eq: ["$$l", "$$state"] }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    DPV: {
+                        $arrayToObject: {
+                            $map: {
+                                input: ["true", "false", "NULL"],
+                                as: "state",
+                                in: {
+                                    k: "$$state",
+                                    v: {
+                                        $size: {
+                                            $filter: {
+                                                input: "$DPV",
+                                                as: "d",
+                                                cond: { $eq: ["$$d", "$$state"] }
                                             }
                                         }
                                     }
@@ -1507,7 +1605,8 @@ export default async function handler(req, res) {
                     ...(terrazaValue !== 'undefined' ? { "nestedescaleras.nestedinmuebles.terraza": terrazaValue } : {}),
                     ...(jardinValue !== 'undefined' ? { "nestedescaleras.nestedinmuebles.jardin": jardinValue } : {}),
                     ...(habitaciones !== 'undefined' ? { "nestedescaleras.nestedinmuebles.habitaciones": habitaciones } : {}),
-                    ...(banos !== 'undefined' ? { "nestedescaleras.nestedinmuebles.banyos": banos } : {})
+                    ...(banos !== 'undefined' ? { "nestedescaleras.nestedinmuebles.banyos": banos } : {}),
+                    ...(DPVValue !== 'undefined' ? { "nestedescaleras.nestedinmuebles.DPV": DPVValue } : {})
                 }
             },
 
@@ -1548,6 +1647,11 @@ export default async function handler(req, res) {
                     localizado: {
                         $push: {
                             $ifNull: [{ $toString: "$nestedescaleras.nestedinmuebles.localizado" }, "NULL"]
+                        }
+                    },
+                    DPV: {
+                        $push: {
+                            $ifNull: [{ $toString: "$nestedescaleras.nestedinmuebles.DPV" }, "NULL"]
                         }
                     },
                     totalInmuebles: {
@@ -1708,6 +1812,25 @@ export default async function handler(req, res) {
                                 }
                             }
                         }
+                    }, DPV: {
+                        $arrayToObject: {
+                            $map: {
+                                input: ["true", "false", "NULL"],
+                                as: "state",
+                                in: {
+                                    k: "$$state",
+                                    v: {
+                                        $size: {
+                                            $filter: {
+                                                input: "$DPV",
+                                                as: "d",
+                                                cond: { $eq: ["$$d", "$$state"] }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
                     },
                     totalInmuebles: 1
                 }
@@ -1735,7 +1858,8 @@ export default async function handler(req, res) {
                 zonas: {},
                 noticiastate: { true: 0, false: 0, NULL: 0 },
                 encargostate: { true: 0, false: 0, NULL: 0 },
-                localizado: { true: 0, false: 0, NULL: 0 }
+                localizado: { true: 0, false: 0, NULL: 0 },
+                DPV: { true: 0, false: 0, NULL: 0 }
             };
 
             // Función auxiliar para normalizar etiquetas y sumar los valores de un campo
@@ -1773,6 +1897,7 @@ export default async function handler(req, res) {
                     addFields(combined.noticiastate, data.noticiastate);
                     addFields(combined.encargostate, data.encargostate);
                     addFields(combined.localizado, data.localizado);
+                    addFields(combined.DPV, data.DPV);
                 }
             }
 

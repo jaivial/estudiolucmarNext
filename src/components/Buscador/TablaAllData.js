@@ -15,7 +15,7 @@ import Skeleton from 'react-loading-skeleton';
 import 'react-loading-skeleton/dist/skeleton.css';
 import { Icon } from '@iconify/react';
 import MoreInfo from '../MoreInfo/MoreInfo.js';
-import { set } from 'date-fns';
+
 
 
 const Table = ({ parentsEdificioProps, admin }) => {
@@ -75,6 +75,7 @@ const Table = ({ parentsEdificioProps, admin }) => {
         tipo: undefined,
         banos: undefined,
         habitaciones: undefined,
+        DPV: null,
     });
     const [showFilters, setShowFilters] = useState(false);
     const [resetFiltersKey, setResetFiltersKey] = useState(0);
@@ -125,15 +126,14 @@ const Table = ({ parentsEdificioProps, admin }) => {
         console.log('habitacionesValue', habitacionesValue);
         console.log('typeof habitacionesValue', typeof habitacionesValue);
 
-        console.log('filters', filters);
+        console.log('filters passed', filters.DPV);
 
         try {
             setLoadingTotalItems(true);
             setLoading(true);
             const params = new URLSearchParams({
                 pattern: searchTerm,
-                itemsPerPage: 4
-                ,
+                itemsPerPage: 4,
                 currentPage: currentPage,
                 selectedZone: filters.selectedZone,
                 selectedCategoria: filters.selectedCategoria,
@@ -154,6 +154,7 @@ const Table = ({ parentsEdificioProps, admin }) => {
                 tipo: tipoValue,
                 banos: banosValue,
                 habitaciones: habitacionesValue,
+                DPV: filters.DPV,
             });
             axios.get('api/searchInmuebles', { params }).then((response) => {
                 const data = response.data;
@@ -274,7 +275,8 @@ const Table = ({ parentsEdificioProps, admin }) => {
         filters.garaje,              // Added garaje filter
         filters.jardin,              // Added jardin filter
         filters.terraza,             // Added terraza filter
-        filters.trastero             // Added trastero filter
+        filters.trastero,             // Added trastero filter
+        filters.DPV,                 // Added DPV filter
     ]);
 
 

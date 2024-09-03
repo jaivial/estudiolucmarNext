@@ -26,8 +26,12 @@ const FilterMenu = ({ setFilters, currentPage, filters, data, setData, setCurren
     const [categorias, setCategorias] = useState([]);
     const [selectedCategoria, setSelectedCategoria] = useState(null);
     const [showMoreFilters, setShowMoreFilters] = useState(false);
-    const [loadingTotalItems, setLoadingTotalItems] = useState(false);
-    const [totalItems, setTotalItems] = useState();
+    const [filterDPV, setFilterDPV] = useState(null);
+
+    const filterOptionsDPV = [
+        { value: true, label: 'Sí' },
+        { value: false, label: 'No' },
+    ];
 
 
     const handleChangeSuperficieRange = (values) => {
@@ -65,8 +69,9 @@ const FilterMenu = ({ setFilters, currentPage, filters, data, setData, setCurren
             yearMin: yearRange[0],
             yearMax: yearRange[1],
             localizado: filterLocalizado,
+            DPV: filterDPV,
         });
-    }, [filterLocalizado, selectedZone, selectedResponsable, selectedCategoria, filterNoticia, filterEncargo, superficieRange, yearRange]);
+    }, [filterLocalizado, selectedZone, selectedResponsable, selectedCategoria, filterNoticia, filterEncargo, superficieRange, yearRange, filterDPV]);
 
 
     const zoneOptions = zones.map((zone) => ({ value: zone, label: zone }));
@@ -108,8 +113,9 @@ const FilterMenu = ({ setFilters, currentPage, filters, data, setData, setCurren
             yearMin: yearRange[0],
             yearMax: yearRange[1],
             localizado: filterLocalizado,
+            DPV: filterDPV,
         });
-    }, [filterLocalizado, selectedZone, selectedResponsable, selectedCategoria, filterNoticia, filterEncargo, superficieRange, yearRange, setFilters]);
+    }, [filterLocalizado, selectedZone, selectedResponsable, selectedCategoria, filterNoticia, filterEncargo, superficieRange, yearRange, setFilters, filterDPV]);
 
     const resetFilters = () => {
         setFilterLocalizado(null);
@@ -120,6 +126,7 @@ const FilterMenu = ({ setFilters, currentPage, filters, data, setData, setCurren
         setFilterEncargo(null); // Assuming the default is false
         setSuperficieRange([0, 2000]);
         setYearRange([1800, new Date().getFullYear()]);
+        setFilterDPV(null);
     };
 
 
@@ -270,6 +277,13 @@ const FilterMenu = ({ setFilters, currentPage, filters, data, setData, setCurren
                     className="rightanimation2 w-full"
                 />
             </div>
+            <Select
+                options={filterOptionsDPV}
+                onChange={(selectedOption) => setFilterDPV(selectedOption ? selectedOption.value : null)}
+                value={filterOptionsDPV.find((option) => option.value === filterDPV) || null}
+                placeholder="DPV"
+                className="rightanimation2 w-full z-[966]"
+            />
             {/* Superficie Range */}
             <div className="slideranimation1 flex flex-col py-3 px-4 w-full justify-center items-center bg-white border border-gray-300 rounded-lg shadow-md z-[960]">
                 <h2 className="font-sans text-gray-700 text-center text-lg">Superfície</h2>
