@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { AiOutlineDelete } from 'react-icons/ai';
+import { AiOutlineDelete, AiOutlineEdit } from 'react-icons/ai'; // Importar el icono de editar
 import { Accordion, Panel, Divider, Checkbox } from 'rsuite';
 import { CustomProvider } from 'rsuite';
 import 'rsuite/dist/rsuite.min.css'; // Import rsuite styles
@@ -8,11 +8,10 @@ import Toastify from 'toastify-js';
 import 'toastify-js/src/toastify.css'; // Import Toastify CSS
 import Cookies from 'js-cookie';
 import { DatePicker, Stack } from 'rsuite';
-import { FaCalendar, FaClock } from 'react-icons/fa';
+import { FaClock } from 'react-icons/fa';
 import Select from 'react-select';
 import esES from 'rsuite/locales/es_ES';
 import './comentarios.css';
-
 
 const formatDateTime = (dateTime) => {
     if (!dateTime) return '';
@@ -63,6 +62,11 @@ const ComentariosDetails = ({ data }) => {
     const [selectedTime, setSelectedTime] = useState(null);
     const [phoneOptions, setPhoneOptions] = useState([]);
 
+    // Estado de edición
+    const [editMode, setEditMode] = useState(false);
+    const [editingCommentId, setEditingCommentId] = useState(null);
+    const [editCommentText, setEditCommentText] = useState('');
+
     useEffect(() => {
         const getPhoneNumbers = async () => {
             try {
@@ -78,9 +82,6 @@ const ComentariosDetails = ({ data }) => {
     }, []);
 
     const handleDateChange = (date) => {
-        console.log('handleDateChange', date);
-        console.log('handleDateChange', selectedDate);
-        console.log('handleDateChange', typeof selectedDate);
         setSelectedDate(date);
     };
 
@@ -214,6 +215,41 @@ const ComentariosDetails = ({ data }) => {
         }
     };
 
+    const handleEditComment = (commentId, text) => {
+        setEditMode(true);
+        setEditingCommentId(commentId);
+        setEditCommentText(text);
+    };
+
+    const handleUpdateComment = async () => {
+        try {
+            const response = await axios.put('/api/updateComentEdit', {
+                id: editingCommentId,        // ID of the comment to update
+                comentario: editCommentText  // New text for the comment
+            });
+
+            if (response.data.success) {
+                await fetchComments(); // Refresh comments list
+                setEditMode(false);   // Exit edit mode
+                setEditingCommentId(null); // Clear editing ID
+                setEditCommentText('');   // Clear comment text
+                showToast('Comentario actualizado', 'linear-gradient(to right bottom, #00603c, #006f39, #007d31, #008b24, #069903)');
+            } else {
+                showToast(response.data.message, 'linear-gradient(to right bottom, #c62828, #b92125, #ac1a22, #a0131f, #930b1c)');
+            }
+        } catch (error) {
+            console.error('Error updating comment:', error);
+            showToast('Error updating comment', 'linear-gradient(to right bottom, #c62828, #b92125, #ac1a22, #a0131f, #930b1c)');
+        }
+    };
+
+
+    const handleCancelEdit = () => {
+        setEditMode(false);
+        setEditingCommentId(null);
+        setEditCommentText('');
+    };
+
     const programados = comentarios.filter(comment => !comment.completed);
     const completados = comentarios.filter(comment => comment.completed);
 
@@ -229,9 +265,56 @@ const ComentariosDetails = ({ data }) => {
                             <div className="py-2 -mx-2">
                                 {programados.map((comentario) => (
                                     <div key={comentario._id} className="py-2 my-3 relative flex items-start justify-between bg-blue-100 rounded-md">
-                                        <div className="pl-2 pb-4">
+                                        <div className="px-2 pb-4 w-full">
                                             <p className="text-sm text-gray-600 pb-2 -mt-1">{formatDateTime(comentario.date_time)}</p>
-                                            <p className="text-base text-gray-950 py-1">{comentario.texto}</p>
+                                            {editMode && editingCommentId === comentario._id ? (
+                                                <div className='w-full'>
+                                                    <textarea
+                                                        value={editCommentText}
+                                                        onChange={(e) => setEditCommentText(e.target.value)}
+                                                        rows="3"
+                                                        className="w-full border border-gray-300 p-2 rounded-md"
+                                                        placeholder="Edita tu comentario aquí..."
+                                                    />
+                                                    <div className="mt-2 w-full flex flex-row justify-center items-center">
+                                                        <button
+                                                            onClick={handleUpdateComment}
+                                                            className="bg-blue-500 text-white p-2 rounded mr-2"
+                                                        >
+                                                            Actualizar
+                                                        </button>
+                                                        <button
+                                                            onClick={handleCancelEdit}
+                                                            className="bg-gray-500 text-white p-2 rounded"
+                                                        >
+                                                            Cerrar
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            ) : (
+                                                <>
+                                                    <p className="text-base text-gray-950 py-1">{comentario.texto}</p>
+                                                    {isAdmin === "true" && (
+                                                        <div className="absolute flex flex-row-reverse justify-center items-center gap-4 bottom-1 right-1 bg-slate-50 rounded-md pr-2">
+                                                            <AiOutlineEdit
+                                                                className="text-xl text-blue-500 cursor-pointer"
+                                                                onClick={() => handleEditComment(comentario._id, comentario.texto)}
+                                                            />
+                                                            <AiOutlineDelete
+                                                                className="text-xl text-red-500 cursor-pointer"
+                                                                onClick={() => handleDeleteComment(comentario._id)}
+                                                            />
+                                                            <Checkbox
+                                                                className="text-black"
+                                                                onChange={() => handleCheckboxChange(comentario._id)}
+                                                                color='green'
+                                                            >
+                                                                Completado
+                                                            </Checkbox>
+                                                        </div>
+                                                    )}
+                                                </>
+                                            )}
                                         </div>
                                         <div className="absolute top-0 right-0 flex flex-row items-center space-x-2">
                                             <div className={`px-2 py-1 text-white text-xs rounded-md ${commentTypes[comentario.TipoComentario]}`}>
@@ -248,21 +331,6 @@ const ComentariosDetails = ({ data }) => {
                                                 </div>
                                             )}
                                         </div>
-                                        {isAdmin === "true" && (
-                                            <div className="absolute flex flex-row-reverse justify-center items-center gap-4 bottom-1 right-1 bg-slate-50 rounded-md pr-2">
-                                                <AiOutlineDelete
-                                                    className=" text-xl text-red-500 cursor-pointer"
-                                                    onClick={() => handleDeleteComment(comentario._id)}
-                                                />
-                                                <Checkbox
-                                                    className="text-black"
-                                                    onChange={() => handleCheckboxChange(comentario._id)}
-                                                    color='green'
-                                                >
-                                                    Completado
-                                                </Checkbox>
-                                            </div>
-                                        )}
                                     </div>
                                 ))}
                             </div>
