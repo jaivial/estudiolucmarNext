@@ -18,7 +18,7 @@ import MoreInfo from '../MoreInfo/MoreInfo.js';
 import { set } from 'date-fns';
 
 
-const Table = ({ parentsEdificioProps }) => {
+const Table = ({ parentsEdificioProps, admin }) => {
     const [loading, setLoading] = useState(true);
     const [data, setData] = useState([]);
     const [currentPage, setCurrentPage] = useState(1);
@@ -1248,18 +1248,20 @@ const Table = ({ parentsEdificioProps }) => {
                                 </button>
                             </div>
                         </div>
-                        <div className={`flex flex-row gap-4 pt-2 pb-2 w-fit justify-between ${showEditTable ? 'edittablecontainertrue' : 'edittablecontainerfalse'}`}>
-                            <div className="flex flex-row gap-4 justify-end items-end w-full">
-                                <button type="button" onClick={handleEditTable} className={`flex items-center justify-center p-2 rounded-lg shadow-xl hover:bg-blue-950 hover:text-white w-fit ${showExtraButtons ? 'bg-blue-950 text-white' : 'bg-blue-300 text-black'}`}>
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="2em" height="2em" viewBox="0 0 24 24">
-                                        <path
-                                            fill="currentColor"
-                                            d="M12.49 19.818c.118-.472.362-.903.707-1.248l5.901-5.901a2.27 2.27 0 0 1 1.392-.659a2.286 2.286 0 0 1 1.841 3.89l-5.902 5.903a2.7 2.7 0 0 1-1.248.706l-1.83.458a1.087 1.087 0 0 1-1.318-1.319zm-2.99 1.18h1.664l.356-1.423c.162-.648.497-1.24.97-1.712L14.353 16H9.499zM15.998 9.5v4.855l2.392-2.392a3.28 3.28 0 0 1 2.607-.95V9.499zm5-1.5V6.25A3.25 3.25 0 0 0 17.748 3h-1.75v5zm-6.5-5h-5v5h5zm-6.5 0H6.25A3.25 3.25 0 0 0 3 6.25V8h5zM3 9.5v4.999h5v-5zm0 6.499v1.75a3.25 3.25 0 0 0 3.25 3.25H8v-5zm11.499-6.5v5h-5v-5z"
-                                        />
-                                    </svg>
-                                </button>
+                        {admin && (
+                            <div className={`flex flex-row gap-4 pt-2 pb-2 w-fit justify-between ${showEditTable ? 'edittablecontainertrue' : 'edittablecontainerfalse'}`}>
+                                <div className="flex flex-row gap-4 justify-end items-end w-full">
+                                    <button type="button" onClick={handleEditTable} className={`flex items-center justify-center p-2 rounded-lg shadow-xl hover:bg-blue-950 hover:text-white w-fit ${showExtraButtons ? 'bg-blue-950 text-white' : 'bg-blue-300 text-black'}`}>
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="2em" height="2em" viewBox="0 0 24 24">
+                                            <path
+                                                fill="currentColor"
+                                                d="M12.49 19.818c.118-.472.362-.903.707-1.248l5.901-5.901a2.27 2.27 0 0 1 1.392-.659a2.286 2.286 0 0 1 1.841 3.89l-5.902 5.903a2.7 2.7 0 0 1-1.248.706l-1.83.458a1.087 1.087 0 0 1-1.318-1.319zm-2.99 1.18h1.664l.356-1.423c.162-.648.497-1.24.97-1.712L14.353 16H9.499zM15.998 9.5v4.855l2.392-2.392a3.28 3.28 0 0 1 2.607-.95V9.499zm5-1.5V6.25A3.25 3.25 0 0 0 17.748 3h-1.75v5zm-6.5-5h-5v5h5zm-6.5 0H6.25A3.25 3.25 0 0 0 3 6.25V8h5zM3 9.5v4.999h5v-5zm0 6.499v1.75a3.25 3.25 0 0 0 3.25 3.25H8v-5zm11.499-6.5v5h-5v-5z"
+                                            />
+                                        </svg>
+                                    </button>
+                                </div>
                             </div>
-                        </div>
+                        )}
                         <div className={`flex flex-row gap-4 pt-2 pb-2 w-fit justify-between ${showEditTable ? 'edittablecontainertrue' : 'edittablecontainerfalse'}`}>
                             <div className="flex flex-row gap-4 justify-end items-end w-full">
                                 <button type="button" onClick={handleShowAnalytics} className={`flex items-center justify-center p-2 rounded-lg shadow-xl hover:bg-blue-950 hover:text-white w-fit ${showExtraButtons ? 'bg-blue-950 text-white' : 'bg-blue-300 text-black'}`}>

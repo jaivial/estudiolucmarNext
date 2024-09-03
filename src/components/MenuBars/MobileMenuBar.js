@@ -23,6 +23,8 @@ const MobileMenuBar = () => {
             setCurrentPage('Noticias');
         } else if (currentURL.includes('mapa')) {
             setCurrentPage('Mapa');
+        } else if (currentURL.includes('mizona')) {
+            setCurrentPage('Mizona');
         }
     }, []);
 
@@ -57,8 +59,8 @@ const MobileMenuBar = () => {
                     <Link href="/home" className={`${isActive('Home')} px-3.5 rounded-3xl shadow-lg flex items-center justify-center`}>
                         <FaHome size="1.8em" />
                     </Link>
-                    <Link href="/buscador" className={`${isActive('Buscador')} px-4 rounded-3xl shadow-lg flex items-center justify-center`}>
-                        <FaSearch size="1.8em" />
+                    <Link href="/mizona" className={`${isActive('Mizona')} px-4 rounded-3xl shadow-lg flex items-center justify-center`}>
+                        <Icon icon="mdi:map-marker-radius" className='text-3xl' />
                     </Link>
                     <Link href="/mapa" className={`${isActive('Mapa')} px-4 rounded-3xl shadow-lg flex items-center justify-center`}>
                         <Icon icon="gis:poi-map" className='text-3xl' />
@@ -88,6 +90,11 @@ const MobileMenuBar = () => {
                                 </Link>
                                 <Link href="/clientes" className={`${isActive('Clientes')} w-full flex justify-center px-3.5 py-2 rounded-3xl shadow-lg`}>
                                     <Icon icon="bi:people-fill" className='text-3xl' />
+                                </Link>
+                                {/* New link to /mizona */}
+                                <Link href="/buscador" className={`${isActive('Buscador')} w-full flex justify-center px-3.5 py-2 rounded-3xl shadow-lg`}>
+                                    {/* Example icon */}
+                                    <FaSearch size="1.8em" />
                                 </Link>
                                 <div
                                     id="mobile-itemLogOut"

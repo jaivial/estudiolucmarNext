@@ -339,6 +339,26 @@ export default async function handler(req, res) {
         const terrazaValue = terraza === 'true' ? true : terraza === 'false' ? false : 'undefined';
         const jardinValue = jardin === 'true' ? true : jardin === 'false' ? false : 'undefined';
 
+        // const simplifiedResult = await db.collection('inmuebles').aggregate([
+        //     {
+        //         $match: {
+        //             superficie: {
+        //                 $gte: parseInt(superficieMin, 10),
+        //                 $lte: parseInt(superficieMax, 10)
+        //             }
+        //         }
+        //     }
+        // ]).toArray();
+
+        // console.log('El resultado es', simplifiedResult.length);
+
+        const superficieMinAnalytics = parseInt(superficieMin, 10);
+        const superficieMaxAnalytics = parseInt(superficieMax, 10);
+
+        console.log('superficieMinAnalytics', superficieMinAnalytics);
+        console.log('superficieMaxAnalytics', superficieMaxAnalytics);
+
+
         const result1 = await db.collection('inmuebles').aggregate([
             // Filtramos los documentos donde la dirección coincide con el patrón proporcionado
             {
@@ -362,6 +382,8 @@ export default async function handler(req, res) {
             // Aplicamos los filtros solicitados a los subdocumentos de nestedinmuebles
             {
                 $match: {
+                    "nestedinmuebles.superficie": { $gte: parseInt(superficieMin, 10), $lte: parseInt(superficieMax, 10) },
+                    "nestedinmuebles.ano_construccion": { $gte: parseInt(yearMin, 10), $lte: parseInt(yearMax, 10) },
                     ...(selectedZone !== '' ? { "nestedinmuebles.zona": selectedZone } : {}),
                     ...(selectedResponsable !== '' ? {
                         $or: [
@@ -646,6 +668,9 @@ export default async function handler(req, res) {
             // Aplicamos los filtros solicitados a los subdocumentos de nestedescaleras.nestedinmuebles
             {
                 $match: {
+                    "nestedescaleras.nestedinmuebles.superficie": { $gte: parseInt(superficieMin, 10), $lte: parseInt(superficieMax, 10) },
+                    "nestedescaleras.nestedinmuebles.ano_construccion": { $gte: parseInt(yearMin, 10), $lte: parseInt(yearMax, 10) },
+
                     ...(selectedZone !== '' ? { "nestedescaleras.nestedinmuebles.zona": selectedZone } : {}),
                     ...(selectedResponsable !== '' ? {
                         $or: [
@@ -917,6 +942,8 @@ export default async function handler(req, res) {
             // Aplicamos los filtros solicitados a los fields del propio documento
             {
                 $match: {
+                    "superficie": { $gte: parseInt(superficieMin, 10), $lte: parseInt(superficieMax, 10) },
+                    "ano_construccion": { $gte: parseInt(yearMin, 10), $lte: parseInt(yearMax, 10) },
                     ...(selectedZone !== '' ? { "zona": selectedZone } : {}),
                     ...(selectedResponsable !== '' ? {
                         $or: [
@@ -1178,6 +1205,8 @@ export default async function handler(req, res) {
             // Aplicamos los filtros solicitados a los subdocumentos de nestedinmuebles
             {
                 $match: {
+                    "nestedinmuebles.superficie": { $gte: parseInt(superficieMin, 10), $lte: parseInt(superficieMax, 10) },
+                    "nestedinmuebles.ano_construccion": { $gte: parseInt(yearMin, 10), $lte: parseInt(yearMax, 10) },
                     ...(selectedZone !== '' ? { "nestedinmuebles.zona": selectedZone } : {}),
                     ...(selectedResponsable !== '' ? {
                         $or: [
@@ -1445,6 +1474,8 @@ export default async function handler(req, res) {
             // Aplicamos los filtros solicitados a los subdocumentos de nestedescaleras.nestedinmuebles
             {
                 $match: {
+                    "nestedescaleras.nestedinmuebles.superficie": { $gte: parseInt(superficieMin, 10), $lte: parseInt(superficieMax, 10) },
+                    "nestedescaleras.nestedinmuebles.ano_construccion": { $gte: parseInt(yearMin, 10), $lte: parseInt(yearMax, 10) },
                     ...(selectedZone !== '' ? { "nestedescaleras.nestedinmuebles.zona": selectedZone } : {}),
                     ...(selectedResponsable !== '' ? {
                         $or: [

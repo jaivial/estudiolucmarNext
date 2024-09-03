@@ -1,75 +1,46 @@
-import GeneralLayout from "../components/layouts/GeneralLayout.js";
-import { useState } from "react";
-import TablaAllData from "../components/Buscador/TablaAllData.js";
-import clientPromise from '../lib/mongodb.js'; // Import clientPromise
+import GeneralLayout from "../components/layouts/GeneralLayout";
+import { useState, useEffect } from "react";
+import TablaAllData from "../components/Buscador/TablaAllData";
+import SmallLoadingScreen from '../components/LoadingScreen/SmallLoadingScreen'; // Corrected component import name
+import Cookies from 'js-cookie'; // Import js-cookie
+import axios from 'axios'; // Import axios
 
-export const getServerSideProps = async () => {
-    try {
-        const client = await clientPromise;
-        const db = client.db('inmoprocrm'); // Use the correct database name
-
-        // Fetch inmuebles where tipoagrupacion = 2
-        const edificios = await db.collection('inmuebles').aggregate([
-            {
-                $match: { tipoagrupacion: 2 },
-            },
-            {
-                $project: {
-                    _id: 0,
-                    id: 1,
-                    direccion: 1,
-                },
-            },
-        ]).toArray();
-
-        // Fetch id and direccion from nestedescaleras where tipoagrupacion = 3
-        const escaleras = await db.collection('inmuebles').aggregate([
-            {
-                $unwind: "$nestedescaleras",
-            },
-            {
-                $match: { "nestedescaleras.tipoagrupacion": 3 },
-            },
-            {
-                $project: {
-                    _id: 0,
-                    id: "$nestedescaleras.id",
-                    direccion: "$nestedescaleras.direccion",
-                },
-            },
-        ]).toArray();
-
-        // Return the data as props
-        return {
-            props: {
-                parentsEdificioProps: {
-                    edificios: edificios,
-                    escaleras: escaleras,
-                }, // Create an object with the desired properties
-            },
-        };
-    } catch (error) {
-        console.error('Error fetching parents:', error);
-        return {
-            props: {
-                parentsEdificioProps: { edificios: [], escaleras: [] }, // Return empty arrays in case of error
-            },
-        };
-    }
-};
-
-export default function Buscador({ parentsEdificioProps }) {
+export default function Buscador() {
     const [loading, setLoading] = useState(true);
-    const [data, setData] = useState([]);
-    const [currentPage, setCurrentPage] = useState(1);
-    const [totalPages, setTotalPages] = useState(1);
-    const [itemsPerPage] = useState(10);
+    const [data, setData] = useState({
+        edificios: [],
+        escaleras: []
+    });
+    const [admin, setAdmin] = useState(null); // State for admin cookie value
     const [searchTerm, setSearchTerm] = useState('');
+
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                // Fetch the admin cookie
+                const adminCookie = Cookies.get('admin');
+                setAdmin(adminCookie);
+
+                // Fetch the rest of the data using axios
+                const response = await axios.get('/api/fetchInmueblesData');
+                setData(response.data);
+            } catch (error) {
+                console.error('Error fetching data:', error);
+            } finally {
+                setLoading(false); // Ensure loading is set to false regardless of success or failure
+            }
+        };
+
+        fetchData();
+    }, []);
 
     return (
         <GeneralLayout title="Buscador" description="Buscador">
-            <TablaAllData parentsEdificioProps={parentsEdificioProps} />
-
+            {loading ? (
+                <SmallLoadingScreen />
+            ) : (
+                <TablaAllData parentsEdificioProps={data} admin={admin} />
+            )}
         </GeneralLayout>
     );
 }

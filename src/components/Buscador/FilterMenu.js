@@ -272,7 +272,7 @@ const FilterMenu = ({ setFilters, currentPage, filters, data, setData, setCurren
             </div>
             {/* Superficie Range */}
             <div className="slideranimation1 flex flex-col py-3 px-4 w-full justify-center items-center bg-white border border-gray-300 rounded-lg shadow-md z-[960]">
-                <h2 className="font-sans text-gray-700 text-center">Superfície</h2>
+                <h2 className="font-sans text-gray-700 text-center text-lg">Superfície</h2>
                 <div className="flex flex-row gap-8 justify-center mb-2 text-gray-700">
                     <span>Min: {superficieRange[0]} m²</span>
                     <span>Max: {superficieRange[1]} m²</span>
@@ -299,7 +299,7 @@ const FilterMenu = ({ setFilters, currentPage, filters, data, setData, setCurren
 
             {/* Year Range */}
             <div className="flex flex-col py-3 px-4 w-full justify-center items-center bg-white border border-gray-300 rounded-lg shadow-md slideranimation2">
-                <h2 className="font-sans text-gray-700 text-center">Año de construcción</h2>
+                <h2 className="font-sans text-gray-700 text-center text-lg">Año de construcción</h2>
 
                 <div className="flex flex-row gap-4 justify-center mb-2 text-gray-700">
                     <span>{yearRange[0]}</span>
