@@ -323,7 +323,7 @@ const ItemDetailsHeader = ({ inmuebleId, onClose, address, setImages, setIsSlide
     return (
         <div className="header-container">
             <EditModal closeModal={closeModal} isModalOpen={isModalOpen} setIsModalOpen={setIsModalOpen} data={data} onAddEdtMoreInfoRefreshKey={onAddEdtMoreInfoRefreshKey} setOnAddEdtMoreInfoRefreshKey={setOnAddEdtMoreInfoRefreshKey} />
-            <DPVComponent isOpen={dpvModalOpen} setDPVModalOpen={setDPVModalOpen} /> {/* Add DPVComponent modal */}
+            <DPVComponent isOpen={dpvModalOpen} setDPVModalOpen={setDPVModalOpen} inmuebleId={inmuebleId} /> {/* Add DPVComponent modal */}
             <div className='flex flex-row justify-center gap-3 pb-6'>
                 <div>
                     <button onClick={openModal} className="p-3 rounded-full border border-gray-300 hover:bg-gray-100">

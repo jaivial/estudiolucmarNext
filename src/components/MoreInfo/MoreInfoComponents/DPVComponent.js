@@ -5,7 +5,7 @@ import Toastify from 'toastify-js';
 import 'toastify-js/src/toastify.css'; // Import Toastify CSS
 import axios from 'axios';
 
-const DPVComponent = ({ isOpen, setDPVModalOpen }) => {
+const DPVComponent = ({ isOpen, setDPVModalOpen, inmuebleId }) => {
     const [isDPV, setIsDPV] = useState(false);
     const [estadoDPV, setEstadoDPV] = useState('');
     const [nombreInmobiliaria, setNombreInmobiliaria] = useState('');
@@ -59,6 +59,7 @@ const DPVComponent = ({ isOpen, setDPVModalOpen }) => {
             nombreInmobiliaria,
             linkInmobiliaria,
             evaluacionEstimada: parseInt(evaluacionEstimada, 10),
+            inmuebleId
         };
 
         try {
@@ -71,7 +72,7 @@ const DPVComponent = ({ isOpen, setDPVModalOpen }) => {
             setNombreInmobiliaria('');
             setLinkInmobiliaria('');
             setEvaluacionEstimada(0);
-            onClose(); // Close the modal on success
+            closeDPVModal(); // Close the modal on success
         } catch (error) {
             console.error('Error uploading DPV:', error);
             showToast('Error al registrar el DPV.', 'linear-gradient(to right bottom, #c62828, #b92125, #ac1a22, #a0131f, #930b1c)');

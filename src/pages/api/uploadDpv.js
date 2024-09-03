@@ -6,7 +6,7 @@ export default async function handler(req, res) {
             const client = await clientPromise;
             const db = client.db('inmoprocrm'); // Use the correct database name
 
-            const { estadoDPV, telefono, nombreInmobiliaria, linkInmobiliaria, evaluacionEstimada } = req.body;
+            const { estadoDPV, telefono, nombreInmobiliaria, linkInmobiliaria, evaluacionEstimada, inmuebleId } = req.body;
 
             // Insert data into the 'dpv' collection
             await db.collection('dpv').insertOne({
@@ -15,6 +15,7 @@ export default async function handler(req, res) {
                 nombreInmobiliaria,
                 linkInmobiliaria,
                 evaluacionEstimada,
+                inmuebleId
             });
 
             res.status(200).json({ message: 'DPV data successfully uploaded' });
