@@ -203,7 +203,7 @@ const ItemDetails = ({ id, onClose, showModal, setShowModal, fetchData, currentP
                 <ComentariosDetails data={data} />
                 <NoticiasDetails data={data} setOnAddNoticiaRefreshKey={setOnAddNoticiaRefreshKey} onAddNoticiaRefreshKey={onAddNoticiaRefreshKey} fetchData={fetchData} currentPage={currentPage} searchTerm={searchTerm} />
                 <EncargosDetails data={data} setOnAddEncargoRefreshKey={setOnAddEncargoRefreshKey} onAddEncargoRefreshKey={onAddEncargoRefreshKey} fetchData={fetchData} currentPage={currentPage} searchTerm={searchTerm} />
-                <div className='flex justify-center gap-4 mt-4 pb-[50px]'>
+                <div className='flex justify-center gap-4 mt-4 pb-[50px] z-[10]' >
                     <Button onClick={onClose} appearance="default" style={{ fontSize: '1rem', padding: '10px 20px' }}>Cerrar</Button>
                 </div>
             </Modal.Body>

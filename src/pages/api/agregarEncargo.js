@@ -2,12 +2,12 @@
 import clientPromise from '../../lib/mongodb';
 
 export default async function handler(req, res) {
-    if (req.method !== 'GET') {
+    if (req.method !== 'POST') {
         // Only allow POST requests
         return res.status(405).json({ error: 'Method Not Allowed' });
     }
 
-    const { encargo_id, tipoEncargo, comercial, cliente, precio, tipoComision, comision, fecha } = req.query;
+    const { encargo_id, tipoEncargo, comercial, cliente, precio, tipoComision, comision, fecha } = req.body;
 
     console.log('encargo_id', encargo_id);
     console.log('tipoEncargo', tipoEncargo);

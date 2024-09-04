@@ -207,7 +207,7 @@ const EncargosDetails = ({ data, setOnAddEncargoRefreshKey, onAddEncargoRefreshK
 
             const endpoint = isEditing ? '/api/updateEncargo' : '/api/agregarEncargo';
 
-            const response = await axios.get(endpoint, { params });
+            const response = await axios.post(endpoint, params);
             console.log('response updated', response.data);
 
             if (response.data) {
@@ -259,8 +259,6 @@ const EncargosDetails = ({ data, setOnAddEncargoRefreshKey, onAddEncargoRefreshK
                     id: encargoIdToDelete,
                 },
             });
-
-            console.log('response deleted', response.data);
 
             if (response.data.success) {
                 showToast('Encargo eliminado correctamente', 'linear-gradient(to right bottom, #00603c, #006f39, #007d31, #008b24, #069903)');
@@ -360,7 +358,7 @@ const EncargosDetails = ({ data, setOnAddEncargoRefreshKey, onAddEncargoRefreshK
                 </div>
 
                 {isPopupOpen && (
-                    <div className="fixed inset-0 bg-gray-700 bg-opacity-50 flex justify-center items-center">
+                    <div className="fixed inset-0 bg-gray-700 bg-opacity-50 flex justify-center items-center z-[30]">
                         <div className="bg-white p-8 rounded shadow-lg w-full max-w-md relative">
                             <button className="absolute top-4 right-4 text-gray-500" onClick={handlePopupClose}>
                                 <AiOutlineClose size={20} />
