@@ -21,7 +21,7 @@ import 'rsuite/dist/rsuite.min.css';
 
 import SmallLoadingScreen from '../LoadingScreen/SmallLoadingScreen';
 
-const ItemDetails = ({ id, onClose, showModal, setShowModal, fetchData, currentPage, searchTerm }) => {
+const ItemDetails = ({ id, onClose, showModal, setShowModal, fetchData, currentPage, searchTerm, admin }) => {
     const [data, setData] = useState(null);
     const [images, setImages] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -32,10 +32,11 @@ const ItemDetails = ({ id, onClose, showModal, setShowModal, fetchData, currentP
     const [onAddNoticiaRefreshKey, setOnAddNoticiaRefreshKey] = useState(1);
     const [onAddEncargoRefreshKey, setOnAddEncargoRefreshKey] = useState(1);
     const [onAddEdtMoreInfoRefreshKey, setOnAddEdtMoreInfoRefreshKey] = useState(1);
+    const [onAddDeleteDPVRefreshKey, setOnAddDeleteDPVRefreshKey] = useState(1);
     const [isVisible, setIsVisible] = useState(false); // Initial state
     const [descripcion, setDescripcion] = useState('');
     const [newDescripcion, setNewDescripcion] = useState('');
-
+    const [DPVboolean, setDPVboolean] = useState();
 
     const showToast = (message, backgroundColor) => {
         Toastify({
@@ -60,8 +61,6 @@ const ItemDetails = ({ id, onClose, showModal, setShowModal, fetchData, currentP
                     id: id,
                 },
             });
-
-            console.log('response', response.data);
             if (response.data.status === 'success') {
                 setDescripcion(response.data.descripcion || '');
                 setNewDescripcion(response.data.descripcion || '');
@@ -92,8 +91,6 @@ const ItemDetails = ({ id, onClose, showModal, setShowModal, fetchData, currentP
         if (!loading && slider.current) {
             slider.current.update();
         }
-        console.log('slider', images);
-        console.log('encargoData', encargoData);
     }, [slider, images]);
 
     useEffect(() => {
@@ -102,26 +99,25 @@ const ItemDetails = ({ id, onClose, showModal, setShowModal, fetchData, currentP
                 params: { id: id },
             })
             .then((response) => {
-                console.log('response', response.data);
+                console.log('funcionaaa', response.data);
                 setData(response.data);
+                let dpv = response.data.inmueble.DPV;
+                setDPVboolean(dpv);
             })
             .catch((error) => {
                 console.error('Error fetching data:', error);
             });
-    }, [id, onAddNoticiaRefreshKey, onAddEncargoRefreshKey, onAddEdtMoreInfoRefreshKey]);
+    }, [id, onAddNoticiaRefreshKey, onAddEncargoRefreshKey, onAddEdtMoreInfoRefreshKey, onAddDeleteDPVRefreshKey]);
 
     useEffect(() => {
         const fetchEncargoData = async () => {
             if (id) {
                 const numericId = parseInt(id, 10); // Convert `id` to an integer
-                console.log('Converted id:', numericId);
-                console.log('Type of id:', typeof numericId);
 
                 try {
                     const response = await axios.get('/api/encargosFetch', {
                         params: { id: numericId },
                     });
-                    console.log('Encargo data:', response.data);
                     setEncargoData(response.data);
                 } catch (error) {
                     console.error('Error fetching encargo data:', error);
@@ -171,6 +167,10 @@ const ItemDetails = ({ id, onClose, showModal, setShowModal, fetchData, currentP
                     data={data}
                     onAddEdtMoreInfoRefreshKey={onAddEdtMoreInfoRefreshKey}
                     setOnAddEdtMoreInfoRefreshKey={setOnAddEdtMoreInfoRefreshKey}
+                    DPVboolean={DPVboolean} setDPVboolean={setDPVboolean}
+                    admin={admin}
+                    onAddDeleteDPVRefreshKey={onAddDeleteDPVRefreshKey}
+                    setOnAddDeleteDPVRefreshKey={setOnAddDeleteDPVRefreshKey}
                 />
                 {isVisible && (
                     <>

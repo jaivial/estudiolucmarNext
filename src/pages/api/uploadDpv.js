@@ -18,6 +18,12 @@ export default async function handler(req, res) {
                 inmuebleId
             });
 
+            // Update the 'dpv' document with the given inmuebleId
+            await db.collection('inmuebles').updateOne(
+                { id: inmuebleId }, // Filter by inmuebleId
+                { $set: { DPV: true } } // Set estadoDPV to true
+            );
+
             res.status(200).json({ message: 'DPV data successfully uploaded' });
         } catch (error) {
             console.error('Error uploading DPV data:', error);

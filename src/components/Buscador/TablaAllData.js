@@ -1747,7 +1747,7 @@ const Table = ({ parentsEdificioProps, admin }) => {
                 />
             )}
             {selectedId !== null && (
-                <MoreInfo id={selectedId} onClose={handleClose} showModal={showModal} setShowModal={setShowModal} fetchData={fetchData} currentPage={currentPage} searchTerm={searchTerm} />
+                <MoreInfo id={selectedId} onClose={handleClose} showModal={showModal} setShowModal={setShowModal} fetchData={fetchData} currentPage={currentPage} searchTerm={searchTerm} admin={admin} />
             )}
         </div>
     );
