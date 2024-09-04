@@ -169,7 +169,6 @@ const NoticiasDetails = ({ data, setOnAddNoticiaRefreshKey, onAddNoticiaRefreshK
         };
 
         try {
-            console.log('Sending params:', params);
 
             // Determine the endpoint based on whether we are editing or adding
             const endpoint = isEditing
@@ -219,15 +218,14 @@ const NoticiasDetails = ({ data, setOnAddNoticiaRefreshKey, onAddNoticiaRefreshK
         }
 
         try {
-            const response = await axios.get('http://localhost:8000/backend/noticias/deletenoticia.php', {
-                params: {
+            const response = await axios.delete('/api/deleteNoticia', {
+                data: {
                     id: currentNoticiaId,
                 },
             });
             console.log('response deleted', response.data);
             if (response.data.success) {
-                alert('Noticia eliminada correctamente.');
-                // Optionally, close the popup or refresh the list of noticias
+                showToast('Noticia eliminada correctamente', 'linear-gradient(to right bottom, #00603c, #006f39, #007d31, #008b24, #069903)');
                 handlePopupClose();
                 setOnAddNoticiaRefreshKey(onAddNoticiaRefreshKey + 1);
                 setIsEditing(false);
@@ -237,7 +235,7 @@ const NoticiasDetails = ({ data, setOnAddNoticiaRefreshKey, onAddNoticiaRefreshK
             }
         } catch (error) {
             console.error('Error al eliminar noticia:', error);
-            alert('Ocurrió un error al eliminar la noticia.');
+            showToast('Error al eliminar la noticia', 'linear-gradient(to right bottom, #c62828, #b92125, #ac1a22, #a0131f, #930b1c)');
         }
     };
     // Helper function to format date to Spanish format
@@ -363,15 +361,17 @@ const NoticiasDetails = ({ data, setOnAddNoticiaRefreshKey, onAddNoticiaRefreshK
                                 <CustomSlider value={draggableValue} onChange={handleSliderChange} />
                             </div>
 
-                            <div className="flex justify-end gap-2">
-                                <button onClick={handleAddNoticia} className="bg-blue-500 text-white p-2 rounded">
-                                    {isEditing ? 'Actualizar' : 'Añadir'}
-                                </button>
-                                {isEditing && (
-                                    <button onClick={handleDeleteNoticia} className="bg-red-500 text-white p-2 rounded-md">
-                                        Eliminar
+                            <div className="flex-col justify-center flex items-center gap-3">
+                                <div className='flex flex-row justify-center items-center gap-3'>
+                                    <button onClick={handleAddNoticia} className="bg-blue-500 text-white p-2 rounded">
+                                        {isEditing ? 'Actualizar' : 'Añadir'}
                                     </button>
-                                )}
+                                    {isEditing && (
+                                        <button onClick={handleDeleteNoticia} className="bg-red-500 text-white p-2 rounded-md">
+                                            Eliminar
+                                        </button>
+                                    )}
+                                </div>
                                 <button onClick={handlePopupClose} className="bg-gray-500 text-white p-2 rounded">
                                     Cerrar
                                 </button>

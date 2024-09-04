@@ -1,8 +1,6 @@
-// /pages/api/updateNoticia.js
 import clientPromise from '../../lib/mongodb';
-
 export default async function handler(req, res) {
-    if (req.method === 'PUT') {
+    if (req.method === 'POST') {
         try {
             const {
                 id,
@@ -14,6 +12,8 @@ export default async function handler(req, res) {
                 comercial,
                 fechaValoracion
             } = req.body;
+
+            console.log('req.body', req.body);
 
             // Validate required fields
             if (!id || !fecha || !prioridad || !tipoPVA || valoracion === undefined || valoraciontext === undefined || comercial === undefined || fechaValoracion === undefined) {
@@ -39,8 +39,8 @@ export default async function handler(req, res) {
                 valoracionDate: fechaValoracion || null
             };
 
-            const result = await db.collection('noticia').updateOne(
-                { noticia_id: Number(id) },
+            const result = await db.collection('noticias').updateOne(
+                { noticia_id: id },
                 { $set: updatedData }
             );
 
@@ -50,8 +50,8 @@ export default async function handler(req, res) {
 
             res.status(200).json({ success: true, message: 'Record updated successfully' });
         } catch (error) {
-            console.error('Error updating record:', error);
-            res.status(500).json({ success: false, message: 'Error updating record' });
+            console.error('Error updating noticia:', error);
+            res.status(500).json({ success: false, message: 'An error occurred while updating the record' });
         }
     } else {
         res.status(405).json({ success: false, message: 'Method not allowed' });
