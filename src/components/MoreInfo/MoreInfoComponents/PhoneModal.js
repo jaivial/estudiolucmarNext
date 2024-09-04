@@ -8,7 +8,7 @@ import 'toastify-js/src/toastify.css'; // Import Toastify CSS
 import { dniValidator } from '../../../lib/mongodb/dniValidator/dniValidator.js';
 
 
-const PhoneModal = ({ isOpen, setPhoneModalOpen, localizado, setLocalizado, inmuebleId, direccion, admin }) => {
+const PhoneModal = ({ isOpen, setPhoneModalOpen, localizado, setLocalizado, inmuebleId, direccion, admin, nombreReturn, setNombreReturn, apellidoReturn, setApellidoReturn }) => {
     const [isLocalizado, setIsLocalizado] = useState(localizado);
     const [asesores, setAsesores] = useState([]);
     const [selectedAsesor, setSelectedAsesor] = useState(null);
@@ -22,9 +22,7 @@ const PhoneModal = ({ isOpen, setPhoneModalOpen, localizado, setLocalizado, inmu
     const [localizadoModal, setLocalizadoModal] = useState(localizado); // New state for the modal
     const [clientData, setClientData] = useState([]);
 
-    useEffect(() => {
-        console.log('admin', admin);
-    }, []);
+
 
     const fetchLocalizadoPhone = async (inmuebleId) => {
         try {
@@ -35,6 +33,8 @@ const PhoneModal = ({ isOpen, setPhoneModalOpen, localizado, setLocalizado, inmu
             });
             if (response.status === 200) {
                 setClientData(response.data.clientData);
+                setNombreReturn(response.data.clientData.nombre);
+                setApellidoReturn(response.data.clientData.apellido);
                 // Handle the response data
             } else {
                 showToast('Error al obtener el teléfono localizado.', 'linear-gradient(to right, #ff416c, #ff4b2b)');
@@ -177,6 +177,7 @@ const PhoneModal = ({ isOpen, setPhoneModalOpen, localizado, setLocalizado, inmu
             if (response.status === 200) {
                 showToast('Localizado correctamente.', 'linear-gradient(to right bottom, #00603c, #006f39, #007d31, #008b24, #069903)');
                 fetchLocalizadoPhone(inmuebleId);
+                setLocalizado(true);
                 setLocalizadoModal(true); // Set the modal state to true
                 // ... additional actions after successful client creation ...
             }

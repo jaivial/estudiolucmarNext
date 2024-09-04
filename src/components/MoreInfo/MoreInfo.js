@@ -4,7 +4,7 @@ import ItemDetailsHeader from './MoreInfoComponents/ItemDetailsHeader'; // Adjus
 import { useKeenSlider } from 'keen-slider/react';
 import 'keen-slider/keen-slider.min.css';
 import './MoreInfoComponents/ItemsDetailsHeader.css';
-import { AiOutlineCamera, AiOutlinePlus, AiOutlineLoading } from 'react-icons/ai';
+import { AiOutlineCamera, AiOutlinePlus, AiOutlineLoading, AiOutlinePhone } from 'react-icons/ai';
 import dynamic from 'next/dynamic'; // Import dynamic from next/dynamic
 
 // Dynamically import DetailsInfoOne with SSR disabled
@@ -16,7 +16,7 @@ import NoticiasDetails from './MoreInfoComponents/NoticiasDetails';
 import EncargosDetails from './MoreInfoComponents/EncargosDetails';
 import Toastify from 'toastify-js';
 // Import React Suite components
-import { Modal, Button } from 'rsuite';
+import { Modal, Button, Panel } from 'rsuite';
 import 'rsuite/dist/rsuite.min.css';
 
 import SmallLoadingScreen from '../LoadingScreen/SmallLoadingScreen';
@@ -39,6 +39,8 @@ const ItemDetails = ({ id, onClose, showModal, setShowModal, fetchData, currentP
     const [DPVboolean, setDPVboolean] = useState();
     const [localizado, setLocalizado] = useState(null);
     const [direccion, setDireccion] = useState(null);
+    const [nombre, setNombre] = useState(null);
+    const [apellido, setApellido] = useState(null);
 
 
     const showToast = (message, backgroundColor) => {
@@ -185,6 +187,10 @@ const ItemDetails = ({ id, onClose, showModal, setShowModal, fetchData, currentP
                     localizado={localizado}
                     setLocalizado={setLocalizado}
                     direccion={direccion}
+                    nombre={nombre}
+                    setNombre={setNombre}
+                    apellido={apellido}
+                    setApellido={setApellido}
                 />
                 {isVisible && (
                     <>
@@ -212,6 +218,26 @@ const ItemDetails = ({ id, onClose, showModal, setShowModal, fetchData, currentP
                 )}
                 <h1 className="text-xl font-semibold text-start w-full leading-7 px-6">{data.inmueble.direccion}</h1>
                 <DetailsInfoOne data={data} encargoData={encargoData} isVisible={isVisible} setIsVisible={setIsVisible} />
+                {data.inmueble.localizado && (
+                    <Panel className="bg-slate-50 rounded-lg shadow-xl w-[70%] flex flex-col justify-center items-center mx-auto">
+                        <div className='flex flex-row justify-center items-center gap-2 pb-4'>
+                            <AiOutlinePhone className='text-3xl text-blue-500' />
+                            <h3 className='text-xl font-semibold text-center'>Localizado</h3>
+                        </div>
+                        <div className='flex flex-col justify-center items-center gap-2'>
+                            <div className='flex flex-row justify-center items-center gap-3'>
+                                <p className='font-semibold text-lg text-center'>Nombre: </p>
+                                <p className='text-center text-lg m-0'>{nombre} {apellido}</p>
+
+                            </div>
+                            <div className='flex flex-row gap-2 justify-center items-center'>
+                                <p className='font-semibold text-lg text-center'>Teléfono: </p>
+                                <a href={`tel:${data.inmueble.localizado_phone}`} style={{ color: 'blue', textDecoration: 'underline' }} className='text-center text-lg'>{data.inmueble.localizado_phone}</a>
+                            </div>
+                        </div>
+                    </Panel>
+
+                )}
                 <DetailsInfoTwo data={data} descripcion={descripcion} setDescripcion={setDescripcion} newDescripcion={newDescripcion} setNewDescripcion={setNewDescripcion} />
                 <DetailsInfoThree data={data} />
                 <ComentariosDetails data={data} />

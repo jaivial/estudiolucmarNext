@@ -13,7 +13,7 @@ const EditModal = dynamic(() => import('./EditModal'), { ssr: false });
 import DPVComponent from './DPVComponent';
 import PhoneModal from './PhoneModal'; // Import PhoneModal component
 
-const ItemDetailsHeader = ({ inmuebleId, onClose, address, setImages, setIsSliderLoading, isVisible, setIsVisible, data, onAddEdtMoreInfoRefreshKey, setOnAddEdtMoreInfoRefreshKey, DPVboolean, setDPVboolean, admin, onAddDeleteDPVRefreshKey, setOnAddDeleteDPVRefreshKey, localizado, setLocalizado, direccion }) => {
+const ItemDetailsHeader = ({ inmuebleId, onClose, address, setImages, setIsSliderLoading, isVisible, setIsVisible, data, onAddEdtMoreInfoRefreshKey, setOnAddEdtMoreInfoRefreshKey, DPVboolean, setDPVboolean, admin, onAddDeleteDPVRefreshKey, setOnAddDeleteDPVRefreshKey, localizado, setLocalizado, direccion, nombre, setNombre, apellido, setApellido }) => {
     const [selectedFiles, setSelectedFiles] = useState([]);
     const [uploadStatus, setUploadStatus] = useState('');
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -320,7 +320,7 @@ const ItemDetailsHeader = ({ inmuebleId, onClose, address, setImages, setIsSlide
         <div className="header-container">
             <EditModal closeModal={closeModal} isModalOpen={isModalOpen} setIsModalOpen={setIsModalOpen} data={data} onAddEdtMoreInfoRefreshKey={onAddEdtMoreInfoRefreshKey} setOnAddEdtMoreInfoRefreshKey={setOnAddEdtMoreInfoRefreshKey} />
             <DPVComponent isOpen={dpvModalOpen} setDPVModalOpen={setDPVModalOpen} inmuebleId={inmuebleId} DPVboolean={DPVboolean} setDPVboolean={setDPVboolean} admin={admin} onAddDeleteDPVRefreshKey={onAddDeleteDPVRefreshKey} setOnAddDeleteDPVRefreshKey={setOnAddDeleteDPVRefreshKey} /> {/* Add DPVComponent modal */}
-            <PhoneModal isOpen={phoneModalOpen} setPhoneModalOpen={setPhoneModalOpen} localizado={localizado} setLocalizado={setLocalizado} inmuebleId={inmuebleId} direccion={direccion} admin={admin} /> {/* Add PhoneModal modal */}
+            <PhoneModal isOpen={phoneModalOpen} setPhoneModalOpen={setPhoneModalOpen} localizado={localizado} setLocalizado={setLocalizado} inmuebleId={inmuebleId} direccion={direccion} admin={admin} nombreReturn={nombre} setNombreReturn={setNombre} apellidoReturn={apellido} setApellidoReturn={setApellido} /> {/* Add PhoneModal modal */}
             <div className='flex flex-row justify-center gap-3 pb-6'>
                 <div>
                     <button onClick={openModal} className="p-3 rounded-full border border-gray-300 hover:bg-gray-100">
