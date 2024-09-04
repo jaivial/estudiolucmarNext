@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, use } from 'react';
 import axios from 'axios';
-import { AiOutlineCamera, AiOutlinePlus, AiOutlineLoading, AiOutlineDelete, AiOutlineEdit } from 'react-icons/ai';
+import { AiOutlineCamera, AiOutlinePlus, AiOutlineLoading, AiOutlineDelete, AiOutlineEdit, AiOutlinePlusCircle, AiOutlinePhone } from 'react-icons/ai';
 import Toastify from 'toastify-js';
 import { Modal, Button } from 'rsuite';
 import 'rsuite/dist/rsuite.min.css'; // Import the rsuite CSS
@@ -10,8 +10,10 @@ import imageCompression from 'browser-image-compression';
 import { FaEye, FaEyeSlash } from 'react-icons/fa'; // Import eye icons
 import dynamic from 'next/dynamic';
 const EditModal = dynamic(() => import('./EditModal'), { ssr: false });
+import DPVComponent from './DPVComponent';
+import PhoneModal from './PhoneModal'; // Import PhoneModal component
 
-const ItemDetailsHeader = ({ inmuebleId, onClose, address, setImages, setIsSliderLoading, isVisible, setIsVisible, data, onAddEdtMoreInfoRefreshKey, setOnAddEdtMoreInfoRefreshKey }) => {
+const ItemDetailsHeader = ({ inmuebleId, onClose, address, setImages, setIsSliderLoading, isVisible, setIsVisible, data, onAddEdtMoreInfoRefreshKey, setOnAddEdtMoreInfoRefreshKey, DPVboolean, setDPVboolean, admin, onAddDeleteDPVRefreshKey, setOnAddDeleteDPVRefreshKey, localizado, setLocalizado, direccion, nombre, setNombre, apellido, setApellido }) => {
     const [selectedFiles, setSelectedFiles] = useState([]);
     const [uploadStatus, setUploadStatus] = useState('');
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -28,6 +30,8 @@ const ItemDetailsHeader = ({ inmuebleId, onClose, address, setImages, setIsSlide
     const [getImageRefreshKey, setGetImageRefreshKey] = useState(1);
     const [editModalOpen, setEditModalOpen] = useState(false);
     const [isImageValid, setIsImageValid] = useState(true);
+    const [dpvModalOpen, setDPVModalOpen] = useState(false);
+    const [phoneModalOpen, setPhoneModalOpen] = useState(false); // State for PhoneModal
 
     const closeModal = () => setIsModalOpen(false);
 
@@ -41,7 +45,6 @@ const ItemDetailsHeader = ({ inmuebleId, onClose, address, setImages, setIsSlide
                 const response = await axios.get('/api/getImages', {
                     params: { inmueble_id: inmuebleId },
                 });
-                console.log('response', response);
                 if (response.data.status === 'success') {
                     const images = response.data.images || [];
                     setUploadedImages(images);
@@ -65,11 +68,6 @@ const ItemDetailsHeader = ({ inmuebleId, onClose, address, setImages, setIsSlide
     const handleFileChange = async (event) => {
         setSelectedFiles(event.target.files);
     };
-
-    useEffect(() => {
-        console.log('uploadedImages', selectedFiles);
-        console.log('selectedFiles', selectedFiles);
-    }, [selectedFiles]);
 
 
     const handleUpload = async () => {
@@ -148,15 +146,13 @@ const ItemDetailsHeader = ({ inmuebleId, onClose, address, setImages, setIsSlide
             }
         }
 
-        console.log('images', compressedFiles);
-        console.log('inmuebleId', inmuebleId);
+
 
         try {
             const response = await axios.post('/api/uploadImages', {
                 inmueble_id: inmuebleId,
                 images: compressedFiles
             });
-            console.log('response', response);
 
             if (response.data.status === 'success') {
                 setUploadStatus('Images uploaded successfully!');
@@ -209,7 +205,6 @@ const ItemDetailsHeader = ({ inmuebleId, onClose, address, setImages, setIsSlide
 
     const handleDeleteImage = async (index) => {
         try {
-            console.log('handleDeleteImage', inmuebleId, uploadedImages[index].id);
             const response = await axios.post('/api/deleteImageInmueble', {
                 inmueble_id: inmuebleId,
                 image_id: uploadedImages[index].id,
@@ -313,9 +308,19 @@ const ItemDetailsHeader = ({ inmuebleId, onClose, address, setImages, setIsSlide
 
     const openModal = () => setIsModalOpen(true);
 
+    const openDPVModal = () => {
+        setDPVModalOpen(true);
+    };
+
+    const openPhoneModal = () => { // Function to open PhoneModal
+        setPhoneModalOpen(true);
+    };
+
     return (
         <div className="header-container">
             <EditModal closeModal={closeModal} isModalOpen={isModalOpen} setIsModalOpen={setIsModalOpen} data={data} onAddEdtMoreInfoRefreshKey={onAddEdtMoreInfoRefreshKey} setOnAddEdtMoreInfoRefreshKey={setOnAddEdtMoreInfoRefreshKey} />
+            <DPVComponent isOpen={dpvModalOpen} setDPVModalOpen={setDPVModalOpen} inmuebleId={inmuebleId} DPVboolean={DPVboolean} setDPVboolean={setDPVboolean} admin={admin} onAddDeleteDPVRefreshKey={onAddDeleteDPVRefreshKey} setOnAddDeleteDPVRefreshKey={setOnAddDeleteDPVRefreshKey} /> {/* Add DPVComponent modal */}
+            <PhoneModal isOpen={phoneModalOpen} setPhoneModalOpen={setPhoneModalOpen} localizado={localizado} setLocalizado={setLocalizado} inmuebleId={inmuebleId} direccion={direccion} admin={admin} nombreReturn={nombre} setNombreReturn={setNombre} apellidoReturn={apellido} setApellidoReturn={setApellido} /> {/* Add PhoneModal modal */}
             <div className='flex flex-row justify-center gap-3 pb-6'>
                 <div>
                     <button onClick={openModal} className="p-3 rounded-full border border-gray-300 hover:bg-gray-100">
@@ -335,6 +340,21 @@ const ItemDetailsHeader = ({ inmuebleId, onClose, address, setImages, setIsSlide
                         {isVisible ? <FaEye size={24} /> : <FaEyeSlash size={24} />}
                     </button>
                 </div>
+                {/* New button to open DPVComponent modal */}
+                <div>
+                    <button
+                        onClick={openDPVModal}
+                        className={`px-3 py-3.5 rounded-full border border-gray-300 hover:bg-gray-100 font-semibold text-md ${DPVboolean ? 'bg-blue-400 text-white' : ' text-gray-500'}`} // Added conditional class
+                    >
+                        DPV
+                    </button>
+                </div>
+                <div> {/* New div for the phone button */}
+                    <button onClick={openPhoneModal} className={`p-3 rounded-full border border-gray-300 hover:bg-gray-100 ${localizado ? 'bg-green-700' : ''}`}>
+                        <AiOutlinePhone className={`${localizado ? 'text-white' : 'text-gray-500'} text-2xl `} />
+                    </button>
+                </div>
+
             </div>
             <Modal open={editModalOpen} onClose={closeEditModal} size="lg" overflow={false} backdrop="static" style={{ backgroundColor: 'rgba(0,0,0,0.15)', padding: '0px 2px' }}>
                 <Modal.Header>

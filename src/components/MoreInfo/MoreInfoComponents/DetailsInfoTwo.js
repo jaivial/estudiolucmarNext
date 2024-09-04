@@ -38,8 +38,6 @@ const DetailsInfoTwo = ({ data, descripcion, setDescripcion, newDescripcion, set
     // Function to handle save button click
     const handleSaveClick = async () => {
         const inmuebleId = data.inmueble.id;
-        console.log('inmuebleId', inmuebleId);
-        console.log('newDescripcion', newDescripcion);
         try {
             // Make a PUT request to the new API endpoint
             const response = await axios.get('/api/updateDescripcionInmueble', {

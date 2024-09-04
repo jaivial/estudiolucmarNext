@@ -4,7 +4,7 @@ import ItemDetailsHeader from './MoreInfoComponents/ItemDetailsHeader'; // Adjus
 import { useKeenSlider } from 'keen-slider/react';
 import 'keen-slider/keen-slider.min.css';
 import './MoreInfoComponents/ItemsDetailsHeader.css';
-import { AiOutlineCamera, AiOutlinePlus, AiOutlineLoading } from 'react-icons/ai';
+import { AiOutlineCamera, AiOutlinePlus, AiOutlineLoading, AiOutlinePhone } from 'react-icons/ai';
 import dynamic from 'next/dynamic'; // Import dynamic from next/dynamic
 
 // Dynamically import DetailsInfoOne with SSR disabled
@@ -14,14 +14,15 @@ import DetailsInfoThree from './MoreInfoComponents/DetailsInfoThree';
 import ComentariosDetails from './MoreInfoComponents/ComentariosDetails';
 import NoticiasDetails from './MoreInfoComponents/NoticiasDetails';
 import EncargosDetails from './MoreInfoComponents/EncargosDetails';
+import ClientesAsociados from './MoreInfoComponents/ClientesAsociados';
 import Toastify from 'toastify-js';
 // Import React Suite components
-import { Modal, Button } from 'rsuite';
+import { Modal, Button, Panel } from 'rsuite';
 import 'rsuite/dist/rsuite.min.css';
 
 import SmallLoadingScreen from '../LoadingScreen/SmallLoadingScreen';
 
-const ItemDetails = ({ id, onClose, showModal, setShowModal, fetchData, currentPage, searchTerm }) => {
+const ItemDetails = ({ id, onClose, showModal, setShowModal, fetchData, currentPage, searchTerm, admin }) => {
     const [data, setData] = useState(null);
     const [images, setImages] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -32,9 +33,15 @@ const ItemDetails = ({ id, onClose, showModal, setShowModal, fetchData, currentP
     const [onAddNoticiaRefreshKey, setOnAddNoticiaRefreshKey] = useState(1);
     const [onAddEncargoRefreshKey, setOnAddEncargoRefreshKey] = useState(1);
     const [onAddEdtMoreInfoRefreshKey, setOnAddEdtMoreInfoRefreshKey] = useState(1);
+    const [onAddDeleteDPVRefreshKey, setOnAddDeleteDPVRefreshKey] = useState(1);
     const [isVisible, setIsVisible] = useState(false); // Initial state
     const [descripcion, setDescripcion] = useState('');
     const [newDescripcion, setNewDescripcion] = useState('');
+    const [DPVboolean, setDPVboolean] = useState();
+    const [localizado, setLocalizado] = useState(null);
+    const [direccion, setDireccion] = useState(null);
+    const [nombre, setNombre] = useState(null);
+    const [apellido, setApellido] = useState(null);
 
 
     const showToast = (message, backgroundColor) => {
@@ -60,8 +67,6 @@ const ItemDetails = ({ id, onClose, showModal, setShowModal, fetchData, currentP
                     id: id,
                 },
             });
-
-            console.log('response', response.data);
             if (response.data.status === 'success') {
                 setDescripcion(response.data.descripcion || '');
                 setNewDescripcion(response.data.descripcion || '');
@@ -92,8 +97,6 @@ const ItemDetails = ({ id, onClose, showModal, setShowModal, fetchData, currentP
         if (!loading && slider.current) {
             slider.current.update();
         }
-        console.log('slider', images);
-        console.log('encargoData', encargoData);
     }, [slider, images]);
 
     useEffect(() => {
@@ -102,26 +105,31 @@ const ItemDetails = ({ id, onClose, showModal, setShowModal, fetchData, currentP
                 params: { id: id },
             })
             .then((response) => {
-                console.log('response', response.data);
+                console.log('response.data', response.data);
                 setData(response.data);
+                let dpv = response.data.inmueble.DPV;
+                setDPVboolean(dpv);
+                let localizado = response.data.inmueble.localizado;
+                setLocalizado(localizado);
+                let direccion = response.data.inmueble.direccion;
+                setDireccion(direccion);
             })
             .catch((error) => {
                 console.error('Error fetching data:', error);
             });
-    }, [id, onAddNoticiaRefreshKey, onAddEncargoRefreshKey, onAddEdtMoreInfoRefreshKey]);
+    }, [id, onAddNoticiaRefreshKey, onAddEncargoRefreshKey, onAddEdtMoreInfoRefreshKey, onAddDeleteDPVRefreshKey, localizado]);
+
+
 
     useEffect(() => {
         const fetchEncargoData = async () => {
             if (id) {
                 const numericId = parseInt(id, 10); // Convert `id` to an integer
-                console.log('Converted id:', numericId);
-                console.log('Type of id:', typeof numericId);
 
                 try {
                     const response = await axios.get('/api/encargosFetch', {
                         params: { id: numericId },
                     });
-                    console.log('Encargo data:', response.data);
                     setEncargoData(response.data);
                 } catch (error) {
                     console.error('Error fetching encargo data:', error);
@@ -132,6 +140,8 @@ const ItemDetails = ({ id, onClose, showModal, setShowModal, fetchData, currentP
         fetchEncargoData();
         fetchDescripcion();
     }, [id, onAddNoticiaRefreshKey, onAddEncargoRefreshKey]);
+
+
 
     function Arrow(props) {
         const disabled = props.disabled ? ' arrow--disabled' : '';
@@ -171,6 +181,17 @@ const ItemDetails = ({ id, onClose, showModal, setShowModal, fetchData, currentP
                     data={data}
                     onAddEdtMoreInfoRefreshKey={onAddEdtMoreInfoRefreshKey}
                     setOnAddEdtMoreInfoRefreshKey={setOnAddEdtMoreInfoRefreshKey}
+                    DPVboolean={DPVboolean} setDPVboolean={setDPVboolean}
+                    admin={admin}
+                    onAddDeleteDPVRefreshKey={onAddDeleteDPVRefreshKey}
+                    setOnAddDeleteDPVRefreshKey={setOnAddDeleteDPVRefreshKey}
+                    localizado={localizado}
+                    setLocalizado={setLocalizado}
+                    direccion={direccion}
+                    nombre={nombre}
+                    setNombre={setNombre}
+                    apellido={apellido}
+                    setApellido={setApellido}
                 />
                 {isVisible && (
                     <>
@@ -198,12 +219,33 @@ const ItemDetails = ({ id, onClose, showModal, setShowModal, fetchData, currentP
                 )}
                 <h1 className="text-xl font-semibold text-start w-full leading-7 px-6">{data.inmueble.direccion}</h1>
                 <DetailsInfoOne data={data} encargoData={encargoData} isVisible={isVisible} setIsVisible={setIsVisible} />
+                {data.inmueble.localizado && (
+                    <Panel className="bg-slate-50 rounded-lg shadow-xl w-[70%] flex flex-col justify-center items-center mx-auto">
+                        <div className='flex flex-row justify-center items-center gap-2 pb-4'>
+                            <AiOutlinePhone className='text-3xl text-blue-500' />
+                            <h3 className='text-xl font-semibold text-center'>Localizado</h3>
+                        </div>
+                        <div className='flex flex-col justify-center items-center gap-2'>
+                            <div className='flex flex-row justify-center items-center gap-3'>
+                                <p className='font-semibold text-lg text-center'>Nombre: </p>
+                                <p className='text-center text-lg m-0'>{nombre} {apellido}</p>
+
+                            </div>
+                            <div className='flex flex-row gap-2 justify-center items-center'>
+                                <p className='font-semibold text-lg text-center'>Teléfono: </p>
+                                <a href={`tel:${data.inmueble.localizado_phone}`} style={{ color: 'blue', textDecoration: 'underline' }} className='text-center text-lg'>{data.inmueble.localizado_phone}</a>
+                            </div>
+                        </div>
+                    </Panel>
+
+                )}
+                <ClientesAsociados inmuebleId={data.inmueble.id} />
                 <DetailsInfoTwo data={data} descripcion={descripcion} setDescripcion={setDescripcion} newDescripcion={newDescripcion} setNewDescripcion={setNewDescripcion} />
                 <DetailsInfoThree data={data} />
                 <ComentariosDetails data={data} />
                 <NoticiasDetails data={data} setOnAddNoticiaRefreshKey={setOnAddNoticiaRefreshKey} onAddNoticiaRefreshKey={onAddNoticiaRefreshKey} fetchData={fetchData} currentPage={currentPage} searchTerm={searchTerm} />
                 <EncargosDetails data={data} setOnAddEncargoRefreshKey={setOnAddEncargoRefreshKey} onAddEncargoRefreshKey={onAddEncargoRefreshKey} fetchData={fetchData} currentPage={currentPage} searchTerm={searchTerm} />
-                <div className='flex justify-center gap-4 mt-4 pb-[50px]'>
+                <div className='flex justify-center gap-4 mt-4 pb-[50px] z-[10]' >
                     <Button onClick={onClose} appearance="default" style={{ fontSize: '1rem', padding: '10px 20px' }}>Cerrar</Button>
                 </div>
             </Modal.Body>

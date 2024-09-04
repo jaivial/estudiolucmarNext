@@ -13,10 +13,6 @@ const icon = L.icon({ iconUrl: "https://cdn.jsdelivr.net/npm/leaflet@1.7.1/dist/
 const DetailsInfoOne = ({ data, encargoData, isVisible, setIsVisible }) => {
     const [showMap, setShowMap] = useState(false);
 
-    useEffect(() => {
-        console.log('data', data);
-    }, []);
-
     // Parse coordinates from stringified array
     const coordinatesArray = data.inmueble.coordinates;
     const lat1 = parseFloat(coordinatesArray[0]);

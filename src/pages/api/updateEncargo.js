@@ -3,18 +3,15 @@ import clientPromise from '../../lib/mongodb';
 
 export default async function handler(req, res) {
     if (req.method !== 'POST') {
-        // Only allow PUT requests
+        // Only allow POST requests
         return res.status(405).json({ error: 'Method Not Allowed' });
     }
 
     const { encargo_id, fecha, comercial, tipoEncargo, comision, cliente, precio, tipoComision } = req.body;
 
-    // Validate parameters
-    if (!encargo_id || !fecha || !comercial || !tipoEncargo || !comision || !cliente || !precio || !tipoComision) {
-        return res.status(400).json({ success: false, message: 'Missing required fields' });
-    }
 
     if (isNaN(parseInt(encargo_id))) {
+        console.error('Invalid encargo_id:', encargo_id);
         return res.status(400).json({ success: false, message: 'ID must be a valid integer' });
     }
 
@@ -25,7 +22,7 @@ export default async function handler(req, res) {
 
         // Update the document in the 'encargos' collection
         const result = await db.collection('encargos').updateOne(
-            { encargo_id: parseInt(encargo_id) },
+            { encargo_id: encargo_id },
             {
                 $set: {
                     encargo_fecha: fecha,

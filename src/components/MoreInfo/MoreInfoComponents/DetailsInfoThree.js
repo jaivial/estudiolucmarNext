@@ -7,7 +7,6 @@ import { FaUserTie } from 'react-icons/fa';
 import { PiMapPinSimpleAreaBold } from 'react-icons/pi';
 
 const DetailsInfoThree = ({ data }) => {
-    console.log('data inmueble', data.inmueble);
     const { tipo, uso, superficie, ano_construccion, habitaciones, garaje, ascensor, baños, trastero, jardin, terraza, aireAcondicionado, aireacondicionado, categoria, potencialAdquisicion, noticiastate, encargostate, responsable, zona } = data.inmueble;
 
     // Function to render a list item if the value is valid

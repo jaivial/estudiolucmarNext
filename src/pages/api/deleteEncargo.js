@@ -9,7 +9,6 @@ export default async function handler(req, res) {
 
     const { id } = req.query;
 
-    console.log('id', id);
 
     // Validate ID
     if (!id || isNaN(parseInt(id, 10))) {
@@ -37,18 +36,25 @@ export default async function handler(req, res) {
             }
 
             // Update 'inmuebles' collection
-            const updateResult = await db.collection('inmuebles').updateOne(
+            await db.collection('inmuebles').updateOne(
                 { id: parseInt(id, 10) },
                 { $set: { encargostate: false } },
                 { session }
             );
 
-            if (updateResult.matchedCount === 0) {
-                res.status(404).json({ success: false, message: 'Inmueble record not found' });
-                await session.abortTransaction();
-                session.endSession();
-                return;
-            }
+            // Update 'inmuebles' collection nested in 'nestedinmuebles'
+            await db.collection('inmuebles').updateMany(
+                { 'nestedinmuebles.id': parseInt(id, 10) },
+                { $set: { 'nestedinmuebles.$.encargostate': false } },
+                { session }
+            );
+
+            // Update 'inmuebles' collection nested in 'nestedescaleras.nestedinmuebles'
+            await db.collection('inmuebles').updateMany(
+                { 'nestedescaleras.nestedinmuebles.id': parseInt(id, 10) },
+                { $set: { 'nestedescaleras.nestedinmuebles.$.encargostate': false } },
+                { session }
+            );
 
             // Commit transaction
             await session.commitTransaction();

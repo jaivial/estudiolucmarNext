@@ -42,10 +42,6 @@ const EditModal = ({ isModalOpen, closeModal, data, onAddEdtMoreInfoRefreshKey, 
     const [showMap, setShowMap] = useState(false);
     const [markerPosition, setMarkerPosition] = useState(null);
 
-    useEffect(() => {
-        console.log('data EDIT', formData);
-    }, [formData]);
-
     // Handle map click
     const MapClickHandler = () => {
         useMapEvents({
@@ -92,7 +88,6 @@ const EditModal = ({ isModalOpen, closeModal, data, onAddEdtMoreInfoRefreshKey, 
 
     const handleSubmit = async (e) => {
         e.preventDefault(); // Prevent default form submission behavior
-        console.log('formData', formData);
         try {
             const response = await axios.put('/api/updateInmuebleInfo', {
                 inmuebleID: formData.id, // Assuming formData contains the inmuebleID
@@ -129,9 +124,6 @@ const EditModal = ({ isModalOpen, closeModal, data, onAddEdtMoreInfoRefreshKey, 
         }));
     };
 
-    useEffect(() => {
-        console.log('formData', formData.coordinates);
-    }, [formData.coordinates]);
 
     return (
         <>
