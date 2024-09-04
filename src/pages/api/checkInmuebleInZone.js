@@ -49,7 +49,7 @@ export default async function handler(req, res) {
 
             const inmueblesInZones = [];
             const inmueblesIdsInZones = new Set();
-
+            console.time('Check if point is in zone');
             // Determine which inmuebles are in the specified zone
             for (const inmueble of inmuebles) {
                 const { coordinates } = inmueble;
@@ -100,22 +100,28 @@ export default async function handler(req, res) {
                     console.error(`Unexpected coordinates format for inmueble: ${inmueble.id}`);
                 }
 
+
                 if (!pointInZone) {
                     inmueblesIdsInZones.add(inmueble.id);
                 }
             }
-
+            console.timeEnd('Check if point is in zone');
+            console.time('Bulk update inmuebles');
             // Update inmuebles that are in the specified zone
             if (inmueblesInZones.length > 0) {
-                const bulkUpdateOps = inmueblesInZones.map(({ inmueble_id, zone_name, zone_responsable }) => ({
-                    updateOne: {
-                        filter: { id: inmueble_id },
-                        update: { $set: { zona: zone_name, responsable: zone_responsable } },
-                    }
-                }));
-                await db.collection('inmuebles').bulkWrite(bulkUpdateOps);
+                // Use unordered bulk operations for performance improvement
+                const bulkOps = db.collection('inmuebles').initializeUnorderedBulkOp();
+                inmueblesInZones.forEach(({ inmueble_id, zone_name, zone_responsable }) => {
+                    bulkOps.find({ id: inmueble_id }).updateOne({
+                        $set: { zona: zone_name, responsable: zone_responsable }
+                    });
+                });
+                await bulkOps.execute(); // Execute all the operations as a single batch
             }
+            console.timeEnd('Bulk update inmuebles');
 
+
+            console.time('Set zona and responsable to null for inmuebles not in the specified zone');
             // Set zona and responsable to null for inmuebles not in the specified zone
             const allInmuebleIds = inmuebles.map(inmueble => inmueble.id);
             const inmueblesNotInZones = allInmuebleIds.filter(id => !inmueblesIdsInZones.has(id));
@@ -125,6 +131,7 @@ export default async function handler(req, res) {
                     { $set: { zona: null, responsable: null } }
                 );
             }
+            console.timeEnd('Set zona and responsable to null for inmuebles not in the specified zone');
             const responsePayload = inmueblesInZones;
             res.setHeader('Content-Length', Buffer.byteLength(JSON.stringify(responsePayload)));
             res.status(200).json(inmueblesInZones);

@@ -320,7 +320,7 @@ const MapComponent = () => {
             // Make the Axios request
             const response = await axios.post('/api/checkInmuebleInZone', { codeID: codeId },
                 // Simulate progress from 21 to 49 with a 100ms interval
-                await simulateProgress(0, 100, 350),
+                await simulateProgress(0, 100, 50),
             );
 
             setUploadProgress(100);
