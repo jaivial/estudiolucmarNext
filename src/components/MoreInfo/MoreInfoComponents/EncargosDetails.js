@@ -73,19 +73,15 @@ const EncargosDetails = ({ data, setOnAddEncargoRefreshKey, onAddEncargoRefreshK
     const [nombreCliente, setNombreCliente] = useState('');
 
 
-    console.log('data.inmueble.encargostate', data.inmueble.encargostate);
     const fetchEncargos = async () => {
         if (data.inmueble.encargoState === false) {
-            console.log('No hay encargos para mostrar');
             return;
         } else {
             try {
                 const inmuebleId = data.inmueble.id;
-                console.log('inmuebleId', inmuebleId);
                 const response = await axios.get('/api/encargosFetch', {
                     params: { id: inmuebleId },
                 });
-                console.log('Encargos fetched:', response.data);
                 if (response.data !== null) {
                     const encargo = response.data;
                     if (encargo) {
@@ -160,7 +156,6 @@ const EncargosDetails = ({ data, setOnAddEncargoRefreshKey, onAddEncargoRefreshK
     useEffect(() => {
         const nombre = findNombreCliente();
         setNombreCliente(nombre);
-        console.log('nombreCliente', nombre); // This will log the updated nombreCliente
     }, [encargos, clienteOptions]);
 
     const handlePopupClose = () => {
@@ -203,15 +198,11 @@ const EncargosDetails = ({ data, setOnAddEncargoRefreshKey, onAddEncargoRefreshK
         };
 
         try {
-            console.log('Sending params:', params);
-
             const endpoint = isEditing ? '/api/updateEncargo' : '/api/agregarEncargo';
 
             const response = await axios.post(endpoint, params);
-            console.log('response updated', response.data);
 
             if (response.data) {
-                console.log('response.data', response.data);
                 showToast(isEditing ? 'Encargo actualizado' : 'Encargo añadido', 'linear-gradient(to right bottom, #00603c, #006f39, #007d31, #008b24, #069903)');
                 handlePopupClose();
                 await fetchEncargos();
@@ -281,14 +272,9 @@ const EncargosDetails = ({ data, setOnAddEncargoRefreshKey, onAddEncargoRefreshK
         }
     };
 
-
     const formatDate = (dateString) => {
         return moment(dateString).format('DD/MM/YYYY');
     };
-
-    useEffect(() => {
-        console.log('encargos', encargos);
-    }, [encargos]);
 
     return (
         data.inmueble.noticiastate === true && (

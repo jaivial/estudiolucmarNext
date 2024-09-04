@@ -62,18 +62,13 @@ const NoticiasDetails = ({ data, setOnAddNoticiaRefreshKey, onAddNoticiaRefreshK
     const [isEditing, setIsEditing] = useState(false); // New state for editing
     const [currentNoticiaId, setCurrentNoticiaId] = useState(null); // New state for current noticia ID
 
-    useEffect(() => {
-        console.log('data.inmueble.noticiastate', data.inmueble.noticiastate);
-    }, []);
 
     const fetchNoticias = async () => {
         if (data.inmueble.noticiastate === 0) {
-            console.log('No hay noticias para mostrar');
             return;
         } else {
             try {
                 const parsedInmuebleId = parseInt(data.inmueble.id);
-                console.log('parsedInmuebleId', parsedInmuebleId);
                 const response = await axios.get('/api/fetchAllNoticias', {
                     params: { id: parsedInmuebleId },
                 });
@@ -99,7 +94,6 @@ const NoticiasDetails = ({ data, setOnAddNoticiaRefreshKey, onAddNoticiaRefreshK
         try {
             const response = await axios.get('/api/fetchAsesores');
             const asesores = response.data.asesores;
-            console.log('response', response.data.asesores);
             if (Array.isArray(asesores)) {
                 setAsesorOptions(
                     asesores.map((user) => ({
@@ -177,7 +171,6 @@ const NoticiasDetails = ({ data, setOnAddNoticiaRefreshKey, onAddNoticiaRefreshK
 
             // Send POST request
             const response = await axios.post(endpoint, params);
-            console.log('Response data:', response.data);
 
             if (response.data.success) {
                 showToast(isEditing ? 'Noticia actualizada' : 'Noticia añadida', 'linear-gradient(to right bottom, #00603c, #006f39, #007d31, #008b24, #069903)');
@@ -223,7 +216,6 @@ const NoticiasDetails = ({ data, setOnAddNoticiaRefreshKey, onAddNoticiaRefreshK
                     id: currentNoticiaId,
                 },
             });
-            console.log('response deleted', response.data);
             if (response.data.success) {
                 showToast('Noticia eliminada correctamente', 'linear-gradient(to right bottom, #00603c, #006f39, #007d31, #008b24, #069903)');
                 handlePopupClose();
@@ -242,10 +234,6 @@ const NoticiasDetails = ({ data, setOnAddNoticiaRefreshKey, onAddNoticiaRefreshK
     const formatDate = (dateString) => {
         return moment(dateString).format('DD/MM/YYYY');
     };
-
-    useEffect(() => {
-        console.log('noticias', noticias);
-    }, [noticias]);
 
     return (
         <div className="p-4">

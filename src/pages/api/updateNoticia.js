@@ -13,7 +13,6 @@ export default async function handler(req, res) {
                 fechaValoracion
             } = req.body;
 
-            console.log('req.body', req.body);
 
             // Validate required fields
             if (!id || !fecha || !prioridad || !tipoPVA || valoracion === undefined || valoraciontext === undefined || comercial === undefined || fechaValoracion === undefined) {

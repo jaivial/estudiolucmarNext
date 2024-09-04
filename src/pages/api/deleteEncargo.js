@@ -9,7 +9,6 @@ export default async function handler(req, res) {
 
     const { id } = req.query;
 
-    console.log('id', id);
 
     // Validate ID
     if (!id || isNaN(parseInt(id, 10))) {

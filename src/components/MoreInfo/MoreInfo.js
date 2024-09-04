@@ -37,6 +37,9 @@ const ItemDetails = ({ id, onClose, showModal, setShowModal, fetchData, currentP
     const [descripcion, setDescripcion] = useState('');
     const [newDescripcion, setNewDescripcion] = useState('');
     const [DPVboolean, setDPVboolean] = useState();
+    const [localizado, setLocalizado] = useState(null);
+    const [direccion, setDireccion] = useState(null);
+
 
     const showToast = (message, backgroundColor) => {
         Toastify({
@@ -99,15 +102,21 @@ const ItemDetails = ({ id, onClose, showModal, setShowModal, fetchData, currentP
                 params: { id: id },
             })
             .then((response) => {
-                console.log('funcionaaa', response.data);
+                console.log('response.data', response.data);
                 setData(response.data);
                 let dpv = response.data.inmueble.DPV;
                 setDPVboolean(dpv);
+                let localizado = response.data.inmueble.localizado;
+                setLocalizado(localizado);
+                let direccion = response.data.inmueble.direccion;
+                setDireccion(direccion);
             })
             .catch((error) => {
                 console.error('Error fetching data:', error);
             });
-    }, [id, onAddNoticiaRefreshKey, onAddEncargoRefreshKey, onAddEdtMoreInfoRefreshKey, onAddDeleteDPVRefreshKey]);
+    }, [id, onAddNoticiaRefreshKey, onAddEncargoRefreshKey, onAddEdtMoreInfoRefreshKey, onAddDeleteDPVRefreshKey, localizado]);
+
+
 
     useEffect(() => {
         const fetchEncargoData = async () => {
@@ -128,6 +137,8 @@ const ItemDetails = ({ id, onClose, showModal, setShowModal, fetchData, currentP
         fetchEncargoData();
         fetchDescripcion();
     }, [id, onAddNoticiaRefreshKey, onAddEncargoRefreshKey]);
+
+
 
     function Arrow(props) {
         const disabled = props.disabled ? ' arrow--disabled' : '';
@@ -171,6 +182,9 @@ const ItemDetails = ({ id, onClose, showModal, setShowModal, fetchData, currentP
                     admin={admin}
                     onAddDeleteDPVRefreshKey={onAddDeleteDPVRefreshKey}
                     setOnAddDeleteDPVRefreshKey={setOnAddDeleteDPVRefreshKey}
+                    localizado={localizado}
+                    setLocalizado={setLocalizado}
+                    direccion={direccion}
                 />
                 {isVisible && (
                     <>
