@@ -14,6 +14,7 @@ import DetailsInfoThree from './MoreInfoComponents/DetailsInfoThree';
 import ComentariosDetails from './MoreInfoComponents/ComentariosDetails';
 import NoticiasDetails from './MoreInfoComponents/NoticiasDetails';
 import EncargosDetails from './MoreInfoComponents/EncargosDetails';
+import ClientesAsociados from './MoreInfoComponents/ClientesAsociados';
 import Toastify from 'toastify-js';
 // Import React Suite components
 import { Modal, Button, Panel } from 'rsuite';
@@ -238,6 +239,7 @@ const ItemDetails = ({ id, onClose, showModal, setShowModal, fetchData, currentP
                     </Panel>
 
                 )}
+                <ClientesAsociados inmuebleId={data.inmueble.id} />
                 <DetailsInfoTwo data={data} descripcion={descripcion} setDescripcion={setDescripcion} newDescripcion={newDescripcion} setNewDescripcion={setNewDescripcion} />
                 <DetailsInfoThree data={data} />
                 <ComentariosDetails data={data} />
