@@ -1,5 +1,5 @@
 import { ObjectId } from 'mongodb';
-import clientPromise from '../../lib/mongodb';
+import clientPromise from '../../src/lib/mongodb';
 import nodemailer from 'nodemailer';
 
 export const config = {
