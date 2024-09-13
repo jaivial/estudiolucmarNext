@@ -318,7 +318,7 @@ export default function Settings({ isAdmin: initialIsAdmin }) {
         };
 
         try {
-            const response = await axios.post('/api/add_new_user', newUser, {
+            const response = await axios.post('/.netlify/functions/add_new_user', newUser, {
                 onUploadProgress: progressEvent => {
                     const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
                     setUploadProgress(percentCompleted);
@@ -484,17 +484,16 @@ export default function Settings({ isAdmin: initialIsAdmin }) {
                     <PanelGroup accordion bordered activeKey={activeKey} onSelect={setActiveKey}>
                         <Panel header="Tu Perfil" eventKey="0" className="bg-slate-50 rounded-lg shadow-xl">
                             <div className="relative flex flex-col items-center gap-4 py-3 w-full">
-                                {isAdministrador && (
-                                    <div className="absolute top-0 right-0">
-                                        <Icon
-                                            icon={isEditing?.user_id === loggedInUser.user_id ? "pajamas:close-xs" : "fa-regular:edit"}
-                                            onClick={() => toggleEditMode(loggedInUser)}
-                                            style={{ cursor: 'pointer', fontSize: '1.5rem' }}
-                                        />
-                                    </div>
-                                )}
+                                <div className="absolute top-0 right-0">
+                                    <Icon
+                                        icon={isEditing?.user_id === loggedInUser.user_id ? "pajamas:close-xs" : "fa-regular:edit"}
+                                        onClick={() => toggleEditMode(loggedInUser)}
+                                        style={{ cursor: 'pointer', fontSize: '1.5rem' }}
+                                    />
+                                </div>
                                 {!isEditing || isEditing.user_id !== loggedInUser.user_id ? (
                                     <>
+
                                         {loggedInUser.profile_photo ? (
                                             <Avatar src={loggedInUser.profile_photo} size="xl" circle className="mt-4" />
                                         ) : (
@@ -514,24 +513,28 @@ export default function Settings({ isAdmin: initialIsAdmin }) {
                                     </>
                                 ) : (
                                     <>
-                                        <div className="w-[100%] rounded-lg shadow-xl flex flex-col items-center gap-4 py-6 px-4 mb-4 mt-2">
-                                            <Form.Group className="w-[100%] flex flex-col items-center gap-4">
-                                                <Form.ControlLabel>Foto de Perfil</Form.ControlLabel>
-                                                {profilePhoto && <Avatar src={profilePhoto} size="lg" circle className="mt-4" />}
-                                                <Uploader
-                                                    action=""
-                                                    autoUpload={false}
-                                                    listType="picture"
-                                                    onChange={handleImageUploadEdit}
-                                                >
-                                                    <Button appearance="ghost" style={{ width: '100%', padding: '0.9rem', backgroundColor: '#edebeb' }}>Seleccionar archivo</Button>
-                                                </Uploader>
-                                            </Form.Group>
+                                        {isAdministrador && (
+                                            <>
+                                                <div className="w-[100%] rounded-lg shadow-xl flex flex-col items-center gap-4 py-6 px-4 mb-4 mt-2">
+                                                    <Form.Group className="w-[100%] flex flex-col items-center gap-4">
+                                                        <Form.ControlLabel>Foto de Perfil</Form.ControlLabel>
+                                                        {profilePhoto && <Avatar src={profilePhoto} size="lg" circle className="mt-4" />}
+                                                        <Uploader
+                                                            action=""
+                                                            autoUpload={false}
+                                                            listType="picture"
+                                                            onChange={handleImageUploadEdit}
+                                                        >
+                                                            <Button appearance="ghost" style={{ width: '100%', padding: '0.9rem', backgroundColor: '#edebeb' }}>Seleccionar archivo</Button>
+                                                        </Uploader>
+                                                    </Form.Group>
 
-                                            <InlineEdit value={nombre} onChange={setNombre} placeholder="Nombre" />
-                                            <InlineEdit value={apellido} onChange={setApellido} placeholder="Apellido" />
-                                            <InlineEdit value={email} onChange={setEmail} placeholder="Email" />
-                                        </div>
+                                                    <InlineEdit value={nombre} onChange={setNombre} placeholder="Nombre" />
+                                                    <InlineEdit value={apellido} onChange={setApellido} placeholder="Apellido" />
+                                                    <InlineEdit value={email} onChange={setEmail} placeholder="Email" />
+                                                </div>
+                                            </>
+                                        )}
                                         <div className="w-[100%] rounded-lg shadow-xl flex flex-col items-center gap-8 py-6 px-4 mb-4 mt-2">
                                             <div className="w-[100%] flex flex-col items-center gap-1">
                                                 <strong>Contraseña:</strong>
@@ -549,16 +552,20 @@ export default function Settings({ isAdmin: initialIsAdmin }) {
                                                     </InputGroup.Button>
                                                 </InputGroup>
                                             </div>
-                                            <Form.Group className="w-[100%] flex flex-col items-center gap-1">
-                                                <Form.ControlLabel>Rol</Form.ControlLabel>
-                                                <Toggle
-                                                    checked={isAdmin}
-                                                    onChange={setIsAdmin}
-                                                    checkedChildren="Administrador"
-                                                    unCheckedChildren="&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Asesor&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"
-                                                    size="lg"
-                                                />
-                                            </Form.Group>
+                                            {isAdministrador && (
+                                                <>
+                                                    <Form.Group className="w-[100%] flex flex-col items-center gap-1">
+                                                        <Form.ControlLabel>Rol</Form.ControlLabel>
+                                                        <Toggle
+                                                            checked={isAdmin}
+                                                            onChange={setIsAdmin}
+                                                            checkedChildren="Administrador"
+                                                            unCheckedChildren="&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Asesor&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"
+                                                            size="lg"
+                                                        />
+                                                    </Form.Group>
+                                                </>
+                                            )}
                                         </div>
 
                                         <div className="flex flex-col gap-4 justify-end mt-4">
