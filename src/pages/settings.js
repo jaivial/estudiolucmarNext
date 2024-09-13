@@ -318,7 +318,7 @@ export default function Settings({ isAdmin: initialIsAdmin }) {
         };
 
         try {
-            const response = await axios.post('/.netlify/functions/add_new_user', newUser, {
+            const response = await axios.post('/api/add_new_user', newUser, {
                 onUploadProgress: progressEvent => {
                     const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
                     setUploadProgress(percentCompleted);
