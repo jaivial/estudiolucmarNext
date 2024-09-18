@@ -9,6 +9,15 @@ export default async function handler(req, res) {
 
     const { encargo_id, fecha, comercial, tipoEncargo, comision, cliente, precio, tipoComision } = req.body;
 
+    console.log('encargo_id', encargo_id);
+    console.log('fecha', fecha);
+    console.log('comercial', comercial);
+    console.log('tipoEncargo', tipoEncargo);
+    console.log('comision', comision);
+    console.log('cliente', cliente);
+    console.log('precio', precio);
+    console.log('tipoComision', tipoComision);
+
 
     if (isNaN(parseInt(encargo_id))) {
         console.error('Invalid encargo_id:', encargo_id);
@@ -26,7 +35,7 @@ export default async function handler(req, res) {
             {
                 $set: {
                     encargo_fecha: fecha,
-                    comercial_encargo: comercial,
+                    comercial_encargo: comercial.value,
                     tipo_encargo: tipoEncargo,
                     comision_encargo: parseInt(comision, 10),
                     cliente_id: parseInt(cliente, 10),
@@ -36,7 +45,8 @@ export default async function handler(req, res) {
             }
         );
 
-        if (result.modifiedCount === 0) {
+        console.log('result', result);
+        if (result.matchedCount === 0) {
             return res.status(404).json({ success: false, message: 'Encargo not found or no changes made' });
         }
 

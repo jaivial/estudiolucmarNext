@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, use } from 'react';
 import axios from 'axios';
 import Slider from 'react-slider';
 import { AiOutlineDown, AiOutlineUp, AiOutlinePlus, AiOutlineClose } from 'react-icons/ai';
@@ -19,22 +19,9 @@ import { MdOutlinePriceCheck } from 'react-icons/md';
 import { MdAttachMoney } from 'react-icons/md';
 import { TbPigMoney } from 'react-icons/tb';
 import { FaUserTag } from 'react-icons/fa';
+import esES from 'rsuite/locales/es_ES';
+import { Accordion, Panel, Modal, Button, InputNumber, DatePicker, CustomProvider, SelectPicker, InputPicker } from 'rsuite'; // Import Accordion and Panel from rsuite
 
-// CustomSlider component to handle the slider with only three discrete positions
-const CustomSlider = ({ value, onChange }) => {
-    return (
-        <Slider
-            min={0}
-            max={2} // Three discrete positions: 0, 1, 2
-            step={1}
-            value={value}
-            onChange={onChange}
-            className="relative flex items-center w-full h-6"
-            trackClassName="absolute bg-blue-200 h-1 rounded"
-            thumbClassName="relative block w-6 h-6 bg-blue-500 rounded-full cursor-pointer"
-        />
-    );
-};
 
 const showToast = (message, backgroundColor) => {
     Toastify({
@@ -189,13 +176,15 @@ const EncargosDetails = ({ data, setOnAddEncargoRefreshKey, onAddEncargoRefreshK
         const params = {
             encargo_id: isEditing ? encargos[0].encargo_id : data.inmueble.id,
             tipoEncargo: tipoEncargo,
-            comercial: selectedAsesor?.value || '',
+            comercial: selectedAsesor,
             cliente: selectedCliente?.value || '',
             precio: precio,
             tipoComision: tipoComision,
             comision: comision,
-            fecha: fecha,
+            fecha: fecha || new Date(),
         };
+
+        console.log('params', params);
 
         try {
             const endpoint = isEditing ? '/api/updateEncargo' : '/api/agregarEncargo';
@@ -217,24 +206,28 @@ const EncargosDetails = ({ data, setOnAddEncargoRefreshKey, onAddEncargoRefreshK
     };
 
     const handleEditEncargo = (encargo, asesorOptions, clienteOptions) => {
-        setTipoEncargo(encargo.tipo_encargo);
-        setSelectedAsesor({
-            value: asesorOptions.value,
-            label: asesorOptions.label,
-        });
-        setPrecio(encargo.precio_1 || '');
-        setTipoComision(encargo.tipo_comision_encargo || '');
-        setComision(encargo.comision_encargo || '');
-        setFecha(encargo.encargo_fecha || '');
-        setSelectedCliente({
-            value: clienteOptions.value,
-            label: clienteOptions.label,
-        });
+        console.log('encargo', encargo);
+        console.log('asesorOptions', asesorOptions);
+        console.log('clienteOptions', clienteOptions);
+        // Assuming encargo is the object with the details of the encargo you want to edit
+        setTipoEncargo(encargo[0].tipo_encargo);
+        setSelectedAsesor({ label: encargo[0].comercial_encargo, value: encargo[0].comercial_encargo });
+        setPrecio(encargo[0].precio_1 || '');
+        setTipoComision(encargo[0].tipo_comision_encargo || '');
+        setComision(encargo[0].comision_encargo || '');
+        setFecha(encargo[0].encargo_fecha || '');
+        setSelectedCliente({ label: encargo[0].label, value: encargo[0].value });
         setIsEditing(true);
-        setCurrentEncargoId(encargo[0].encargo_id);
+        setCurrentEncargoId(encargo.encargo_id);
         setIsPopupOpen(true);
     };
+    useEffect(() => {
+        console.log('selectedAsesror', selectedAsesor);
+        console.log('selectedCliente', selectedCliente);
 
+
+
+    }, [selectedAsesor, selectedCliente]);
     const handleDeleteEncargo = async () => {
         if (!isEditing || !currentEncargoId || !encargos.length) {
             console.error('Encargo ID is missing, not in editing mode, or encargos array is empty.');
@@ -276,158 +269,200 @@ const EncargosDetails = ({ data, setOnAddEncargoRefreshKey, onAddEncargoRefreshK
         return moment(dateString).format('DD/MM/YYYY');
     };
 
+    // Helper function to format date to Spanish format
+    const formatDateTwo = (dateString) => {
+        return moment(dateString).format('YYYY-MM-DD');
+    };
     return (
         data.inmueble.noticiastate === true && (
-            <div className="p-4">
-                <div className="bg-white border border-gray-300 rounded-md">
-                    <div onClick={() => setIsOpen(!isOpen)} className="flex items-center justify-between p-4 cursor-pointer bg-gray-100 rounded-t-md">
+            <CustomProvider locale={esES}>
+                <Accordion defaultActiveKey={1} bordered style={{ margin: '0px 16px', marginTop: '20px' }}>
+                    <Accordion.Panel style={{ backgroundColor: '#f4f4f5', padding: '0px' }} header={
                         <h2 className="font-bold text-xl">Encargos</h2>
-                        {isOpen ? <AiOutlineUp className="text-2xl" /> : <AiOutlineDown className="text-2xl" />}
-                    </div>
-                    {isOpen && (
-                        <div className="py-1 px-2 relative">
-                            {encargos.length > 0 ? (
-                                <div className="py-2 my-3 flex flex-col items-center gap-2">
-                                    <div className="flex items-center gap-2 flex-col w-full">
-                                        <IoCalendarNumber className="text-gray-900 text-3xl" />
-                                        <p className="text-base text-gray-950 py-1 text-center">{formatDate(encargos[0].encargo_fecha)}</p>
-                                        <div className="border-b border-gray-300 w-4/6 -mt-1"></div>
-                                    </div>
-                                    <div className="flex items-center gap-2 flex-col w-full">
-                                        <BiSolidPurchaseTag className="text-gray-900 text-3xl" />
-                                        <p className="text-base text-gray-950 py-1 text-center">{encargos[0].tipo_encargo}</p>
-                                        <div className="border-b border-gray-300 w-4/6 -mt-1"></div>
-                                    </div>
-                                    <div className="flex items-center gap-2 flex-col w-full">
-                                        <FaUserTag className="text-gray-900 text-3xl" />
-                                        <p className="text-base text-gray-950 py-1 text-center">Cliente: {nombreCliente}</p>
-                                        <div className="border-b border-gray-300 w-4/6 -mt-1"></div>
-                                    </div>
-                                    <div className="flex items-center gap-2 flex-col w-full">
-                                        <MdAttachMoney className="text-gray-900 text-3xl" />
-                                        <p className="text-base text-gray-950 py-1 text-center">Precio: {encargos[0].precio_1} €</p>
-                                        <div className="border-b border-gray-300 w-4/6 -mt-1"></div>
-                                    </div>
-                                    {encargos[0].tipo_comision_encargo === 'Porcentaje' ? (
+                    } eventKey="1">
+                        <div className="p-4">
+                            <div className="py-1 px-2 relative">
+                                {encargos.length > 0 ? (
+                                    <div className="py-2 my-3 flex flex-col items-center gap-2">
                                         <div className="flex items-center gap-2 flex-col w-full">
-                                            <TbPigMoney className="text-gray-900 text-3xl" />
-                                            <p className="text-base text-gray-950 py-1 text-center"> Comisión</p>
-                                            <div className="flex flex-row items-center gap-2">
-                                                <p className="text-base text-gray-950 py-1 text-center">{encargos[0].comision_encargo}%</p>
-                                                <p>|</p>
-                                                <p className="text-base text-gray-950 py-1 text-center">{(encargos[0].precio_1 * encargos[0].comision_encargo) / 100} €</p>
+                                            <IoCalendarNumber className="text-gray-900 text-3xl" />
+                                            <p className="text-base text-gray-950 py-1 text-center">{formatDate(encargos[0].encargo_fecha)}</p>
+                                            <div className="border-b border-gray-300 w-4/6 -mt-1"></div>
+                                        </div>
+                                        <div className="flex items-center gap-2 flex-col w-full">
+                                            <BiSolidPurchaseTag className="text-gray-900 text-3xl" />
+                                            <p className="text-base text-gray-950 py-1 text-center">{encargos[0].tipo_encargo}</p>
+                                            <div className="border-b border-gray-300 w-4/6 -mt-1"></div>
+                                        </div>
+                                        <div className="flex items-center gap-2 flex-col w-full">
+                                            <FaUserTag className="text-gray-900 text-3xl" />
+                                            <p className="text-base text-gray-950 py-1 text-center">Cliente: {nombreCliente}</p>
+                                            <div className="border-b border-gray-300 w-4/6 -mt-1"></div>
+                                        </div>
+                                        <div className="flex items-center gap-2 flex-col w-full">
+                                            <MdAttachMoney className="text-gray-900 text-3xl" />
+                                            <p className="text-base text-gray-950 py-1 text-center">Precio: {encargos[0].precio_1} €</p>
+                                            <div className="border-b border-gray-300 w-4/6 -mt-1"></div>
+                                        </div>
+                                        {encargos[0].tipo_comision_encargo === 'Porcentaje' ? (
+                                            <div className="flex items-center gap-2 flex-col w-full">
+                                                <TbPigMoney className="text-gray-900 text-3xl" />
+                                                <p className="text-base text-gray-950 py-1 text-center"> Comisión</p>
+                                                <div className="flex flex-row items-center gap-2">
+                                                    <p className="text-base text-gray-950 py-1 text-center">{encargos[0].comision_encargo}%</p>
+                                                    <p>|</p>
+                                                    <p className="text-base text-gray-950 py-1 text-center">{(encargos[0].precio_1 * encargos[0].comision_encargo) / 100} €</p>
+                                                </div>
+                                                <div className="border-b border-gray-300 w-4/6 -mt-1"></div>
                                             </div>
-                                            <div className="border-b border-gray-300 w-4/6 -mt-1"></div>
-                                        </div>
-                                    ) : (
+                                        ) : (
+                                            <div className="flex items-center gap-2 flex-col w-full">
+                                                <TbPigMoney className="text-gray-900 text-3xl" />
+                                                <p className="text-base text-gray-950 py-1 text-center">{encargos[0].precio_1} €</p>
+                                                <div className="border-b border-gray-300 w-4/6 -mt-1"></div>
+                                            </div>
+                                        )}
                                         <div className="flex items-center gap-2 flex-col w-full">
-                                            <TbPigMoney className="text-gray-900 text-3xl" />
-                                            <p className="text-base text-gray-950 py-1 text-center">{encargos[0].precio_1} €</p>
-                                            <div className="border-b border-gray-300 w-4/6 -mt-1"></div>
+                                            <FaUserTie className="text-gray-900 text-3xl" />
+                                            <p className="text-base text-gray-950 py-1 text-center">Asesor: {encargos[0].comercial_encargo}</p>
                                         </div>
-                                    )}
-                                    <div className="flex items-center gap-2 flex-col w-full">
-                                        <FaUserTie className="text-gray-900 text-3xl" />
-                                        <p className="text-base text-gray-950 py-1 text-center">Asesor: {encargos[0].comercial_encargo}</p>
+                                        <div className="absolute top-2 right-2">
+                                            <FiEdit className="text-2xl cursor-pointer text-blue-500" onClick={() => handleEditEncargo(encargos, asesorOptions, clienteOptions)} />
+                                        </div>
                                     </div>
-                                    <div className="absolute top-2 right-2">
-                                        <FiEdit className="text-2xl cursor-pointer text-blue-500" onClick={() => handleEditEncargo(encargos, asesorOptions, clienteOptions)} />
+                                ) : (
+                                    <div className="flex justify-center items-center py-3">
+                                        <AiOutlinePlus className="text-4xl cursor-pointer text-blue-500" onClick={() => setIsPopupOpen(true)} />
                                     </div>
-                                </div>
-                            ) : (
-                                <div className="flex justify-center items-center py-3">
-                                    <AiOutlinePlus className="text-4xl cursor-pointer text-blue-500" onClick={() => setIsPopupOpen(true)} />
-                                </div>
-                            )}
-                        </div>
-                    )}
-                </div>
-
-                {isPopupOpen && (
-                    <div className="fixed inset-0 bg-gray-700 bg-opacity-50 flex justify-center items-center z-[30]">
-                        <div className="bg-white p-8 rounded shadow-lg w-full max-w-md relative">
-                            <button className="absolute top-4 right-4 text-gray-500" onClick={handlePopupClose}>
-                                <AiOutlineClose size={20} />
-                            </button>
-                            <h2 className="text-2xl font-semibold mb-4">{isEditing ? 'Editar Encargo' : 'Añadir Encargo'}</h2>
-                            <div className="mb-4">
-                                <label className="block text-sm font-medium mb-2" htmlFor="tipoEncargo">
-                                    Tipo de Encargo
-                                </label>
-                                <Select
-                                    id="tipoEncargo"
-                                    options={[
-                                        { value: 'Venta', label: 'Venta' },
-                                        { value: 'Alquiler', label: 'Alquiler' },
-                                        { value: 'Comercial', label: 'Comercial' },
-                                    ]}
-                                    value={tipoEncargo ? { value: tipoEncargo, label: tipoEncargo } : null}
-                                    onChange={(option) => setTipoEncargo(option?.value || '')}
-                                    placeholder="Selecciona el tipo de encargo"
-                                />
-                            </div>
-                            <div className="mb-4">
-                                <label className="block text-sm font-medium mb-2" htmlFor="asesor">
-                                    Asesor
-                                </label>
-                                <Select id="asesor" options={asesorOptions} value={selectedAsesor} onChange={setSelectedAsesor} placeholder="Selecciona un asesor" />
-                            </div>
-                            <div className="mb-4">
-                                <label className="block text-sm font-medium mb-2" htmlFor="cliente">
-                                    Cliente
-                                </label>
-                                <Select id="cliente" options={clienteOptions} value={selectedCliente} onChange={setSelectedCliente} placeholder="Selecciona un cliente" />
-                            </div>
-                            <div className="mb-4">
-                                <label className="block text-sm font-medium mb-2" htmlFor="precio">
-                                    Precio
-                                </label>
-                                <input id="precio" type="number" className="border rounded p-2 w-full" value={precio} onChange={(e) => setPrecio(e.target.value)} placeholder="Introduce el precio" />
-                            </div>
-                            <div className="mb-4">
-                                <label className="block text-sm font-medium mb-2" htmlFor="tipoComision">
-                                    Tipo de Comisión
-                                </label>
-                                <Select
-                                    id="tipoComision"
-                                    options={[
-                                        { value: 'Porcentaje', label: 'Porcentaje' },
-                                        { value: 'Fijo', label: 'Fijo' },
-                                    ]}
-                                    value={tipoComision.value}
-                                    onChange={(option) => setTipoComision(option?.value || '')}
-                                    placeholder="Selecciona el tipo de comisión"
-                                />
-                            </div>
-                            <div className="mb-4">
-                                <label className="block text-sm font-medium mb-2" htmlFor="comision">
-                                    Comisión
-                                </label>
-                                <input id="comision" type="number" className="border rounded p-2 w-full" value={comision} onChange={(e) => setComision(e.target.value)} placeholder="Introduce la comisión" />
-                            </div>
-                            <div className="mb-4">
-                                <label className="block text-sm font-medium mb-2" htmlFor="fecha">
-                                    Fecha
-                                </label>
-                                <input id="fecha" type="date" className="border rounded p-2 w-full" value={fecha} onChange={(e) => setFecha(e.target.value)} />
-                            </div>
-                            <div className="flex justify-end gap-2">
-                                <button onClick={handleAddEncargo} className="bg-blue-500 text-white p-2 rounded">
-                                    {isEditing ? 'Actualizar' : 'Añadir'}
-                                </button>
-                                {isEditing && (
-                                    <button onClick={handleDeleteEncargo} className="bg-red-500 text-white p-2 rounded-md">
-                                        Eliminar
-                                    </button>
                                 )}
-                                <button onClick={handlePopupClose} className="bg-gray-500 text-white p-2 rounded">
-                                    Cerrar
-                                </button>
                             </div>
+
+                            <Modal open={isPopupOpen} onClose={handlePopupClose} size="md" overflow={false} backdrop={true} style={{ backgroundColor: 'rgba(0,0,0,0.15)', padding: '0px 2px' }}>
+                                <Modal.Header style={{ display: 'flex', flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: '10px', width: '100%', marginTop: '10px' }}>
+                                    <Modal.Title style={{ fontSize: '1.5rem', fontWeight: 'bold', textAlign: 'center' }}>{isEditing ? 'Editar Encargo' : 'Añadir Encargo'}</Modal.Title>
+                                </Modal.Header>
+                                <Modal.Body style={{ padding: '10px 25px', fontSize: '1rem', lineHeight: '1.5', display: 'flex', flexDirection: 'column', gap: '10px', alignItems: 'center', width: '100%' }}>
+                                    <div className="flex flex-col gap-4 w-full">
+                                        <div className="mb-4">
+                                            <label className="block text-sm font-medium mb-2" htmlFor="tipoEncargo">
+                                                Tipo de Encargo
+                                            </label>
+                                            <Select
+                                                id="tipoEncargo"
+                                                options={[
+                                                    { value: 'Venta', label: 'Venta' },
+                                                    { value: 'Alquiler', label: 'Alquiler' },
+                                                    { value: 'Comercial', label: 'Comercial' },
+                                                ]}
+                                                value={tipoEncargo ? { value: tipoEncargo, label: tipoEncargo } : null}
+                                                onChange={(option) => setTipoEncargo(option?.value || '')}
+                                                placeholder="Selecciona el tipo de encargo"
+                                                className='z-[900]'
+                                            />
+                                        </div>
+                                        <div className="mb-4">
+                                            <label className="block text-sm font-medium mb-2" htmlFor="asesor">
+                                                Asesor
+                                            </label>
+                                            <SelectPicker
+                                                data={asesorOptions}
+                                                value={selectedAsesor ? selectedAsesor.value : undefined}
+                                                onChange={(value, item) => setSelectedAsesor(value)}
+                                                placeholder="Asesor"
+                                                className="basic-single z-[900]"
+                                                style={{ width: '100%' }}
+                                            />
+                                        </div>
+                                        <div className="mb-4">
+                                            <label className="block text-sm font-medium mb-2" htmlFor="cliente">
+                                                Cliente
+                                            </label>
+                                            <SelectPicker
+                                                id="cliente"
+                                                data={clienteOptions}
+                                                value={selectedCliente ? selectedCliente.label : undefined}
+                                                onChange={(value, item) => setSelectedCliente(value)}
+                                                placeholder="Cliente"
+                                                className="basic-single z-[800]"
+                                                searchable={true}
+                                                style={{ width: '100%' }}
+                                            />
+                                        </div>
+                                        <div className="mb-4">
+                                            <label className="block text-sm font-medium mb-2" htmlFor="precio">
+                                                Precio
+                                            </label>
+                                            <InputNumber
+                                                id="precio"
+                                                min={0}
+                                                value={precio}
+                                                onChange={setPrecio}
+                                                placeholder="Introduce el precio"
+                                                className="w-full"
+                                            />
+                                        </div>
+                                        <div className="mb-4">
+                                            <label className="block text-sm font-medium mb-2" htmlFor="tipoComision">
+                                                Tipo de Comisión
+                                            </label>
+                                            <Select
+                                                id="tipoComision"
+                                                options={[
+                                                    { value: 'Porcentaje', label: 'Porcentaje' },
+                                                    { value: 'Fijo', label: 'Fijo' },
+                                                ]}
+                                                value={tipoComision ? { value: tipoComision, label: tipoComision } : null}
+                                                onChange={(option) => setTipoComision(option?.value || '')}
+                                                placeholder="Selecciona el tipo de comisión"
+                                            />
+                                        </div>
+                                        <div className="mb-4">
+                                            <label className="block text-sm font-medium mb-2" htmlFor="comision">
+                                                Comisión
+                                            </label>
+                                            <InputNumber
+                                                id="comision"
+                                                min={0}
+                                                value={comision}
+                                                onChange={setComision}
+                                                placeholder="Introduce la comisión"
+                                                className="w-full"
+                                            />
+                                        </div>
+                                        <div className="mb-4">
+                                            <label className="block text-sm font-medium mb-2" htmlFor="fecha">
+                                                Fecha
+                                            </label>
+                                            <DatePicker
+                                                id="fecha"
+                                                format="dd/MM/yyyy"
+                                                value={fecha ? new Date(fecha) : new Date()}
+                                                onChange={(value) => setFecha(formatDateTwo(value))}
+                                                placeholder="Fecha"
+                                                oneTap
+                                                style={{ width: '100%' }}
+                                            />
+                                        </div>
+                                    </div>
+                                </Modal.Body>
+                                <Modal.Footer>
+                                    <Button onClick={handlePopupClose} appearance="subtle">
+                                        Cerrar
+                                    </Button>
+                                    {isEditing && (
+                                        <Button onClick={handleDeleteEncargo} color="red" appearance="primary">
+                                            Eliminar
+                                        </Button>
+                                    )}
+                                    <Button onClick={handleAddEncargo} appearance="primary">
+                                        {isEditing ? 'Actualizar' : 'Añadir'}
+                                    </Button>
+                                </Modal.Footer>
+                            </Modal>
                         </div>
-                    </div>
-                )}
-            </div>
+                    </Accordion.Panel>
+                </Accordion>
+            </CustomProvider>
         )
     );
 };
