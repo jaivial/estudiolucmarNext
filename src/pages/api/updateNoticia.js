@@ -10,14 +10,11 @@ export default async function handler(req, res) {
                 valoracion,
                 valoraciontext,
                 comercial,
-                fechaValoracion
+                fechaValoracion,
             } = req.body;
 
 
-            // Validate required fields
-            if (!id || !fecha || !prioridad || !tipoPVA || valoracion === undefined || valoraciontext === undefined || comercial === undefined || fechaValoracion === undefined) {
-                return res.status(400).json({ success: false, message: 'Missing required fields' });
-            }
+
 
             // Validate ID
             if (isNaN(Number(id))) {
@@ -34,7 +31,7 @@ export default async function handler(req, res) {
                 tipo_PV: tipoPVA || null,
                 valoracion: valoracion || null,
                 valoracion_establecida: valoraciontext || null,
-                comercial_noticia: comercial || null,
+                comercial_noticia: comercial.value || null,
                 valoracionDate: fechaValoracion || null
             };
 
@@ -42,8 +39,8 @@ export default async function handler(req, res) {
                 { noticia_id: id },
                 { $set: updatedData }
             );
-
-            if (result.modifiedCount === 0) {
+            console.log('result', result);
+            if (result.matchedCount === 0) {
                 return res.status(404).json({ success: false, message: 'No document found with the provided ID' });
             }
 

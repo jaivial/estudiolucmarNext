@@ -14,12 +14,24 @@ export default async function handler(req, res) {
             fechaValoracion
         } = req.body;
 
+        const currentDateFormatted = new Date().toISOString().split('T')[0];
+        const fechaWithDefault = fecha || currentDateFormatted;
+        const fechaValoracionWithDefault = fechaValoracion || currentDateFormatted;
+
+        console.log('comercial', comercial);
+        console.log('fecha', fechaWithDefault);
+        console.log('fechaValoracion', fechaValoracionWithDefault);
+        console.log('prioridad', prioridad);
+        console.log('tipoPVA', tipoPVA);
+        console.log('valoracion', valoracion);
+        console.log('valoraciontext', valoraciontext);
 
         // Handle empty valoraciontext
         const valoracion_establecida = valoraciontext === '' ? null : valoraciontext;
 
-        // Validate and format fechaValoracion
-        const valoracionDate = fechaValoracion ? new Date(fechaValoracion).toISOString().split('T')[0] : null;
+        // Use fechaWithDefault and fechaValoracionWithDefault when fecha or fechaValoracion are empty
+        const noticia_fecha = fechaWithDefault;
+        const valoracionDate = fechaValoracionWithDefault;
 
         try {
             const client = await clientPromise;
@@ -35,7 +47,7 @@ export default async function handler(req, res) {
                 tipo_PV: tipoPVA,
                 valoracion: Number(valoracion),
                 valoracion_establecida,
-                noticia_fecha: fecha,
+                noticia_fecha,
                 prioridad,
                 comercial_noticia: comercial,
                 valoracionDate
