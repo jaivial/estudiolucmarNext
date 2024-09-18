@@ -13,16 +13,20 @@ export default async function handler(req, res) {
             const client = await clientPromise;
             const db = client.db('inmoprocrm');
 
-            const result = await db.collection('compradores').deleteOne({ _id: new ObjectId(comprador_id.toString()) });
+            // Update the 'pedido' field to false for the cliente with the given comprador_id
+            const updateResult = await db.collection('clientes').updateOne(
+                { _id: new ObjectId(comprador_id.toString()) },
+                { $set: { pedido: false } }
+            );
 
-            if (result.deletedCount === 1) {
-                res.status(200).json({ message: 'Comprador eliminado con éxito' });
+            if (updateResult.modifiedCount === 1) {
+                res.status(200).json({ message: 'Pedido actualizado a falso con éxito' });
             } else {
-                res.status(404).json({ message: 'Comprador no encontrado' });
+                res.status(404).json({ message: 'Cliente con el ID de comprador proporcionado no encontrado' });
             }
         } catch (error) {
-            console.error('Error eliminando el comprador:', error);
-            res.status(500).json({ message: 'Error eliminando el comprador', error: error.message });
+            console.error('Error actualizando el pedido del cliente:', error);
+            res.status(500).json({ message: 'Error actualizando el pedido del cliente', error: error.message });
         }
     } else {
         res.setHeader('Allow', ['DELETE']);
