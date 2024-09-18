@@ -7,7 +7,7 @@ export default async function handler(req, res) {
         console.log('Datos recibidos en la API:', req.body);
 
         // Validación básica
-        if (!nombre || !apellido || !email || !telefono || !interes || typeof rango_precios !== 'object' || typeof rango_precios.min !== 'number' || typeof rango_precios.max !== 'number') {
+        if (!nombre || !apellido || !telefono || !interes || typeof rango_precios !== 'object' || typeof rango_precios.min !== 'number' || typeof rango_precios.max !== 'number') {
             console.error('Validación fallida:', {
                 nombre: Boolean(nombre),
                 apellido: Boolean(apellido),

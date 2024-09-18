@@ -53,12 +53,18 @@ export default async function handler(req, res) {
 async function sendConfirmationEmail(email, nombre, apellido, password) {
     // Configuración del transporte de Nodemailer
     let transporter = nodemailer.createTransport({
-        service: 'gmail', // Puedes usar el servicio que prefieras (SendGrid, Mailgun, etc.)
+        host: 'smtp.hostinger.com',
+        port: 465,
+        secure: true,
         auth: {
-            user: process.env.EMAIL_USER, // Tu correo electrónico
-            pass: process.env.EMAIL_PASS, // Tu contraseña de aplicación o contraseña
+            user: process.env.EMAIL_USER,
+            pass: process.env.EMAIL_PASS,
+        },
+        tls: {
+            rejectUnauthorized: false,
         },
     });
+
 
     // Contenido del email con estilos en línea
     const mailOptions = {

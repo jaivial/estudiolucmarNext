@@ -1,7 +1,7 @@
 import GeneralLayout from "../components/layouts/GeneralLayout.js";
 import { useState, useEffect } from "react";
 import axios from 'axios';
-import { Button, Form, Modal, SelectPicker, Table, Tag, Panel, PanelGroup, Whisper, Tooltip, Tabs, Radio, RadioGroup, RangeSlider, InputPicker } from 'rsuite';
+import { Button, Form, Modal, SelectPicker, Table, Tag, Panel, PanelGroup, Whisper, Tooltip, Tabs, Radio, RadioGroup, RangeSlider, InputPicker, Toggle } from 'rsuite';
 import { Icon } from '@iconify/react';
 import Toastify from 'toastify-js';
 import 'toastify-js/src/toastify.css';
@@ -13,6 +13,7 @@ import { useToaster, Notification } from 'rsuite';
 import cookie from 'cookie';
 import '../components/Clientes/clients.css';
 import MoreInfo from '../components/MoreInfo/MoreInfo.js';
+import { intlFormat } from "date-fns";
 
 export async function getServerSideProps(context) {
     // Parse the cookies on the request
@@ -29,8 +30,6 @@ export async function getServerSideProps(context) {
     };
 }
 
-
-
 const { Column, HeaderCell, Cell } = Table;
 
 export default function Clientes({ isAdmin }) {
@@ -42,12 +41,15 @@ export default function Clientes({ isAdmin }) {
         apellido: '',
         dni: '',
         tipo_de_cliente: [],
-        inmuebles_asociados_informador: [],
         inmuebles_asociados_propietario: [],
-        inmuebles_asociados_copropietario: [],
         inmuebles_asociados_inquilino: [],
         telefono: '',
-        inmueblesDetalle: []
+        inmueblesDetalle: [],
+        informador: false,
+        pedido: false,
+        email: '',
+        interes: 'comprar',  // Default value
+        rango_precios: [0, 1000000]  // Default price range as array
     });
     const [inmuebles, setInmuebles] = useState([]);
     const [open, setOpen] = useState(false);
@@ -100,53 +102,7 @@ export default function Clientes({ isAdmin }) {
         fetchClientes();
     }, []);
 
-    // Fetch the buyers' data when the "Compradores" tab is opened
-    useEffect(() => {
-        if (activeTab === 'compradores') {
-            axios.get('/api/fetchCompradores')  // Usa la API 'fetchCompradores' para obtener los compradores
-                .then(response => {
-                    setCompradores(response.data);
-                })
-                .catch(error => {
-                    console.error("There was an error fetching the compradores!", error);
-                });
-        }
-    }, [activeTab]);
 
-    const handleAddComprador = () => {
-        // Verifica si `rango_precios` es un array y tiene dos elementos
-        if (Array.isArray(newComprador.rango_precios) && newComprador.rango_precios.length === 2) {
-            const compradorToSave = {
-                ...newComprador,
-                rango_precios: {
-                    min: newComprador.rango_precios[0],
-                    max: newComprador.rango_precios[1]
-                }
-            };
-
-            console.log('Enviando datos del comprador:', compradorToSave);
-
-            axios.post('/api/addNewComprador', compradorToSave)
-                .then(response => {
-                    setCompradores([...compradores, response.data]);
-                    // Restablece el formulario
-                    setNewComprador({
-                        nombre: '',
-                        apellido: '',
-                        dni: '',
-                        email: '',
-                        interes: 'comprar',
-                        rango_precios: [0, 1000000] // Rango por defecto como array
-                    });
-                    showToast('Comprador agregado.', 'linear-gradient(to right bottom, #00603c, #006f39, #007d31, #008b24, #069903)');
-                })
-                .catch(error => {
-                    console.error("There was an error adding the comprador!", error.response ? error.response.data : error.message);
-                });
-        } else {
-            console.error("Invalid range for rango_precios", newComprador.rango_precios);
-        }
-    };
     const handleDeleteComprador = async (comprador_id) => {
         if (!comprador_id) {
             console.error('No se ha proporcionado un ID de comprador');
@@ -192,7 +148,14 @@ export default function Clientes({ isAdmin }) {
 
     const handleInteresChange = (value) => {
         setNewComprador({
-            ...newComprador,
+            ...newCliente,
+            interes: value,
+            rango_precios: value === 'comprar' ? [0, 1000000] : [0, 2500]  // Adjust range based on selection
+        });
+    };
+    const handleInteresChangeEdit = (value) => {
+        setNewComprador({
+            ...editCliente,
             interes: value,
             rango_precios: value === 'comprar' ? [0, 1000000] : [0, 2500]  // Adjust range based on selection
         });
@@ -202,6 +165,8 @@ export default function Clientes({ isAdmin }) {
         try {
             const response = await axios.get('/api/fetch_clientes');
             setClientes(response.data);
+            const compradoresConPedido = response.data.filter(cliente => cliente.pedido);
+            setCompradores(compradoresConPedido);
         } catch (error) {
             console.error('Error al obtener clientes:', error);
         } finally {
@@ -214,9 +179,7 @@ export default function Clientes({ isAdmin }) {
         setOpen(true);
 
         const allInmuebleIds = [
-            ...cliente.inmuebles_asociados_informador,
             ...cliente.inmuebles_asociados_propietario,
-            ...cliente.inmuebles_asociados_copropietario,
             ...cliente.inmuebles_asociados_inquilino
         ].map(inmueble => inmueble.id);
 
@@ -245,8 +208,8 @@ export default function Clientes({ isAdmin }) {
 
     const handleOpenEditModalComprador = async (comprador) => {
         setEditComprador(comprador);
+        console.log('setEditComprador', comprador);
         setEditModalCompradorOpen(true);
-        console.log('setEditModalCompradorOpen', editModalCompradorOpen);
         try {
             const response = await axios.get(`/api/fetchInmueblesComprador?comprador_id=${comprador._id}`);
             console.log('response', response.data);
@@ -311,7 +274,24 @@ export default function Clientes({ isAdmin }) {
             });
         }
     };
-
+    const handleInformador = (checked) => {
+        setNewCliente({
+            ...newCliente,
+            informador: checked,
+        });
+    };
+    const handlePedido = (checked) => {
+        setNewCliente({
+            ...newCliente,
+            pedido: checked,
+        });
+    };
+    const handlePedidoEdit = (checked) => {
+        setEditCliente({
+            ...editCliente,
+            pedido: checked,
+        });
+    };
     const handleSelectTipoDeCliente = (value, mode = 'new') => {
         const updateFunc = mode === 'edit' ? setEditCliente : setNewCliente;
         const cliente = mode === 'edit' ? editCliente : newCliente;
@@ -387,11 +367,12 @@ export default function Clientes({ isAdmin }) {
             apellido: '',
             dni: '',
             tipo_de_cliente: [],
-            inmuebles_asociados_informador: [],
             inmuebles_asociados_propietario: [],
-            inmuebles_asociados_copropietario: [],
             inmuebles_asociados_inquilino: [],
             telefono: '',
+            informador: false,
+            pedido: false,
+            email: '',
         });
     };
 
@@ -429,7 +410,7 @@ export default function Clientes({ isAdmin }) {
             {loading && <LoadingScreen />}
             {viewMore && <MoreInfo id={moreInfoInmuebleId} showModal={viewMore} setViewMore={setViewMore} onClose={handleCloseMoreInfo} />}
             {viewMoreComprador && <MoreInfo id={moreInfoCompradorId} showModal={viewMoreComprador} setViewMore={setViewMoreComprador} onClose={handleCloseMoreInfoComprador} />}
-            <div className="h-full w-full flex flex-col items-center justify-start pt-20 overflow-y-scroll bg-gradient-to-t from-slate-400 via-slate-300 to-slate-200">
+            <div className="h-full w-full flex flex-col items-center justify-start pt-20 overflow-y-scroll bg-gradient-to-t from-slate-400 via-slate-300 to-slate-200 pb-16">
                 <div className="w-full flex flex-col items-center">
                     <h1 className="text-3xl font-bold text-center font-sans w-80 mb-8">Gestión de Clientes</h1>
                     <div className="w-full max-w-full flex justify-center">
@@ -439,12 +420,30 @@ export default function Clientes({ isAdmin }) {
                             appearance="pills"
                             className="w-full items-center" // Ensure full width for the tabs
                         >
+
                             <Tabs.Tab eventKey="clientes" title="Clientes" className="w-full">
                                 <div className="p-4 w-full">
                                     <PanelGroup accordion bordered>
                                         <Panel header="Clientes" eventKey="1" className="bg-slate-50 rounded-lg shadow-xl">
-                                            <Table data={clientes} autoHeight >
-                                                <Column width={200} align="center">
+                                            <Table data={clientes} autoHeight>
+                                                <Column width={50} align="center" fixed="center">
+                                                    <HeaderCell></HeaderCell>
+                                                    <Cell style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', flexDirection: 'column', padding: '0px' }}>
+                                                        {rowData => rowData.informador ? (
+                                                            <Icon icon="mdi:information" style={{ color: 'blue', fontSize: '2rem' }} />
+                                                        ) : null}
+                                                    </Cell>
+                                                </Column>
+                                                <Column width={50} align="center" fixed="center">
+                                                    <HeaderCell></HeaderCell>
+                                                    <Cell style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', flexDirection: 'column', padding: '0px' }}>
+                                                        {rowData => rowData.pedido ? (
+                                                            <Icon icon="mdi:parking" style={{ color: 'orange', fontSize: '1.8rem' }} >
+                                                            </Icon>
+                                                        ) : null}
+                                                    </Cell>
+                                                </Column>
+                                                <Column width={80} align="center">
                                                     <HeaderCell>Nombre</HeaderCell>
                                                     <Cell dataKey="nombre" />
                                                 </Column>
@@ -464,9 +463,8 @@ export default function Clientes({ isAdmin }) {
                                                                         key={tipo}
                                                                         color={
                                                                             tipo === 'propietario' ? 'green' :
-                                                                                tipo === 'copropietario' ? 'blue' :
-                                                                                    tipo === 'inquilino' ? 'orange' :
-                                                                                        'cyan'
+                                                                                tipo === 'inquilino' ? 'orange' :
+                                                                                    'cyan'
                                                                         }
                                                                         style={{ marginBottom: '5px' }}
                                                                     >
@@ -483,19 +481,24 @@ export default function Clientes({ isAdmin }) {
                                                     <Cell dataKey="dni" />
                                                 </Column>
 
+
                                                 <Column width={200} align="center">
                                                     <HeaderCell>Teléfono</HeaderCell>
                                                     <Cell dataKey="telefono">
                                                         {rowData => rowData.telefono || 'N/A'}
                                                     </Cell>
                                                 </Column>
-
+                                                <Column width={200} align="center">
+                                                    <HeaderCell>Email</HeaderCell>
+                                                    <Cell dataKey="telefono">
+                                                        {rowData => rowData.email || 'N/A'}
+                                                    </Cell>
+                                                </Column>
                                                 <Column width={200} align="center">
                                                     <HeaderCell>Inmuebles Asociados</HeaderCell>
                                                     <Cell>
-                                                        {rowData => rowData.inmuebles_asociados_informador.length +
+                                                        {rowData =>
                                                             rowData.inmuebles_asociados_propietario.length +
-                                                            rowData.inmuebles_asociados_copropietario.length +
                                                             rowData.inmuebles_asociados_inquilino.length}
                                                     </Cell>
                                                 </Column>
@@ -509,17 +512,14 @@ export default function Clientes({ isAdmin }) {
                                                                     <Icon icon="mdi:eye-outline" style={{ cursor: 'pointer', fontSize: '1.5rem' }} onClick={() => handleOpen(rowData)} />
                                                                 </Whisper>
 
-                                                                {isAdmin && (
-                                                                    <>
-                                                                        <Whisper placement="top" trigger="hover" speaker={<Tooltip>Editar</Tooltip>}>
-                                                                            <Icon icon="mdi:pencil-outline" style={{ cursor: 'pointer', fontSize: '1.5rem', color: 'green' }} onClick={() => handleOpenEditModal(rowData)} />
-                                                                        </Whisper>
+                                                                <Whisper placement="top" trigger="hover" speaker={<Tooltip>Editar</Tooltip>}>
+                                                                    <Icon icon="mdi:pencil-outline" style={{ cursor: 'pointer', fontSize: '1.5rem', color: 'green' }} onClick={() => handleOpenEditModal(rowData)} />
+                                                                </Whisper>
 
-                                                                        <Whisper placement="top" trigger="hover" speaker={<Tooltip>Eliminar</Tooltip>}>
-                                                                            <Icon icon="mdi:trash-can-outline" style={{ cursor: 'pointer', fontSize: '1.5rem', color: 'red' }} onClick={() => handleDeleteCliente(rowData.client_id)} />
-                                                                        </Whisper>
-                                                                    </>
-                                                                )}
+                                                                <Whisper placement="top" trigger="hover" speaker={<Tooltip>Eliminar</Tooltip>}>
+                                                                    <Icon icon="mdi:trash-can-outline" style={{ cursor: 'pointer', fontSize: '1.5rem', color: 'red' }} onClick={() => handleDeleteCliente(rowData.client_id)} />
+                                                                </Whisper>
+
                                                             </div>
                                                         )}
                                                     </Cell>
@@ -529,32 +529,99 @@ export default function Clientes({ isAdmin }) {
 
                                         <Panel header="Agregar Nuevo Cliente" eventKey="2" className="bg-slate-50 rounded-lg shadow-xl">
                                             <Form fluid>
+                                                <Form.Group controlId="pedido-toggle" className="w-full flex flex-col gap-4 justify-center items-center">
+                                                    <p>¿Es un pedido?</p>
+                                                    <Toggle
+                                                        checkedChildren="Pedido"
+                                                        unCheckedChildren="No Pedido"
+                                                        checked={newCliente.pedido}
+                                                        onChange={(checked) => handlePedido(checked)}
+                                                        size={'lg'}
+                                                    />
+                                                </Form.Group>
+                                                {newCliente.pedido && (
+                                                    <div className="w-full flex flex-col gap-4 justify-center items-center mt-10">
+                                                        <div className="w-full flex flex-row gap-32 justify-center items-start">
+                                                            <Form.Group controlId="interes">
+                                                                <Form.ControlLabel style={{ textAlign: 'center' }}>Interés</Form.ControlLabel>
+                                                                <RadioGroup
+                                                                    name="interes"
+                                                                    value={newCliente.interes}
+                                                                    onChange={handleInteresChange}
+                                                                >
+                                                                    <Radio value="comprar">Comprar</Radio>
+                                                                    <Radio value="alquilar">Alquilar</Radio>
+                                                                </RadioGroup>
+                                                            </Form.Group>
+
+                                                            <Form.Group controlId="rango_precios">
+                                                                <Form.ControlLabel style={{ textAlign: 'center' }}>Rango de Precios</Form.ControlLabel>
+                                                                <div className="flex justify-center gap-4 mt-4">
+                                                                    <Form.Group controlId="precio_minimo">
+                                                                        <Form.ControlLabel>Precio Mínimo (€)</Form.ControlLabel>
+                                                                        <Form.Control
+                                                                            type="number"
+                                                                            min={0}
+                                                                            value={newCliente.rango_precios[0]}
+                                                                            onChange={value => setNewComprador({ ...newCliente, rango_precios: [parseInt(value, 10), newCliente.rango_precios[1]] })}
+                                                                        />
+                                                                    </Form.Group>
+                                                                    <Form.Group controlId="precio_maximo">
+                                                                        <Form.ControlLabel>Precio Máximo (€)</Form.ControlLabel>
+                                                                        <Form.Control
+                                                                            type="number"
+                                                                            min={newCliente.rango_precios[0]}
+                                                                            max={newCliente.interes === 'comprar' ? 1000000 : 2500}
+                                                                            value={newCliente.rango_precios[1]}
+                                                                            onChange={value => setNewComprador({ ...newCliente, rango_precios: [newCliente.rango_precios[0], parseInt(value, 10)] })}
+                                                                        />
+                                                                    </Form.Group>
+                                                                </div>
+                                                            </Form.Group>
+                                                        </div>
+                                                    </div>
+                                                )}
                                                 <Form.Group>
                                                     <Form.ControlLabel>Nombre</Form.ControlLabel>
-                                                    <Form.Control name="nombre" value={newCliente.nombre} onChange={value => setNewCliente({ ...newCliente, nombre: value })} />
+                                                    <Form.Control name="nombre" value={newCliente.nombre} onChange={value => {
+                                                        setNewCliente({ ...newCliente, nombre: value });
+                                                    }} />
                                                 </Form.Group>
 
                                                 <Form.Group>
                                                     <Form.ControlLabel>Apellido</Form.ControlLabel>
-                                                    <Form.Control name="apellido" value={newCliente.apellido} onChange={value => setNewCliente({ ...newCliente, apellido: value })} />
+                                                    <Form.Control name="apellido" value={newCliente.apellido} onChange={value => {
+                                                        setNewCliente({ ...newCliente, apellido: value });
+                                                    }} />
+                                                </Form.Group>
+                                                <Form.Group controlId="email">
+                                                    <Form.ControlLabel>Email</Form.ControlLabel>
+                                                    <Form.Control name="email" value={newCliente.email} onChange={value => {
+                                                        setNewCliente({ ...newCliente, email: value });
+                                                    }} />
                                                 </Form.Group>
                                                 <Form.Group>
                                                     <Form.ControlLabel>Teléfono</Form.ControlLabel>
-                                                    <Form.Control name="telefono" value={newCliente.telefono} onChange={value => setNewCliente({ ...newCliente, telefono: value })} />
+                                                    <Form.Control name="telefono" value={newCliente.telefono} onChange={value => {
+                                                        setNewCliente({ ...newCliente, telefono: value });
+                                                    }} />
                                                 </Form.Group>
 
                                                 <Form.Group>
                                                     <Form.ControlLabel>DNI</Form.ControlLabel>
-                                                    <Form.Control name="dni" value={newCliente.dni} onChange={value => setNewCliente({ ...newCliente, dni: value })} />
+                                                    <Form.Control name="dni" value={newCliente.dni} onChange={value => {
+                                                        setNewCliente({ ...newCliente, dni: value });
+                                                    }}
+                                                    />
                                                 </Form.Group>
+
+
 
                                                 <Form.Group>
                                                     <Form.ControlLabel>Tipo de Cliente</Form.ControlLabel>
                                                     <SelectPicker
                                                         data={[
-                                                            { label: 'Informador', value: 'informador' },
                                                             { label: 'Propietario', value: 'propietario' },
-                                                            { label: 'Co-propietario', value: 'copropietario' },
                                                             { label: 'Inquilino', value: 'inquilino' },
                                                         ]}
                                                         value={newCliente.tipo_de_cliente}
@@ -564,33 +631,6 @@ export default function Clientes({ isAdmin }) {
                                                         block
                                                     />
                                                 </Form.Group>
-
-                                                {newCliente.tipo_de_cliente.includes('informador') && (
-                                                    <Form.Group>
-                                                        <Form.ControlLabel>Inmuebles Asociados (Informador)</Form.ControlLabel>
-                                                        <div style={{ marginBottom: '10px' }}>
-                                                            {newCliente.inmuebles_asociados_informador.map(item => (
-                                                                <Tag
-                                                                    key={item.id}
-                                                                    closable
-                                                                    onClose={() => handleRemoveInmueble('informador', item.id)}
-                                                                    style={{ marginRight: '5px', marginBottom: '5px' }}
-                                                                >
-                                                                    {item.direccion}
-                                                                </Tag>
-                                                            ))}
-                                                        </div>
-                                                        <SelectPicker
-                                                            data={inmuebles.map(inmueble => ({ label: inmueble.direccion, value: inmueble.id }))}
-                                                            onSearch={handleSearchInmuebles}
-                                                            onChange={(value) => handleSelectInmueble('informador', value, 'new')}
-                                                            searchable
-                                                            block
-                                                            menuStyle={{ maxHeight: 200, overflowY: 'auto' }}
-                                                            placement="bottomEnd"
-                                                        />
-                                                    </Form.Group>
-                                                )}
 
                                                 {newCliente.tipo_de_cliente.includes('propietario') && (
                                                     <Form.Group>
@@ -611,33 +651,6 @@ export default function Clientes({ isAdmin }) {
                                                             data={inmuebles.map(inmueble => ({ label: inmueble.direccion, value: inmueble.id }))}
                                                             onSearch={handleSearchInmuebles}
                                                             onChange={(value) => handleSelectInmueble('propietario', value, 'new')}
-                                                            searchable
-                                                            block
-                                                            menuStyle={{ maxHeight: 200, overflowY: 'auto' }}
-                                                            placement="bottomEnd"
-                                                        />
-                                                    </Form.Group>
-                                                )}
-
-                                                {newCliente.tipo_de_cliente.includes('copropietario') && (
-                                                    <Form.Group>
-                                                        <Form.ControlLabel>Inmuebles Asociados (Co-propietario)</Form.ControlLabel>
-                                                        <div style={{ marginBottom: '10px' }}>
-                                                            {newCliente.inmuebles_asociados_copropietario.map(item => (
-                                                                <Tag
-                                                                    key={item.id}
-                                                                    closable
-                                                                    onClose={() => handleRemoveInmueble('copropietario', item.id)}
-                                                                    style={{ marginRight: '5px', marginBottom: '5px' }}
-                                                                >
-                                                                    {item.direccion}
-                                                                </Tag>
-                                                            ))}
-                                                        </div>
-                                                        <SelectPicker
-                                                            data={inmuebles.map(inmueble => ({ label: inmueble.direccion, value: inmueble.id }))}
-                                                            onSearch={handleSearchInmuebles}
-                                                            onChange={(value) => handleSelectInmueble('copropietario', value, 'new')}
                                                             searchable
                                                             block
                                                             menuStyle={{ maxHeight: 200, overflowY: 'auto' }}
@@ -673,19 +686,33 @@ export default function Clientes({ isAdmin }) {
                                                     </Form.Group>
                                                 )}
 
-                                                <Button appearance="primary" onClick={handleAddCliente} style={{ marginTop: '20px' }}>
-                                                    Agregar Cliente
-                                                </Button>
+                                                <Form.Group controlId="informador-toggle" className="w-full flex flex-col gap-4 justify-center items-center">
+                                                    <p>¿Es un informador?</p>
+                                                    <Toggle
+                                                        checkedChildren="Informador"
+                                                        unCheckedChildren="No Informador"
+                                                        defaultChecked={newCliente.informador}
+                                                        onChange={(checked) => handleInformador(checked)}
+                                                        size={'lg'}
+                                                    />
+                                                </Form.Group>
+
+                                                <div className="flex flex-col gap-4 justify-center items-center my-10">
+                                                    <Button appearance="primary" onClick={handleAddCliente} style={{ marginTop: '20px' }}>
+                                                        Agregar Cliente
+                                                    </Button>
+                                                </div>
+
                                             </Form>
                                         </Panel>
                                     </PanelGroup>
                                 </div>
                             </Tabs.Tab>
-                            <Tabs.Tab eventKey="compradores" title="Compradores">
+                            <Tabs.Tab eventKey="compradores" title="Pedidos">
                                 <div className="p-4 w-full">
                                     <PanelGroup accordion bordered>
                                         {/* Panel para visualizar la tabla de compradores */}
-                                        <Panel header="Compradores" eventKey="1" className="bg-slate-50 rounded-lg shadow-xl">
+                                        <Panel header="Pedidos" eventKey="1" className="bg-slate-50 rounded-lg shadow-xl">
                                             <Table data={compradores} autoHeight>
                                                 <Column width={200} align="center">
                                                     <HeaderCell>Nombre</HeaderCell>
@@ -721,7 +748,7 @@ export default function Clientes({ isAdmin }) {
                                                 <Column width={200} align="center">
                                                     <HeaderCell>Rango de Precios</HeaderCell>
                                                     <Cell>
-                                                        {rowData => `${rowData.rango_precios.min}€ - ${rowData.rango_precios.max}€`}
+                                                        {rowData => `${rowData.rango_precios[0]}€ - ${rowData.rango_precios[1]}€`}
                                                     </Cell>
                                                 </Column>
 
@@ -754,69 +781,7 @@ export default function Clientes({ isAdmin }) {
                                             </Table>
                                         </Panel>
 
-                                        {/* Panel para agregar nuevo comprador */}
-                                        <Panel header="Agregar Nuevo Comprador" eventKey="2" className="bg-slate-50 rounded-lg shadow-xl">
-                                            <Form fluid>
-                                                <Form.Group controlId="nombre">
-                                                    <Form.ControlLabel>Nombre</Form.ControlLabel>
-                                                    <Form.Control name="nombre" value={newComprador.nombre} onChange={value => setNewComprador({ ...newComprador, nombre: value })} required />
-                                                </Form.Group>
 
-                                                <Form.Group controlId="apellido">
-                                                    <Form.ControlLabel>Apellido</Form.ControlLabel>
-                                                    <Form.Control name="apellido" value={newComprador.apellido} onChange={value => setNewComprador({ ...newComprador, apellido: value })} required />
-                                                </Form.Group>
-
-                                                <Form.Group controlId="email">
-                                                    <Form.ControlLabel>Email</Form.ControlLabel>
-                                                    <Form.Control name="email" value={newComprador.email} onChange={value => setNewComprador({ ...newComprador, email: value })} required />
-                                                </Form.Group>
-
-                                                <Form.Group controlId="dni">
-                                                    <Form.ControlLabel>DNI</Form.ControlLabel>
-                                                    <Form.Control name="dni" value={newComprador.dni} onChange={value => setNewComprador({ ...newComprador, dni: value })} />
-                                                </Form.Group>
-
-                                                {/* Nuevo grupo de formulario para el campo Teléfono */}
-                                                <Form.Group controlId="telefono">
-                                                    <Form.ControlLabel>Teléfono</Form.ControlLabel>
-                                                    <Form.Control name="telefono" value={newComprador.telefono} onChange={value => setNewComprador({ ...newComprador, telefono: value })} />
-                                                </Form.Group>
-
-                                                <Form.Group controlId="interes">
-                                                    <Form.ControlLabel>Interés</Form.ControlLabel>
-                                                    <RadioGroup
-                                                        name="interes"
-                                                        value={newComprador.interes}
-                                                        onChange={handleInteresChange}
-                                                    >
-                                                        <Radio value="comprar">Comprar</Radio>
-                                                        <Radio value="alquilar">Alquilar</Radio>
-                                                    </RadioGroup>
-                                                </Form.Group>
-
-                                                <Form.Group controlId="rango_precios">
-                                                    <Form.ControlLabel style={{ textAlign: 'center' }}>Rango de Precios</Form.ControlLabel>
-                                                    {/* Display selected price range above the slider */}
-                                                    <div style={{ marginBottom: '20px', width: '100%', textAlign: 'center', marginTop: '20px' }}>
-                                                        <strong>
-                                                            {`${newComprador.rango_precios[0]}€ - ${newComprador.rango_precios[1]}€`}
-                                                        </strong>
-                                                    </div>
-                                                    <RangeSlider
-                                                        min={newComprador.interes === 'comprar' ? 0 : 0}
-                                                        max={newComprador.interes === 'comprar' ? 1000000 : 2500}
-                                                        step={newComprador.interes === 'comprar' ? 10000 : 50}
-                                                        value={newComprador.rango_precios}
-                                                        onChange={value => setNewComprador({ ...newComprador, rango_precios: value })}
-                                                    />
-                                                </Form.Group>
-
-                                                <Button appearance="primary" onClick={handleAddComprador} style={{ marginTop: '20px' }}>
-                                                    Agregar Comprador
-                                                </Button>
-                                            </Form>
-                                        </Panel>
 
                                     </PanelGroup>
                                 </div>
@@ -835,6 +800,7 @@ export default function Clientes({ isAdmin }) {
                             <p><strong>DNI:</strong> {selectedCliente.dni}</p>
                             <p><strong>Teléfono:</strong> {selectedCliente.telefono}</p>
 
+
                             <div className="flex flex-row gap-2 mt-[10px]">
                                 <p><strong>Tipo de Cliente:</strong></p>
                                 <div>
@@ -844,8 +810,7 @@ export default function Clientes({ isAdmin }) {
                                             color={
                                                 tipo === 'propietario' ? 'green' :
                                                     tipo === 'copropietario' ? 'blue' :
-                                                        tipo === 'inquilino' ? 'orange' :
-                                                            'cyan'
+                                                        tipo === 'inquilino' ? 'orange' : ''
                                             }
                                             style={{ marginBottom: '5px', marginRight: '5px' }}
                                         >
@@ -854,8 +819,15 @@ export default function Clientes({ isAdmin }) {
                                     ))}
                                 </div>
                             </div>
-
-                            {['informador', 'propietario', 'copropietario', 'inquilino'].map(tipo => (
+                            {selectedCliente.informador && (
+                                <div className="flex flex-row gap-2 mt-[10px]">
+                                    <p><strong>Informador:</strong></p>
+                                    <Tag color="cyan" style={{ marginBottom: '5px', marginRight: '5px' }}>
+                                        Informador
+                                    </Tag>
+                                </div>
+                            )}
+                            {['propietario', 'inquilino'].map(tipo => (
                                 selectedCliente.tipo_de_cliente.includes(tipo) && (
                                     <div key={tipo} style={{ marginBottom: '20px' }}>
                                         <div
@@ -939,31 +911,44 @@ export default function Clientes({ isAdmin }) {
                             <Form fluid>
                                 <Form.Group>
                                     <Form.ControlLabel>Nombre</Form.ControlLabel>
-                                    <Form.Control name="nombre" value={editCliente.nombre} onChange={value => setEditCliente({ ...editCliente, nombre: value })} />
+                                    <Form.Control name="nombre" value={editCliente.nombre} onChange={value => {
+                                        setEditCliente({ ...editCliente, nombre: value });
+                                    }} />
                                 </Form.Group>
 
                                 <Form.Group>
                                     <Form.ControlLabel>Apellido</Form.ControlLabel>
-                                    <Form.Control name="apellido" value={editCliente.apellido} onChange={value => setEditCliente({ ...editCliente, apellido: value })} />
+                                    <Form.Control name="apellido" value={editCliente.apellido} onChange={value => {
+                                        setEditCliente({ ...editCliente, apellido: value });
+                                    }} />
                                 </Form.Group>
 
                                 <Form.Group>
                                     <Form.ControlLabel>DNI</Form.ControlLabel>
-                                    <Form.Control name="dni" value={editCliente.dni} onChange={value => setEditCliente({ ...editCliente, dni: value })} />
+                                    <Form.Control name="dni" value={editCliente.dni} onChange={value => {
+                                        setEditCliente({ ...editCliente, dni: value });
+                                    }} />
                                 </Form.Group>
 
                                 <Form.Group>
                                     <Form.ControlLabel>Teléfono</Form.ControlLabel>
-                                    <Form.Control name="telefono" value={editCliente.telefono} onChange={value => setEditCliente({ ...editCliente, telefono: value })} />
+                                    <Form.Control name="telefono" value={editCliente.telefono} onChange={value => {
+                                        setEditCliente({ ...editCliente, telefono: value });
+                                    }} />
+                                </Form.Group>
+
+                                <Form.Group>
+                                    <Form.ControlLabel>Email</Form.ControlLabel>
+                                    <Form.Control name="email" value={editCliente.email} onChange={value => {
+                                        setEditCliente({ ...editCliente, email: value });
+                                    }} />
                                 </Form.Group>
 
                                 <Form.Group>
                                     <Form.ControlLabel>Tipo de Cliente</Form.ControlLabel>
                                     <SelectPicker
                                         data={[
-                                            { label: 'Informador', value: 'informador' },
                                             { label: 'Propietario', value: 'propietario' },
-                                            { label: 'Co-propietario', value: 'copropietario' },
                                             { label: 'Inquilino', value: 'inquilino' },
                                         ]}
                                         value={editCliente.tipo_de_cliente}
@@ -974,33 +959,6 @@ export default function Clientes({ isAdmin }) {
                                     />
                                 </Form.Group>
 
-                                {/* Secciones para inmuebles asociados según tipo de cliente */}
-                                {editCliente.tipo_de_cliente.includes('informador') && (
-                                    <Form.Group>
-                                        <Form.ControlLabel>Inmuebles Asociados (Informador)</Form.ControlLabel>
-                                        <div style={{ marginBottom: '10px' }}>
-                                            {editCliente.inmuebles_asociados_informador.map(item => (
-                                                <Tag
-                                                    key={item.id}
-                                                    closable
-                                                    onClose={() => handleRemoveInmueble('informador', item.id, 'edit')}
-                                                    style={{ marginRight: '5px', marginBottom: '5px' }}
-                                                >
-                                                    {item.direccion}
-                                                </Tag>
-                                            ))}
-                                        </div>
-                                        <SelectPicker
-                                            data={inmuebles.map(inmueble => ({ label: inmueble.direccion, value: inmueble.id }))}
-                                            onSearch={handleSearchInmuebles}
-                                            onChange={(value) => handleSelectInmueble('informador', value, 'edit')}
-                                            searchable
-                                            block
-                                            menuStyle={{ maxHeight: 200, overflowY: 'auto' }}
-                                            placement="topStart"
-                                        />
-                                    </Form.Group>
-                                )}
 
                                 {editCliente.tipo_de_cliente.includes('propietario') && (
                                     <Form.Group>
@@ -1021,33 +979,6 @@ export default function Clientes({ isAdmin }) {
                                             data={inmuebles.map(inmueble => ({ label: inmueble.direccion, value: inmueble.id }))}
                                             onSearch={handleSearchInmuebles}
                                             onChange={(value) => handleSelectInmueble('propietario', value, 'edit')}
-                                            searchable
-                                            block
-                                            menuStyle={{ maxHeight: 200, overflowY: 'auto' }}
-                                            placement="topStart"
-                                        />
-                                    </Form.Group>
-                                )}
-
-                                {editCliente.tipo_de_cliente.includes('copropietario') && (
-                                    <Form.Group>
-                                        <Form.ControlLabel>Inmuebles Asociados (Co-propietario)</Form.ControlLabel>
-                                        <div style={{ marginBottom: '10px' }}>
-                                            {editCliente.inmuebles_asociados_copropietario.map(item => (
-                                                <Tag
-                                                    key={item.id}
-                                                    closable
-                                                    onClose={() => handleRemoveInmueble('copropietario', item.id, 'edit')}
-                                                    style={{ marginRight: '5px', marginBottom: '5px' }}
-                                                >
-                                                    {item.direccion}
-                                                </Tag>
-                                            ))}
-                                        </div>
-                                        <SelectPicker
-                                            data={inmuebles.map(inmueble => ({ label: inmueble.direccion, value: inmueble.id }))}
-                                            onSearch={handleSearchInmuebles}
-                                            onChange={(value) => handleSelectInmueble('copropietario', value, 'edit')}
                                             searchable
                                             block
                                             menuStyle={{ maxHeight: 200, overflowY: 'auto' }}
@@ -1082,7 +1013,68 @@ export default function Clientes({ isAdmin }) {
                                         />
                                     </Form.Group>
                                 )}
+                                <Form.Group controlId="informador-toggle" className="w-full flex flex-col gap-4 justify-center items-center">
+                                    <p>¿Es un informador?</p>
+                                    <Toggle
+                                        checkedChildren="Informador"
+                                        unCheckedChildren="No Informador"
+                                        defaultChecked={newCliente.informador}
+                                        onChange={(checked) => handleInformador(checked)}
+                                        size={'lg'}
+                                    />
+                                </Form.Group>
+                                <Form.Group controlId="pedido-toggle" className="w-full flex flex-col gap-4 justify-center items-center">
+                                    <p>¿Es un pedido?</p>
+                                    <Toggle
+                                        checkedChildren="Pedido"
+                                        unCheckedChildren="No Pedido"
+                                        defaultChecked={editCliente.pedido}
+                                        onChange={(checked) => handlePedidoEdit(checked)}
+                                        size={'lg'}
+                                    />
+                                </Form.Group>
+                                {editCliente.pedido && (
+                                    <div className="w-full flex flex-col gap-4 justify-center items-center mt-10">
+                                        <div className="w-full flex flex-row gap-32 justify-center items-start">
+                                            <Form.Group controlId="interes">
+                                                <Form.ControlLabel style={{ textAlign: 'center' }}>Interés</Form.ControlLabel>
+                                                <RadioGroup
+                                                    name="interes"
+                                                    value={editCliente.interes}
+                                                    onChange={handleInteresChangeEdit}
+                                                >
+                                                    <Radio value="comprar">Comprar</Radio>
+                                                    <Radio value="alquilar">Alquilar</Radio>
+                                                </RadioGroup>
+                                            </Form.Group>
 
+                                            <Form.Group controlId="rango_precios">
+                                                <Form.ControlLabel style={{ textAlign: 'center' }}>Rango de Precios</Form.ControlLabel>
+                                                <div className="flex justify-center gap-4 mt-4">
+                                                    <Form.Group controlId="precio_minimo">
+                                                        <Form.ControlLabel>Precio Mínimo (€)</Form.ControlLabel>
+                                                        <Form.Control
+                                                            type="number"
+                                                            min={0}
+                                                            value={editCliente.rango_precios[0]}
+                                                            onChange={value => setEditCliente({ ...editCliente, rango_precios: [parseInt(value, 10), editCliente.rango_precios[1]] })}
+                                                        />
+                                                    </Form.Group>
+                                                    <Form.Group controlId="precio_maximo">
+                                                        <Form.ControlLabel>Precio Máximo (€)</Form.ControlLabel>
+                                                        <Form.Control
+                                                            type="number"
+                                                            min={editCliente.rango_precios[0]}
+                                                            max={editCliente.interes === 'comprar' ? 1000000 : 2500}
+                                                            value={editCliente.rango_precios[1]}
+                                                            onChange={value => setEditCliente({ ...editCliente, rango_precios: [editCliente.rango_precios[0], parseInt(value, 10)] })}
+                                                        />
+                                                    </Form.Group>
+                                                </div>
+                                            </Form.Group>
+                                        </div>
+                                    </div>
+                                )}
                             </Form>
                         </Modal.Body>
 
@@ -1096,9 +1088,9 @@ export default function Clientes({ isAdmin }) {
                 {/* Modal for editing Comprador */}
                 {
                     editModalCompradorOpen && (
-                        <Modal open={editModalCompradorOpen} onHide={handleCloseEditModalComprador} size="lg">
+                        <Modal open={editModalCompradorOpen} onClose={handleCloseEditModalComprador} size="lg">
                             <Modal.Header>
-                                <Modal.Title style={{ fontSize: '1.5rem', fontWeight: 'bold', textAlign: 'center' }}>Editar Comprador</Modal.Title>
+                                <Modal.Title style={{ fontSize: '1.5rem', fontWeight: 'bold', textAlign: 'center' }}>Editar Pedido</Modal.Title>
                             </Modal.Header>
                             <Modal.Body style={{ padding: '35px', fontSize: '1rem', lineHeight: '1.5', display: 'flex', flexDirection: 'column', gap: '10px' }}>
                                 <Form fluid>
@@ -1190,11 +1182,11 @@ export default function Clientes({ isAdmin }) {
                                     </Form.Group>
 
                                 </Form>
+                                <Modal.Footer style={{ display: 'flex', justifyContent: 'center', gap: '10px' }}>
+                                    <Button onClick={handleUpdateComprador} appearance="primary">Actualizar</Button>
+                                    <Button onClick={handleCloseEditModalComprador} appearance="subtle">Cerrar</Button>
+                                </Modal.Footer>
                             </Modal.Body>
-                            <Modal.Footer style={{ display: 'flex', justifyContent: 'center', gap: '10px' }}>
-                                <Button onClick={handleUpdateComprador} appearance="primary">Actualizar</Button>
-                                <Button onClick={handleCloseEditModalComprador} appearance="subtle">Cerrar</Button>
-                            </Modal.Footer>
                         </Modal>
                     )
                 }

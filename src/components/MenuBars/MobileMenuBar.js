@@ -3,11 +3,29 @@ import { useRouter } from 'next/router';
 import Link from 'next/link';
 import { FaHome, FaSearch, FaMapMarkedAlt, FaTasks, FaNewspaper, FaCog, FaEllipsisV, FaSignOutAlt } from 'react-icons/fa';
 import { Icon } from '@iconify/react';
+import Cookies from 'js-cookie';
+import axios from 'axios';
+import Toastify from 'toastify-js';
 
 const MobileMenuBar = () => {
     const router = useRouter();
     const [isDesplegarMoreMenu, setIsDesplegarMoreMenu] = useState(false);
     const [currentPage, setCurrentPage] = useState('');
+
+    const showToast = (message, backgroundColor) => {
+        Toastify({
+            text: message,
+            duration: 2500,
+            gravity: 'top',
+            position: 'center',
+            stopOnFocus: true,
+            style: {
+                borderRadius: '10px',
+                backgroundImage: backgroundColor,
+                textAlign: 'center',
+            },
+        }).showToast();
+    };
 
     useEffect(() => {
         const currentURL = window.location.href;
@@ -29,14 +47,23 @@ const MobileMenuBar = () => {
     }, []);
 
     const handleLogout = async () => {
+        const userId = Cookies.get('user_id');
+        const sessionId = Cookies.get('sessionID');
+        if (!userId || !sessionId) {
+            console.error('Logout failed: Missing user_id or sessionID');
+            return;
+        }
+
         try {
-            const { success, message } = await logout();
-            if (success) {
+            const response = await axios.post('/api/logout', { user_id: userId, session_id: sessionId });
+            if (response.data.status === 'success') {
+                Cookies.remove('user_id');
+                Cookies.remove('admin');
+                Cookies.remove('sessionID');
+                showToast('Sesión cerrada', 'linear-gradient(to right bottom, #c62828, #b92125, #ac1a22, #a0131f, #930b1c)');
                 router.push('/');
-                localStorage.setItem('toastMessage', JSON.stringify({
-                    message: 'Sesión cerrada',
-                    style: 'linear-gradient(to right bottom, #c62828, #b92125, #ac1a22, #a0131f, #930b1c)'
-                }));
+            } else {
+                console.error('Logout failed:', response.data.message);
             }
         } catch (error) {
             console.error('Logout error:', error);

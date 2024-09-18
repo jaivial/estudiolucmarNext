@@ -15,13 +15,13 @@ export default async function handler(req, res) {
             const db = client.db('inmoprocrm');
 
             // Obtén la información del comprador
-            const comprador = await db.collection('compradores').findOne({ _id: new ObjectId(comprador_id) });
+            const comprador = await db.collection('clientes').findOne({ _id: new ObjectId(comprador_id) });
 
             if (!comprador) {
                 return res.status(404).json({ message: 'Comprador no encontrado' });
             }
 
-            const { min, max } = comprador.rango_precios;
+            const [min, max] = comprador.rango_precios;
 
             // Determina el tipo de encargo según el interés del comprador
             let tipoEncargo;
