@@ -7,7 +7,7 @@ export default async function handler(req, res) {
         return res.status(405).json({ error: 'Method Not Allowed' });
     }
 
-    const { encargo_id, fecha, comercial, tipoEncargo, comision, cliente, precio, tipoComision } = req.body;
+    const { encargo_id, fecha, comercial, tipoEncargo, comision, cliente, precio, tipoComision, fullCliente } = req.body;
 
     console.log('encargo_id', encargo_id);
     console.log('fecha', fecha);
@@ -40,7 +40,8 @@ export default async function handler(req, res) {
                     comision_encargo: parseInt(comision, 10),
                     cliente_id: parseInt(cliente, 10),
                     precio_1: parseInt(precio, 10),
-                    tipo_comision_encargo: tipoComision
+                    tipo_comision_encargo: tipoComision,
+                    fullCliente: fullCliente
                 }
             }
         );
