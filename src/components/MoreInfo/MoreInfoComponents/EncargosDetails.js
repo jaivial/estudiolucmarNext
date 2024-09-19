@@ -25,6 +25,7 @@ import Skeleton from 'react-loading-skeleton'
 import 'react-loading-skeleton/dist/skeleton.css'
 const { Column, HeaderCell, Cell } = Table;
 import { Icon } from '@iconify/react';
+import './encargosdetails.css';
 
 
 const showToast = (message, backgroundColor) => {
@@ -43,7 +44,7 @@ const showToast = (message, backgroundColor) => {
     }).showToast();
 };
 
-const EncargosDetails = ({ data, setOnAddEncargoRefreshKey, onAddEncargoRefreshKey, fetchData, currentPage, searchTerm }) => {
+const EncargosDetails = ({ data, setOnAddEncargoRefreshKey, onAddEncargoRefreshKey, fetchData, currentPage, searchTerm, screenWidth }) => {
     const [isOpen, setIsOpen] = useState(false);
     const [isPopupOpen, setIsPopupOpen] = useState(false);
     const [encargos, setEncargos] = useState([]);
@@ -71,6 +72,10 @@ const EncargosDetails = ({ data, setOnAddEncargoRefreshKey, onAddEncargoRefreshK
     const [verMásClienteEncargo, setVerMásClienteEncargo] = useState(false);
     const [infoClienteMathingEncargo, setInfoClienteMathingEncargo] = useState(null);
     const [lodingMoreInfoClienteMatchingEncargo, setLodingMoreInfoClienteMatchingEncargo] = useState(false);
+
+
+
+
 
     const fetchEncargos = async () => {
         if (data.inmueble.encargoState === false) {
@@ -352,7 +357,7 @@ const EncargosDetails = ({ data, setOnAddEncargoRefreshKey, onAddEncargoRefreshK
                                 <div className="p-4">
                                     <div className="py-1 px-2 relative">
                                         {encargos.length > 0 ? (
-                                            <div className="py-2 my-3 flex flex-col items-center gap-2">
+                                            <div className="py-2 my-3 flex flex-col items-center gap-2 md:grid md:grid-cols-2 md:gap-4">
                                                 <div className="flex items-center gap-2 flex-col w-full">
                                                     <IoCalendarNumber className="text-gray-900 text-3xl" />
                                                     <p className="text-base text-gray-950 py-1 text-center">{formatDate(encargos[0].encargo_fecha)}</p>
@@ -536,21 +541,30 @@ const EncargosDetails = ({ data, setOnAddEncargoRefreshKey, onAddEncargoRefreshK
                                         <Skeleton count={10} height={30} />
                                     ) : (
                                         <Table height={300} data={matchingClientesEncargos}>
-                                            <Column width={190} align="center" fixed>
+                                            <Column flexGrow={1} align="center" >
                                                 <HeaderCell>Nombre</HeaderCell>
                                                 <Cell>
                                                     {(rowData) => `${rowData.nombre} ${rowData.apellido}`}
                                                 </Cell>
                                             </Column>
-                                            <Column width={100} align='center'>
-                                                <HeaderCell>Teléfono</HeaderCell>
-                                                <Cell dataKey="telefono" />
-                                            </Column>
-                                            <Column width={190} align='center'>
-                                                <HeaderCell>Email</HeaderCell>
-                                                <Cell dataKey="email" />
-                                            </Column>
-                                            <Column width={130} align='center'>
+                                            {screenWidth >= 640 && (
+                                                <>
+                                                    <Column flexGrow={1} align='center' className='column-telefono'>
+                                                        <HeaderCell>Teléfono</HeaderCell>
+                                                        <Cell dataKey="telefono" />
+                                                    </Column>
+
+                                                </>
+                                            )}
+                                            {screenWidth >= 768 && (
+                                                <>
+                                                    <Column flexGrow={1} align='center' className='column-email'>
+                                                        <HeaderCell>Email</HeaderCell>
+                                                        <Cell dataKey="email" />
+                                                    </Column>
+                                                </>
+                                            )}
+                                            <Column flexGrow={1} align='center'>
                                                 <HeaderCell>Acciones</HeaderCell>
                                                 <Cell>
                                                     {rowData => (
@@ -703,10 +717,10 @@ const EncargosDetails = ({ data, setOnAddEncargoRefreshKey, onAddEncargoRefreshK
                                     </Modal.Body>
                                 </Modal>
                             </Tabs.Tab>
-                        </Tabs>
-                    </Accordion.Panel>
-                </Accordion>
-            </CustomProvider>
+                        </Tabs >
+                    </Accordion.Panel >
+                </Accordion >
+            </CustomProvider >
         )
     );
 };

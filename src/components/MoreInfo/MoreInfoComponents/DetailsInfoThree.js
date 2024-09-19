@@ -129,7 +129,7 @@ const DetailsInfoThree = ({ data }) => {
 
     return (
         <div className="p-4">
-            <div className="flex flex-col gap-4">
+            <div className="flex flex-col gap-4 md:grid md:grid-cols-2 md:gap-4">
                 {/* Left Column: Basic Characteristics */}
                 <div className="bg-white p-4 px-6 border border-gray-300 rounded-md">
                     <div>

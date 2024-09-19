@@ -22,7 +22,7 @@ import 'rsuite/dist/rsuite.min.css';
 
 import SmallLoadingScreen from '../LoadingScreen/SmallLoadingScreen';
 
-const ItemDetails = ({ id, onClose, showModal, setShowModal, fetchData, currentPage, searchTerm, admin }) => {
+const ItemDetails = ({ id, onClose, showModal, setShowModal, fetchData, currentPage, searchTerm, admin, screenWidth }) => {
     const [data, setData] = useState(null);
     const [images, setImages] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -239,12 +239,12 @@ const ItemDetails = ({ id, onClose, showModal, setShowModal, fetchData, currentP
                     </Panel>
 
                 )}
-                <ClientesAsociados inmuebleId={data.inmueble.id} />
                 <DetailsInfoTwo data={data} descripcion={descripcion} setDescripcion={setDescripcion} newDescripcion={newDescripcion} setNewDescripcion={setNewDescripcion} />
+                <ClientesAsociados inmuebleId={data.inmueble.id} />
                 <DetailsInfoThree data={data} />
                 <ComentariosDetails data={data} />
                 <NoticiasDetails data={data} setOnAddNoticiaRefreshKey={setOnAddNoticiaRefreshKey} onAddNoticiaRefreshKey={onAddNoticiaRefreshKey} fetchData={fetchData} currentPage={currentPage} searchTerm={searchTerm} />
-                <EncargosDetails data={data} setOnAddEncargoRefreshKey={setOnAddEncargoRefreshKey} onAddEncargoRefreshKey={onAddEncargoRefreshKey} fetchData={fetchData} currentPage={currentPage} searchTerm={searchTerm} />
+                <EncargosDetails data={data} setOnAddEncargoRefreshKey={setOnAddEncargoRefreshKey} onAddEncargoRefreshKey={onAddEncargoRefreshKey} fetchData={fetchData} currentPage={currentPage} searchTerm={searchTerm} screenWidth={screenWidth} />
                 <div className='flex justify-center gap-4 mt-4 pb-[50px] z-[10]' >
                     <Button onClick={onClose} appearance="default" style={{ fontSize: '1rem', padding: '10px 20px' }}>Cerrar</Button>
                 </div>
