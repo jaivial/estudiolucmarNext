@@ -117,35 +117,7 @@ const AddInmueblePopup = ({ showAddNewInmueble, setShowAddNewInmueble, fetchData
                         },
                         onClick: function () { }, // Callback after click
                     }).showToast();
-                    // axios
-                    //     .get('http://localhost:8000/backend/zonas/checkInmuebleInZone.php')
-                    //     .then((response) => {
-                    //         console.log(response.data);
-                    //         if (response.data) {
-                    //             Toastify({
-                    //                 text: 'Inmueble agregado.',
-                    //                 duration: 2500,
-                    //                 destination: 'https://github.com/apvarun/toastify-js',
-                    //                 newWindow: true,
-                    //                 close: false,
-                    //                 gravity: 'top', // `top` or `bottom`
-                    //                 position: 'center', // `left`, `center` or `right`
-                    //                 stopOnFocus: true, // Prevents dismissing of toast on hover
-                    //                 style: {
-                    //                     borderRadius: '10px',
-                    //                     backgroundImage: 'linear-gradient(to right bottom, #00603c, #006f39, #007d31, #008b24, #069903)',
-                    //                     textAlign: 'center',
-                    //                 },
-                    //                 onClick: function () { }, // Callback after click
-                    //             }).showToast();
-                    //             setShowAddNewInmueble(false);
-                    //             fetchData(currentPage, searchTerm);
-                    //             fetchParentsAndChilds();
-                    //         }
-                    //     })
-                    //     .catch((error) => {
-                    //         console.error('Error fetching data:', error);
-                    //     });
+
                     setShowAddNewInmueble(false);
                     fetchData(currentPage, searchTerm);
                     fetchParentsAndChilds();
