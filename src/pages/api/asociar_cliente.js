@@ -15,11 +15,25 @@ export default async function handler(req, res) {
             inquilino
         } = req.body;
 
+
+        console.log('inmuebleId', inmuebleId);
+        console.log('inmuebleDireccion', inmuebleDireccion);
+        console.log('pedido', pedido);
+        console.log('clientsToAssociate', clientsToAssociate);
+        console.log('clientsToAssociateInformador', clientsToAssociateInformador);
+        console.log('clientsToAssociateInteres', clientsToAssociateInteres);
+        console.log('clientsToAssociateRangoPrecios', clientsToAssociateRangoPrecios);
+        console.log('propietario', propietario);
+        console.log('inquilino', inquilino);
+
         try {
             const client = await clientPromise;
             const db = client.db('inmoprocrm');
 
             const updateFields = {};
+
+            let inmuebles_asociados_propietario_toAdd = {};
+            let inmuebles_asociados_inquilino_toAdd = {};
 
             // Update interes and rango_precios only if pedido is true
             if (pedido) {
@@ -37,29 +51,49 @@ export default async function handler(req, res) {
 
             // If propietario is true, add to inmuebles_asociados_propietario array
             if (propietario) {
-                updateFields.inmuebles_asociados_propietario = {
-                    $push: {
-                        id: inmuebleId,
-                        direccion: inmuebleDireccion,
-                    }
+                inmuebles_asociados_propietario_toAdd = {
+                    id: inmuebleId,
+                    direccion: inmuebleDireccion,
                 };
             }
 
             // If inquilino is true, add to inmuebles_asociados_inquilino array
             if (inquilino) {
-                updateFields.inmuebles_asociados_inquilino = {
-                    $push: {
-                        id: inmuebleId,
-                        direccion: inmuebleDireccion,
-                    }
+                inmuebles_asociados_inquilino_toAdd = {
+                    id: inmuebleId,
+                    direccion: inmuebleDireccion,
                 };
             }
+
+            console.log('inmuebles_asociados_propietario_toAdd', inmuebles_asociados_propietario_toAdd);
+            console.log('inmuebles_asociados_inquilino_toAdd', inmuebles_asociados_inquilino_toAdd);
 
             // Perform the update on the specific cliente
             const result = await db.collection('clientes').updateOne(
                 { _id: new ObjectId(clientsToAssociate) },  // Find the document by _id using new ObjectId
-                { $set: updateFields }        // Apply the update
+                { $set: updateFields },
             );
+
+
+            if (inmuebles_asociados_inquilino_toAdd.id) {
+                await db.collection('clientes').updateOne(
+                    {
+                        _id: new ObjectId(clientsToAssociate),
+                        'inmuebles_asociados_inquilino.id': { $ne: inmuebles_asociados_inquilino_toAdd.id }
+                    },
+                    { $push: { 'inmuebles_asociados_inquilino': inmuebles_asociados_inquilino_toAdd } }
+                );
+            }
+            if (inmuebles_asociados_propietario_toAdd.id) {
+                await db.collection('clientes').updateOne(
+                    {
+                        _id: new ObjectId(clientsToAssociate),
+                        'inmuebles_asociados_propietario.id': { $ne: inmuebles_asociados_propietario_toAdd.id }
+                    },
+                    { $push: { 'inmuebles_asociados_propietario': inmuebles_asociados_propietario_toAdd } }
+                );
+            }
+
 
             if (result.matchedCount === 0) {
                 res.status(404).json({ message: 'Cliente not found' });

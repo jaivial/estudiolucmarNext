@@ -1,5 +1,5 @@
 import React, { useState, useEffect, use } from 'react';
-import { Accordion, Tag, Button, SelectPicker, Modal, IconButton, Radio, RadioGroup, Toggle, Form, Grid, Checkbox, InputNumber } from 'rsuite';
+import { Accordion, Tag, Button, SelectPicker, Modal, IconButton, Radio, RadioGroup, Toggle, Form, Grid, TagPicker, InputNumber } from 'rsuite';
 import axios from 'axios';
 import { Close } from '@rsuite/icons';
 import Toastify from 'toastify-js';
@@ -187,12 +187,13 @@ const ClientesAsociados = ({ inmuebleId, inmuebleDireccion }) => {
     };
 
     const handleAsociarCliente = async () => {
+        console.log(inmuebleId, inmuebleDireccion, pedido, clientsToAssociate._id, clientsToAssociateInformador, clientsToAssociateInteres, clientsToAssociateRangoPrecios, propietario, inquilino);
         try {
             const response = await axios.post('/api/asociar_cliente', {
                 inmuebleId: inmuebleId,
                 inmuebleDireccion: inmuebleDireccion,
                 pedido: pedido,
-                clientsToAssociate: clientsToAssociate,
+                clientsToAssociate: clientsToAssociate._id,
                 clientsToAssociateInformador: clientsToAssociateInformador,
                 clientsToAssociateInteres: clientsToAssociateInteres,
                 clientsToAssociateRangoPrecios: clientsToAssociateRangoPrecios,
@@ -257,6 +258,17 @@ const ClientesAsociados = ({ inmuebleId, inmuebleDireccion }) => {
     useEffect(() => {
         console.log('newComprador', newComprador);
     }, [newComprador]);
+    useEffect(() => {
+        console.log('propietario', propietario);
+    }, [propietario]);
+    useEffect(() => {
+        console.log('inquilino', inquilino);
+    }, [inquilino]);
+
+    const handlechangeInquilino = (value) => {
+        setInquilino(value);
+        console.log('value', value);
+    };
 
     return (
         <Accordion defaultActiveKey={['0']} className='w-auto ml-[16px] mr-[16px] mt-[20px] border-1 border-gray-300 bg-gray-100 rounded-lg shadow-lg'>
@@ -296,10 +308,19 @@ const ClientesAsociados = ({ inmuebleId, inmuebleDireccion }) => {
                         )}
                         {clientsToAssociate.client_id && (
                             <>
-                                <div>
-                                    <Checkbox checked={inquilino} onChange={(checked) => setInquilino(checked)}>Inquilino</Checkbox>
-                                    <Checkbox checked={propietario} onChange={(checked) => setPropietario(checked)}>Propietario</Checkbox>
-                                </div>
+                                <TagPicker
+                                    data={[
+                                        { label: 'Inquilino', value: 'inquilino' },
+                                        { label: 'Propietario', value: 'propietario' }
+                                    ]}
+                                    onChange={(selectedValues) => {
+                                        setInquilino(selectedValues.includes('inquilino'));
+                                        setPropietario(selectedValues.includes('propietario'));
+                                    }}
+                                    placeholder="Selecciona roles"
+                                    style={{ width: '80%', margin: '0 auto' }}
+                                />
+
                                 <Toggle size="md" checkedChildren="Informador" unCheckedChildren="No Informador" onChange={(checked) => setClientsToAssociateInformador(checked)} />
                                 <Toggle size="md" checked={pedido} checkedChildren="Pedido" unCheckedChildren="No Pedido" onChange={(checked) => setPedido(checked)} />
                             </>
