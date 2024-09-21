@@ -149,6 +149,9 @@ const ClientesAsociados = ({ inmuebleId, inmuebleDireccion }) => {
                         inmuebleId: inmuebleId,
                     },
                 });
+
+                console.log('response.data.clientesTotales', response.data.clientesTotales);
+                console.log('response.data.clientesTarget', response.data.clientesTarget);
                 setClientesAsociados(response.data.clientesTotales);
                 setClientesAsociadosInmueble(response.data.clientesTarget);
             } catch (error) {
@@ -203,7 +206,6 @@ const ClientesAsociados = ({ inmuebleId, inmuebleDireccion }) => {
             console.log('response', response.data);
             if (response.data.status === 'success') {
                 showToast('Clientes asociados correctamente.', 'linear-gradient(to right bottom, #00603c, #006f39, #007d31, #008b24, #069903)');
-                fetchClientes();
                 setOpen(false);
             } else {
                 showToast('Error al asociar clientes.', 'linear-gradient(to right bottom, #c62828, #b92125, #ac1a22, #a0131f, #930b1c)');
@@ -265,16 +267,26 @@ const ClientesAsociados = ({ inmuebleId, inmuebleDireccion }) => {
         console.log('inquilino', inquilino);
     }, [inquilino]);
 
-    const handlechangeInquilino = (value) => {
-        setInquilino(value);
-        console.log('value', value);
+    const handleRemoveCliente = async (clienteId) => {
+        try {
+            const response = await axios.post('/api/unassociate_client', { clienteId, inmuebleId });
+            if (response.data.status === 'success') {
+                showToast('Cliente eliminado con éxito', 'linear-gradient(to right bottom, #00603c, #006f39, #007d31, #008b24, #069903)');
+                setClientesAsociadosInmueble(clientesAsociadosInmueble.filter(cliente => cliente._id !== clienteId));
+            } else {
+                showToast('Error al eliminar cliente', 'linear-gradient(to right bottom, #c62828, #b92125, #ac1a22, #a0131f, #930b1c)');
+            }
+        } catch (error) {
+            console.error('Error al eliminar cliente:', error);
+            showToast('Error al eliminar cliente', 'linear-gradient(to right bottom, #c62828, #b92125, #ac1a22, #a0131f, #930b1c)');
+        }
     };
 
     return (
         <Accordion defaultActiveKey={['0']} className='w-auto ml-[16px] mr-[16px] mt-[20px] border-1 border-gray-300 bg-gray-100 rounded-lg shadow-lg'>
             <Accordion.Panel header="Clientes Asociados" eventKey="0" style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                 <div className='flex justify-center items-center w-full'>
-                    <Button appearance='primary' className="bg-blue-400" onClick={handleOpenAsociar}>Asociar Clientes</Button>
+                    <Button appearance='primary' style={{ marginBottom: '20px' }} className="bg-blue-400" onClick={handleOpenAsociar}>Asociar Clientes</Button>
                 </div>
                 <Modal open={open} onClose={handleClose} style={{ backgroundColor: 'rgba(0,0,0,0.15)', borderRadius: '10px', padding: '0px' }} backdrop="static">
                     <Modal.Header>
@@ -570,24 +582,31 @@ const ClientesAsociados = ({ inmuebleId, inmuebleDireccion }) => {
                         <ul>
                             {clientesAsociadosInmueble.map((cliente) => (
                                 <li key={cliente._id} className="flex flex-row justify-between items-center gap-2">
-                                    <div className="flex flex-row justify-start items-center gap-2">
-                                        <p className="text-lg font-semibold">{cliente.nombre} {cliente.apellido}</p>
-                                        {/* <div>
-                                        {cliente.tipo_de_cliente.map(tipo => (
-                                            <Tag
-                                                key={tipo}
-                                                color={
-                                                    tipo === 'propietario' ? 'green' :
-                                                        tipo === 'copropietario' ? 'blue' :
+                                    <div className="flex flex-row justify-center items-center w-full">
+                                        <div className='flex-1 text-center'>
+                                            <p className="text-lg font-semibold">{cliente.nombre} {cliente.apellido}</p>
+                                        </div>
+                                        <div className='flex-2 text-center display-flex flex-row justify-center items-center mx-1'>
+                                            {cliente.tipo_de_cliente.map(tipo => (
+                                                <Tag
+                                                    key={tipo}
+                                                    color={
+                                                        tipo === 'propietario' ? 'green' :
                                                             tipo === 'inquilino' ? 'orange' :
                                                                 'cyan'
-                                                }
-                                                style={{ marginBottom: '5px', marginRight: '5px' }}
-                                            >
-                                                {tipo.charAt(0).toUpperCase() + tipo.slice(1)}
-                                            </Tag>
-                                        ))}
-                                    </div> */}
+                                                    }
+                                                    style={{ marginBottom: '0px', marginRight: '10px' }}
+                                                >
+                                                    {tipo.charAt(0).toUpperCase() + tipo.slice(1)}
+                                                </Tag>
+                                            ))}
+                                        </div>
+                                        {cliente.telefono && (
+                                            <div className='flex-2 display-flex flex-row justify-center items-center'>
+                                                <p>{cliente.telefono}</p>
+                                            </div>
+                                        )}
+
                                     </div>
                                     <IconButton icon={<Close />} onClick={() => handleRemoveCliente(cliente._id)} />
                                 </li>

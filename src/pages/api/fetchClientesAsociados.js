@@ -7,7 +7,7 @@ export default async function handler(req, res) {
         const client = await clientPromise;
         const db = client.db('inmoprocrm');
 
-        const clientesTotales = await db.collection('clientes').find({}, { projection: { _id: 1, nombre: 1, apellido: 1, telefono: 1, dni: 1, client_id: 1, inmuebles_asociados_informador: 1, inmuebles_asociados_propietario: 1, inmuebles_asociados_copropietario: 1 } }).toArray();
+        const clientesTotales = await db.collection('clientes').find({}, { projection: { _id: 1, nombre: 1, apellido: 1, telefono: 1, dni: 1, client_id: 1, inmuebles_asociados_inquilino: 1, inmuebles_asociados_propietario: 1 } }).toArray();
         const clientesTarget = [];
 
         for (const cliente of clientesTotales) {

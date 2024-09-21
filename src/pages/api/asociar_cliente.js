@@ -45,9 +45,7 @@ export default async function handler(req, res) {
             // Set informador to true if clientsToAssociateInformador is true
             if (clientsToAssociateInformador) updateFields.informador = true;
 
-            // Conditionally add 'propietario' and/or 'inquilino' to tipo_de_cliente array
-            if (propietario) updateFields.tipo_de_cliente = { $addToSet: { tipo_de_cliente: 'propietario' } };
-            if (inquilino) updateFields.tipo_de_cliente = { $addToSet: { tipo_de_cliente: 'inquilino' } };
+
 
             // If propietario is true, add to inmuebles_asociados_propietario array
             if (propietario) {
@@ -81,7 +79,8 @@ export default async function handler(req, res) {
                         _id: new ObjectId(clientsToAssociate),
                         'inmuebles_asociados_inquilino.id': { $ne: inmuebles_asociados_inquilino_toAdd.id }
                     },
-                    { $push: { 'inmuebles_asociados_inquilino': inmuebles_asociados_inquilino_toAdd } }
+                    { $push: { 'inmuebles_asociados_inquilino': inmuebles_asociados_inquilino_toAdd } },
+                    { $push: { 'tipo_de_cliente': 'inquilino' } }
                 );
             }
             if (inmuebles_asociados_propietario_toAdd.id) {
@@ -90,7 +89,8 @@ export default async function handler(req, res) {
                         _id: new ObjectId(clientsToAssociate),
                         'inmuebles_asociados_propietario.id': { $ne: inmuebles_asociados_propietario_toAdd.id }
                     },
-                    { $push: { 'inmuebles_asociados_propietario': inmuebles_asociados_propietario_toAdd } }
+                    { $push: { 'inmuebles_asociados_propietario': inmuebles_asociados_propietario_toAdd } },
+                    { $push: { 'tipo_de_cliente': 'propietario' } }
                 );
             }
 
