@@ -13,17 +13,24 @@ export default function Buscador() {
     });
     const [admin, setAdmin] = useState(null); // State for admin cookie value
     const [searchTerm, setSearchTerm] = useState('');
-    const [screenWidth, setScreenWidth] = useState(window.innerWidth);
+    const [screenWidth, setScreenWidth] = useState(0);
+
     useEffect(() => {
-        // Function to update state to current window inner width
-        const handleResize = () => setScreenWidth(window.innerWidth);
+        if (typeof window !== 'undefined') {
+            // Function to update state to current window inner width
+            const handleResize = () => setScreenWidth(window.innerWidth);
 
-        // Set up event listener for window resize to update screenWidth state
-        window.addEventListener('resize', handleResize);
+            // Set initial screen width
+            setScreenWidth(window.innerWidth);
 
-        // Clean up event listener when component unmounts to prevent memory leaks
-        return () => window.removeEventListener('resize', handleResize);
+            // Set up event listener for window resize to update screenWidth state
+            window.addEventListener('resize', handleResize);
+
+            // Clean up event listener when component unmounts to prevent memory leaks
+            return () => window.removeEventListener('resize', handleResize);
+        }
     }, []); // Empty dependency array means this effect runs once on mount and cleanup on unmount
+
 
     useEffect(() => {
         const fetchData = async () => {

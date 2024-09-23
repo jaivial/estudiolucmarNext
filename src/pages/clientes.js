@@ -463,20 +463,25 @@ export default function Clientes({ isAdmin }) {
                                                     <HeaderCell>Tipo de Cliente</HeaderCell>
                                                     <Cell>
                                                         {rowData => (
-                                                            <div className="flex flex-row">
-                                                                {rowData.tipo_de_cliente.map(tipo => (
+                                                            <div className='flex flex-row justify-center items-center mx-4 sm:flex-row gap-2'>
+                                                                {rowData.inmuebles_asociados_propietario && rowData.inmuebles_asociados_propietario.length > 0 && (
                                                                     <Tag
-                                                                        key={tipo}
-                                                                        color={
-                                                                            tipo === 'propietario' ? 'green' :
-                                                                                tipo === 'inquilino' ? 'orange' :
-                                                                                    'cyan'
-                                                                        }
-                                                                        style={{ marginBottom: '5px' }}
+                                                                        key="propietario"
+                                                                        color="green"
+                                                                        style={{ margin: '0px' }}
                                                                     >
-                                                                        {tipo.charAt(0).toUpperCase() + tipo.slice(1)}
+                                                                        Propietario
                                                                     </Tag>
-                                                                ))}
+                                                                )}
+                                                                {rowData.inmuebles_asociados_inquilino && rowData.inmuebles_asociados_inquilino.length > 0 && (
+                                                                    <Tag
+                                                                        key="inquilino"
+                                                                        color="red"
+                                                                        style={{ margin: '0px', marginBottom: '5px' }}
+                                                                    >
+                                                                        Inquilino
+                                                                    </Tag>
+                                                                )}
                                                             </div>
                                                         )}
                                                     </Cell>
@@ -815,26 +820,29 @@ export default function Clientes({ isAdmin }) {
                                 </div>
                             )}
 
-                            {selectedCliente.tipo_de_cliente && selectedCliente.tipo_de_cliente.length > 0 && (
-                                <div className="flex flex-row gap-2 mt-[10px]">
-                                    <p><strong>Tipo de Cliente:</strong></p>
-                                    <div>
-                                        {selectedCliente.tipo_de_cliente.map(tipo => (
-                                            <Tag
-                                                key={tipo}
-                                                color={
-                                                    tipo === 'propietario' ? 'green' :
-                                                        tipo === 'copropietario' ? 'blue' :
-                                                            tipo === 'inquilino' ? 'orange' : ''
-                                                }
-                                                style={{ marginBottom: '5px', marginRight: '5px' }}
-                                            >
-                                                {tipo.charAt(0).toUpperCase() + tipo.slice(1)}
-                                            </Tag>
-                                        ))}
-                                    </div>
+                            <div className="flex flex-row gap-2 mt-[10px]">
+                                <p><strong>Tipo de Cliente:</strong></p>
+                                <div>
+                                    {selectedCliente.inmuebles_asociados_propietario && selectedCliente.inmuebles_asociados_propietario.length > 0 && (
+                                        <Tag
+                                            key="propietario"
+                                            color="green"
+                                            style={{ marginBottom: '5px', marginRight: '5px' }}
+                                        >
+                                            Propietario
+                                        </Tag>
+                                    )}
+                                    {selectedCliente.inmuebles_asociados_inquilino && selectedCliente.inmuebles_asociados_inquilino.length > 0 && (
+                                        <Tag
+                                            key="inquilino"
+                                            color="red"
+                                            style={{ marginBottom: '5px', marginRight: '5px' }}
+                                        >
+                                            Inquilino
+                                        </Tag>
+                                    )}
                                 </div>
-                            )}
+                            </div>
                             {selectedCliente.informador && (
                                 <div className="flex flex-row gap-2 mt-[10px]">
                                     <p><strong>Informador:</strong></p>
@@ -843,74 +851,76 @@ export default function Clientes({ isAdmin }) {
                                     </Tag>
                                 </div>
                             )}
-                            {['propietario', 'inquilino'].map(tipo => (
-                                selectedCliente.tipo_de_cliente.includes(tipo) && (
-                                    <div key={tipo} style={{ marginBottom: '20px' }}>
-                                        <div
-                                            style={{
-                                                backgroundColor: tipo === 'propietario' ? '#28a745' :
-                                                    tipo === 'copropietario' ? '#007bff' :
-                                                        tipo === 'inquilino' ? '#fd7e14' :
-                                                            '#17a2b8',
-                                                borderRadius: '10px',
-                                                padding: '10px',
-                                                color: '#fff',
-                                                textAlign: 'center',
-                                                marginBottom: '20px',
-                                                width: '200px',
-                                                marginRight: 'auto',
-                                                marginLeft: 'auto',
-                                            }}
-                                        >
-                                            {tipo.charAt(0).toUpperCase() + tipo.slice(1)}
-                                        </div>
+                            {(selectedCliente.inmuebles_asociados_propietario && selectedCliente.inmuebles_asociados_propietario.length > 0) || (selectedCliente.inmuebles_asociados_inquilino && selectedCliente.inmuebles_asociados_inquilino.length > 0) ? (
+                                <div>
+                                    {['propietario', 'inquilino'].map(tipo => (
+                                        selectedCliente[`inmuebles_asociados_${tipo}`] && selectedCliente[`inmuebles_asociados_${tipo}`].length > 0 && (
+                                            <div key={tipo} style={{ marginBottom: '20px' }}>
+                                                <div
+                                                    style={{
+                                                        backgroundColor: tipo === 'propietario' ? '#28a745' :
+                                                            tipo === 'inquilino' ? '#3490dc' : '#3490dc',
+                                                        borderRadius: '10px',
+                                                        padding: '10px',
+                                                        color: '#fff',
+                                                        textAlign: 'center',
+                                                        marginBottom: '20px',
+                                                        width: '200px',
+                                                        marginRight: 'auto',
+                                                        marginLeft: 'auto',
+                                                    }}
+                                                >
+                                                    {tipo.charAt(0).toUpperCase() + tipo.slice(1)}
+                                                </div>
 
-                                        <Table data={selectedCliente.inmueblesDetalle.filter(inmueble =>
-                                            selectedCliente[`inmuebles_asociados_${tipo}`].some(assoc => assoc.id === inmueble.id)
-                                        )}>
-                                            <Column width={320} align="center">
-                                                <HeaderCell>Dirección</HeaderCell>
-                                                <Cell dataKey="direccion" />
-                                            </Column>
-                                            <Column width={200} align="center">
-                                                <HeaderCell>Zona</HeaderCell>
-                                                <Cell dataKey="zona" />
-                                            </Column>
-                                            <Column width={80} align="center">
-                                                <HeaderCell>Noticias</HeaderCell>
-                                                <Cell>
-                                                    {rowData => rowData.noticiastate ? 'Sí' : 'No'}
-                                                </Cell>
-                                            </Column>
-                                            <Column width={80} align="center">
-                                                <HeaderCell>Encargos</HeaderCell>
-                                                <Cell>
-                                                    {rowData => rowData.encargostate ? 'Sí' : 'No'}
-                                                </Cell>
-                                            </Column>
-                                            <Column width={100} align="center">
-                                                <HeaderCell>Superficie</HeaderCell>
-                                                <Cell>
-                                                    {rowData => (
-                                                        <span>{rowData.superficie} m²</span>
-                                                    )}
-                                                </Cell>
-                                            </Column>
+                                                <Table data={selectedCliente.inmueblesDetalle.filter(inmueble =>
+                                                    selectedCliente[`inmuebles_asociados_${tipo}`].some(assoc => assoc.id === inmueble.id)
+                                                )}>
+                                                    <Column width={320} align="center">
+                                                        <HeaderCell>Dirección</HeaderCell>
+                                                        <Cell dataKey="direccion" />
+                                                    </Column>
+                                                    <Column width={200} align="center">
+                                                        <HeaderCell>Zona</HeaderCell>
+                                                        <Cell dataKey="zona" />
+                                                    </Column>
+                                                    <Column width={80} align="center">
+                                                        <HeaderCell>Noticias</HeaderCell>
+                                                        <Cell>
+                                                            {rowData => rowData.noticiastate ? 'Sí' : 'No'}
+                                                        </Cell>
+                                                    </Column>
+                                                    <Column width={80} align="center">
+                                                        <HeaderCell>Encargos</HeaderCell>
+                                                        <Cell>
+                                                            {rowData => rowData.encargostate ? 'Sí' : 'No'}
+                                                        </Cell>
+                                                    </Column>
+                                                    <Column width={100} align="center">
+                                                        <HeaderCell>Superficie</HeaderCell>
+                                                        <Cell>
+                                                            {rowData => (
+                                                                <span>{rowData.superficie} m²</span>
+                                                            )}
+                                                        </Cell>
+                                                    </Column>
 
-                                            <Column width={100} align="center">
-                                                <HeaderCell>Acciones</HeaderCell>
-                                                <Cell>
-                                                    {rowData => (
-                                                        <Whisper placement="top" trigger="hover" speaker={<Tooltip>Ver más</Tooltip>}>
-                                                            <Icon icon="mdi:eye-outline" style={{ cursor: 'pointer', fontSize: '1.5rem' }} onClick={() => handleViewMore(rowData)} />
-                                                        </Whisper>
-                                                    )}
-                                                </Cell>
-                                            </Column>
-                                        </Table>
-                                    </div>
-                                )
-                            ))}
+                                                    <Column width={100} align="center">
+                                                        <HeaderCell>Acciones</HeaderCell>
+                                                        <Cell>
+                                                            {rowData => (
+                                                                <Whisper placement="top" trigger="hover" speaker={<Tooltip>Ver más</Tooltip>}>
+                                                                    <Icon icon="mdi:eye-outline" style={{ cursor: 'pointer', fontSize: '1.5rem' }} onClick={() => handleViewMore(rowData)} />
+                                                                </Whisper>
+                                                            )}
+                                                        </Cell>
+                                                    </Column>
+                                                </Table>
+                                            </div>
+                                        )
+                                    ))}
+                                </div>
+                            ) : null}
                         </Modal.Body>
                         <Modal.Footer style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
                             <Button onClick={handleClose} appearance="subtle">Cerrar</Button>

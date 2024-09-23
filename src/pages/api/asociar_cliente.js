@@ -34,6 +34,7 @@ export default async function handler(req, res) {
 
             let inmuebles_asociados_propietario_toAdd = {};
             let inmuebles_asociados_inquilino_toAdd = {};
+            let tipo_de_cliente_toAdd = [];
 
             // Update interes and rango_precios only if pedido is true
             if (pedido) {
@@ -53,6 +54,7 @@ export default async function handler(req, res) {
                     id: inmuebleId,
                     direccion: inmuebleDireccion,
                 };
+                tipo_de_cliente_toAdd.push('propietario');
             }
 
             // If inquilino is true, add to inmuebles_asociados_inquilino array
@@ -61,10 +63,13 @@ export default async function handler(req, res) {
                     id: inmuebleId,
                     direccion: inmuebleDireccion,
                 };
+                tipo_de_cliente_toAdd.push('inquilino');
             }
 
             console.log('inmuebles_asociados_propietario_toAdd', inmuebles_asociados_propietario_toAdd);
             console.log('inmuebles_asociados_inquilino_toAdd', inmuebles_asociados_inquilino_toAdd);
+
+            console.log('tipo_de_cliente_toAdd', tipo_de_cliente_toAdd);
 
             // Perform the update on the specific cliente
             const result = await db.collection('clientes').updateOne(
@@ -79,20 +84,38 @@ export default async function handler(req, res) {
                         _id: new ObjectId(clientsToAssociate),
                         'inmuebles_asociados_inquilino.id': { $ne: inmuebles_asociados_inquilino_toAdd.id }
                     },
-                    { $push: { 'inmuebles_asociados_inquilino': inmuebles_asociados_inquilino_toAdd } },
-                    { $push: { 'tipo_de_cliente': 'inquilino' } }
+                    {
+                        $push: { 'inmuebles_asociados_inquilino': inmuebles_asociados_inquilino_toAdd }
+                    }
                 );
             }
+
             if (inmuebles_asociados_propietario_toAdd.id) {
                 await db.collection('clientes').updateOne(
                     {
                         _id: new ObjectId(clientsToAssociate),
                         'inmuebles_asociados_propietario.id': { $ne: inmuebles_asociados_propietario_toAdd.id }
                     },
-                    { $push: { 'inmuebles_asociados_propietario': inmuebles_asociados_propietario_toAdd } },
-                    { $push: { 'tipo_de_cliente': 'propietario' } }
+                    {
+                        $push: { 'inmuebles_asociados_propietario': inmuebles_asociados_propietario_toAdd }
+                    }
                 );
             }
+            if (!inquilino) {
+                await db.collection('clientes').updateOne(
+                    { _id: new ObjectId(clientsToAssociate) },
+                    { $pull: { 'inmuebles_asociados_inquilino': { id: inmuebleId } } }
+                );
+            }
+
+            if (!propietario) {
+                await db.collection('clientes').updateOne(
+                    { _id: new ObjectId(clientsToAssociate) },
+                    { $pull: { 'inmuebles_asociados_propietario': { id: inmuebleId } } }
+                );
+            }
+
+
 
 
             if (result.matchedCount === 0) {
