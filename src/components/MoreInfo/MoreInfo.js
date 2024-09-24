@@ -19,7 +19,7 @@ import Toastify from 'toastify-js';
 // Import React Suite components
 import { Modal, Button, Panel } from 'rsuite';
 import 'rsuite/dist/rsuite.min.css';
-
+import DPVInfoComponent from './MoreInfoComponents/DPVInfoComponent';
 import SmallLoadingScreen from '../LoadingScreen/SmallLoadingScreen';
 
 const ItemDetails = ({ id, onClose, showModal, setShowModal, fetchData, currentPage, searchTerm, admin, screenWidth }) => {
@@ -42,6 +42,7 @@ const ItemDetails = ({ id, onClose, showModal, setShowModal, fetchData, currentP
     const [direccion, setDireccion] = useState(null);
     const [nombre, setNombre] = useState(null);
     const [apellido, setApellido] = useState(null);
+    const [passedDPVinfo, setPassedDPVinfo] = useState(null);
 
 
     const showToast = (message, backgroundColor) => {
@@ -192,59 +193,67 @@ const ItemDetails = ({ id, onClose, showModal, setShowModal, fetchData, currentP
                     setNombre={setNombre}
                     apellido={apellido}
                     setApellido={setApellido}
+                    passedDPVinfo={passedDPVinfo}
+                    setPassedDPVinfo={setPassedDPVinfo}
                 />
-                {isVisible && (
-                    <>
-                        <div className="py-4 h-[300px] w-full rounded-lg">
-                            {/* Slider Component */}
-                            {images.length > 0 && (
-                                <div ref={sliderRef} className="keen-slider h-full">
-                                    {images.map((image, index) => (
-                                        <div key={index} className="keen-slider__slide h-full flex justify-center items-center">
-                                            <img src={`data:${image.type};base64,${image.data}`} alt={`Slide ${index}`} className="w-auto h-full object-contain" />
-                                        </div>
-                                    ))}
-                                    {loaded && slider.current && (
-                                        <>
-                                            <Arrow left onClick={(e) => e.stopPropagation() || slider.current?.prev()} disabled={currentSlide === 0} />
 
-                                            <Arrow onClick={(e) => e.stopPropagation() || slider.current?.next()} disabled={currentSlide === slider.current.track.details.slides.length - 1} />
-                                        </>
-                                    )}
+                <div className="py-4 h-[300px] w-full rounded-lg">
+                    {/* Slider Component */}
+                    {images.length > 0 && (
+                        <div ref={sliderRef} className="keen-slider h-full">
+                            {images.map((image, index) => (
+                                <div key={index} className="keen-slider__slide h-full flex justify-center items-center">
+                                    <img src={`data:${image.type};base64,${image.data}`} alt={`Slide ${index}`} className="w-auto h-full object-contain" />
                                 </div>
+                            ))}
+                            {loaded && slider.current && (
+                                <>
+                                    <Arrow left onClick={(e) => e.stopPropagation() || slider.current?.prev()} disabled={currentSlide === 0} />
+
+                                    <Arrow onClick={(e) => e.stopPropagation() || slider.current?.next()} disabled={currentSlide === slider.current.track.details.slides.length - 1} />
+                                </>
                             )}
-                            {images.length === 0 && <p className="text-center h-full flex flex-row justify-center items-center">No hay fotos disponibles</p>}
                         </div>
+                    )}
+                    {images.length === 0 && <p className="text-center h-full flex flex-row justify-center items-center">No hay fotos disponibles</p>}
+                </div>
+                {!isVisible && (
+                    <>
+                        <h1 className="text-xl font-semibold text-start w-full leading-7 px-6">{data.inmueble.direccion}</h1>
+                        <DetailsInfoOne data={data} encargoData={encargoData} isVisible={isVisible} setIsVisible={setIsVisible} />
+
+                        {data.inmueble.localizado && (
+                            <Panel className="bg-slate-50 rounded-lg shadow-xl w-[70%] flex flex-col justify-center items-center mx-auto">
+                                <div className='flex flex-row justify-center items-center gap-2 pb-4'>
+                                    <AiOutlinePhone className='text-3xl text-blue-500' />
+                                    <h3 className='text-xl font-semibold text-center'>Localizado</h3>
+                                </div>
+                                <div className='flex flex-col justify-center items-center gap-2'>
+                                    <div className='flex flex-row justify-center items-center gap-3'>
+                                        <p className='font-semibold text-lg text-center'>Nombre: </p>
+                                        <p className='text-center text-lg m-0'>{nombre} {apellido}</p>
+
+                                    </div>
+                                    <div className='flex flex-row gap-2 justify-center items-center'>
+                                        <p className='font-semibold text-lg text-center'>Teléfono: </p>
+                                        <a href={`tel:${data.inmueble.localizado_phone}`} style={{ color: 'blue', textDecoration: 'underline' }} className='text-center text-lg'>{data.inmueble.localizado_phone}</a>
+                                    </div>
+                                </div>
+                            </Panel>
+                        )}
+                        <DetailsInfoTwo data={data} descripcion={descripcion} setDescripcion={setDescripcion} newDescripcion={newDescripcion} setNewDescripcion={setNewDescripcion} />
+                        <ClientesAsociados inmuebleId={data.inmueble.id} inmuebleDireccion={data.inmueble.direccion} screenWidth={screenWidth} />
+                        {DPVboolean && <DPVInfoComponent inmuebleId={data.inmueble.id} />}
                     </>
                 )}
-                <h1 className="text-xl font-semibold text-start w-full leading-7 px-6">{data.inmueble.direccion}</h1>
-                <DetailsInfoOne data={data} encargoData={encargoData} isVisible={isVisible} setIsVisible={setIsVisible} />
-                {data.inmueble.localizado && (
-                    <Panel className="bg-slate-50 rounded-lg shadow-xl w-[70%] flex flex-col justify-center items-center mx-auto">
-                        <div className='flex flex-row justify-center items-center gap-2 pb-4'>
-                            <AiOutlinePhone className='text-3xl text-blue-500' />
-                            <h3 className='text-xl font-semibold text-center'>Localizado</h3>
-                        </div>
-                        <div className='flex flex-col justify-center items-center gap-2'>
-                            <div className='flex flex-row justify-center items-center gap-3'>
-                                <p className='font-semibold text-lg text-center'>Nombre: </p>
-                                <p className='text-center text-lg m-0'>{nombre} {apellido}</p>
-
-                            </div>
-                            <div className='flex flex-row gap-2 justify-center items-center'>
-                                <p className='font-semibold text-lg text-center'>Teléfono: </p>
-                                <a href={`tel:${data.inmueble.localizado_phone}`} style={{ color: 'blue', textDecoration: 'underline' }} className='text-center text-lg'>{data.inmueble.localizado_phone}</a>
-                            </div>
-                        </div>
-                    </Panel>
-
+                <DetailsInfoThree data={data} isVisible={isVisible} />
+                {!isVisible && (
+                    <>
+                        <ComentariosDetails data={data} />
+                        <NoticiasDetails data={data} setOnAddNoticiaRefreshKey={setOnAddNoticiaRefreshKey} onAddNoticiaRefreshKey={onAddNoticiaRefreshKey} fetchData={fetchData} currentPage={currentPage} searchTerm={searchTerm} />
+                        <EncargosDetails data={data} setOnAddEncargoRefreshKey={setOnAddEncargoRefreshKey} onAddEncargoRefreshKey={onAddEncargoRefreshKey} fetchData={fetchData} currentPage={currentPage} searchTerm={searchTerm} screenWidth={screenWidth} />
+                    </>
                 )}
-                <DetailsInfoTwo data={data} descripcion={descripcion} setDescripcion={setDescripcion} newDescripcion={newDescripcion} setNewDescripcion={setNewDescripcion} />
-                <ClientesAsociados inmuebleId={data.inmueble.id} inmuebleDireccion={data.inmueble.direccion} screenWidth={screenWidth} />
-                <DetailsInfoThree data={data} />
-                <ComentariosDetails data={data} />
-                <NoticiasDetails data={data} setOnAddNoticiaRefreshKey={setOnAddNoticiaRefreshKey} onAddNoticiaRefreshKey={onAddNoticiaRefreshKey} fetchData={fetchData} currentPage={currentPage} searchTerm={searchTerm} />
-                <EncargosDetails data={data} setOnAddEncargoRefreshKey={setOnAddEncargoRefreshKey} onAddEncargoRefreshKey={onAddEncargoRefreshKey} fetchData={fetchData} currentPage={currentPage} searchTerm={searchTerm} screenWidth={screenWidth} />
                 <div className='flex justify-center gap-4 mt-4 pb-[50px] z-[10]' >
                     <Button onClick={onClose} appearance="default" style={{ fontSize: '1rem', padding: '10px 20px' }}>Cerrar</Button>
                 </div>

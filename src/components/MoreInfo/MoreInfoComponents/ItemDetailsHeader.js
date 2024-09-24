@@ -12,6 +12,9 @@ import dynamic from 'next/dynamic';
 const EditModal = dynamic(() => import('./EditModal'), { ssr: false });
 import DPVComponent from './DPVComponent';
 import PhoneModal from './PhoneModal'; // Import PhoneModal component
+import Skeleton from 'react-loading-skeleton'
+import 'react-loading-skeleton/dist/skeleton.css'
+
 
 const ItemDetailsHeader = ({ inmuebleId, onClose, address, setImages, setIsSliderLoading, isVisible, setIsVisible, data, onAddEdtMoreInfoRefreshKey, setOnAddEdtMoreInfoRefreshKey, DPVboolean, setDPVboolean, admin, onAddDeleteDPVRefreshKey, setOnAddDeleteDPVRefreshKey, localizado, setLocalizado, direccion, nombre, setNombre, apellido, setApellido }) => {
     const [selectedFiles, setSelectedFiles] = useState([]);
@@ -32,6 +35,7 @@ const ItemDetailsHeader = ({ inmuebleId, onClose, address, setImages, setIsSlide
     const [isImageValid, setIsImageValid] = useState(true);
     const [dpvModalOpen, setDPVModalOpen] = useState(false);
     const [phoneModalOpen, setPhoneModalOpen] = useState(false); // State for PhoneModal
+    const [loadingRenderSlots, setLoadingRenderSlots] = useState(true);
 
     const closeModal = () => setIsModalOpen(false);
 
@@ -257,9 +261,21 @@ const ItemDetailsHeader = ({ inmuebleId, onClose, address, setImages, setIsSlide
             }).showToast();
         }
     };
-    const openEditModal = () => setEditModalOpen(true);
+    const openEditModal = () => {
+        setEditModalOpen(true);
+
+    };
+
     const closeEditModal = () => setEditModalOpen(false);
-    const openFileInput = () => getFileRef.current.click(); // Function to open file input
+    const openFileInput = () => {
+        setTimeout(() => {
+            if (getFileRef.current) {
+                getFileRef.current.click();
+            } else {
+                console.error("File input reference is not set yet.");
+            }
+        }, 1);  // You can increase this delay slightly if necessary.
+    };
 
     const renderSlots = () => {
         const slots = [];
