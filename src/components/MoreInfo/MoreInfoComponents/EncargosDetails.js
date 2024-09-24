@@ -23,10 +23,9 @@ import esES from 'rsuite/locales/es_ES';
 import { Accordion, Panel, Modal, Button, InputNumber, DatePicker, CustomProvider, SelectPicker, Tabs, Table, Whisper, Tooltip, Tag } from 'rsuite'; // Import Accordion and Panel from rsuite
 import Skeleton from 'react-loading-skeleton'
 import 'react-loading-skeleton/dist/skeleton.css'
-const { Column, HeaderCell, Cell } = Table;
 import { Icon } from '@iconify/react';
 import './encargosdetails.css';
-
+const { Column, HeaderCell, Cell } = Table;
 
 const showToast = (message, backgroundColor) => {
     Toastify({
@@ -332,8 +331,33 @@ const EncargosDetails = ({ data, setOnAddEncargoRefreshKey, onAddEncargoRefreshK
                 params: { _id },
             });
             // Handle the response data
-            console.log(response.data);
-            setInfoClienteMathingEncargo(response.data);
+            if (response.data) {
+                setInfoClienteMathingEncargo(response.data);
+                let cliente = response.data;
+                console.log('cliente', cliente);
+                const allInmuebleIds = [
+                    ...cliente.inmuebles_asociados_propietario,
+                    ...cliente.inmuebles_asociados_inquilino
+                ].map(inmueble => inmueble.id);
+                console.log('allInmuebleIds', allInmuebleIds);
+                if (allInmuebleIds.length > 0) {
+                    try {
+                        const response = await axios.post('/api/fetch_cliente_inmuebles', {
+                            clientInmuebleIds: allInmuebleIds
+                        });
+
+                        if (response.status === 200) {
+                            console.log('response.data', response.data);
+                            setInfoClienteMathingEncargo(prevState => ({
+                                ...prevState,
+                                inmueblesDetalle: response.data
+                            }));
+                        }
+                    } catch (error) {
+                        console.error('Error al obtener inmuebles:', error);
+                    }
+                }
+            }
             setTimeout(() => {
                 setLodingMoreInfoClienteMatchingEncargo(false);
             }, 100);
@@ -348,7 +372,7 @@ const EncargosDetails = ({ data, setOnAddEncargoRefreshKey, onAddEncargoRefreshK
                     <Accordion.Panel style={{ backgroundColor: '#f4f4f5', padding: '0px' }} header={
                         <h2 className="font-bold text-xl">Encargos</h2>
                     } eventKey="1">
-                        <Tabs defaultActiveKey="1" appearance="pills" style={{ alignItems: 'center' }} onSelect={(eventKey) => {
+                        <Tabs defaultActiveKey="1" appearance="pills" style={{ alignItems: 'center', width: '100%' }} onSelect={(eventKey) => {
                             if (eventKey === '2') {
                                 fetchMatchingEncargos();
                             }
@@ -536,50 +560,48 @@ const EncargosDetails = ({ data, setOnAddEncargoRefreshKey, onAddEncargoRefreshK
                                 </div>
                             </Tabs.Tab>
                             <Tabs.Tab eventKey="2" title="Pedidos">
-                                <div>
-                                    {loading ? (
-                                        <Skeleton count={10} height={30} />
-                                    ) : (
-                                        <Table height={300} data={matchingClientesEncargos}>
-                                            <Column flexGrow={1} align="center" >
-                                                <HeaderCell>Nombre</HeaderCell>
-                                                <Cell>
-                                                    {(rowData) => `${rowData.nombre} ${rowData.apellido}`}
-                                                </Cell>
-                                            </Column>
-                                            {screenWidth >= 640 && (
-                                                <>
-                                                    <Column flexGrow={1} align='center' className='column-telefono'>
-                                                        <HeaderCell>Teléfono</HeaderCell>
-                                                        <Cell dataKey="telefono" />
-                                                    </Column>
 
-                                                </>
-                                            )}
-                                            {screenWidth >= 768 && (
-                                                <>
-                                                    <Column flexGrow={1} align='center' className='column-email'>
-                                                        <HeaderCell>Email</HeaderCell>
-                                                        <Cell dataKey="email" />
-                                                    </Column>
-                                                </>
-                                            )}
-                                            <Column flexGrow={1} align='center'>
-                                                <HeaderCell>Acciones</HeaderCell>
-                                                <Cell>
-                                                    {rowData => (
-                                                        <div className="flex flex-row gap-4">
-                                                            <Whisper placement="top" trigger="hover" speaker={<Tooltip>Ver más</Tooltip>}>
-                                                                <Icon icon="mdi:eye-outline" style={{ cursor: 'pointer', fontSize: '1.5rem' }} onClick={() => handleOpen(rowData._id)} />
-                                                            </Whisper>
-                                                        </div>
-                                                    )}
-                                                </Cell>
-                                            </Column>
-                                        </Table>
-                                    )}
+                                <div className='w-full'>
+                                    <Table height={300} data={matchingClientesEncargos}>
+                                        <Table.Column align="center" flexGrow={1} >
+                                            <Table.HeaderCell>Nombre</Table.HeaderCell>
+                                            <Table.Cell>
+                                                {(rowData) => `${rowData.nombre} ${rowData.apellido}`}
+                                            </Table.Cell>
+                                        </Table.Column>
+                                        {screenWidth >= 640 && (
+                                            <>
+                                                <Table.Column flexGrow={1} align='center' className='column-telefono'>
+                                                    <Table.HeaderCell>Teléfono</Table.HeaderCell>
+                                                    <Table.Cell dataKey="telefono" />
+                                                </Table.Column>
+
+                                            </>
+                                        )}
+                                        {screenWidth >= 768 && (
+                                            <>
+                                                <Table.Column flexGrow={1} align='center' className='column-email'>
+                                                    <Table.HeaderCell>Email</Table.HeaderCell>
+                                                    <Table.Cell dataKey="email" />
+                                                </Table.Column>
+                                            </>
+                                        )}
+                                        <Table.Column flexGrow={1} align='center'>
+                                            <Table.HeaderCell>Acciones</Table.HeaderCell>
+                                            <Table.Cell>
+                                                {rowData => (
+                                                    <div className="flex flex-row gap-4">
+                                                        <Whisper placement="top" trigger="hover" speaker={<Tooltip>Ver más</Tooltip>}>
+                                                            <Icon icon="mdi:eye-outline" style={{ cursor: 'pointer', fontSize: '1.5rem' }} onClick={() => handleOpen(rowData._id)} />
+                                                        </Whisper>
+                                                    </div>
+                                                )}
+                                            </Table.Cell>
+                                        </Table.Column>
+                                    </Table>
+
                                 </div>
-                                <Modal open={verMásClienteEncargo} onClose={() => setVerMásClienteEncargo(false)} size="md" overflow={false} backdrop={true} style={{ backgroundColor: 'rgba(0,0,0,0.15)', padding: '0px 2px' }}>
+                                <Modal open={verMásClienteEncargo} onClose={() => setVerMásClienteEncargo(false)} size="md" overflow={false} backdrop={true} style={{ backgroundColor: 'rgba(0,0,0,0.15)', padding: '0px 2px', marginBottom: '70px' }}>
                                     <Modal.Header>
                                         <Modal.Title style={{ fontSize: '1.5rem', fontWeight: 'semibold', textAlign: 'center' }}>Detalles del Cliente</Modal.Title>
                                     </Modal.Header>
@@ -588,66 +610,97 @@ const EncargosDetails = ({ data, setOnAddEncargoRefreshKey, onAddEncargoRefreshK
                                             <Skeleton count={10} height={30} />
                                         ) : infoClienteMathingEncargo ? (
                                             <div className='flex flex-col gap-2'>
-                                                <p><strong>Nombre:</strong> {infoClienteMathingEncargo.nombre}</p>
-                                                <p><strong>Apellido:</strong> {infoClienteMathingEncargo.apellido}</p>
-                                                <p><strong>DNI:</strong> {infoClienteMathingEncargo.dni}</p>
-                                                <p><strong>Teléfono:</strong> {infoClienteMathingEncargo.telefono}</p>
-                                                <p><strong>Email:</strong> {infoClienteMathingEncargo.email}</p>
-                                                {infoClienteMathingEncargo.interes && (
-                                                    <p><strong>Interés:</strong> {infoClienteMathingEncargo.interes.charAt(0).toUpperCase() + infoClienteMathingEncargo.interes.slice(1)}</p>
-                                                )}
-                                                {infoClienteMathingEncargo.tipo_de_cliente && infoClienteMathingEncargo.tipo_de_cliente.length > 0 && (
-                                                    <div className="flex flex-row gap-2 mt-[10px]">
+                                                <div className='flex flex-col gap-2 px-6 py-6 bg-slate-200 rounded-md shadow-lg mb-4'>
+                                                    <p><strong>Nombre:</strong> {infoClienteMathingEncargo.nombre}</p>
+                                                    <p><strong>Apellido:</strong> {infoClienteMathingEncargo.apellido}</p>
+                                                    <p><strong>DNI:</strong> {infoClienteMathingEncargo.dni}</p>
+                                                    <p><strong>Teléfono:</strong> {infoClienteMathingEncargo.telefono}</p>
+                                                    <p><strong>Email:</strong> {infoClienteMathingEncargo.email}</p>
+                                                    {infoClienteMathingEncargo.interes && (
+                                                        <p><strong>Interés:</strong> {infoClienteMathingEncargo.interes.charAt(0).toUpperCase() + infoClienteMathingEncargo.interes.slice(1)}</p>
+                                                    )}
+
+                                                    <div className="flex flex-row gap-2 mt-[20px]">
                                                         <p><strong>Tipo de Cliente:</strong></p>
                                                         <div>
-                                                            {infoClienteMathingEncargo.tipo_de_cliente.map(tipo => (
+                                                            {infoClienteMathingEncargo.inmuebles_asociados_propietario && infoClienteMathingEncargo.inmuebles_asociados_propietario.length > 0 && (
                                                                 <Tag
-                                                                    key={tipo}
-                                                                    color={
-                                                                        tipo === 'propietario' ? 'green' :
-                                                                            tipo === 'copropietario' ? 'blue' :
-                                                                                tipo === 'inquilino' ? 'orange' : ''
-                                                                    }
+                                                                    key="propietario"
+                                                                    color="green"
                                                                     style={{ marginBottom: '5px', marginRight: '5px' }}
                                                                 >
-                                                                    {tipo.charAt(0).toUpperCase() + tipo.slice(1)}
+                                                                    Propietario
                                                                 </Tag>
-                                                            ))}
+                                                            )}
+                                                            {infoClienteMathingEncargo.inmuebles_asociados_inquilino && infoClienteMathingEncargo.inmuebles_asociados_inquilino.length > 0 && (
+                                                                <Tag
+                                                                    key="inquilino"
+                                                                    color="red"
+                                                                    style={{ marginBottom: '5px', marginRight: '5px' }}
+                                                                >
+                                                                    Inquilino
+                                                                </Tag>
+                                                            )}
                                                         </div>
                                                     </div>
-                                                )}
-                                                {infoClienteMathingEncargo.informador && (
+
+                                                    {infoClienteMathingEncargo.informador && (
+                                                        <div className="flex flex-row gap-2 mt-[10px]">
+                                                            <p><strong>Informador:</strong></p>
+                                                            <Tag color="cyan" style={{ marginBottom: '5px', marginRight: '5px' }}>
+                                                                Informador
+                                                            </Tag>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                                {infoClienteMathingEncargo.pedido && (
                                                     <div className="flex flex-row gap-2 mt-[10px]">
-                                                        <Tag color="cyan" style={{ marginBottom: '5px', marginRight: '5px' }}>
-                                                            Informador
+                                                        <Tag color="orange" style={{
+                                                            borderRadius: '10px',
+                                                            padding: '8px 0px',
+                                                            color: '#fff',
+                                                            textAlign: 'center',
+                                                            marginBottom: '10px',
+                                                            width: '100px',
+                                                            marginRight: 'auto',
+                                                            marginLeft: 'auto',
+                                                            fontSize: '14px',
+                                                        }}>
+                                                            Pedido
                                                         </Tag>
                                                     </div>
                                                 )}
+                                                {infoClienteMathingEncargo.pedido && (
+                                                    <div style={{ display: 'grid', placeItems: 'center' }} className='flex flex-col gap-2 px-4 py-2 pb-8 bg-slate-200 rounded-md shadow-lg mb-4'>
+                                                        <h4 className='text-base my-2'>Información del pedido</h4>
+                                                        <p className='text-sm'><strong>Interés:</strong> {infoClienteMathingEncargo.interes.charAt(0).toUpperCase() + infoClienteMathingEncargo.interes.slice(1)}</p>
+                                                        <p className='text-sm'><strong>Rango de Precios:</strong> {infoClienteMathingEncargo.rango_precios.join(' - ')} €</p>
+                                                    </div>
+                                                )}
                                                 {['propietario', 'inquilino'].map(tipo => (
-                                                    infoClienteMathingEncargo.tipo_de_cliente.includes(tipo) && (
-                                                        <div key={tipo} style={{ marginBottom: '20px' }}>
+                                                    infoClienteMathingEncargo[`inmuebles_asociados_${tipo}`] && infoClienteMathingEncargo[`inmuebles_asociados_${tipo}`].length > 0 && (
+                                                        <div key={tipo} className='mb-14 mt-8'>
                                                             <div
                                                                 style={{
                                                                     backgroundColor: tipo === 'propietario' ? '#28a745' :
-                                                                        tipo === 'copropietario' ? '#007bff' :
-                                                                            tipo === 'inquilino' ? '#fd7e14' :
-                                                                                '#17a2b8',
+                                                                        tipo === 'inquilino' ? '#ef4444' : '#ef4444',
                                                                     borderRadius: '10px',
-                                                                    padding: '10px',
+                                                                    padding: '8px 0px',
                                                                     color: '#fff',
                                                                     textAlign: 'center',
-                                                                    marginBottom: '20px',
-                                                                    width: '200px',
+                                                                    marginBottom: '10px',
+                                                                    width: '100px',
                                                                     marginRight: 'auto',
                                                                     marginLeft: 'auto',
                                                                 }}
+
                                                             >
                                                                 {tipo.charAt(0).toUpperCase() + tipo.slice(1)}
                                                             </div>
 
                                                             <Table data={infoClienteMathingEncargo.inmueblesDetalle.filter(inmueble =>
                                                                 infoClienteMathingEncargo[`inmuebles_asociados_${tipo}`].some(assoc => assoc.id === inmueble.id)
-                                                            )}>
+                                                            )} autoHeight={true}>
                                                                 <Column width={320} align="center">
                                                                     <HeaderCell>Dirección</HeaderCell>
                                                                     <Cell dataKey="direccion" />
@@ -676,35 +729,12 @@ const EncargosDetails = ({ data, setOnAddEncargoRefreshKey, onAddEncargoRefreshK
                                                                         )}
                                                                     </Cell>
                                                                 </Column>
-
-                                                                <Column width={100} align="center">
-                                                                    <HeaderCell>Acciones</HeaderCell>
-                                                                    <Cell>
-                                                                        {rowData => (
-                                                                            <Whisper placement="top" trigger="hover" speaker={<Tooltip>Ver más</Tooltip>}>
-                                                                                <Icon icon="mdi:eye-outline" style={{ cursor: 'pointer', fontSize: '1.5rem' }} onClick={() => handleViewMore(rowData)} />
-                                                                            </Whisper>
-                                                                        )}
-                                                                    </Cell>
-                                                                </Column>
                                                             </Table>
                                                         </div>
                                                     )
                                                 ))}
-                                                {infoClienteMathingEncargo.pedido && (
-                                                    <div className="flex flex-row gap-2 mt-[10px]">
-                                                        <Tag color="orange" style={{ marginBottom: '5px', marginRight: '5px' }}>
-                                                            Pedido
-                                                        </Tag>
-                                                    </div>
-                                                )}
-                                                {infoClienteMathingEncargo.pedido && (
-                                                    <div style={{ display: 'grid', placeItems: 'center' }}>
-                                                        <h4 className='text-base my-2'>Información del pedido</h4>
-                                                        <p><strong>Interés:</strong> {infoClienteMathingEncargo.interes.charAt(0).toUpperCase() + infoClienteMathingEncargo.interes.slice(1)}</p>
-                                                        <p><strong>Rango de Precios:</strong> {infoClienteMathingEncargo.rango_precios.join(' - ')} €</p>
-                                                    </div>
-                                                )}
+
+
                                             </div>
                                         ) : (
                                             <p>No hay información disponible del cliente.</p>
