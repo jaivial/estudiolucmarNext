@@ -1,5 +1,5 @@
 import React, { useState, useEffect, use } from 'react';
-import { Accordion, Tag, Button, SelectPicker, Modal, IconButton, Radio, RadioGroup, Toggle, Form, Grid, TagPicker, InputNumber, Table, Whisper, Tooltip } from 'rsuite';
+import { Accordion, Tag, Button, SelectPicker, Modal, IconButton, Radio, RadioGroup, Toggle, Form, Grid, TagPicker, InputNumber, Table, Whisper, Tooltip, AutoComplete, InputGroup } from 'rsuite';
 import axios from 'axios';
 import { Close } from '@rsuite/icons';
 import Toastify from 'toastify-js';
@@ -10,6 +10,8 @@ import { AiOutlineEdit, AiOutlineClose } from 'react-icons/ai';
 import { Icon } from '@iconify/react';
 import './clientesasociados.css';
 const { Column, HeaderCell, Cell } = Table;
+import SearchIcon from '@rsuite/icons/Search';
+import MemberIcon from '@rsuite/icons/Member';
 
 const ClientesAsociados = ({ inmuebleId, inmuebleDireccion, screenWidth }) => {
     const [clientesAsociados, setClientesAsociados] = useState([]);
@@ -58,6 +60,18 @@ const ClientesAsociados = ({ inmuebleId, inmuebleDireccion, screenWidth }) => {
         interes: '',  // Default value
         rango_precios: [0, 1000000]  // Default price range as array
     });
+
+
+
+    const handleSearch = (value) => {
+        const searchValue = value.toLowerCase();
+        const filtered = clientesAsociadosInmueble.filter((cliente) =>
+            `${cliente.nombre} ${cliente.apellido}`.toLowerCase().includes(searchValue)
+        );
+        setFilteredClientes(filtered);
+    };
+
+    const [filteredClientes, setFilteredClientes] = useState(clientesAsociadosInmueble);
 
     useEffect(() => {
         console.log('editCliente', editCliente);
@@ -154,12 +168,22 @@ const ClientesAsociados = ({ inmuebleId, inmuebleDireccion, screenWidth }) => {
             return;
         }
 
+        if (newCliente.telefono && newCliente.telefono.length !== 9) {
+            showToast('El teléfono debe tener 9 caracteres', 'linear-gradient(to right, #ff416c, #ff4b2b)');
+            return;
+        }
+        if (newCliente.email && !/^\S+@\S+\.\S+$/.test(newCliente.email)) {
+            showToast('El email no es válido', 'linear-gradient(to right, #ff416c, #ff4b2b)');
+            return;
+        }
+
 
         try {
             const response = await axios.post('/api/add_cliente', newCliente);
             if (response.status === 201) {
                 showToast('Cliente agregado.', 'linear-gradient(to right bottom, #00603c, #006f39, #007d31, #008b24, #069903)');
                 fetchClientes();
+                fetchClientesAsociados();
                 resetForm();
             }
         } catch (error) {
@@ -181,6 +205,7 @@ const ClientesAsociados = ({ inmuebleId, inmuebleDireccion, screenWidth }) => {
             console.log('response.data.clientesTarget', response.data.clientesTarget);
             setClientesAsociados(response.data.clientesTotales);
             setClientesAsociadosInmueble(response.data.clientesTarget);
+            setFilteredClientes(response.data.clientesTarget);
         } catch (error) {
             console.error('Error fetching clientes asociados del inmueble:', error);
         }
@@ -288,7 +313,9 @@ const ClientesAsociados = ({ inmuebleId, inmuebleDireccion, screenWidth }) => {
             const response = await axios.post('/api/unassociate_client', { clienteId, inmuebleId });
             if (response.data.status === 'success') {
                 showToast('Cliente eliminado con éxito', 'linear-gradient(to right bottom, #00603c, #006f39, #007d31, #008b24, #069903)');
+                console.log(clienteId);
                 setClientesAsociadosInmueble(clientesAsociadosInmueble.filter(cliente => cliente._id !== clienteId));
+                setFilteredClientes(clientesAsociadosInmueble.filter(cliente => cliente._id !== clienteId));
             } else {
                 showToast('Error al eliminar cliente', 'linear-gradient(to right bottom, #c62828, #b92125, #ac1a22, #a0131f, #930b1c)');
             }
@@ -343,7 +370,6 @@ const ClientesAsociados = ({ inmuebleId, inmuebleDireccion, screenWidth }) => {
 
     const updateClienteAsociado = async () => {
         if (editCliente.nombre === "") {
-            console.log('hola');
             showToast('El campo "Nombre" es obligatorio.', 'linear-gradient(to right bottom, #c62828, #b92125, #ac1a22, #a0131f, #930b1c)');
             return;
         }
@@ -378,12 +404,14 @@ const ClientesAsociados = ({ inmuebleId, inmuebleDireccion, screenWidth }) => {
             showToast('Error al actualizar el cliente', 'linear-gradient(to right bottom, #c62828, #b92125, #ac1a22, #a0131f, #930b1c)');
         }
     };
+
+    useEffect(() => {
+        console.log('newCliente', newCliente);
+    }, [newCliente]);
+
     return (
         <Accordion defaultActiveKey={['0']} className='w-auto ml-[16px] mr-[16px] mt-[20px] border-1 border-gray-300 bg-gray-100 rounded-lg shadow-lg'>
             <Accordion.Panel header="Clientes Asociados" eventKey="0" style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                <div className='flex justify-center items-center w-full'>
-                    <Button appearance='primary' style={{ marginBottom: '20px' }} className="bg-blue-400" onClick={handleOpenAsociar}>Asociar Clientes</Button>
-                </div>
                 <Modal open={open} onClose={handleClose} style={{ backgroundColor: 'rgba(0,0,0,0.15)', borderRadius: '10px', padding: '0px' }} backdrop="static">
                     <Modal.Header>
                         <Modal.Title style={{ fontSize: '1.5rem', fontWeight: 'semibold', textAlign: 'center' }}>Asociar Cliente</Modal.Title>
@@ -556,45 +584,43 @@ const ClientesAsociados = ({ inmuebleId, inmuebleDireccion, screenWidth }) => {
                                         />
                                     </Form.Group>
                                     <Form.Group>
-                                        <Form.ControlLabel>Tipo de Cliente</Form.ControlLabel>
-                                        <SelectPicker
+                                        <Form.ControlLabel>Tipo de asociación con el inmueble actual</Form.ControlLabel>
+                                        <TagPicker
                                             data={[
-                                                { label: 'Propietario', value: 'propietario' },
-                                                { label: 'Inquilino', value: 'inquilino' },
+                                                { label: 'Inquilino', value: 'inquilino', role: 'inquilino' },
+                                                { label: 'Propietario', value: 'propietario', role: 'propietario' }
                                             ]}
-                                            onChange={value => {
-                                                setNewCliente(prevState => {
-                                                    if (value) {
-                                                        const isPropietario = value.includes('propietario');
-                                                        const isInquilino = value.includes('inquilino');
-
-                                                        const inmueblesAsociadosPropietario = isPropietario
-                                                            ? [...prevState.inmuebles_asociados_propietario, { id: inmuebleId, direccion: inmuebleDireccion }]
-                                                            : prevState.inmuebles_asociados_propietario.filter(inmueble => inmueble.id !== inmuebleId);
-
-                                                        const inmueblesAsociadosInquilino = isInquilino
-                                                            ? [...prevState.inmuebles_asociados_inquilino, { id: inmuebleId, direccion: inmuebleDireccion }]
-                                                            : prevState.inmuebles_asociados_inquilino.filter(inmueble => inmueble.id !== inmuebleId);
-
-                                                        return {
+                                            value={(newCliente.inmuebles_asociados_inquilino && newCliente.inmuebles_asociados_inquilino.some(inquilino => inquilino.id === inmuebleId) ? ['inquilino'] : []).concat(newCliente.inmuebles_asociados_propietario && newCliente.inmuebles_asociados_propietario.some(propietario => propietario.id === inmuebleId) ? ['propietario'] : [])}
+                                            onChange={(selectedValues) => {
+                                                if (selectedValues.includes('inquilino')) {
+                                                    if (!newCliente.inmuebles_asociados_inquilino.some(inquilino => inquilino.id === inmuebleId)) {
+                                                        setNewCliente(prevState => ({
                                                             ...prevState,
-                                                            tipo_de_cliente: value,
-                                                            inmuebles_asociados_propietario: inmueblesAsociadosPropietario,
-                                                            inmuebles_asociados_inquilino: inmueblesAsociadosInquilino
-                                                        };
-                                                    } else {
-                                                        return {
-                                                            ...prevState,
-                                                            tipo_de_cliente: '',
-                                                            inmuebles_asociados_propietario: [],
-                                                            inmuebles_asociados_inquilino: []
-                                                        };
+                                                            inmuebles_asociados_inquilino: [...prevState.inmuebles_asociados_inquilino, { id: inmuebleId, direccion: inmuebleDireccion }]
+                                                        }));
                                                     }
-                                                });
+                                                } else {
+                                                    setNewCliente(prevState => ({
+                                                        ...prevState,
+                                                        inmuebles_asociados_inquilino: prevState.inmuebles_asociados_inquilino.filter(inquilino => inquilino.id !== inmuebleId)
+                                                    }));
+                                                }
+                                                if (selectedValues.includes('propietario')) {
+                                                    if (!newCliente.inmuebles_asociados_propietario.some(propietario => propietario.id === inmuebleId)) {
+                                                        setNewCliente(prevState => ({
+                                                            ...prevState,
+                                                            inmuebles_asociados_propietario: [...prevState.inmuebles_asociados_propietario, { id: inmuebleId, direccion: inmuebleDireccion }]
+                                                        }));
+                                                    }
+                                                } else {
+                                                    setNewCliente(prevState => ({
+                                                        ...prevState,
+                                                        inmuebles_asociados_propietario: prevState.inmuebles_asociados_propietario.filter(propietario => propietario.id !== inmuebleId)
+                                                    }));
+                                                }
                                             }}
-                                            searchable={false}
-                                            multiple
-                                            block
+                                            placeholder="Selecciona roles"
+                                            style={{ width: '80%', margin: '0 auto' }}
                                         />
                                     </Form.Group>
                                     <Form.Group controlId="informador-toggle" className="w-full flex flex-col gap-4 justify-center items-center">
@@ -675,76 +701,74 @@ const ClientesAsociados = ({ inmuebleId, inmuebleDireccion, screenWidth }) => {
                         </Modal.Footer>
                     </Modal.Body>
                 </Modal>
-                {
-                    clientesAsociadosInmueble.length > 0 ? (
-                        <ul className='flex flex-col gap-3 mt-4'>
-                            {clientesAsociadosInmueble
-                                .sort((a, b) => {
-                                    const aIsPropietario = a.inmuebles_asociados_propietario?.some(propietario => propietario.id === inmuebleId);
-                                    const bIsPropietario = b.inmuebles_asociados_propietario?.some(propietario => propietario.id === inmuebleId);
-                                    return bIsPropietario - aIsPropietario;
-                                })
-                                .map((cliente) => (
-                                    <>
-                                        <li key={cliente._id} className="flex flex-row justify-between items-center">
-                                            <div className="flex flex-row justify-center items-center w-full gap-1">
-                                                <div className='flex flex-row justify-center items-center gap-1'>
-                                                    <Icon icon="mdi:information" style={{ fontSize: '2rem' }} className={cliente.informador ? 'text-blue-500' : 'text-transparent'} />
-
-                                                </div>
-                                                <div className='w-[200px] text-center'>
-                                                    <p className="text-base sm:text-lg font-semibold w-full">{cliente.nombre} {cliente.apellido}</p>
-                                                </div>
-                                                <div className='w-[100px] text-center display-flex flex-row justify-center items-center'>
-                                                    <div className='flex flex-col justify-center items-center mx-4 sm:flex-row gap-2'>
-                                                        {cliente.inmuebles_asociados_propietario && cliente.inmuebles_asociados_propietario.some(propietario => propietario.id === inmuebleId) && (
-                                                            <Tag
-                                                                key="propietario"
-                                                                color="green"
-                                                                style={{ margin: '0px' }}
-                                                            >
-                                                                Propietario
-                                                            </Tag>
-                                                        )}
-                                                        {cliente.inmuebles_asociados_inquilino && cliente.inmuebles_asociados_inquilino.some(inquilino => inquilino.id === inmuebleId) && (
-                                                            <Tag
-                                                                key="inquilino"
-                                                                color="orange"
-                                                                style={{ margin: '0px', marginBottom: '0px' }}
-                                                            >
-                                                                Inquilino
-                                                            </Tag>
-                                                        )}
-                                                    </div>
-                                                </div>
-                                                {cliente.telefono && screenWidth >= 640 && (
-                                                    <div className='flex-2 display-flex flex-row justify-center items-center'>
-                                                        <p>{cliente.telefono}</p>
-                                                    </div>
-                                                )}
-                                                <div className='w-[200px] text-center flex flex-row justify-center items-center gap-3'>
-                                                    <button className='rounded-md text-3xl' onClick={() => handleViewCliente(cliente)}>
-                                                        <FaEye />
-                                                    </button>
-
-                                                    <button className='rounded-md text-3xl' onClick={() => handleEditClienteAsociado(cliente)}>
-                                                        <AiOutlineEdit />
-                                                    </button>
-                                                    <button onClick={() => handleRemoveCliente(cliente._id)} className='text-black text-xl'>
-                                                        <AiOutlineClose />
-                                                    </button>
+                <InputGroup style={{ width: '300px', margin: '0 auto 40px auto' }}>
+                    <AutoComplete
+                        placeholder="Buscar clientes asociados.."
+                        data={clientesAsociadosInmueble.map(cliente => `${cliente.nombre} ${cliente.apellido}`)}
+                        onChange={handleSearch}
+                    />
+                    <InputGroup.Button tabIndex={-1}>
+                        <SearchIcon />
+                    </InputGroup.Button>
+                </InputGroup>
+                {filteredClientes.length > 0 ? (
+                    <ul className='flex flex-col gap-3 mt-4'>
+                        {filteredClientes
+                            .sort((a, b) => {
+                                const aIsPropietario = a.inmuebles_asociados_propietario?.some(propietario => propietario.id === inmuebleId);
+                                const bIsPropietario = b.inmuebles_asociados_propietario?.some(propietario => propietario.id === inmuebleId);
+                                return bIsPropietario - aIsPropietario;
+                            })
+                            .map((cliente) => (
+                                <>
+                                    <li key={cliente._id} className="flex flex-row justify-between items-center">
+                                        <div className="flex flex-row justify-center items-center w-full gap-1">
+                                            <div className='flex flex-row justify-center items-center gap-1'>
+                                                <Icon icon="mdi:information" style={{ fontSize: '2rem' }} className={cliente.informador ? 'text-blue-500' : 'text-transparent'} />
+                                            </div>
+                                            <div className='w-[200px] text-center'>
+                                                <p className="text-base sm:text-lg font-semibold w-full">{cliente.nombre} {cliente.apellido}</p>
+                                            </div>
+                                            <div className='w-[100px] text-center display-flex flex-row justify-center items-center'>
+                                                <div className='flex flex-col justify-center items-center mx-0 sm:flex-row gap-2'>
+                                                    {cliente.inmuebles_asociados_propietario?.some(propietario => propietario.id === inmuebleId) && (
+                                                        <Tag color="green" style={{ margin: '0 auto' }}>Propietario</Tag>
+                                                    )}
+                                                    {cliente.inmuebles_asociados_inquilino?.some(inquilino => inquilino.id === inmuebleId) && (
+                                                        <Tag color="orange" style={{ margin: '0 auto' }}>Inquilino</Tag>
+                                                    )}
                                                 </div>
                                             </div>
-                                        </li>
-                                        <div className='h-[1px] w-full bg-gray-300 my-2'></div>
-                                    </>
-                                ))}
-                        </ul>
-                    ) : (
-                        <p>No hay clientes asociados a este inmueble.</p>
-                    )
-                }
-                <Modal open={editClienteAsociadoModalOpen} onClose={closeModalClienteAsociado} backdrop={true} style={{ backgroundColor: 'rgba(0,0,0,0.15)', padding: '0px' }}>
+                                            {cliente.telefono && window.innerWidth >= 640 && (
+                                                <div className='flex-2 display-flex flex-row justify-center items-center'>
+                                                    <p>{cliente.telefono}</p>
+                                                </div>
+                                            )}
+                                            <div className='w-[200px] text-center flex flex-row justify-center items-center gap-3'>
+                                                <button className='rounded-md text-3xl' onClick={() => handleViewCliente(cliente)}>
+                                                    <FaEye />
+                                                </button>
+                                                <button className='rounded-md text-3xl' onClick={() => handleEditClienteAsociado(cliente)}>
+                                                    <AiOutlineEdit />
+                                                </button>
+                                                <button onClick={() => handleRemoveCliente(cliente._id)} className='text-black text-xl'>
+                                                    <AiOutlineClose />
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </li>
+                                    <div className='h-[1px] w-full bg-gray-300 my-2'></div>
+                                </>
+                            ))}
+                    </ul>
+                ) : (
+                    <p className='text-center'>No hay clientes asociados a este inmueble.</p>
+                )}
+
+                <div className='flex justify-center items-center w-full'>
+                    <Button appearance='primary' style={{ marginBottom: '20px', marginTop: '20px' }} className="bg-blue-400" onClick={handleOpenAsociar}>Asociar Clientes</Button>
+                </div>
+                <Modal open={editClienteAsociadoModalOpen} onClose={closeModalClienteAsociado} backdrop={true} overflow={false} style={{ backgroundColor: 'rgba(0,0,0,0.15)', padding: '0px', marginBottom: '70px' }} size="xs">
                     <Modal.Header style={{ display: 'flex', flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: '10px', width: '100%', marginTop: '10px' }}>
                         <Modal.Title style={{ fontSize: '1.5rem', fontWeight: 'semibold', textAlign: 'center' }}>Editar Cliente Asociado</Modal.Title>
                     </Modal.Header>
@@ -906,74 +930,76 @@ const ClientesAsociados = ({ inmuebleId, inmuebleDireccion, screenWidth }) => {
                         </Modal.Footer>
                     </Modal.Body>
                 </Modal>
-                <Modal open={viewMoreClienteAsociadoModalOpen} onClose={handleCloseViewMoreClienteAsociado} style={{ backgroundColor: 'rgba(0,0,0,0.15)', padding: '0px' }} backdrop={true}>
+                <Modal open={viewMoreClienteAsociadoModalOpen} onClose={handleCloseViewMoreClienteAsociado} style={{ backgroundColor: 'rgba(0,0,0,0.15)', padding: '0px', marginBottom: '70px' }} backdrop={true} overflow={false} size="xs">
                     <Modal.Header style={{ display: 'flex', flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: '10px', width: '100%', marginTop: '10px' }}>
                         <Modal.Title style={{ fontSize: '1.5rem', fontWeight: 'semibold', textAlign: 'center' }}>Detalles del Cliente Asociado</Modal.Title>
                     </Modal.Header>
-                    <Modal.Body>
+                    <Modal.Body style={{ padding: '15px 0px', display: 'flex', flexDirection: 'column', gap: '20px', alignItems: 'center' }}>
                         {viewMoreClienteAsociado && (
-                            <div>
-                                <p><strong>Nombre:</strong> {viewMoreClienteAsociado.nombre}</p>
-                                <p><strong>Apellido:</strong> {viewMoreClienteAsociado.apellido}</p>
-                                <p><strong>DNI:</strong> {viewMoreClienteAsociado.dni}</p>
-                                <p><strong>Teléfono:</strong> {viewMoreClienteAsociado.telefono}</p>
+                            <div className='flex flex-col gap-2 w-[90%]'>
+                                <div className='flex flex-col gap-2 px-4 py-2 bg-slate-200 rounded-md shadow-lg mb-4'>
+                                    <p><strong>Nombre:</strong> {viewMoreClienteAsociado.nombre}</p>
+                                    <p><strong>Apellido:</strong> {viewMoreClienteAsociado.apellido}</p>
+                                    <p><strong>DNI:</strong> {viewMoreClienteAsociado.dni}</p>
+                                    <p><strong>Teléfono:</strong> {viewMoreClienteAsociado.telefono}</p>
+                                    {viewMoreClienteAsociado.pedido && (
+                                        <div className="flex flex-row gap-2 mt-[10px]">
+                                            <p><strong>Pedido:</strong></p>
+                                            <Tag color="orange" style={{ marginBottom: '5px', marginRight: '5px' }}>
+                                                Pedido
+                                            </Tag>
+                                        </div>
+                                    )}
 
-                                {viewMoreClienteAsociado.pedido && (
                                     <div className="flex flex-row gap-2 mt-[10px]">
-                                        <p><strong>Pedido:</strong></p>
-                                        <Tag color="orange" style={{ marginBottom: '5px', marginRight: '5px' }}>
-                                            Pedido
-                                        </Tag>
+                                        <p><strong>Tipo de Cliente:</strong></p>
+                                        <div>
+                                            {viewMoreClienteAsociado.inmuebles_asociados_propietario && viewMoreClienteAsociado.inmuebles_asociados_propietario.length > 0 && (
+                                                <Tag
+                                                    key="propietario"
+                                                    color="green"
+                                                    style={{ marginBottom: '5px', marginRight: '5px' }}
+                                                >
+                                                    Propietario
+                                                </Tag>
+                                            )}
+                                            {viewMoreClienteAsociado.inmuebles_asociados_inquilino && viewMoreClienteAsociado.inmuebles_asociados_inquilino.length > 0 && (
+                                                <Tag
+                                                    key="inquilino"
+                                                    color="red"
+                                                    style={{ marginBottom: '5px', marginRight: '5px' }}
+                                                >
+                                                    Inquilino
+                                                </Tag>
+                                            )}
+                                        </div>
                                     </div>
-                                )}
-
-                                <div className="flex flex-row gap-2 mt-[10px]">
-                                    <p><strong>Tipo de Cliente:</strong></p>
-                                    <div>
-                                        {viewMoreClienteAsociado.inmuebles_asociados_propietario && viewMoreClienteAsociado.inmuebles_asociados_propietario.length > 0 && (
-                                            <Tag
-                                                key="propietario"
-                                                color="green"
-                                                style={{ marginBottom: '5px', marginRight: '5px' }}
-                                            >
-                                                Propietario
+                                    {viewMoreClienteAsociado.informador && (
+                                        <div className="flex flex-row gap-2 mt-[10px]">
+                                            <p><strong>Informador:</strong></p>
+                                            <Tag color="cyan" style={{ marginBottom: '5px', marginRight: '5px' }}>
+                                                Informador
                                             </Tag>
-                                        )}
-                                        {viewMoreClienteAsociado.inmuebles_asociados_inquilino && viewMoreClienteAsociado.inmuebles_asociados_inquilino.length > 0 && (
-                                            <Tag
-                                                key="inquilino"
-                                                color="red"
-                                                style={{ marginBottom: '5px', marginRight: '5px' }}
-                                            >
-                                                Inquilino
-                                            </Tag>
-                                        )}
-                                    </div>
+                                        </div>
+                                    )}
                                 </div>
-                                {viewMoreClienteAsociado.informador && (
-                                    <div className="flex flex-row gap-2 mt-[10px]">
-                                        <p><strong>Informador:</strong></p>
-                                        <Tag color="cyan" style={{ marginBottom: '5px', marginRight: '5px' }}>
-                                            Informador
-                                        </Tag>
-                                    </div>
-                                )}
+
 
                                 {(viewMoreClienteAsociado.inmuebles_asociados_propietario && viewMoreClienteAsociado.inmuebles_asociados_propietario.length > 0) || (viewMoreClienteAsociado.inmuebles_asociados_inquilino && viewMoreClienteAsociado.inmuebles_asociados_inquilino.length > 0) ? (
                                     <div>
                                         {['propietario', 'inquilino'].map(tipo => (
                                             viewMoreClienteAsociado[`inmuebles_asociados_${tipo}`] && viewMoreClienteAsociado[`inmuebles_asociados_${tipo}`].length > 0 && (
-                                                <div key={tipo} style={{ marginBottom: '20px' }}>
+                                                <div key={tipo} className='mb-14 mt-8'>
                                                     <div
                                                         style={{
                                                             backgroundColor: tipo === 'propietario' ? '#28a745' :
                                                                 tipo === 'inquilino' ? '#ef4444' : '#ef4444',
                                                             borderRadius: '10px',
-                                                            padding: '10px',
+                                                            padding: '8px 0px',
                                                             color: '#fff',
                                                             textAlign: 'center',
-                                                            marginBottom: '20px',
-                                                            width: '200px',
+                                                            marginBottom: '10px',
+                                                            width: '100px',
                                                             marginRight: 'auto',
                                                             marginLeft: 'auto',
                                                         }}
@@ -981,7 +1007,7 @@ const ClientesAsociados = ({ inmuebleId, inmuebleDireccion, screenWidth }) => {
                                                         {tipo.charAt(0).toUpperCase() + tipo.slice(1)}
                                                     </div>
 
-                                                    <Table data={viewMoreClienteAsociado.inmueblesDetalle.filter(inmueble =>
+                                                    <Table autoHeight={true} data={viewMoreClienteAsociado.inmueblesDetalle.filter(inmueble =>
                                                         viewMoreClienteAsociado[`inmuebles_asociados_${tipo}`].some(assoc => assoc.id === inmueble.id)
                                                     )}>
                                                         <Column width={320} align="center">
@@ -1020,12 +1046,12 @@ const ClientesAsociados = ({ inmuebleId, inmuebleDireccion, screenWidth }) => {
                                 ) : null}
                             </div>
                         )}
+                        <Modal.Footer>
+                            <Button onClick={handleCloseViewMoreClienteAsociado} appearance="subtle">
+                                Cerrar
+                            </Button>
+                        </Modal.Footer>
                     </Modal.Body>
-                    <Modal.Footer>
-                        <Button onClick={handleCloseViewMoreClienteAsociado} appearance="subtle">
-                            Cerrar
-                        </Button>
-                    </Modal.Footer>
                 </Modal>
 
             </Accordion.Panel >
