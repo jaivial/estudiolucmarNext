@@ -2,9 +2,22 @@
 import Cors from 'cors';
 
 // Initialize the CORS middleware
+const allowedOrigins = [
+    'https://estudiolucmar.com',
+    'https://www.estudiolucmar.com',
+    'http://estudiolucmar.com',
+    'http://www.estudiolucmar.com',
+];
+
 const cors = Cors({
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-    origin: 'https://estudiolucmar.com',  // Your domain
+    origin: (origin, callback) => {
+        if (!origin || allowedOrigins.includes(origin)) {
+            callback(null, origin);
+        } else {
+            callback(new Error('Not allowed by CORS'));
+        }
+    },
     credentials: true,  // Enable cookies if needed
 });
 
