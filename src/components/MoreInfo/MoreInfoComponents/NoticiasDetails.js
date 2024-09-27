@@ -14,13 +14,16 @@ import { FaHandHoldingDollar } from 'react-icons/fa6';
 import { TbUrgent } from 'react-icons/tb';
 import { FaUserTie } from 'react-icons/fa';
 import { FiEdit } from 'react-icons/fi';
+import { Accordion, Panel, Modal, Button, InputNumber, DatePicker, CustomProvider, SelectPicker, InputPicker } from 'rsuite'; // Import Accordion and Panel from rsuite
+import esES from 'rsuite/locales/es_ES';
+import { format } from 'date-fns';
 
 // CustomSlider component to handle the slider with only three discrete positions
 const CustomSlider = ({ value, onChange }) => {
     return (
         <Slider
             min={0}
-            max={2} // Three discrete positions: 0, 1, 2
+            max={1} // Three discrete positions: 0, 1, 2
             step={1}
             value={value}
             onChange={onChange}
@@ -154,12 +157,13 @@ const NoticiasDetails = ({ data, setOnAddNoticiaRefreshKey, onAddNoticiaRefreshK
         const params = {
             id: isEditing ? currentNoticiaId : data.inmueble.id,
             tipoPVA: tipoVenta,
-            valoracion: valoracion === 'Yes' ? '1' : '0',
+            valoracion: valoracion === 'Con Valoración' ? '1' : '0',
             valoraciontext: valoracionPrice,
             fecha: noticiaDateTime,
-            prioridad: draggableValue === 0 ? 'Baja' : draggableValue === 1 ? 'Media' : 'Alta',
+            prioridad: draggableValue === 0 ? 'Baja' : 'Alta',
             comercial: selectedAsesor.value,
             fechaValoracion: valoracionDateTime,
+            comercial: selectedAsesor,
         };
 
         try {
@@ -194,11 +198,11 @@ const NoticiasDetails = ({ data, setOnAddNoticiaRefreshKey, onAddNoticiaRefreshK
             value: noticia.comercial_noticia,
             label: noticia.comercial_noticia,
         });
-        setValoracion(noticia.valoracion === 1 ? 'Yes' : 'No');
+        setValoracion(noticia.valoracion === 1 ? 'Con Valoración' : 'Sin Valoración');
         setValoracionPrice(noticia.valoracion_establecida || '');
         setValoracionDateTime(noticia.valoracionDate || '');
         setNoticiaDateTime(noticia.noticia_fecha || '');
-        setDraggableValue(noticia.prioridad === 'Baja' ? 0 : noticia.prioridad === 'Media' ? 1 : 2);
+        setDraggableValue(noticia.prioridad === 'Baja' ? 0 : 1);
         setIsEditing(true); // Set editing state
         setCurrentNoticiaId(noticia.noticia_id); // Set current noticia ID for editing
         setIsPopupOpen(true); // Open the popup for editing
@@ -234,141 +238,186 @@ const NoticiasDetails = ({ data, setOnAddNoticiaRefreshKey, onAddNoticiaRefreshK
     const formatDate = (dateString) => {
         return moment(dateString).format('DD/MM/YYYY');
     };
+    // Helper function to format date to Spanish format
+    const formatDateTwo = (dateString) => {
+        return moment(dateString).format('YYYY-MM-DD');
+    };
+
+    useEffect(() => {
+        console.log('noticiaDateTime', noticiaDateTime);
+        console.log('valoracionDateTime', valoracionDateTime);
+    }, [noticiaDateTime, valoracionDateTime]);
 
     return (
-        <div className="p-4">
-            <div className="bg-white border border-gray-300 rounded-md">
-                <div onClick={() => setIsOpen(!isOpen)} className="flex items-center justify-between p-4 cursor-pointer bg-gray-100 rounded-t-md">
+        <CustomProvider locale={esES}>
+            <Accordion defaultActiveKey={1} bordered style={{ margin: '0px 16px', marginTop: '20px' }}>
+                <Accordion.Panel style={{ backgroundColor: '#f4f4f5', padding: '0px' }} header={
                     <h2 className="font-bold text-xl">Noticias</h2>
-                    {isOpen ? <AiOutlineUp className="text-2xl" /> : <AiOutlineDown className="text-2xl" />}
-                </div>
-                {isOpen && (
-                    <div className="py-1 px-2 relative">
-                        {data.inmueble.noticiastate === true ? (
-                            noticias.map((noticia) => (
-                                <div key={noticia.id} className="py-2 my-3 flex flex-col items-center gap-2">
-                                    <div className="flex items-center gap-2 flex-col w-full">
-                                        <IoCalendarNumber className="text-gray-900 text-3xl" />
-                                        <p className="text-base text-gray-950 py-1 text-center">{formatDate(noticia.noticia_fecha)}</p>
-                                        <div className="border-b border-gray-300 w-4/6 -mt-1"></div>
-                                    </div>
-
-                                    <div className="flex items-center gap-2 flex-col w-full">
-                                        <MdRealEstateAgent className="text-gray-900 text-3xl" />
-                                        <p className="text-base text-gray-950 py-1 text-center">{noticia.tipo_PV === 'PV' ? 'Piso en Venta' : 'Piso en Venta con Anterioridad'}</p>
-                                        <div className="border-b border-gray-300 w-4/6 -mt-1"></div>
-                                    </div>
-
-                                    <div className="flex items-center gap-2 flex-col w-full">
-                                        <RiAuctionLine className="text-gray-900 text-3xl" />
-                                        <p className="text-base text-gray-950 py-1 text-center">{noticia.valoracion === 0 ? 'No valorado' : 'Valorado'}</p>
-                                        {noticia.valoracion === 0 && <div className="border-b border-gray-300 w-4/6 -mt-1"></div>}
-                                    </div>
-
-                                    {noticia.valoracion === 1 && (
-                                        <div className="flex flex-col items-center gap-2 w-full">
-                                            <div className="flex flex-row items-center justify-center gap-8 w-full">
-                                                <div className="flex items-center gap-2 flex-col w-fit">
-                                                    <TbCalendarDollar className="text-gray-900 text-3xl" />
-                                                    <p className="text-base text-gray-900 py-1 text-center">
-                                                        Fecha de <br /> valoración: <br /> {formatDate(noticia.valoracionDate)}
-                                                    </p>
-                                                </div>
-                                                <div className="flex items-center gap-2 flex-col w-fit">
-                                                    <FaHandHoldingDollar className="text-gray-900 text-3xl" />
-                                                    <p className="text-base text-gray-950 py-1 text-center">
-                                                        Valoración <br /> establecida: <br /> {noticia.valoracion_establecida} €
-                                                    </p>
-                                                </div>
-                                            </div>
+                } eventKey="1">
+                    <div className="p-4">
+                        <div className="py-1 px-2 relative">
+                            {data.inmueble.noticiastate === true ? (
+                                noticias.map((noticia) => (
+                                    <div key={noticia.id} className="py-2 my-3 flex flex-col items-center gap-2">
+                                        <div className="flex items-center gap-2 flex-col w-full">
+                                            <IoCalendarNumber className="text-gray-900 text-3xl" />
+                                            <p className="text-base text-gray-950 py-1 text-center">{formatDate(noticia.noticia_fecha)}</p>
                                             <div className="border-b border-gray-300 w-4/6 -mt-1"></div>
+                                        </div>
+
+                                        <div className="flex items-center gap-2 flex-col w-full">
+                                            <MdRealEstateAgent className="text-gray-900 text-3xl" />
+                                            <p className="text-base text-gray-950 py-1 text-center">{noticia.tipo_PV === 'PV' ? 'Piso en Venta' : 'Piso en Venta con Anterioridad'}</p>
+                                            <div className="border-b border-gray-300 w-4/6 -mt-1"></div>
+                                        </div>
+
+                                        <div className="flex items-center gap-2 flex-col w-full">
+                                            <RiAuctionLine className="text-gray-900 text-3xl" />
+                                            <p className="text-base text-gray-950 py-1 text-center">{noticia.valoracion === 0 ? 'No valorado' : 'Valorado'}</p>
+                                            {noticia.valoracion === 0 && <div className="border-b border-gray-300 w-4/6 -mt-1"></div>}
+                                        </div>
+
+                                        {noticia.valoracion === '1' && (
+                                            <div className="flex flex-col items-center gap-2 w-full">
+                                                <div className="flex flex-row items-center justify-center gap-8 w-full">
+                                                    <div className="flex items-center gap-2 flex-col w-fit">
+                                                        <TbCalendarDollar className="text-gray-900 text-3xl" />
+                                                        <p className="text-base text-gray-900 py-1 text-center">
+                                                            Fecha de <br /> valoración: <br /> {formatDate(noticia.valoracionDate)}
+                                                        </p>
+                                                    </div>
+                                                    <div className="flex items-center gap-2 flex-col w-fit">
+                                                        <FaHandHoldingDollar className="text-gray-900 text-3xl" />
+                                                        <p className="text-base text-gray-950 py-1 text-center">
+                                                            Valoración <br /> establecida: <br /> {noticia.valoracion_establecida} €
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                                <div className="border-b border-gray-300 w-4/6 -mt-1"></div>
+                                            </div>
+                                        )}
+
+                                        <div className="flex items-center gap-2 flex-col w-full">
+                                            <TbUrgent className="text-gray-900 text-3xl" />
+                                            <p className="text-base text-gray-950 py-1 text-center">Prioridad: {noticia.prioridad}</p>
+                                            <div className="border-b border-gray-300 w-4/6 -mt-1"></div>
+                                        </div>
+
+                                        <div className="flex items-center gap-2 flex-col w-full">
+                                            <FaUserTie className="text-gray-900 text-3xl" />
+                                            <p className="text-base text-gray-950 py-1 text-center">Asesor: {noticia.comercial_noticia}</p>
+                                        </div>
+                                        <div className="absolute top-2 right-2">
+                                            <FiEdit className="text-2xl cursor-pointer text-blue-500" onClick={() => handleEditNoticia(noticia)} />
+                                        </div>
+                                    </div>
+                                ))
+                            ) : (
+                                <div className="flex justify-center items-center">
+                                    <AiOutlinePlus className="text-4xl cursor-pointer text-blue-500" onClick={() => setIsPopupOpen(true)} />
+                                </div>
+                            )}
+                        </div>
+
+                        <Modal open={isPopupOpen} onClose={handlePopupClose} size="sm" backdrop={true} style={{ backgroundColor: 'rgba(0,0,0,0.15)', padding: '0px 2px' }}>
+                            <Modal.Header style={{ display: 'flex', flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: '10px', width: '100%', marginTop: '10px' }}>
+                                <Modal.Title style={{ fontSize: '1.5rem', fontWeight: 'bold', textAlign: 'center' }}>{isEditing ? 'Editar Noticia' : 'Añadir Noticia'}</Modal.Title>
+                            </Modal.Header>
+                            <Modal.Body style={{ padding: '10px 25px', fontSize: '1rem', lineHeight: '1.5', display: 'flex', flexDirection: 'column', gap: '10px', alignItems: 'center', width: '100%' }}>
+                                <div className="flex flex-col gap-4 w-full">
+                                    <p className="text-sm text-gray-600 -mb-4 pl-1">Fecha de Noticia</p>
+                                    <DatePicker
+                                        value={noticiaDateTime ? new Date(noticiaDateTime) : new Date()}
+                                        onChange={(value) => setNoticiaDateTime(formatDateTwo(value))}
+                                        format="dd/MM/yyyy"
+                                        oneTap
+                                        placement="auto"
+                                        className="w-full"
+                                        placeholder="Fecha de Valoración"
+                                    />
+                                    <InputPicker
+                                        value={tipoVenta}
+                                        onChange={(value) => setTipoVenta(value)}
+                                        data={[
+                                            { value: 'PV', label: 'PV' },
+                                            { value: 'PVA', label: 'PVA' }
+                                        ]}
+                                        placeholder="Tipo Venta"
+                                        className="basic-single z-[901]"
+                                        style={{ width: '100%' }}
+                                    />
+
+                                    <SelectPicker
+                                        data={asesorOptions}
+                                        value={selectedAsesor ? selectedAsesor.value : undefined}
+                                        onChange={(value, item) => setSelectedAsesor(value)}
+                                        placeholder="Asesor"
+                                        className="basic-single z-[900]"
+                                        style={{ width: '100%' }}
+                                    />
+                                    <Select
+                                        value={valoracion ? { value: valoracion, label: valoracion } : null}
+                                        onChange={(option) => setValoracion(option.value)}
+                                        options={[
+                                            { value: 'Con Valoración', label: 'Con Valoración' },
+                                            { value: 'Sin Valoración', label: 'Sin Valoración' }
+                                        ]}
+                                        placeholder="Valoración"
+                                        className="basic-single z-[800]"
+                                        classNamePrefix="select"
+                                    />
+
+                                    {valoracion === 'Con Valoración' && (
+                                        <div className="flex flex-col gap-2">
+                                            <p className="text-sm text-gray-600 -mb-2 pl-1">Precio de la Valoración</p>
+                                            <InputNumber
+                                                min={0}
+                                                value={valoracionPrice}
+                                                onChange={(value) => setValoracionPrice(value)}
+                                                className="w-full"
+                                                placeholder="Introduce un precio"
+                                            />
+                                            <p className="text-sm text-gray-600 -mb-2 pl-1">Fecha de la Valoración</p>
+                                            <DatePicker
+                                                value={valoracionDateTime ? new Date(valoracionDateTime) : new Date()}
+                                                onChange={(value) => setValoracionDateTime(formatDateTwo(value))}
+                                                format="dd/MM/yyyy"
+                                                oneTap
+                                                placement="auto"
+                                                className="w-full"
+                                                placeholder="Fecha de Valoración"
+                                            />
                                         </div>
                                     )}
 
-                                    <div className="flex items-center gap-2 flex-col w-full">
-                                        <TbUrgent className="text-gray-900 text-3xl" />
-                                        <p className="text-base text-gray-950 py-1 text-center">Prioridad: {noticia.prioridad}</p>
-                                        <div className="border-b border-gray-300 w-4/6 -mt-1"></div>
-                                    </div>
-
-                                    <div className="flex items-center gap-2 flex-col w-full">
-                                        <FaUserTie className="text-gray-900 text-3xl" />
-                                        <p className="text-base text-gray-950 py-1 text-center">Asesor: {noticia.comercial_noticia}</p>
-                                    </div>
-                                    <div className="absolute top-2 right-2">
-                                        <FiEdit className="text-2xl cursor-pointer text-blue-500" onClick={() => handleEditNoticia(noticia)} />
+                                    <div className="flex flex-col py-3 px-10 w-full justify-center items-center bg-white border border-gray-300 rounded-lg shadow-md">
+                                        <h2 className="font-sans text-gray-700 text-center text-xl mb-4 mt-2">Prioridad</h2>
+                                        <div className="flex flex-row gap-8 justify-between w-full mb-2 text-gray-700">
+                                            <span>Baja</span>
+                                            <span>Alta</span>
+                                        </div>
+                                        <CustomSlider value={draggableValue} onChange={handleSliderChange} />
                                     </div>
                                 </div>
-                            ))
-                        ) : (
-                            <div className="flex justify-center items-center py-3">
-                                <AiOutlinePlus className="text-4xl cursor-pointer text-blue-500" onClick={() => setIsPopupOpen(true)} />
-                            </div>
-                        )}
-                    </div>
-                )}
-            </div>
-
-            {isPopupOpen && (
-                <div className="fixed inset-0 bg-gray-700 bg-opacity-50 flex justify-center items-center">
-                    <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-lg relative">
-                        <AiOutlineClose className="absolute top-2 right-2 text-2xl cursor-pointer" onClick={handlePopupClose} />
-                        <h2 className="text-xl font-bold mb-4">{isEditing ? 'Editar Noticia' : 'Añadir Noticia'}</h2>
-                        <div className="flex flex-col gap-4">
-                            <p className="text-sm text-gray-600 -mb-4 pl-1">Fecha de Noticia</p>
-                            <input type="date" value={noticiaDateTime} onChange={(e) => setNoticiaDateTime(e.target.value)} className="border border-gray-300 p-2 rounded" placeholder="Fecha de Noticia" />
-                            <select value={tipoVenta} onChange={(e) => setTipoVenta(e.target.value)} className="border border-gray-300 p-2 rounded">
-                                <option value="">Tipo Venta</option>
-                                <option value="PV">PV</option>
-                                <option value="PVA">PVA</option>
-                            </select>
-
-                            <Select options={asesorOptions} value={selectedAsesor} onChange={(option) => setSelectedAsesor(option)} placeholder="Asesor" className="basic-single z-[999]" classNamePrefix="select" />
-
-                            <select value={valoracion} onChange={(e) => setValoracion(e.target.value)} className="border border-gray-300 p-2 rounded z-[900]">
-                                <option value="">Valoración</option>
-                                <option value="Yes">Yes</option>
-                                <option value="No">No</option>
-                            </select>
-
-                            {valoracion === 'Yes' && (
-                                <div className="flex flex-col gap-2">
-                                    <input type="number" value={valoracionPrice} onChange={(e) => setValoracionPrice(e.target.value)} className="border border-gray-300 p-2 rounded" placeholder="Introduce un precio" />
-                                    <p className="text-sm text-gray-600 -mb-2 pl-1">Fecha de la Valoración</p>
-                                    <input type="date" value={valoracionDateTime} onChange={(e) => setValoracionDateTime(e.target.value)} className="border border-gray-300 p-2 rounded" placeholder="Fecha de Valoración" />
-                                </div>
-                            )}
-
-                            <div className="flex flex-col py-3 px-4 w-full justify-center items-center bg-white border border-gray-300 rounded-lg shadow-md">
-                                <h2 className="font-sans text-gray-700 text-center">Nivel</h2>
-                                <div className="flex flex-row gap-8 justify-center mb-2 text-gray-700">
-                                    <span>Baja</span>
-                                    <span>Media</span>
-                                    <span>Alta</span>
-                                </div>
-                                <CustomSlider value={draggableValue} onChange={handleSliderChange} />
-                            </div>
-
-                            <div className="flex-col justify-center flex items-center gap-3">
-                                <div className='flex flex-row justify-center items-center gap-3'>
-                                    <button onClick={handleAddNoticia} className="bg-blue-500 text-white p-2 rounded">
-                                        {isEditing ? 'Actualizar' : 'Añadir'}
-                                    </button>
-                                    {isEditing && (
-                                        <button onClick={handleDeleteNoticia} className="bg-red-500 text-white p-2 rounded-md">
-                                            Eliminar
-                                        </button>
-                                    )}
-                                </div>
-                                <button onClick={handlePopupClose} className="bg-gray-500 text-white p-2 rounded">
+                            </Modal.Body>
+                            <Modal.Footer>
+                                <Button onClick={handleAddNoticia} appearance="primary">
+                                    {isEditing ? 'Actualizar' : 'Añadir'}
+                                </Button>
+                                {isEditing && (
+                                    <Button onClick={handleDeleteNoticia} color="red" appearance="primary">
+                                        Eliminar
+                                    </Button>
+                                )}
+                                <Button onClick={handlePopupClose} appearance="subtle">
                                     Cerrar
-                                </button>
-                            </div>
-                        </div>
+                                </Button>
+                            </Modal.Footer>
+                        </Modal>
                     </div>
-                </div>
-            )}
-        </div>
+                </Accordion.Panel>
+            </Accordion>
+        </CustomProvider>
     );
 };
 

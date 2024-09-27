@@ -18,7 +18,7 @@ import MoreInfo from '../MoreInfo/MoreInfo.js';
 
 
 
-const Table = ({ parentsEdificioProps, admin }) => {
+const Table = ({ parentsEdificioProps, admin, screenWidth }) => {
     const [loading, setLoading] = useState(true);
     const [data, setData] = useState([]);
     const [currentPage, setCurrentPage] = useState(1);
@@ -1747,7 +1747,7 @@ const Table = ({ parentsEdificioProps, admin }) => {
                 />
             )}
             {selectedId !== null && (
-                <MoreInfo id={selectedId} onClose={handleClose} showModal={showModal} setShowModal={setShowModal} fetchData={fetchData} currentPage={currentPage} searchTerm={searchTerm} admin={admin} />
+                <MoreInfo id={selectedId} onClose={handleClose} showModal={showModal} setShowModal={setShowModal} fetchData={fetchData} currentPage={currentPage} searchTerm={searchTerm} admin={admin} screenWidth={screenWidth} />
             )}
         </div>
     );

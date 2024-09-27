@@ -322,6 +322,7 @@ const MapComponent = () => {
                 // Simulate progress from 21 to 49 with a 100ms interval
                 await simulateProgress(0, 100, 50),
             );
+            console.log('Response from checkInmuebleInZone:', response);
 
             setUploadProgress(100);
             setShowSuccess(true);

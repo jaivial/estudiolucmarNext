@@ -4,6 +4,8 @@ import clientPromise from '../../lib/mongodb';
 export default async function handler(req, res) {
     if (req.method === 'POST') {
         try {
+
+            console.log('req.body', req.body);
             // Genera un client_id único usando uuid
             const clienteData = {
                 ...req.body,

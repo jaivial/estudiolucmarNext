@@ -7,7 +7,16 @@ export default async function handler(req, res) {
         return res.status(405).json({ error: 'Method Not Allowed' });
     }
 
-    const { encargo_id, fecha, comercial, tipoEncargo, comision, cliente, precio, tipoComision } = req.body;
+    const { encargo_id, fecha, comercial, tipoEncargo, comision, cliente, precio, tipoComision, fullCliente } = req.body;
+
+    console.log('encargo_id', encargo_id);
+    console.log('fecha', fecha);
+    console.log('comercial', comercial);
+    console.log('tipoEncargo', tipoEncargo);
+    console.log('comision', comision);
+    console.log('cliente', cliente);
+    console.log('precio', precio);
+    console.log('tipoComision', tipoComision);
 
 
     if (isNaN(parseInt(encargo_id))) {
@@ -26,17 +35,19 @@ export default async function handler(req, res) {
             {
                 $set: {
                     encargo_fecha: fecha,
-                    comercial_encargo: comercial,
+                    comercial_encargo: comercial.value,
                     tipo_encargo: tipoEncargo,
                     comision_encargo: parseInt(comision, 10),
                     cliente_id: parseInt(cliente, 10),
                     precio_1: parseInt(precio, 10),
-                    tipo_comision_encargo: tipoComision
+                    tipo_comision_encargo: tipoComision,
+                    fullCliente: fullCliente
                 }
             }
         );
 
-        if (result.modifiedCount === 0) {
+        console.log('result', result);
+        if (result.matchedCount === 0) {
             return res.status(404).json({ success: false, message: 'Encargo not found or no changes made' });
         }
 

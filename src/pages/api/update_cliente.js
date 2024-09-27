@@ -1,7 +1,8 @@
 import clientPromise from '../../lib/mongodb';
 
 export default async function handler(req, res) {
-    const { _id, client_id, nombre, apellido, dni, telefono, tipo_de_cliente, inmuebles_asociados_informador, inmuebles_asociados_propietario, inmuebles_asociados_copropietario, inmuebles_asociados_inquilino } = req.body;
+    const { _id, client_id, nombre, apellido, dni, telefono, tipo_de_cliente, inmuebles_asociados_informador, inmuebles_asociados_propietario, inmuebles_asociados_copropietario, inmuebles_asociados_inquilino, pedido, interes, rango_precios, email, informador } = req.body;
+    console.log('body', req.body);
 
     const client = await clientPromise;
     const db = client.db('inmoprocrm');
@@ -20,11 +21,18 @@ export default async function handler(req, res) {
                     inmuebles_asociados_propietario,
                     inmuebles_asociados_copropietario,
                     inmuebles_asociados_inquilino,
+                    pedido,
+                    interes,
+                    rango_precios,
+                    email,
+                    informador,
                 }
             }
         );
 
-        if (result.modifiedCount === 1) {
+        console.log('result', result);
+
+        if (result.matchedCount === 1) {
             res.status(200).json({ message: 'Cliente actualizado con éxito' });
         } else {
             res.status(404).json({ message: 'Cliente no encontrado' });

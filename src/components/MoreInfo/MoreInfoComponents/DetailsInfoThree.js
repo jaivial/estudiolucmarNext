@@ -6,7 +6,7 @@ import { TbTargetArrow } from 'react-icons/tb'; // Import TbTargetArrow icon
 import { FaUserTie } from 'react-icons/fa';
 import { PiMapPinSimpleAreaBold } from 'react-icons/pi';
 
-const DetailsInfoThree = ({ data }) => {
+const DetailsInfoThree = ({ data, isVisible }) => {
     const { tipo, uso, superficie, ano_construccion, habitaciones, garaje, ascensor, baños, trastero, jardin, terraza, aireAcondicionado, aireacondicionado, categoria, potencialAdquisicion, noticiastate, encargostate, responsable, zona } = data.inmueble;
 
     // Function to render a list item if the value is valid
@@ -129,7 +129,7 @@ const DetailsInfoThree = ({ data }) => {
 
     return (
         <div className="p-4">
-            <div className="flex flex-col gap-4">
+            <div className="flex flex-col gap-4 md:grid md:grid-cols-2 md:gap-4">
                 {/* Left Column: Basic Characteristics */}
                 <div className="bg-white p-4 px-6 border border-gray-300 rounded-md">
                     <div>
@@ -155,28 +155,31 @@ const DetailsInfoThree = ({ data }) => {
                         </div>
                     )}
                 </div>
+                {!isVisible && (
+                    <>
+                        {/* Right Column: Equipment and Commercial Information */}
+                        <div className="bg-white p-4 px-6 border border-gray-300 rounded-md">
+                            <div className="flex flex-col gap-4">
+                                {/* Top Column: Equipment */}
 
-                {/* Right Column: Equipment and Commercial Information */}
-                <div className="bg-white p-4 px-6 border border-gray-300 rounded-md">
-                    <div className="flex flex-col gap-4">
-                        {/* Top Column: Equipment */}
-
-                        {/* Bottom Column: Commercial Information */}
-                        <div>
-                            <h2 className="font-bold text-xl pb-2">Información Comercial</h2>
-                            <ul className="list-none pl-2 py-1">
-                                {renderCategoria(categoria)}
-                                {renderPotencialAdquisicion(potencialAdquisicion)}
-                                {renderNoticiaState(noticiastate)}
-                                {renderEncargoState(encargostate)}
-                                {renderAsesorState(responsable)}
-                                {renderZoneState(zona)}
-                            </ul>
+                                {/* Bottom Column: Commercial Information */}
+                                <div>
+                                    <h2 className="font-bold text-xl pb-2">Información Comercial</h2>
+                                    <ul className="list-none pl-2 py-1">
+                                        {renderCategoria(categoria)}
+                                        {renderPotencialAdquisicion(potencialAdquisicion)}
+                                        {renderNoticiaState(noticiastate)}
+                                        {renderEncargoState(encargostate)}
+                                        {renderAsesorState(responsable)}
+                                        {renderZoneState(zona)}
+                                    </ul>
+                                </div>
+                            </div>
                         </div>
-                    </div>
-                </div>
+                    </>
+                )}
             </div>
-        </div>
+        </div >
     );
 };
 

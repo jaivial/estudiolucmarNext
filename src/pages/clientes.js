@@ -1,7 +1,7 @@
 import GeneralLayout from "../components/layouts/GeneralLayout.js";
 import { useState, useEffect } from "react";
 import axios from 'axios';
-import { Button, Form, Modal, SelectPicker, Table, Tag, Panel, PanelGroup, Whisper, Tooltip, Tabs, Radio, RadioGroup, RangeSlider, InputPicker, Toggle } from 'rsuite';
+import { Button, Form, Modal, SelectPicker, Table, Tag, Panel, PanelGroup, Whisper, Tooltip, Tabs, Radio, RadioGroup, RangeSlider, InputPicker, Toggle, InputNumber } from 'rsuite';
 import { Icon } from '@iconify/react';
 import Toastify from 'toastify-js';
 import 'toastify-js/src/toastify.css';
@@ -117,7 +117,13 @@ export default function Clientes({ isAdmin }) {
                 setCompradores((prevCompradores) =>
                     prevCompradores.filter((comprador) => comprador._id !== comprador_id)
                 );
-                showToast('Comprador eliminado con éxito', 'linear-gradient(to right bottom, #00603c, #006f39, #007d31, #008b24, #069903)');
+                // Set 'pedido' to false for the cliente with the given comprador_id
+                setClientes((prevClientes) =>
+                    prevClientes.map((cliente) =>
+                        cliente._id === comprador_id ? { ...cliente, pedido: false } : cliente
+                    )
+                );
+                showToast('Pedido eliminado con éxito', 'linear-gradient(to right bottom, #00603c, #006f39, #007d31, #008b24, #069903)');
             } else {
                 console.error('Error al eliminar el comprador:', response.data.message);
             }
@@ -127,10 +133,11 @@ export default function Clientes({ isAdmin }) {
     };
 
     const handleUpdateComprador = () => {
+        console.log('editComprador', editComprador);
         axios.post('/api/updateComprador', editComprador)
             .then(response => {
                 // Handle successful update
-                showToast('Comprador actualizado con éxito', 'linear-gradient(to right bottom, #00603c, #006f39, #007d31, #008b24, #069903)');
+                showToast('Pedido actualizado con éxito', 'linear-gradient(to right bottom, #00603c, #006f39, #007d31, #008b24, #069903)');
 
                 // Update the compradores list with the updated comprador
                 setCompradores(prevCompradores => prevCompradores.map(comprador =>
@@ -208,11 +215,9 @@ export default function Clientes({ isAdmin }) {
 
     const handleOpenEditModalComprador = async (comprador) => {
         setEditComprador(comprador);
-        console.log('setEditComprador', comprador);
         setEditModalCompradorOpen(true);
         try {
             const response = await axios.get(`/api/fetchInmueblesComprador?comprador_id=${comprador._id}`);
-            console.log('response', response.data);
             setInmueblesComprador(response.data);
         } catch (error) {
             console.error('Error fetching inmuebles for comprador:', error);
@@ -277,6 +282,12 @@ export default function Clientes({ isAdmin }) {
     const handleInformador = (checked) => {
         setNewCliente({
             ...newCliente,
+            informador: checked,
+        });
+    };
+    const handleInformadorEdit = (checked) => {
+        setEditCliente({
+            ...editCliente,
             informador: checked,
         });
     };
@@ -348,7 +359,6 @@ export default function Clientes({ isAdmin }) {
         }
 
         try {
-            console.log('editCliente', editCliente);
             const response = await axios.post('/api/update_cliente', editCliente);
             if (response.status === 200) {
                 showToast('Cliente actualizado.', 'linear-gradient(to right bottom, #00603c, #006f39, #007d31, #008b24, #069903)');
@@ -392,7 +402,6 @@ export default function Clientes({ isAdmin }) {
     };
 
     const handleViewMore = (cliente) => {
-        console.log('cliente', cliente.id);
         setViewMore(true);
         setMoreInfoInmuebleId(cliente.id);
     };
@@ -400,7 +409,6 @@ export default function Clientes({ isAdmin }) {
     const handleCloseMoreInfo = () => setViewMore(false);
 
     const handleViewMoreComprador = (comprador) => {
-        console.log('comprador', comprador);
         setViewMoreComprador(true);
         setMoreInfoCompradorId(comprador);
     };
@@ -426,21 +434,19 @@ export default function Clientes({ isAdmin }) {
                                     <PanelGroup accordion bordered>
                                         <Panel header="Clientes" eventKey="1" className="bg-slate-50 rounded-lg shadow-xl">
                                             <Table data={clientes} autoHeight>
-                                                <Column width={50} align="center" fixed="center">
+                                                <Column width={70} align="center" fixed="center">
                                                     <HeaderCell></HeaderCell>
                                                     <Cell style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', flexDirection: 'column', padding: '0px' }}>
-                                                        {rowData => rowData.informador ? (
-                                                            <Icon icon="mdi:information" style={{ color: 'blue', fontSize: '2rem' }} />
-                                                        ) : null}
-                                                    </Cell>
-                                                </Column>
-                                                <Column width={50} align="center" fixed="center">
-                                                    <HeaderCell></HeaderCell>
-                                                    <Cell style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', flexDirection: 'column', padding: '0px' }}>
-                                                        {rowData => rowData.pedido ? (
-                                                            <Icon icon="mdi:parking" style={{ color: 'orange', fontSize: '1.8rem' }} >
-                                                            </Icon>
-                                                        ) : null}
+                                                        {rowData => (
+                                                            <>
+                                                                {rowData.informador && (
+                                                                    <Icon icon="mdi:information" style={{ color: 'blue', fontSize: '2rem' }} />
+                                                                )}
+                                                                {rowData.pedido && (
+                                                                    <Icon icon="mdi:parking" style={{ color: 'orange', fontSize: '1.8rem' }} />
+                                                                )}
+                                                            </>
+                                                        )}
                                                     </Cell>
                                                 </Column>
                                                 <Column width={80} align="center">
@@ -457,20 +463,25 @@ export default function Clientes({ isAdmin }) {
                                                     <HeaderCell>Tipo de Cliente</HeaderCell>
                                                     <Cell>
                                                         {rowData => (
-                                                            <div className="flex flex-row">
-                                                                {rowData.tipo_de_cliente.map(tipo => (
+                                                            <div className='flex flex-row justify-center items-center mx-4 sm:flex-row gap-2'>
+                                                                {rowData.inmuebles_asociados_propietario && rowData.inmuebles_asociados_propietario.length > 0 && (
                                                                     <Tag
-                                                                        key={tipo}
-                                                                        color={
-                                                                            tipo === 'propietario' ? 'green' :
-                                                                                tipo === 'inquilino' ? 'orange' :
-                                                                                    'cyan'
-                                                                        }
-                                                                        style={{ marginBottom: '5px' }}
+                                                                        key="propietario"
+                                                                        color="green"
+                                                                        style={{ margin: '0px' }}
                                                                     >
-                                                                        {tipo.charAt(0).toUpperCase() + tipo.slice(1)}
+                                                                        Propietario
                                                                     </Tag>
-                                                                ))}
+                                                                )}
+                                                                {rowData.inmuebles_asociados_inquilino && rowData.inmuebles_asociados_inquilino.length > 0 && (
+                                                                    <Tag
+                                                                        key="inquilino"
+                                                                        color="red"
+                                                                        style={{ margin: '0px', marginBottom: '5px' }}
+                                                                    >
+                                                                        Inquilino
+                                                                    </Tag>
+                                                                )}
                                                             </div>
                                                         )}
                                                     </Cell>
@@ -748,7 +759,7 @@ export default function Clientes({ isAdmin }) {
                                                 <Column width={200} align="center">
                                                     <HeaderCell>Rango de Precios</HeaderCell>
                                                     <Cell>
-                                                        {rowData => `${rowData.rango_precios[0]}€ - ${rowData.rango_precios[1]}€`}
+                                                        {rowData => `${rowData.rango_precios[0].toLocaleString('es-ES')}€ - ${rowData.rango_precios[1].toLocaleString('es-ES')}€`}
                                                     </Cell>
                                                 </Column>
 
@@ -800,23 +811,36 @@ export default function Clientes({ isAdmin }) {
                             <p><strong>DNI:</strong> {selectedCliente.dni}</p>
                             <p><strong>Teléfono:</strong> {selectedCliente.telefono}</p>
 
+                            {selectedCliente.pedido && (
+                                <div className="flex flex-row gap-2 mt-[10px]">
+                                    <p><strong>Pedido:</strong></p>
+                                    <Tag color="orange" style={{ marginBottom: '5px', marginRight: '5px' }}>
+                                        Pedido
+                                    </Tag>
+                                </div>
+                            )}
 
                             <div className="flex flex-row gap-2 mt-[10px]">
                                 <p><strong>Tipo de Cliente:</strong></p>
                                 <div>
-                                    {selectedCliente.tipo_de_cliente.map(tipo => (
+                                    {selectedCliente.inmuebles_asociados_propietario && selectedCliente.inmuebles_asociados_propietario.length > 0 && (
                                         <Tag
-                                            key={tipo}
-                                            color={
-                                                tipo === 'propietario' ? 'green' :
-                                                    tipo === 'copropietario' ? 'blue' :
-                                                        tipo === 'inquilino' ? 'orange' : ''
-                                            }
+                                            key="propietario"
+                                            color="green"
                                             style={{ marginBottom: '5px', marginRight: '5px' }}
                                         >
-                                            {tipo.charAt(0).toUpperCase() + tipo.slice(1)}
+                                            Propietario
                                         </Tag>
-                                    ))}
+                                    )}
+                                    {selectedCliente.inmuebles_asociados_inquilino && selectedCliente.inmuebles_asociados_inquilino.length > 0 && (
+                                        <Tag
+                                            key="inquilino"
+                                            color="red"
+                                            style={{ marginBottom: '5px', marginRight: '5px' }}
+                                        >
+                                            Inquilino
+                                        </Tag>
+                                    )}
                                 </div>
                             </div>
                             {selectedCliente.informador && (
@@ -827,74 +851,76 @@ export default function Clientes({ isAdmin }) {
                                     </Tag>
                                 </div>
                             )}
-                            {['propietario', 'inquilino'].map(tipo => (
-                                selectedCliente.tipo_de_cliente.includes(tipo) && (
-                                    <div key={tipo} style={{ marginBottom: '20px' }}>
-                                        <div
-                                            style={{
-                                                backgroundColor: tipo === 'propietario' ? '#28a745' :
-                                                    tipo === 'copropietario' ? '#007bff' :
-                                                        tipo === 'inquilino' ? '#fd7e14' :
-                                                            '#17a2b8',
-                                                borderRadius: '10px',
-                                                padding: '10px',
-                                                color: '#fff',
-                                                textAlign: 'center',
-                                                marginBottom: '20px',
-                                                width: '200px',
-                                                marginRight: 'auto',
-                                                marginLeft: 'auto',
-                                            }}
-                                        >
-                                            {tipo.charAt(0).toUpperCase() + tipo.slice(1)}
-                                        </div>
+                            {(selectedCliente.inmuebles_asociados_propietario && selectedCliente.inmuebles_asociados_propietario.length > 0) || (selectedCliente.inmuebles_asociados_inquilino && selectedCliente.inmuebles_asociados_inquilino.length > 0) ? (
+                                <div>
+                                    {['propietario', 'inquilino'].map(tipo => (
+                                        selectedCliente[`inmuebles_asociados_${tipo}`] && selectedCliente[`inmuebles_asociados_${tipo}`].length > 0 && (
+                                            <div key={tipo} style={{ marginBottom: '20px' }}>
+                                                <div
+                                                    style={{
+                                                        backgroundColor: tipo === 'propietario' ? '#28a745' :
+                                                            tipo === 'inquilino' ? '#3490dc' : '#3490dc',
+                                                        borderRadius: '10px',
+                                                        padding: '10px',
+                                                        color: '#fff',
+                                                        textAlign: 'center',
+                                                        marginBottom: '20px',
+                                                        width: '200px',
+                                                        marginRight: 'auto',
+                                                        marginLeft: 'auto',
+                                                    }}
+                                                >
+                                                    {tipo.charAt(0).toUpperCase() + tipo.slice(1)}
+                                                </div>
 
-                                        <Table data={selectedCliente.inmueblesDetalle.filter(inmueble =>
-                                            selectedCliente[`inmuebles_asociados_${tipo}`].some(assoc => assoc.id === inmueble.id)
-                                        )}>
-                                            <Column width={320} align="center">
-                                                <HeaderCell>Dirección</HeaderCell>
-                                                <Cell dataKey="direccion" />
-                                            </Column>
-                                            <Column width={200} align="center">
-                                                <HeaderCell>Zona</HeaderCell>
-                                                <Cell dataKey="zona" />
-                                            </Column>
-                                            <Column width={80} align="center">
-                                                <HeaderCell>Noticias</HeaderCell>
-                                                <Cell>
-                                                    {rowData => rowData.noticiastate ? 'Sí' : 'No'}
-                                                </Cell>
-                                            </Column>
-                                            <Column width={80} align="center">
-                                                <HeaderCell>Encargos</HeaderCell>
-                                                <Cell>
-                                                    {rowData => rowData.encargostate ? 'Sí' : 'No'}
-                                                </Cell>
-                                            </Column>
-                                            <Column width={100} align="center">
-                                                <HeaderCell>Superficie</HeaderCell>
-                                                <Cell>
-                                                    {rowData => (
-                                                        <span>{rowData.superficie} m²</span>
-                                                    )}
-                                                </Cell>
-                                            </Column>
+                                                <Table data={selectedCliente.inmueblesDetalle.filter(inmueble =>
+                                                    selectedCliente[`inmuebles_asociados_${tipo}`].some(assoc => assoc.id === inmueble.id)
+                                                )}>
+                                                    <Column width={320} align="center">
+                                                        <HeaderCell>Dirección</HeaderCell>
+                                                        <Cell dataKey="direccion" />
+                                                    </Column>
+                                                    <Column width={200} align="center">
+                                                        <HeaderCell>Zona</HeaderCell>
+                                                        <Cell dataKey="zona" />
+                                                    </Column>
+                                                    <Column width={80} align="center">
+                                                        <HeaderCell>Noticias</HeaderCell>
+                                                        <Cell>
+                                                            {rowData => rowData.noticiastate ? 'Sí' : 'No'}
+                                                        </Cell>
+                                                    </Column>
+                                                    <Column width={80} align="center">
+                                                        <HeaderCell>Encargos</HeaderCell>
+                                                        <Cell>
+                                                            {rowData => rowData.encargostate ? 'Sí' : 'No'}
+                                                        </Cell>
+                                                    </Column>
+                                                    <Column width={100} align="center">
+                                                        <HeaderCell>Superficie</HeaderCell>
+                                                        <Cell>
+                                                            {rowData => (
+                                                                <span>{rowData.superficie} m²</span>
+                                                            )}
+                                                        </Cell>
+                                                    </Column>
 
-                                            <Column width={100} align="center">
-                                                <HeaderCell>Acciones</HeaderCell>
-                                                <Cell>
-                                                    {rowData => (
-                                                        <Whisper placement="top" trigger="hover" speaker={<Tooltip>Ver más</Tooltip>}>
-                                                            <Icon icon="mdi:eye-outline" style={{ cursor: 'pointer', fontSize: '1.5rem' }} onClick={() => handleViewMore(rowData)} />
-                                                        </Whisper>
-                                                    )}
-                                                </Cell>
-                                            </Column>
-                                        </Table>
-                                    </div>
-                                )
-                            ))}
+                                                    <Column width={100} align="center">
+                                                        <HeaderCell>Acciones</HeaderCell>
+                                                        <Cell>
+                                                            {rowData => (
+                                                                <Whisper placement="top" trigger="hover" speaker={<Tooltip>Ver más</Tooltip>}>
+                                                                    <Icon icon="mdi:eye-outline" style={{ cursor: 'pointer', fontSize: '1.5rem' }} onClick={() => handleViewMore(rowData)} />
+                                                                </Whisper>
+                                                            )}
+                                                        </Cell>
+                                                    </Column>
+                                                </Table>
+                                            </div>
+                                        )
+                                    ))}
+                                </div>
+                            ) : null}
                         </Modal.Body>
                         <Modal.Footer style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
                             <Button onClick={handleClose} appearance="subtle">Cerrar</Button>
@@ -1018,8 +1044,8 @@ export default function Clientes({ isAdmin }) {
                                     <Toggle
                                         checkedChildren="Informador"
                                         unCheckedChildren="No Informador"
-                                        defaultChecked={newCliente.informador}
-                                        onChange={(checked) => handleInformador(checked)}
+                                        defaultChecked={editCliente.informador}
+                                        onChange={(checked) => handleInformadorEdit(checked)}
                                         size={'lg'}
                                     />
                                 </Form.Group>
@@ -1094,51 +1120,32 @@ export default function Clientes({ isAdmin }) {
                             </Modal.Header>
                             <Modal.Body style={{ padding: '35px', fontSize: '1rem', lineHeight: '1.5', display: 'flex', flexDirection: 'column', gap: '10px' }}>
                                 <Form fluid>
-                                    <Form.Group>
-                                        <Form.ControlLabel>Nombre</Form.ControlLabel>
-                                        <Form.Control name="nombre" value={editComprador.nombre} readOnly />
-                                    </Form.Group>
-                                    <Form.Group>
-                                        <Form.ControlLabel>Apellido</Form.ControlLabel>
-                                        <Form.Control name="apellido" value={editComprador.apellido} readOnly />
-                                    </Form.Group>
-                                    <Form.Group>
-                                        <Form.ControlLabel>Email</Form.ControlLabel>
-                                        <Form.Control name="email" value={editComprador.email} readOnly />
-                                    </Form.Group>
-                                    <Form.Group>
-                                        <Form.ControlLabel>Teléfono</Form.ControlLabel>
-                                        <Form.Control
-                                            name="telefono"
-                                            value={editComprador.telefono}
-                                            onChange={value => setEditComprador({ ...editComprador, telefono: value })}
-                                        />
-                                    </Form.Group>
-                                    <Form.Group>
-                                        <Form.ControlLabel>DNI</Form.ControlLabel>
-                                        <Form.Control name="dni" value={editComprador.dni} readOnly />
-                                    </Form.Group>
                                     <Form.Group style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', width: '100%', marginBottom: '30px', marginTop: '0px', marginRight: '0px', gap: '5px' }}>
-                                        <Form.ControlLabel>Interés</Form.ControlLabel>
+                                        <Form.ControlLabel
+                                            style={{ fontSize: '1.2rem', fontWeight: 'bold', textAlign: 'center' }}
+                                        >Interés</Form.ControlLabel>
                                         <RadioGroup
                                             name="interes"
                                             value={editComprador.interes}
-                                            onChange={value => setEditComprador({ ...editComprador, interes: value })}
+                                            onChange={value => setEditComprador({
+                                                ...editComprador,
+                                                interes: value,
+                                                rango_precios: value === 'comprar' ? [0, 1000000] : [0, 2500]
+                                            })}
+                                            style={{ width: '100%', display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: '25px' }}
                                         >
                                             <Radio value="comprar">Comprar</Radio>
                                             <Radio value="alquilar">Alquilar</Radio>
                                         </RadioGroup>
                                     </Form.Group>
                                     <Form.Group style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', width: '100%', marginBottom: '10px', marginTop: '0px', marginRight: '0px', gap: '5px' }}>
-                                        <Form.ControlLabel style={{ textAlign: 'center' }}>Rango de Precios</Form.ControlLabel>
+                                        <Form.ControlLabel style={{ fontSize: '1.2rem', fontWeight: 'bold', textAlign: 'center' }}>Rango de Precios</Form.ControlLabel>
                                         {/* Display selected price range */}
                                         <div style={{ marginBottom: '20px', width: '100%', textAlign: 'center', marginTop: '20px' }}>
-                                            <strong>
-                                                {`${editComprador.rango_precios.min || 0}€ - ${editComprador.rango_precios.max || (editComprador.interes === 'comprar' ? 600000 : 2500)}€`}
-                                            </strong>
+                                            {`${(editComprador.rango_precios.min || 0).toLocaleString('es-ES')}€ - ${(editComprador.rango_precios.max || (editComprador.interes === 'comprar' ? 600000 : 2500)).toLocaleString('es-ES')}€`}
                                         </div>
 
-                                        <div style={{ display: 'flex', justifyContent: 'space-around', width: '80%' }}>
+                                        <div style={{ display: 'flex', justifyContent: 'space-around', width: '90%', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: '25px', marginBottom: '20px' }}>
                                             <InputPicker
                                                 label="Mínimo"
                                                 value={editComprador.rango_precios.min || 0}
@@ -1182,7 +1189,7 @@ export default function Clientes({ isAdmin }) {
                                     </Form.Group>
 
                                 </Form>
-                                <Modal.Footer style={{ display: 'flex', justifyContent: 'center', gap: '10px' }}>
+                                <Modal.Footer style={{ display: 'flex', justifyContent: 'center', gap: '10px', marginBottom: '-10px' }}>
                                     <Button onClick={handleUpdateComprador} appearance="primary">Actualizar</Button>
                                     <Button onClick={handleCloseEditModalComprador} appearance="subtle">Cerrar</Button>
                                 </Modal.Footer>
@@ -1195,22 +1202,20 @@ export default function Clientes({ isAdmin }) {
                     infoModalOpen && (
                         <Modal open={infoModalOpen} onClose={handleCloseInfoComprador} size="lg">
                             <Modal.Header>
-                                <Modal.Title style={{ fontSize: '1.5rem', fontWeight: 'bold', textAlign: 'center' }}>Información del Comprador</Modal.Title>
+                                <Modal.Title style={{ fontSize: '1.5rem', fontWeight: 'bold', textAlign: 'center' }}>Información del Pedido</Modal.Title>
                             </Modal.Header>
                             <Modal.Body style={{ padding: '35px', fontSize: '1rem', lineHeight: '1.5', display: 'flex', flexDirection: 'column', gap: '10px' }}>
                                 {selectedComprador && (
                                     <div>
-                                        <div className="flex flex-row items-center justify-start gap-40 ml-12 mb-20">
-                                            <div>
+                                        <div className="flex flex-col items-center justify-center">
+                                            <div className="flex flex-col items-start justify-center gap-4 ml-2">
                                                 <p><strong>Nombre:</strong> {selectedComprador.nombre}</p>
                                                 <p><strong>Apellido:</strong> {selectedComprador.apellido}</p>
                                                 <p><strong>Email:</strong> {selectedComprador.email}</p>
                                                 <p><strong>DNI:</strong> {selectedComprador.dni}</p>
                                                 <p><strong>Teléfono:</strong> {selectedComprador.telefono}</p>
-                                            </div>
-                                            <div>
                                                 <p><strong>Interés:</strong> {selectedComprador.interes === 'comprar' ? 'Comprar' : 'Alquilar'}</p>
-                                                <p><strong>Rango de Precios:</strong> {`${selectedComprador.rango_precios.min}€ - ${selectedComprador.rango_precios.max}€`}</p>
+                                                <p><strong>Rango de Precios:</strong> {`${selectedComprador.rango_precios[0].toLocaleString()}€ - ${selectedComprador.rango_precios[1].toLocaleString()}€`}</p>
                                             </div>
                                         </div>
                                         <Table data={inmueblesCompradorInfo} autoHeight style={{ marginTop: '20px', width: '100%' }}>

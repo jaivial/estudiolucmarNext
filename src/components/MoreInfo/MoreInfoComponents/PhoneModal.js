@@ -6,9 +6,11 @@ import { AiOutlinePlus, AiOutlineDelete } from 'react-icons/ai';
 import Toastify from 'toastify-js';
 import 'toastify-js/src/toastify.css'; // Import Toastify CSS
 import { dniValidator } from '../../../lib/mongodb/dniValidator/dniValidator.js';
+import Skeleton from 'react-loading-skeleton';
+import 'react-loading-skeleton/dist/skeleton.css';
 
 
-const PhoneModal = ({ isOpen, setPhoneModalOpen, localizado, setLocalizado, inmuebleId, direccion, admin, nombreReturn, setNombreReturn, apellidoReturn, setApellidoReturn }) => {
+const PhoneModal = ({ isOpen, setPhoneModalOpen, localizado, setLocalizado, inmuebleId, direccion, admin, nombreReturn, setNombreReturn, apellidoReturn, setApellidoReturn, inmuebles_asociados_inquilino, inmuebles_asociados_propietario, setInmueblesAsociadosInquilino, setInmueblesAsociadosPropietario }) => {
     const [isLocalizado, setIsLocalizado] = useState(localizado);
     const [asesores, setAsesores] = useState([]);
     const [selectedAsesor, setSelectedAsesor] = useState(null);
@@ -21,6 +23,7 @@ const PhoneModal = ({ isOpen, setPhoneModalOpen, localizado, setLocalizado, inmu
     const [dni, setDni] = useState('');
     const [localizadoModal, setLocalizadoModal] = useState(localizado); // New state for the modal
     const [clientData, setClientData] = useState([]);
+    const [loadingLocalizado, setLoadingLocalizado] = useState(false);
 
 
 
@@ -31,14 +34,19 @@ const PhoneModal = ({ isOpen, setPhoneModalOpen, localizado, setLocalizado, inmu
                     inmuebleId: inmuebleId,
                 },
             });
-            if (response.status === 200) {
-                setClientData(response.data.clientData);
-                setNombreReturn(response.data.clientData.nombre);
-                setApellidoReturn(response.data.clientData.apellido);
-                // Handle the response data
-            } else {
-                showToast('Error al obtener el teléfono localizado.', 'linear-gradient(to right, #ff416c, #ff4b2b)');
+            console.log('response', response.data);
+            setClientData(response.data.clientData);
+            setNombreReturn(response.data.clientData.nombre);
+            setApellidoReturn(response.data.clientData.apellido);
+            let inmueblesAsociadosInquilinoToAdd = response.data.clientData.inmuebles_asociados_inquilino;
+            let inmueblesAsociadosPropietarioToAdd = response.data.clientData.inmuebles_asociados_propietario;
+            if (inmueblesAsociadosInquilinoToAdd.length > 0) {
+                setInmueblesAsociadosInquilino(inmueblesAsociadosInquilinoToAdd);
             }
+            if (inmueblesAsociadosPropietarioToAdd.length > 0) {
+                setInmueblesAsociadosPropietario(inmueblesAsociadosPropietarioToAdd);
+            }
+
         } catch (error) {
             console.error('Error al obtener el teléfono localizado:', error);
             showToast('Error al obtener el teléfono localizado.', 'linear-gradient(to right, #ff416c, #ff4b2b)');
@@ -46,6 +54,8 @@ const PhoneModal = ({ isOpen, setPhoneModalOpen, localizado, setLocalizado, inmu
     };
 
     useEffect(() => {
+        console.log('localizado', localizado);
+        console.log('inmuebleId', inmuebleId);
         if (localizado) {
             fetchLocalizadoPhone(inmuebleId);
         }
@@ -92,14 +102,10 @@ const PhoneModal = ({ isOpen, setPhoneModalOpen, localizado, setLocalizado, inmu
         }
     };
 
-    useEffect(() => {
-        if (isLocalizado) {
-            fetchAsesores();
-        } else {
-            setAsesores([]);
-            setSelectedAsesor(null);
-        }
-    }, [isLocalizado]);
+    useEffect(() => { // Fetch asesores when isLocalizado changes
+        fetchAsesores();
+    }, []);
+
 
 
     const handleNewClientClick = () => {
@@ -166,6 +172,7 @@ const PhoneModal = ({ isOpen, setPhoneModalOpen, localizado, setLocalizado, inmu
 
 
     const handleAddLocalizado = async () => {
+        setLoadingLocalizado(true);
         try {
             const response = await axios.post('/api/addLocalizadoPhone', {
                 inmuebleId,
@@ -179,7 +186,7 @@ const PhoneModal = ({ isOpen, setPhoneModalOpen, localizado, setLocalizado, inmu
                 fetchLocalizadoPhone(inmuebleId);
                 setLocalizado(true);
                 setLocalizadoModal(true); // Set the modal state to true
-                // ... additional actions after successful client creation ...
+                setLoadingLocalizado(false);
             }
         } catch (error) {
             console.error('Error al agregar cliente:', error);
@@ -214,83 +221,80 @@ const PhoneModal = ({ isOpen, setPhoneModalOpen, localizado, setLocalizado, inmu
             </Modal.Header>
             <Modal.Body style={{ padding: '20px', fontSize: '1rem', lineHeight: '1.5', display: 'flex', flexDirection: 'column', gap: '10px', alignItems: 'center', width: '100%', marginBottom: '2px' }}>
                 {!localizadoModal && (
-                    <Toggle
-                        checked={isLocalizado}
-                        onChange={handleToggleChange}
-                        label="Localizado"
-                    />
+                    <>
+                        <p>¿Está localizado?</p>
+                        <Toggle
+                            checked={isLocalizado}
+                            onChange={handleToggleChange}
+                            checkedChildren="Sí"
+                            unCheckedChildren="No"
+                        />
+                    </>
                 )}
                 {localizadoModal ? ( // Check if the modal state is true
-                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px', width: '100%' }}>
-                        <Toggle
-                            checked={localizadoModal}
-                            label="Localizado"
-                        />
-                        <p>Cliente: {clientData.nombre} {clientData.apellido}</p>
-                        <p>Teléfono: <a href={`tel:${clientData.telefono}`} style={{ color: 'blue', textDecoration: 'underline' }}>{clientData.telefono}</a></p>
-                        {clientData.tipo_de_cliente && (
-                            <div className="flex flex-row gap-2 my-[10px]">
-                                <p><strong>Tipo de Cliente:</strong></p>
-                                <div>
-                                    {clientData.tipo_de_cliente.map(tipo => (
-                                        <Tag
-                                            key={tipo}
-                                            color={
-                                                tipo === 'propietario' ? 'green' :
-                                                    tipo === 'copropietario' ? 'blue' :
-                                                        tipo === 'inquilino' ? 'orange' :
-                                                            'cyan'
-                                            }
-                                            style={{ marginBottom: '5px', marginRight: '5px' }}
-                                        >
-                                            {tipo.charAt(0).toUpperCase() + tipo.slice(1)}
-                                        </Tag>
-                                    ))}
+                    <>
+                        {loadingLocalizado ? (
+                            <Skeleton count={3} height={50} width={300} />
+                        ) : (
+                            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '15px', width: '100%' }}>
+                                <Toggle
+                                    checked={localizadoModal}
+                                    label="Localizado"
+                                    checkedChildren="Sí"
+                                    unCheckedChildren="No"
+                                    style={{ marginBottom: '10px' }}
+                                />
+                                <div class="w-full max-w-4xl bg-gradient-to-l from-slate-300 to-slate-100 text-slate-600 border border-slate-300 grid grid-cols-3 p-6 gap-x-4 gap-y-4 rounded-lg shadow-md">
+                                    <div class="col-span-3 text-lg font-bold capitalize">
+                                        Información del localizado
+                                    </div>
+                                    <div class="col-span-3">
+                                        {clientData.nombre && (
+                                            <div className='gap-4 flex flex-col justify-center'>
+                                                <p>Cliente: {clientData.nombre} {clientData.apellido}</p>
+                                                <div class="flex flex-row gap-2 items-center">
+                                                    <p>Teléfono: <a href={`tel:${clientData.telefono}`}>{clientData.telefono}</a></p>
+                                                    <a href={`tel:${clientData.localizado_phone}`} class="rounded-md bg-slate-300 duration-300 p-2">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" width="1.5em" height="1.5em" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path fill="currentColor" fill-opacity="0" stroke-dasharray="64" stroke-dashoffset="64" d="M8 3c0.5 0 2.5 4.5 2.5 5c0 1 -1.5 2 -2 3c-0.5 1 0.5 2 1.5 3c0.39 0.39 2 2 3 1.5c1 -0.5 2 -2 3 -2c0.5 0 5 2 5 2.5c0 2 -1.5 3.5 -3 4c-1.5 0.5 -2.5 0.5 -4.5 0c-2 -0.5 -3.5 -1 -6 -3.5c-2.5 -2.5 -3 -4 -3.5 -6c-0.5 -2 -0.5 -3 0 -4.5c0.5 -1.5 2 -3 4 -3Z"><animate fill="freeze" attributeName="fill-opacity" begin="0.6s" dur="0.15s" values="0;0.3" /><animate fill="freeze" attributeName="stroke-dashoffset" dur="0.6s" values="64;0" /><animateTransform id="lineMdPhoneCallTwotoneLoop0" fill="freeze" attributeName="transform" begin="0.6s;lineMdPhoneCallTwotoneLoop0.begin+2.7s" dur="0.5s" type="rotate" values="0 12 12;15 12 12;0 12 12;-12 12 12;0 12 12;12 12 12;0 12 12;-15 12 12;0 12 12" /></path><path stroke-dasharray="4" stroke-dashoffset="4" d="M15.76 8.28c-0.5 -0.51 -1.1 -0.93 -1.76 -1.24M15.76 8.28c0.49 0.49 0.9 1.08 1.2 1.72"><animate fill="freeze" attributeName="stroke-dashoffset" begin="lineMdPhoneCallTwotoneLoop0.begin+0s" dur="2.7s" keyTimes="0;0.111;0.259;0.37;1" values="4;0;0;4;4" /></path><path stroke-dasharray="6" stroke-dashoffset="6" d="M18.67 5.35c-1 -1 -2.26 -1.73 -3.67 -2.1M18.67 5.35c0.99 1 1.72 2.25 2.08 3.65"><animate fill="freeze" attributeName="stroke-dashoffset" begin="lineMdPhoneCallTwotoneLoop0.begin+0.2s" dur="2.7s" keyTimes="0;0.074;0.185;0.333;0.444;1" values="6;6;0;0;6;6" /></path></g></svg>
+                                                    </a>
+                                                </div>
+                                                {(clientData.inmuebles_asociados_inquilino.length > 0 || clientData.inmuebles_asociados_propietario.length > 0) && (
+                                                    <div className="flex flex-row gap-2">
+                                                        <p>Tipo de Cliente:</p>
+                                                        <div>
+                                                            {clientData.inmuebles_asociados_inquilino.length > 0 && (
+                                                                <Tag
+                                                                    color="orange"
+                                                                    style={{ marginBottom: '5px', marginRight: '5px' }}
+                                                                >
+                                                                    Inquilino
+                                                                </Tag>
+                                                            )}
+                                                            {clientData.inmuebles_asociados_propietario.length > 0 && (
+                                                                <Tag
+                                                                    color="green"
+                                                                    style={{ marginBottom: '5px', marginRight: '5px' }}
+                                                                >
+                                                                    Propietario
+                                                                </Tag>
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        )}
+                                    </div>
                                 </div>
+
+
+                                {admin && ( // Show trash icon if admin is true and clientData exists
+                                    <p className='text-center' >
+                                        <AiOutlineDelete onClick={deleteLocalizado} className='cursor-pointer text-red-600 text-2xl' />
+                                    </p>
+                                )}
                             </div>
                         )}
-                        {clientData.tipo_de_cliente && ['informador', 'propietario', 'copropietario', 'inquilino'].map(tipo => (
-                            clientData.tipo_de_cliente.includes(tipo) && (
-                                <div key={tipo} style={{ width: '100%', marginBottom: '20px' }}>
-                                    <div
-                                        style={{
-                                            backgroundColor: tipo === 'propietario' ? '#28a745' :
-                                                tipo === 'copropietario' ? '#007bff' :
-                                                    tipo === 'inquilino' ? '#fd7e14' :
-                                                        '#17a2b8',
-                                            borderRadius: '10px',
-                                            padding: '5px',
-                                            color: '#fff',
-                                            textAlign: 'center',
-                                            width: '150px',
-                                            marginRight: 'auto',
-                                            marginLeft: 'auto',
-                                            marginBottom: '15px',
-                                        }}
-                                    >
-                                        {tipo.charAt(0).toUpperCase() + tipo.slice(1)}
-                                    </div>
-                                    <div className='flex flex-col gap-2 w-full justify-center items-center '>
-                                        <div className='w-[70%] h-[1px] bg-gray-300'></div>
-                                        {clientData[`inmuebles_asociados_${tipo}`].map((inmueble, index) => (
-                                            <>
-                                                <p className='text-center ' key={index}>
-                                                    {inmueble.direccion}
-                                                </p>
-                                                <div className='w-[70%] h-[1px] bg-gray-300'></div>
-                                            </>
-                                        ))}
-                                    </div>
-
-                                </div>
-                            )
-                        ))}
-                        {admin && ( // Show trash icon if admin is true and clientData exists
-                            <p className='text-center' >
-                                <AiOutlineDelete onClick={deleteLocalizado} className='cursor-pointer text-red-600 text-2xl' />
-                            </p>
-                        )}
-                    </div>
+                    </>
                 ) : (
                     <>
                         {asesores.length > 0 && isLocalizado && (
@@ -314,9 +318,7 @@ const PhoneModal = ({ isOpen, setPhoneModalOpen, localizado, setLocalizado, inmu
                                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '20px', marginTop: '20px' }}>
                                     <label>¿No encuentras el cliente?</label>
                                     {isCreatingNewClient ? (
-                                        <button style={{ backgroundColor: '#007bff', color: 'white', padding: '8px 16px', borderRadius: '5px', border: 'none', cursor: 'pointer' }} onClick={handleNewClientClick}>
-                                            Cerrar
-                                        </button>
+                                        <h2 className='text-center font-base text-lg text-gray-700'>Crear nuevo cliente</h2>
                                     ) : (
                                         <button style={{ backgroundColor: '#007bff', color: 'white', padding: '8px 16px', borderRadius: '5px', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px' }} onClick={handleNewClientClick}>
                                             <AiOutlinePlus size={18} /> Crear nuevo cliente
@@ -326,14 +328,13 @@ const PhoneModal = ({ isOpen, setPhoneModalOpen, localizado, setLocalizado, inmu
                             </>
                         )}
                         {asesores.length === 0 && isLocalizado && (
-                            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '5px' }}>
+                            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '15px', marginTop: '20px' }}>
                                 <label>No hay clientes.</label>
                                 {isCreatingNewClient ? (
-                                    <button style={{ backgroundColor: '#007bff', color: 'white', padding: '8px 16px', borderRadius: '5px', border: 'none', cursor: 'pointer' }} onClick={handleNewClientClick}>
-                                        Cerrar
-                                    </button>
+                                    <h2 className='text-center font-base text-lg text-gray-700'>Crear nuevo cliente</h2>
+
                                 ) : (
-                                    <button style={{ backgroundColor: '#007bff', color: 'white', padding: '8px 16px', borderRadius: '5px', border: 'none', cursor: 'pointer' }} onClick={handleNewClientClick}>
+                                    <button style={{ backgroundColor: '#007bff', color: 'white', padding: '8px 16px', borderRadius: '5px', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px' }} onClick={handleNewClientClick}>
                                         <AiOutlinePlus size={18} /> Crear nuevo cliente
                                     </button>
                                 )}
@@ -359,7 +360,7 @@ const PhoneModal = ({ isOpen, setPhoneModalOpen, localizado, setLocalizado, inmu
                                         <Form.Control name="dni" type="text" value={dni} onChange={(value) => setDni(value)} />
                                     </Form.Group>
                                     <Form.Group>
-                                        <Form.ControlLabel>Tipo de Cliente</Form.ControlLabel>
+                                        <Form.ControlLabel>Asociación del cliente con el inmueble</Form.ControlLabel>
                                         <TagPicker
                                             data={[
                                                 { label: 'Informador', value: 'informador' },
@@ -373,9 +374,14 @@ const PhoneModal = ({ isOpen, setPhoneModalOpen, localizado, setLocalizado, inmu
                                             style={{ width: '100%' }}
                                         />
                                     </Form.Group>
-                                    <Button appearance="primary" onClick={handleCreateNewClient}>
-                                        Guardar
-                                    </Button>
+                                    <div className='flex justify-center gap-4 mt-4'>
+                                        <Button appearance="primary" onClick={handleCreateNewClient}>
+                                            Guardar
+                                        </Button>
+                                        <Button appearance="subtle" onClick={handleNewClientClick}>
+                                            Cancelar
+                                        </Button>
+                                    </div>
                                 </Form>
                             </div>
                         )}

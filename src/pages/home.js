@@ -37,7 +37,6 @@ export async function getServerSideProps(context) {
 
     try {
         user = await checkLogin(req); // Pass the request object to checkActiveUser
-        console.log('here', user); // Debugging line
         if (!user || user.length === 0) {
             return {
                 redirect: {
@@ -57,9 +56,6 @@ export async function getServerSideProps(context) {
     try {
         if (user_id) {
             initialUserName = await fetchUserName(user_id);
-            console.log('initialUserName', initialUserName);
-        } else {
-            console.log('User ID not found in cookies'); // Debugging line
         }
     } catch (error) {
         console.error('Error fetching user data:', error);
@@ -69,7 +65,6 @@ export async function getServerSideProps(context) {
     let tasksSSR;
     try {
         tasksSSR = await getTasksByDaySSR(day, user_id);
-        console.log('tasks', tasksSSR); // Debugging line
     } catch (error) {
         console.error('Error fetching tasks:', error);
     }
@@ -79,7 +74,6 @@ export async function getServerSideProps(context) {
     let datesWithCompletedTasks;
     try {
         allTasksSSR = await getTasksSSR(user_id);
-        console.log('allTasksSSR', allTasksSSR); // Debugging line
 
         try {
             datesWithIncompleteTasks = Array.from(
@@ -114,9 +108,6 @@ export async function getServerSideProps(context) {
 
             datesWithCompletedTasks = Array.from(datesWithCompletedTasksSet);
 
-            // Output the set of dates with incomplete and completed tasks
-            console.log('Incomplete task dates:', datesWithIncompleteTasks);
-            console.log('Completed task dates:', datesWithCompletedTasks);
 
         } catch (error) {
             console.error('Error processing tasks:', error);

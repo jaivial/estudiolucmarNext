@@ -12,8 +12,11 @@ import dynamic from 'next/dynamic';
 const EditModal = dynamic(() => import('./EditModal'), { ssr: false });
 import DPVComponent from './DPVComponent';
 import PhoneModal from './PhoneModal'; // Import PhoneModal component
+import Skeleton from 'react-loading-skeleton'
+import 'react-loading-skeleton/dist/skeleton.css'
 
-const ItemDetailsHeader = ({ inmuebleId, onClose, address, setImages, setIsSliderLoading, isVisible, setIsVisible, data, onAddEdtMoreInfoRefreshKey, setOnAddEdtMoreInfoRefreshKey, DPVboolean, setDPVboolean, admin, onAddDeleteDPVRefreshKey, setOnAddDeleteDPVRefreshKey, localizado, setLocalizado, direccion, nombre, setNombre, apellido, setApellido }) => {
+
+const ItemDetailsHeader = ({ inmuebleId, onClose, address, setImages, setIsSliderLoading, isVisible, setIsVisible, data, onAddEdtMoreInfoRefreshKey, setOnAddEdtMoreInfoRefreshKey, DPVboolean, setDPVboolean, admin, onAddDeleteDPVRefreshKey, setOnAddDeleteDPVRefreshKey, localizado, setLocalizado, direccion, nombre, setNombre, apellido, setApellido, inmuebles_asociados_inquilino, setInmueblesAsociadosInquilino, inmuebles_asociados_propietario, setInmueblesAsociadosPropietario }) => {
     const [selectedFiles, setSelectedFiles] = useState([]);
     const [uploadStatus, setUploadStatus] = useState('');
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -32,6 +35,7 @@ const ItemDetailsHeader = ({ inmuebleId, onClose, address, setImages, setIsSlide
     const [isImageValid, setIsImageValid] = useState(true);
     const [dpvModalOpen, setDPVModalOpen] = useState(false);
     const [phoneModalOpen, setPhoneModalOpen] = useState(false); // State for PhoneModal
+    const [loadingRenderSlots, setLoadingRenderSlots] = useState(true);
 
     const closeModal = () => setIsModalOpen(false);
 
@@ -257,9 +261,21 @@ const ItemDetailsHeader = ({ inmuebleId, onClose, address, setImages, setIsSlide
             }).showToast();
         }
     };
-    const openEditModal = () => setEditModalOpen(true);
+    const openEditModal = () => {
+        setEditModalOpen(true);
+
+    };
+
     const closeEditModal = () => setEditModalOpen(false);
-    const openFileInput = () => getFileRef.current.click(); // Function to open file input
+    const openFileInput = () => {
+        setTimeout(() => {
+            if (getFileRef.current) {
+                getFileRef.current.click();
+            } else {
+                console.error("File input reference is not set yet.");
+            }
+        }, 1);  // You can increase this delay slightly if necessary.
+    };
 
     const renderSlots = () => {
         const slots = [];
@@ -317,101 +333,107 @@ const ItemDetailsHeader = ({ inmuebleId, onClose, address, setImages, setIsSlide
     };
 
     return (
-        <div className="header-container">
-            <EditModal closeModal={closeModal} isModalOpen={isModalOpen} setIsModalOpen={setIsModalOpen} data={data} onAddEdtMoreInfoRefreshKey={onAddEdtMoreInfoRefreshKey} setOnAddEdtMoreInfoRefreshKey={setOnAddEdtMoreInfoRefreshKey} />
-            <DPVComponent isOpen={dpvModalOpen} setDPVModalOpen={setDPVModalOpen} inmuebleId={inmuebleId} DPVboolean={DPVboolean} setDPVboolean={setDPVboolean} admin={admin} onAddDeleteDPVRefreshKey={onAddDeleteDPVRefreshKey} setOnAddDeleteDPVRefreshKey={setOnAddDeleteDPVRefreshKey} /> {/* Add DPVComponent modal */}
-            <PhoneModal isOpen={phoneModalOpen} setPhoneModalOpen={setPhoneModalOpen} localizado={localizado} setLocalizado={setLocalizado} inmuebleId={inmuebleId} direccion={direccion} admin={admin} nombreReturn={nombre} setNombreReturn={setNombre} apellidoReturn={apellido} setApellidoReturn={setApellido} /> {/* Add PhoneModal modal */}
-            <div className='flex flex-row justify-center gap-3 pb-6'>
-                <div>
-                    <button onClick={openModal} className="p-3 rounded-full border border-gray-300 hover:bg-gray-100">
-                        <AiOutlineEdit className="text-gray-500 text-2xl" />
-                    </button>
-                </div>
-                <div>
-                    <button onClick={openEditModal} className="p-3 rounded-full border border-gray-300 hover:bg-gray-100">
-                        <AiOutlineCamera className="text-gray-500 text-2xl" />
-                    </button>
-                </div>
-                <div>
-                    <button
-                        onClick={toggleVisibility}
-                        className="p-3 rounded-full border border-gray-300 hover:bg-gray-100"
-                    >
-                        {isVisible ? <FaEye size={24} /> : <FaEyeSlash size={24} />}
-                    </button>
-                </div>
-                {/* New button to open DPVComponent modal */}
-                <div>
-                    <button
-                        onClick={openDPVModal}
-                        className={`px-3 py-3.5 rounded-full border border-gray-300 hover:bg-gray-100 font-semibold text-md ${DPVboolean ? 'bg-blue-400 text-white' : ' text-gray-500'}`} // Added conditional class
-                    >
-                        DPV
-                    </button>
-                </div>
-                <div> {/* New div for the phone button */}
-                    <button onClick={openPhoneModal} className={`p-3 rounded-full border border-gray-300 hover:bg-gray-100 ${localizado ? 'bg-green-700' : ''}`}>
-                        <AiOutlinePhone className={`${localizado ? 'text-white' : 'text-gray-500'} text-2xl `} />
-                    </button>
-                </div>
+        <div class="card">
+            <div class="card-overlay"></div>
+            <div class="card-inner">
 
-            </div>
-            <Modal open={editModalOpen} onClose={closeEditModal} size="lg" overflow={false} backdrop="static" style={{ backgroundColor: 'rgba(0,0,0,0.15)', padding: '0px 2px' }}>
-                <Modal.Header>
-                    <Modal.Title className='text-center'>Subir imágenes</Modal.Title>
-                </Modal.Header>
-                <Modal.Body>
-                    <div className="modal-body p-6">
-                        {isUploading ? (
-                            <div className="flex w-full flex-row items-center justify-center h-80">
-                                <AiOutlineLoading className="text-blue-500 text-5xl animate-spin" />
-                                <span className="ml-3 text-gray-800 font-sans text-lg font-semibold">Subiendo imágenes...</span>
-                            </div>
-                        ) : (
-                            <div ref={containerRef} className="grid grid-cols-3 gap-5 mb-4">
-                                {renderSlots()}
-                            </div>
-                        )}
-                        {selectedSlot !== null && (
-                            <>
-                                <div className="flex mb-4 flex-col justify-center items-center w-full gap-4">
-                                    <input
-                                        ref={getFileRef}
-                                        type="file"
-                                        multiple
-                                        onChange={handleFileChange}
-                                        className="hidden" // Hide the file input
-                                    />
-                                    {isProcessing && (
-                                        <div className="flex items-center ml-4 text-white py-2 px-4 rounded">
-                                            <AiOutlineLoading className="text-blue-500 text-4xl animate-spin" />
-                                            <span className="ml-2 text-gray-800 font-sans font-semibold">Cargando imágenes...</span>
-                                        </div>
-                                    )}
-                                </div>
+                <div className="header-container">
+                    <EditModal closeModal={closeModal} isModalOpen={isModalOpen} setIsModalOpen={setIsModalOpen} data={data} onAddEdtMoreInfoRefreshKey={onAddEdtMoreInfoRefreshKey} setOnAddEdtMoreInfoRefreshKey={setOnAddEdtMoreInfoRefreshKey} />
+                    <DPVComponent isOpen={dpvModalOpen} setDPVModalOpen={setDPVModalOpen} inmuebleId={inmuebleId} DPVboolean={DPVboolean} setDPVboolean={setDPVboolean} admin={admin} onAddDeleteDPVRefreshKey={onAddDeleteDPVRefreshKey} setOnAddDeleteDPVRefreshKey={setOnAddDeleteDPVRefreshKey} /> {/* Add DPVComponent modal */}
+                    <PhoneModal isOpen={phoneModalOpen} setPhoneModalOpen={setPhoneModalOpen} localizado={localizado} setLocalizado={setLocalizado} inmuebleId={inmuebleId} direccion={direccion} admin={admin} nombreReturn={nombre} setNombreReturn={setNombre} apellidoReturn={apellido} setApellidoReturn={setApellido} inmuebles_asociados_inquilino={inmuebles_asociados_inquilino} inmuebles_asociados_propietario={inmuebles_asociados_propietario} setInmueblesAsociadosInquilino={setInmueblesAsociadosInquilino} setInmueblesAsociadosPropietario={setInmueblesAsociadosPropietario} /> {/* Add PhoneModal modal */}
+                    <div className='flex flex-row justify-center gap-3 items-center py-1'>
+                        <div>
+                            <button onClick={openModal} className="p-3 rounded-full border bg-white shadow-lg hover:bg-gray-900">
+                                <AiOutlineEdit className="text-zinc-500 text-xl" />
+                            </button>
+                        </div>
+                        <div>
+                            <button onClick={openEditModal} className="p-3 rounded-full border bg-white shadow-lg hover:bg-gray-100">
+                                <AiOutlineCamera className="text-gray-500 text-xl" />
+                            </button>
+                        </div>
+                        <div>
+                            <button
+                                onClick={toggleVisibility}
+                                className="p-3 rounded-full border bg-white shadow-lg hover:bg-gray-100"
+                            >
+                                {isVisible ? <FaEye size={24} className='text-gray-800' /> : <FaEyeSlash size={20} className='text-gray-800' />}
+                            </button>
+                        </div>
+                        {/* New button to open DPVComponent modal */}
+                        <div>
+                            <button
+                                onClick={openDPVModal}
+                                className={`px-2 py-2.5 rounded-full shadow-lg hover:bg-gray-100 font-semibold text-base ${DPVboolean ? 'bg-blue-400 text-white' : ' text-gray-500'}`} // Added conditional class
+                            >
+                                DPV
+                            </button>
+                        </div>
+                        <div> {/* New div for the phone button */}
+                            <button onClick={openPhoneModal} className={`p-3 rounded-full shadow-lg hover:bg-gray-100 ${localizado ? 'bg-green-700' : ''}`}>
+                                <AiOutlinePhone className={`${localizado ? 'text-white' : 'text-gray-500'}`} size={20} />
+                            </button>
+                        </div>
 
-                                {!isProcessing && !isUploading && selectedFiles.length > 0 && (
-                                    <div className="flex flex-col items-center justify-center w-full">
-                                        <button
-                                            ref={buttonUploadRef}
-                                            onClick={handleUpload}
-                                            className={`bg-blue-500 text-white py-2 px-4 rounded ${isUploading ? 'cursor-wait' : ''}`}
-                                            disabled={isUploading}
-                                        >
-                                            Subir Imágenes
-                                        </button>
+                    </div>
+                    <Modal open={editModalOpen} onClose={closeEditModal} size="lg" overflow={false} backdrop="static" style={{ backgroundColor: 'rgba(0,0,0,0.15)', padding: '0px 2px' }}>
+                        <Modal.Header>
+                            <Modal.Title className='text-center'>Subir imágenes</Modal.Title>
+                        </Modal.Header>
+                        <Modal.Body>
+                            <div className="modal-body p-6">
+                                {isUploading ? (
+                                    <div className="flex w-full flex-row items-center justify-center h-80">
+                                        <AiOutlineLoading className="text-blue-500 text-5xl animate-spin" />
+                                        <span className="ml-3 text-gray-800 font-sans text-lg font-semibold">Subiendo imágenes...</span>
+                                    </div>
+                                ) : (
+                                    <div ref={containerRef} className="grid grid-cols-3 gap-5 mb-4">
+                                        {renderSlots()}
                                     </div>
                                 )}
-                            </>
-                        )}
-                    </div>
-                </Modal.Body>
-                <Modal.Footer className="flex flex-row justify-center gap-4">
-                    <Button onClick={() => setEditModalOpen(false)} appearance="subtle">
-                        Cancelar
-                    </Button>
-                </Modal.Footer>
-            </Modal>
+                                {selectedSlot !== null && (
+                                    <>
+                                        <div className="flex mb-4 flex-col justify-center items-center w-full gap-4">
+                                            <input
+                                                ref={getFileRef}
+                                                type="file"
+                                                multiple
+                                                onChange={handleFileChange}
+                                                className="hidden" // Hide the file input
+                                            />
+                                            {isProcessing && (
+                                                <div className="flex items-center ml-4 text-white py-2 px-4 rounded">
+                                                    <AiOutlineLoading className="text-blue-500 text-4xl animate-spin" />
+                                                    <span className="ml-2 text-gray-800 font-sans font-semibold">Cargando imágenes...</span>
+                                                </div>
+                                            )}
+                                        </div>
+
+                                        {!isProcessing && !isUploading && selectedFiles.length > 0 && (
+                                            <div className="flex flex-col items-center justify-center w-full">
+                                                <button
+                                                    ref={buttonUploadRef}
+                                                    onClick={handleUpload}
+                                                    className={`bg-blue-500 text-white py-2 px-4 rounded ${isUploading ? 'cursor-wait' : ''}`}
+                                                    disabled={isUploading}
+                                                >
+                                                    Subir Imágenes
+                                                </button>
+                                            </div>
+                                        )}
+                                    </>
+                                )}
+                            </div>
+                        </Modal.Body>
+                        <Modal.Footer className="flex flex-row justify-center gap-4">
+                            <Button onClick={() => setEditModalOpen(false)} appearance="subtle">
+                                Cancelar
+                            </Button>
+                        </Modal.Footer>
+                    </Modal>
+                </div>
+            </div>
         </div>
     );
 };
