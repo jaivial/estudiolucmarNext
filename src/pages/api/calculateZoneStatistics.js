@@ -5,7 +5,7 @@ export default async function handler(req, res) {
         const { zoneName } = req.query;
 
         if (!zoneName) {
-            return res.status(400).json({ message: 'zoneId is required' });
+            return res.status(400).json({ message: 'zoneName is required' });
         }
 
         try {
@@ -28,13 +28,12 @@ export default async function handler(req, res) {
                         _id: 0,
                         zone_name: 1,
                         zone_responsable: 1,
-                        totalInmuebles: { $size: '$inmuebles' },
-
+                        totalInmuebles: { $size: { $ifNull: ['$inmuebles', []] } },
                         // Count states within the primary inmuebles
                         noticiaState1: {
                             $size: {
                                 $filter: {
-                                    input: '$inmuebles',
+                                    input: { $ifNull: ['$inmuebles', []] },
                                     as: 'inmueble',
                                     cond: { $eq: ['$$inmueble.noticiastate', '1'] }
                                 }
@@ -43,7 +42,7 @@ export default async function handler(req, res) {
                         noticiaState0: {
                             $size: {
                                 $filter: {
-                                    input: '$inmuebles',
+                                    input: { $ifNull: ['$inmuebles', []] },
                                     as: 'inmueble',
                                     cond: { $eq: ['$$inmueble.noticiastate', '0'] }
                                 }
@@ -52,7 +51,7 @@ export default async function handler(req, res) {
                         encargoState1: {
                             $size: {
                                 $filter: {
-                                    input: '$inmuebles',
+                                    input: { $ifNull: ['$inmuebles', []] },
                                     as: 'inmueble',
                                     cond: { $eq: ['$$inmueble.encargoState', '1'] }
                                 }
@@ -61,7 +60,7 @@ export default async function handler(req, res) {
                         encargoState0: {
                             $size: {
                                 $filter: {
-                                    input: '$inmuebles',
+                                    input: { $ifNull: ['$inmuebles', []] },
                                     as: 'inmueble',
                                     cond: { $eq: ['$$inmueble.encargoState', '0'] }
                                 }
@@ -70,7 +69,7 @@ export default async function handler(req, res) {
                         categoriaInquilino: {
                             $size: {
                                 $filter: {
-                                    input: '$inmuebles',
+                                    input: { $ifNull: ['$inmuebles', []] },
                                     as: 'inmueble',
                                     cond: { $eq: ['$$inmueble.categoria', 'Inquilino'] }
                                 }
@@ -79,7 +78,7 @@ export default async function handler(req, res) {
                         categoriaVacio: {
                             $size: {
                                 $filter: {
-                                    input: '$inmuebles',
+                                    input: { $ifNull: ['$inmuebles', []] },
                                     as: 'inmueble',
                                     cond: { $eq: ['$$inmueble.categoria', 'Vacio'] }
                                 }
@@ -88,7 +87,7 @@ export default async function handler(req, res) {
                         categoriaPropietario: {
                             $size: {
                                 $filter: {
-                                    input: '$inmuebles',
+                                    input: { $ifNull: ['$inmuebles', []] },
                                     as: 'inmueble',
                                     cond: { $eq: ['$$inmueble.categoria', 'Propietario'] }
                                 }
@@ -97,7 +96,7 @@ export default async function handler(req, res) {
                         categoriaNull: {
                             $size: {
                                 $filter: {
-                                    input: '$inmuebles',
+                                    input: { $ifNull: ['$inmuebles', []] },
                                     as: 'inmueble',
                                     cond: { $eq: ['$$inmueble.categoria', null] }
                                 }
@@ -108,12 +107,12 @@ export default async function handler(req, res) {
                         nestedNoticiaState1: {
                             $sum: {
                                 $map: {
-                                    input: '$inmuebles',
+                                    input: { $ifNull: ['$inmuebles', []] },
                                     as: 'inmueble',
                                     in: {
                                         $size: {
                                             $filter: {
-                                                input: '$$inmueble.nestedinmuebles',
+                                                input: { $ifNull: ['$$inmueble.nestedinmuebles', []] },
                                                 as: 'nested',
                                                 cond: { $eq: ['$$nested.noticiastate', '1'] }
                                             }
@@ -125,12 +124,12 @@ export default async function handler(req, res) {
                         nestedNoticiaState0: {
                             $sum: {
                                 $map: {
-                                    input: '$inmuebles',
+                                    input: { $ifNull: ['$inmuebles', []] },
                                     as: 'inmueble',
                                     in: {
                                         $size: {
                                             $filter: {
-                                                input: '$$inmueble.nestedinmuebles',
+                                                input: { $ifNull: ['$$inmueble.nestedinmuebles', []] },
                                                 as: 'nested',
                                                 cond: { $eq: ['$$nested.noticiastate', '0'] }
                                             }
@@ -142,12 +141,12 @@ export default async function handler(req, res) {
                         nestedEncargoState1: {
                             $sum: {
                                 $map: {
-                                    input: '$inmuebles',
+                                    input: { $ifNull: ['$inmuebles', []] },
                                     as: 'inmueble',
                                     in: {
                                         $size: {
                                             $filter: {
-                                                input: '$$inmueble.nestedinmuebles',
+                                                input: { $ifNull: ['$$inmueble.nestedinmuebles', []] },
                                                 as: 'nested',
                                                 cond: { $eq: ['$$nested.encargoState', '1'] }
                                             }
@@ -159,12 +158,12 @@ export default async function handler(req, res) {
                         nestedEncargoState0: {
                             $sum: {
                                 $map: {
-                                    input: '$inmuebles',
+                                    input: { $ifNull: ['$inmuebles', []] },
                                     as: 'inmueble',
                                     in: {
                                         $size: {
                                             $filter: {
-                                                input: '$$inmueble.nestedinmuebles',
+                                                input: { $ifNull: ['$$inmueble.nestedinmuebles', []] },
                                                 as: 'nested',
                                                 cond: { $eq: ['$$nested.encargoState', '0'] }
                                             }
@@ -176,12 +175,12 @@ export default async function handler(req, res) {
                         nestedCategoriaInquilino: {
                             $sum: {
                                 $map: {
-                                    input: '$inmuebles',
+                                    input: { $ifNull: ['$inmuebles', []] },
                                     as: 'inmueble',
                                     in: {
                                         $size: {
                                             $filter: {
-                                                input: '$$inmueble.nestedinmuebles',
+                                                input: { $ifNull: ['$$inmueble.nestedinmuebles', []] },
                                                 as: 'nested',
                                                 cond: { $eq: ['$$nested.categoria', 'Inquilino'] }
                                             }
@@ -193,12 +192,12 @@ export default async function handler(req, res) {
                         nestedCategoriaVacio: {
                             $sum: {
                                 $map: {
-                                    input: '$inmuebles',
+                                    input: { $ifNull: ['$inmuebles', []] },
                                     as: 'inmueble',
                                     in: {
                                         $size: {
                                             $filter: {
-                                                input: '$$inmueble.nestedinmuebles',
+                                                input: { $ifNull: ['$$inmueble.nestedinmuebles', []] },
                                                 as: 'nested',
                                                 cond: { $eq: ['$$nested.categoria', 'Vacio'] }
                                             }
@@ -210,12 +209,12 @@ export default async function handler(req, res) {
                         nestedCategoriaPropietario: {
                             $sum: {
                                 $map: {
-                                    input: '$inmuebles',
+                                    input: { $ifNull: ['$inmuebles', []] },
                                     as: 'inmueble',
                                     in: {
                                         $size: {
                                             $filter: {
-                                                input: '$$inmueble.nestedinmuebles',
+                                                input: { $ifNull: ['$$inmueble.nestedinmuebles', []] },
                                                 as: 'nested',
                                                 cond: { $eq: ['$$nested.categoria', 'Propietario'] }
                                             }
@@ -227,12 +226,12 @@ export default async function handler(req, res) {
                         nestedCategoriaNull: {
                             $sum: {
                                 $map: {
-                                    input: '$inmuebles',
+                                    input: { $ifNull: ['$inmuebles', []] },
                                     as: 'inmueble',
                                     in: {
                                         $size: {
                                             $filter: {
-                                                input: '$$inmueble.nestedinmuebles',
+                                                input: { $ifNull: ['$$inmueble.nestedinmuebles', []] },
                                                 as: 'nested',
                                                 cond: { $eq: ['$$nested.categoria', null] }
                                             }
@@ -246,17 +245,17 @@ export default async function handler(req, res) {
                         escaleraNestedNoticiaState1: {
                             $sum: {
                                 $map: {
-                                    input: '$inmuebles',
+                                    input: { $ifNull: ['$inmuebles', []] },
                                     as: 'inmueble',
                                     in: {
                                         $sum: {
                                             $map: {
-                                                input: '$$inmueble.nestedescaleras',
+                                                input: { $ifNull: ['$$inmueble.nestedescaleras', []] },
                                                 as: 'escalera',
                                                 in: {
                                                     $size: {
                                                         $filter: {
-                                                            input: '$$escalera.nestedinmuebles',
+                                                            input: { $ifNull: ['$$escalera.nestedinmuebles', []] },
                                                             as: 'nested',
                                                             cond: { $eq: ['$$nested.noticiastate', '1'] }
                                                         }
@@ -271,17 +270,17 @@ export default async function handler(req, res) {
                         escaleraNestedNoticiaState0: {
                             $sum: {
                                 $map: {
-                                    input: '$inmuebles',
+                                    input: { $ifNull: ['$inmuebles', []] },
                                     as: 'inmueble',
                                     in: {
                                         $sum: {
                                             $map: {
-                                                input: '$$inmueble.nestedescaleras',
+                                                input: { $ifNull: ['$$inmueble.nestedescaleras', []] },
                                                 as: 'escalera',
                                                 in: {
                                                     $size: {
                                                         $filter: {
-                                                            input: '$$escalera.nestedinmuebles',
+                                                            input: { $ifNull: ['$$escalera.nestedinmuebles', []] },
                                                             as: 'nested',
                                                             cond: { $eq: ['$$nested.noticiastate', '0'] }
                                                         }
@@ -296,17 +295,17 @@ export default async function handler(req, res) {
                         escaleraNestedEncargoState1: {
                             $sum: {
                                 $map: {
-                                    input: '$inmuebles',
+                                    input: { $ifNull: ['$inmuebles', []] },
                                     as: 'inmueble',
                                     in: {
                                         $sum: {
                                             $map: {
-                                                input: '$$inmueble.nestedescaleras',
+                                                input: { $ifNull: ['$$inmueble.nestedescaleras', []] },
                                                 as: 'escalera',
                                                 in: {
                                                     $size: {
                                                         $filter: {
-                                                            input: '$$escalera.nestedinmuebles',
+                                                            input: { $ifNull: ['$$escalera.nestedinmuebles', []] },
                                                             as: 'nested',
                                                             cond: { $eq: ['$$nested.encargoState', '1'] }
                                                         }
@@ -321,17 +320,17 @@ export default async function handler(req, res) {
                         escaleraNestedEncargoState0: {
                             $sum: {
                                 $map: {
-                                    input: '$inmuebles',
+                                    input: { $ifNull: ['$inmuebles', []] },
                                     as: 'inmueble',
                                     in: {
                                         $sum: {
                                             $map: {
-                                                input: '$$inmueble.nestedescaleras',
+                                                input: { $ifNull: ['$$inmueble.nestedescaleras', []] },
                                                 as: 'escalera',
                                                 in: {
                                                     $size: {
                                                         $filter: {
-                                                            input: '$$escalera.nestedinmuebles',
+                                                            input: { $ifNull: ['$$escalera.nestedinmuebles', []] },
                                                             as: 'nested',
                                                             cond: { $eq: ['$$nested.encargoState', '0'] }
                                                         }
@@ -346,17 +345,17 @@ export default async function handler(req, res) {
                         escaleraNestedCategoriaInquilino: {
                             $sum: {
                                 $map: {
-                                    input: '$inmuebles',
+                                    input: { $ifNull: ['$inmuebles', []] },
                                     as: 'inmueble',
                                     in: {
                                         $sum: {
                                             $map: {
-                                                input: '$$inmueble.nestedescaleras',
+                                                input: { $ifNull: ['$$inmueble.nestedescaleras', []] },
                                                 as: 'escalera',
                                                 in: {
                                                     $size: {
                                                         $filter: {
-                                                            input: '$$escalera.nestedinmuebles',
+                                                            input: { $ifNull: ['$$escalera.nestedinmuebles', []] },
                                                             as: 'nested',
                                                             cond: { $eq: ['$$nested.categoria', 'Inquilino'] }
                                                         }
@@ -371,17 +370,17 @@ export default async function handler(req, res) {
                         escaleraNestedCategoriaVacio: {
                             $sum: {
                                 $map: {
-                                    input: '$inmuebles',
+                                    input: { $ifNull: ['$inmuebles', []] },
                                     as: 'inmueble',
                                     in: {
                                         $sum: {
                                             $map: {
-                                                input: '$$inmueble.nestedescaleras',
+                                                input: { $ifNull: ['$$inmueble.nestedescaleras', []] },
                                                 as: 'escalera',
                                                 in: {
                                                     $size: {
                                                         $filter: {
-                                                            input: '$$escalera.nestedinmuebles',
+                                                            input: { $ifNull: ['$$escalera.nestedinmuebles', []] },
                                                             as: 'nested',
                                                             cond: { $eq: ['$$nested.categoria', 'Vacio'] }
                                                         }
@@ -396,17 +395,17 @@ export default async function handler(req, res) {
                         escaleraNestedCategoriaPropietario: {
                             $sum: {
                                 $map: {
-                                    input: '$inmuebles',
+                                    input: { $ifNull: ['$inmuebles', []] },
                                     as: 'inmueble',
                                     in: {
                                         $sum: {
                                             $map: {
-                                                input: '$$inmueble.nestedescaleras',
+                                                input: { $ifNull: ['$$inmueble.nestedescaleras', []] },
                                                 as: 'escalera',
                                                 in: {
                                                     $size: {
                                                         $filter: {
-                                                            input: '$$escalera.nestedinmuebles',
+                                                            input: { $ifNull: ['$$escalera.nestedinmuebles', []] },
                                                             as: 'nested',
                                                             cond: { $eq: ['$$nested.categoria', 'Propietario'] }
                                                         }
@@ -421,17 +420,17 @@ export default async function handler(req, res) {
                         escaleraNestedCategoriaNull: {
                             $sum: {
                                 $map: {
-                                    input: '$inmuebles',
+                                    input: { $ifNull: ['$inmuebles', []] },
                                     as: 'inmueble',
                                     in: {
                                         $sum: {
                                             $map: {
-                                                input: '$$inmueble.nestedescaleras',
+                                                input: { $ifNull: ['$$inmueble.nestedescaleras', []] },
                                                 as: 'escalera',
                                                 in: {
                                                     $size: {
                                                         $filter: {
-                                                            input: '$$escalera.nestedinmuebles',
+                                                            input: { $ifNull: ['$$escalera.nestedinmuebles', []] },
                                                             as: 'nested',
                                                             cond: { $eq: ['$$nested.categoria', null] }
                                                         }
@@ -469,10 +468,11 @@ export default async function handler(req, res) {
 
                 res.status(200).json(result);
             } else {
-                res.status(404).json({ message: 'No statistics found for the given zoneId' });
+                res.status(404).json({ message: 'No statistics found for the given zoneName' });
             }
         } catch (error) {
-            console.error('Error fetching zone statistics:', error);
+            console.log('Error fetching zone statistics: here', error.message);
+            console.error('Error fetching zone statistics: here', error);
             res.status(500).json({ message: 'Internal Server Error' });
         }
     } else {

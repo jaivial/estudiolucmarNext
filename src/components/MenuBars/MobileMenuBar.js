@@ -3,11 +3,29 @@ import { useRouter } from 'next/router';
 import Link from 'next/link';
 import { FaHome, FaSearch, FaMapMarkedAlt, FaTasks, FaNewspaper, FaCog, FaEllipsisV, FaSignOutAlt } from 'react-icons/fa';
 import { Icon } from '@iconify/react';
+import Cookies from 'js-cookie';
+import axios from 'axios';
+import Toastify from 'toastify-js';
 
 const MobileMenuBar = () => {
     const router = useRouter();
     const [isDesplegarMoreMenu, setIsDesplegarMoreMenu] = useState(false);
     const [currentPage, setCurrentPage] = useState('');
+
+    const showToast = (message, backgroundColor) => {
+        Toastify({
+            text: message,
+            duration: 2500,
+            gravity: 'top',
+            position: 'center',
+            stopOnFocus: true,
+            style: {
+                borderRadius: '10px',
+                backgroundImage: backgroundColor,
+                textAlign: 'center',
+            },
+        }).showToast();
+    };
 
     useEffect(() => {
         const currentURL = window.location.href;
@@ -23,18 +41,29 @@ const MobileMenuBar = () => {
             setCurrentPage('Noticias');
         } else if (currentURL.includes('mapa')) {
             setCurrentPage('Mapa');
+        } else if (currentURL.includes('mizona')) {
+            setCurrentPage('Mizona');
         }
     }, []);
 
     const handleLogout = async () => {
+        const userId = Cookies.get('user_id');
+        const sessionId = Cookies.get('sessionID');
+        if (!userId || !sessionId) {
+            console.error('Logout failed: Missing user_id or sessionID');
+            return;
+        }
+
         try {
-            const { success, message } = await logout();
-            if (success) {
+            const response = await axios.post('/api/logout', { user_id: userId, session_id: sessionId });
+            if (response.data.status === 'success') {
+                Cookies.remove('user_id');
+                Cookies.remove('admin');
+                Cookies.remove('sessionID');
+                showToast('Sesión cerrada', 'linear-gradient(to right bottom, #c62828, #b92125, #ac1a22, #a0131f, #930b1c)');
                 router.push('/');
-                localStorage.setItem('toastMessage', JSON.stringify({
-                    message: 'Sesión cerrada',
-                    style: 'linear-gradient(to right bottom, #c62828, #b92125, #ac1a22, #a0131f, #930b1c)'
-                }));
+            } else {
+                console.error('Logout failed:', response.data.message);
             }
         } catch (error) {
             console.error('Logout error:', error);
@@ -57,8 +86,8 @@ const MobileMenuBar = () => {
                     <Link href="/home" className={`${isActive('Home')} px-3.5 rounded-3xl shadow-lg flex items-center justify-center`}>
                         <FaHome size="1.8em" />
                     </Link>
-                    <Link href="/buscador" className={`${isActive('Buscador')} px-4 rounded-3xl shadow-lg flex items-center justify-center`}>
-                        <FaSearch size="1.8em" />
+                    <Link href="/mizona" className={`${isActive('Mizona')} px-4 rounded-3xl shadow-lg flex items-center justify-center`}>
+                        <Icon icon="mdi:map-marker-radius" className='text-3xl' />
                     </Link>
                     <Link href="/mapa" className={`${isActive('Mapa')} px-4 rounded-3xl shadow-lg flex items-center justify-center`}>
                         <Icon icon="gis:poi-map" className='text-3xl' />
@@ -88,6 +117,11 @@ const MobileMenuBar = () => {
                                 </Link>
                                 <Link href="/clientes" className={`${isActive('Clientes')} w-full flex justify-center px-3.5 py-2 rounded-3xl shadow-lg`}>
                                     <Icon icon="bi:people-fill" className='text-3xl' />
+                                </Link>
+                                {/* New link to /mizona */}
+                                <Link href="/buscador" className={`${isActive('Buscador')} w-full flex justify-center px-3.5 py-2 rounded-3xl shadow-lg`}>
+                                    {/* Example icon */}
+                                    <FaSearch size="1.8em" />
                                 </Link>
                                 <div
                                     id="mobile-itemLogOut"
