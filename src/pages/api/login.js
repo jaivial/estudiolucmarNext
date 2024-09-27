@@ -9,7 +9,10 @@ export default async function handler(req, res) {
 
     try {
         const client = await clientPromise;
-
+        if (!client) {
+            console.error('MongoDB client is not initialized');
+            return false; // Return false if client is not initialized
+        }
         const { email, password } = req.body;
 
         const db = await client.db('inmoprocrm'); // Use the correct database name

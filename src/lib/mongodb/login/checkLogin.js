@@ -26,6 +26,10 @@ export const checkLogin = async (req) => {
 
     try {
         const client = await clientPromise;
+        if (!client) {
+            console.error('MongoDB client is not initialized');
+            return false; // Return false if client is not initialized
+        }
         const db = client.db('inmoprocrm'); // Use the correct database name
         console.log('user_id', user_id);
         console.log('session_id', session_id);
