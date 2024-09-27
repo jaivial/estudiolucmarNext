@@ -15,7 +15,10 @@ try {
         if (!global._mongoClientPromise) {
             client = new MongoClient(uri, options);
             global._mongoClientPromise = client.connect()
-                .then(() => console.log('MongoDB connected successfully (development)'))
+                .then(() => {
+                    console.log('MongoDB connected successfully (development)');
+                    return client; // Return the client
+                })
                 .catch((err) => {
                     console.error('MongoDB connection failed (development):', err);
                     throw err;
@@ -26,7 +29,10 @@ try {
         if (!global._mongoClientPromise) {
             client = new MongoClient(uri, options);
             global._mongoClientPromise = client.connect()
-                .then(() => console.log('MongoDB connected successfully (production)'))
+                .then(() => {
+                    console.log('MongoDB connected successfully (production)');
+                    return client; // Return the client
+                })
                 .catch((err) => {
                     console.error('MongoDB connection failed (production):', err);
                     throw err;
@@ -38,6 +44,5 @@ try {
     console.error('MongoDB initialization error:', error);
     throw new Error('MongoDB connection failed');
 }
-
 
 export default clientPromise;
