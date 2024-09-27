@@ -68,8 +68,7 @@ const DPVComponent = ({ isOpen, setDPVModalOpen, inmuebleId, DPVboolean, setDPVb
                 }));
             }
         } catch (error) {
-            console.error('Error fetching DPV data:', error);
-            showToast('Error al obtener los datos del DPV.', 'linear-gradient(to right bottom, #c62828, #b92125, #ac1a22, #a0131f, #930b1c)');
+            return;
         }
     };
 
@@ -80,9 +79,6 @@ const DPVComponent = ({ isOpen, setDPVModalOpen, inmuebleId, DPVboolean, setDPVb
         }
     }, []);
 
-    useEffect(() => {
-        console.log('DPVInfo', DPVInfo);
-    }, [DPVInfo]);
 
     const uploadDPV = async () => {
         // Validate required fields using DPVInfo
@@ -91,6 +87,9 @@ const DPVComponent = ({ isOpen, setDPVModalOpen, inmuebleId, DPVboolean, setDPVb
             if (!DPVInfo.nombreInmobiliaria) showToast('Nombre de la inmobiliaria es obligatorio.', 'linear-gradient(to right bottom, #c62828, #b92125, #ac1a22, #a0131f, #930b1c)');
             if (!DPVInfo.linkInmobiliaria) showToast('Link de la inmobiliaria es obligatorio.', 'linear-gradient(to right bottom, #c62828, #b92125, #ac1a22, #a0131f, #930b1c)');
             if (!DPVInfo.telefono) showToast('Teléfono es obligatorio.', 'linear-gradient(to right bottom, #c62828, #b92125, #ac1a22, #a0131f, #930b1c)');
+            if (DPVInfo.telefono.length < 9) {
+                showToast('El teléfono debe tener al menos 9 dígitos.', 'linear-gradient(to right bottom, #c62828, #b92125, #ac1a22, #a0131f, #930b1c)');
+            }
             if (!DPVInfo.valoracionEstimada) showToast('Evaluación estimada es obligatoria.', 'linear-gradient(to right bottom, #c62828, #b92125, #ac1a22, #a0131f, #930b1c)');
             return;
         }
@@ -130,6 +129,9 @@ const DPVComponent = ({ isOpen, setDPVModalOpen, inmuebleId, DPVboolean, setDPVb
             if (!DPVInfo.nombreInmobiliaria) showToast('Nombre de la inmobiliaria es obligatorio.', 'linear-gradient(to right bottom, #c62828, #b92125, #ac1a22, #a0131f, #930b1c)');
             if (!DPVInfo.linkInmobiliaria) showToast('Link de la inmobiliaria es obligatorio.', 'linear-gradient(to right bottom, #c62828, #b92125, #ac1a22, #a0131f, #930b1c)');
             if (!DPVInfo.telefono) showToast('Teléfono es obligatorio.', 'linear-gradient(to right bottom, #c62828, #b92125, #ac1a22, #a0131f, #930b1c)');
+            if (DPVInfo.telefono.length < 9) {
+                showToast('El teléfono debe tener al menos 9 dígitos.', 'linear-gradient(to right bottom, #c62828, #b92125, #ac1a22, #a0131f, #930b1c)');
+            }
             if (!DPVInfo.valoracionEstimada) showToast('Evaluación estimada es obligatoria.', 'linear-gradient(to right bottom, #c62828, #b92125, #ac1a22, #a0131f, #930b1c)');
             return;
         }
@@ -179,6 +181,7 @@ const DPVComponent = ({ isOpen, setDPVModalOpen, inmuebleId, DPVboolean, setDPVb
                 DPVboolean: false,
             });
             setDPVModalOpen(false);
+            setDPVboolean(false);
             setEditDPVMode(false);
             setOnAddDeleteDPVRefreshKey(onAddDeleteDPVRefreshKey + 1);
         } catch (error) {
@@ -192,12 +195,6 @@ const DPVComponent = ({ isOpen, setDPVModalOpen, inmuebleId, DPVboolean, setDPVb
         setTelefono(value.replace(/\D/g, ''));
     };
 
-    const validateTelefono = () => {
-        // Check length of telefono
-        if (telefono.length < 9) {
-            showToast('El teléfono debe tener al menos 9 dígitos.', 'linear-gradient(to right bottom, #c62828, #b92125, #ac1a22, #a0131f, #930b1c)');
-        }
-    };
 
     const closeDPVModal = () => {
         if (!DPVboolean) {
@@ -272,20 +269,20 @@ const DPVComponent = ({ isOpen, setDPVModalOpen, inmuebleId, DPVboolean, setDPVb
                         <div className='flex flex-row gap-6 justify-center items-stretch h-auto'>
                             <div className="bg-gray-100 rounded-md p-3 flex flex-col gap-2 w-full items-center justify-center">
                                 <h3 className="text-lg font-medium text-gray-700 text-center">Precio actual:</h3>
-                                <p className="text-gray-600 text-center">{DPVInfo.precioActual} €</p>
+                                <p className="text-gray-600 text-center">{DPVInfo.precioActual.toLocaleString('de-DE')} €</p>
                             </div>
                             <div className="bg-gray-100 rounded-md p-3 flex flex-col gap-2 w-full items-center justify-center">
                                 <h3 className="text-lg font-medium text-gray-700 text-center">Valoración estimada:</h3>
-                                <p className="text-gray-600 text-center">{DPVInfo.valoracionEstimada} €</p>
+                                <p className="text-gray-600 text-center">{DPVInfo.valoracionEstimada.toLocaleString('de-DE')} €</p>
                             </div>
                         </div>
                         <div className={`rounded-md p-3 flex flex-col gap-2 w-full items-center ${DPVInfo.precioActual - DPVInfo.valoracionEstimada < 20000 ? 'bg-red-300' : DPVInfo.precioActual - DPVInfo.valoracionEstimada <= 40000 ? 'bg-orange-300' : 'bg-gray-100'}`}>
                             <h3 className="text-lg font-medium text-gray-700">Distancia precio:</h3>
-                            <p className="text-gray-600">{DPVInfo.precioActual - DPVInfo.valoracionEstimada} €</p>
+                            <p className={` ${DPVInfo.precioActual - DPVInfo.valoracionEstimada < 20000 ? 'text-gray-800' : DPVInfo.precioActual - DPVInfo.valoracionEstimada <= 40000 ? 'text-gray-800' : 'text-gray-800'}`} >{(DPVInfo.precioActual - DPVInfo.valoracionEstimada).toLocaleString('de-DE')} €</p>
                         </div>
                         <div className="bg-gray-100 rounded-md p-3 flex flex-col gap-2 w-full items-center">
                             <h3 className="text-lg font-medium text-gray-700">Fecha de publicación:</h3>
-                            <p className="text-gray-600">{DPVInfo.fechaPublicacion ? format(parse(DPVInfo.fechaPublicacion, 'yyyy-MM-dd', new Date()), 'dd-MM-yyyy') : ''}</p>
+                            <p className="text-gray-600">{DPVInfo.fechaPublicacion ? format(parse(DPVInfo.fechaPublicacion, 'yyyy-MM-dd', new Date()), 'dd-MM-yyyy') : 'Fecha no establecida'}</p>
                         </div>
                     </div>
                 )}
@@ -333,7 +330,6 @@ const DPVComponent = ({ isOpen, setDPVModalOpen, inmuebleId, DPVboolean, setDPVb
                                 placeholder="Teléfono de la inmobiliaria"
                                 value={DPVInfo.telefono}
                                 onChange={(value) => setDPVInfo(prevState => ({ ...prevState, telefono: value }))}
-                                onBlur={validateTelefono} // Trigger validation when input loses focus
                             />
                         </Form.Group>
 
@@ -354,7 +350,7 @@ const DPVComponent = ({ isOpen, setDPVModalOpen, inmuebleId, DPVboolean, setDPVb
                             <InputNumber
                                 value={DPVInfo.valoracionEstimada}
                                 onChange={(value) => setDPVInfo(prevState => ({ ...prevState, valoracionEstimada: value }))}
-                                max={600000}
+                                max={5000000000}
                                 min={0}
                             />
                         </Form.Group>
@@ -364,7 +360,7 @@ const DPVComponent = ({ isOpen, setDPVModalOpen, inmuebleId, DPVboolean, setDPVb
                             <InputNumber
                                 value={DPVInfo.precioActual}
                                 onChange={(value) => setDPVInfo(prevState => ({ ...prevState, precioActual: value }))}
-                                max={600000}
+                                max={5000000000}
                                 min={0}
                             />
                         </Form.Group>
@@ -438,7 +434,6 @@ const DPVComponent = ({ isOpen, setDPVModalOpen, inmuebleId, DPVboolean, setDPVb
                                 placeholder="Teléfono de la inmobiliaria"
                                 value={DPVInfo.telefono}
                                 onChange={(value) => setDPVInfo(prevState => ({ ...prevState, telefono: value }))}
-                                onBlur={validateTelefono} // Trigger validation when input loses focus
                             />
                         </Form.Group>
                         {/* Acción DPV */}
@@ -458,7 +453,7 @@ const DPVComponent = ({ isOpen, setDPVModalOpen, inmuebleId, DPVboolean, setDPVb
                             <InputNumber
                                 value={DPVInfo.valoracionEstimada}
                                 onChange={(value) => setDPVInfo(prevState => ({ ...prevState, valoracionEstimada: value }))}
-                                max={600000}
+                                max={5000000000}
                                 min={0}
                             />
                         </Form.Group>
@@ -469,7 +464,7 @@ const DPVComponent = ({ isOpen, setDPVModalOpen, inmuebleId, DPVboolean, setDPVb
                             <InputNumber
                                 value={DPVInfo.precioActual}
                                 onChange={(value) => setDPVInfo(prevState => ({ ...prevState, precioActual: value }))}
-                                max={600000}
+                                max={5000000000}
                                 min={0}
                             />
                         </Form.Group>

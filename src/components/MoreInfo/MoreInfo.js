@@ -43,6 +43,7 @@ const ItemDetails = ({ id, onClose, showModal, setShowModal, fetchData, currentP
     const [nombre, setNombre] = useState(null);
     const [apellido, setApellido] = useState(null);
     const [passedDPVinfo, setPassedDPVinfo] = useState(null);
+    const [DPVInfo, setDPVInfo] = useState(null);
 
 
     const showToast = (message, backgroundColor) => {
@@ -60,6 +61,25 @@ const ItemDetails = ({ id, onClose, showModal, setShowModal, fetchData, currentP
             onClick: function () { },
         }).showToast();
     };
+
+    const fetchDataDPV = async (inmuebleId) => {
+        try {
+            const response = await axios.get(`/api/dpv/`, { params: { inmuebleId } });
+            // Set fetched data to state variables
+            if (response.data) {
+                console.log('response.data dpvinfo', response.data);
+                setDPVInfo(response.data);
+                setDPVInfo(prevState => ({
+                    ...prevState,
+                    DPVboolean: true
+                }));
+            }
+        } catch (error) {
+            console.error('Error fetching DPV data:', error);
+            showToast('Error al obtener los datos del DPV.', 'linear-gradient(to right bottom, #c62828, #b92125, #ac1a22, #a0131f, #930b1c)');
+        }
+    };
+
 
     const fetchDescripcion = async () => {
         try {
@@ -109,7 +129,10 @@ const ItemDetails = ({ id, onClose, showModal, setShowModal, fetchData, currentP
                 console.log('response.data', response.data);
                 setData(response.data);
                 let dpv = response.data.inmueble.DPV;
-                setDPVboolean(dpv);
+                if (dpv) {
+                    setDPVboolean(dpv);
+                    fetchDataDPV(response.data.inmueble.id);
+                }
                 let localizado = response.data.inmueble.localizado;
                 setLocalizado(localizado);
                 let direccion = response.data.inmueble.direccion;
@@ -243,7 +266,7 @@ const ItemDetails = ({ id, onClose, showModal, setShowModal, fetchData, currentP
                         )}
                         <DetailsInfoTwo data={data} descripcion={descripcion} setDescripcion={setDescripcion} newDescripcion={newDescripcion} setNewDescripcion={setNewDescripcion} />
                         <ClientesAsociados inmuebleId={data.inmueble.id} inmuebleDireccion={data.inmueble.direccion} screenWidth={screenWidth} />
-                        {DPVboolean && <DPVInfoComponent inmuebleId={data.inmueble.id} />}
+                        {data.inmueble.DPV && <DPVInfoComponent DPVInfo={DPVInfo} />}
                     </>
                 )}
                 <DetailsInfoThree data={data} isVisible={isVisible} />
