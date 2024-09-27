@@ -7,6 +7,7 @@ const allowedOrigins = [
     'https://www.estudiolucmar.com',
     'http://estudiolucmar.com',
     'http://www.estudiolucmar.com',
+    'http://localhost:3000/',
 ];
 
 const cors = Cors({
