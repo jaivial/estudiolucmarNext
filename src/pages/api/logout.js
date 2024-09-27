@@ -1,6 +1,12 @@
+import cors, { runMiddleware } from '../../utils/cors';
 import clientPromise from '../../lib/mongodb';
 
 export default async function handler(req, res) {
+
+  // Run CORS middleware
+  await runMiddleware(req, res, cors);
+
+
     if (req.method === 'POST') { // Change to POST since it's a logout action
         try {
             const { user_id, session_id } = req.body; // Get user_id and session_id from the request body

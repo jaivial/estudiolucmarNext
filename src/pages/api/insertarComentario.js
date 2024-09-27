@@ -1,8 +1,14 @@
+import cors, { runMiddleware } from '../../utils/cors';
 import clientPromise from '../../lib/mongodb';
 // Function to generate a random number as ID
 const generateRandomId = () => Math.floor(Math.random() * 1000000); // Generates a random number between 0 and 999999
 
 export default async function handler(req, res) {
+
+  // Run CORS middleware
+  await runMiddleware(req, res, cors);
+
+
     if (req.method === 'GET') {
         try {
             const {

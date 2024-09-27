@@ -1,5 +1,11 @@
+import cors, { runMiddleware } from '../../utils/cors';
 import clientPromise from '../../lib/mongodb'; // Adjust the path as needed
 export default async function handler(req, res) {
+
+  // Run CORS middleware
+  await runMiddleware(req, res, cors);
+
+
     if (req.method === 'PUT') {
         try {
             const client = await clientPromise;

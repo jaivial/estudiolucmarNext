@@ -1,7 +1,13 @@
+import cors, { runMiddleware } from '../../utils/cors';
 import { v4 as uuidv4 } from 'uuid';
 import clientPromise from '../../lib/mongodb';
 
 export default async function handler(req, res) {
+
+  // Run CORS middleware
+  await runMiddleware(req, res, cors);
+
+
     if (req.method === 'POST') {
         try {
             const { nombre, apellido, telefono, dni, tipoDeCliente, inmuebleId, direccion } = req.body;

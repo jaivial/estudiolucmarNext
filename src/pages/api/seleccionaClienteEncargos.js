@@ -1,7 +1,13 @@
+import cors, { runMiddleware } from '../../utils/cors';
 // /pages/api/seleccionaClienteEncargos.js
 import clientPromise from '../../lib/mongodb';
 
 export default async function handler(req, res) {
+
+  // Run CORS middleware
+  await runMiddleware(req, res, cors);
+
+
     if (req.method !== 'GET') {
         // Only allow GET requests
         return res.status(405).json({ error: 'Method Not Allowed' });

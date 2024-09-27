@@ -1,7 +1,13 @@
+import cors, { runMiddleware } from '../../utils/cors';
 import clientPromise from '../../lib/mongodb';
 import getConnection from "../../lib/db.js";
 
 export default async function handler(req, res) {
+
+  // Run CORS middleware
+  await runMiddleware(req, res, cors);
+
+
     try {
         // Connect to the MongoDB client
         const client = await getConnection();

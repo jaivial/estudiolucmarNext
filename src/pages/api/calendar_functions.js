@@ -1,6 +1,12 @@
+import cors, { runMiddleware } from '../../utils/cors';
 import { getTasks, addTask, markTaskAsCompleted, deleteTask } from '../../lib/mongodb/calendar/calendarFunctions';
 
 export default async function handler(req, res) {
+
+  // Run CORS middleware
+  await runMiddleware(req, res, cors);
+
+
     const { userId, functionToActivate, month } = req.query; // Extract userId, functionToActivate, and month from query parameters
 
     try {

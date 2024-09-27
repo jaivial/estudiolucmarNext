@@ -1,6 +1,12 @@
+import cors, { runMiddleware } from '../../utils/cors';
 import clientPromise from '../../lib/mongodb';
 
 export default async function handler(req, res) {
+
+  // Run CORS middleware
+  await runMiddleware(req, res, cors);
+
+
     const { _id, client_id, nombre, apellido, dni, telefono, tipo_de_cliente, inmuebles_asociados_informador, inmuebles_asociados_propietario, inmuebles_asociados_copropietario, inmuebles_asociados_inquilino, pedido, interes, rango_precios, email, informador } = req.body;
     console.log('body', req.body);
 

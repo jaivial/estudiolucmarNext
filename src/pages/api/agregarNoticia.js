@@ -1,7 +1,13 @@
+import cors, { runMiddleware } from '../../utils/cors';
 // /pages/api/agregarNoticia.js
 import clientPromise from '../../lib/mongodb';
 
 export default async function handler(req, res) {
+
+  // Run CORS middleware
+  await runMiddleware(req, res, cors);
+
+
     if (req.method === 'POST') {
         const {
             id,

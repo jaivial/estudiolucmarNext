@@ -1,6 +1,12 @@
+import cors, { runMiddleware } from '../../utils/cors';
 import clientPromise from '../../lib/mongodb';
 
 export default async function handler(req, res) {
+
+  // Run CORS middleware
+  await runMiddleware(req, res, cors);
+
+
     const { clientInmuebleIds } = req.body;
     const client = await clientPromise;
     const db = client.db('inmoprocrm');

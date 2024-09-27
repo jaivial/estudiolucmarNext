@@ -1,3 +1,4 @@
+import cors, { runMiddleware } from '../../utils/cors';
 // pages/api/calculateZoneStatistics.js
 
 import clientPromise from '../../lib/mongodb';
@@ -99,6 +100,11 @@ async function checkBoundingBoxInZones(db) {
 }
 
 export default async function handler(req, res) {
+
+  // Run CORS middleware
+  await runMiddleware(req, res, cors);
+
+
     if (req.method === 'GET') {
         try {
             const client = await clientPromise;

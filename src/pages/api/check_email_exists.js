@@ -1,7 +1,13 @@
+import cors, { runMiddleware } from '../../utils/cors';
 // En /pages/api/check_email_exists.js
 import clientPromise from '../../lib/mongodb';
 
 export default async function handler(req, res) {
+
+  // Run CORS middleware
+  await runMiddleware(req, res, cors);
+
+
     const { email } = req.body;
 
     try {

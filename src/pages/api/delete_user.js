@@ -1,8 +1,14 @@
+import cors, { runMiddleware } from '../../utils/cors';
 import clientPromise from '../../lib/mongodb';
 import fs from 'fs';
 import path from 'path';
 
 export default async function handler(req, res) {
+
+  // Run CORS middleware
+  await runMiddleware(req, res, cors);
+
+
     if (req.method === 'DELETE') {
         try {
             const client = await clientPromise;

@@ -1,8 +1,14 @@
+import cors, { runMiddleware } from '../../utils/cors';
 import { id } from 'date-fns/locale';
 import clientPromise from '../../lib/mongodb';
 import { ObjectId } from 'mongodb';
 
 export default async function handler(req, res) {
+
+  // Run CORS middleware
+  await runMiddleware(req, res, cors);
+
+
     if (req.method === 'GET') {
         const { comprador_id } = req.query;
 

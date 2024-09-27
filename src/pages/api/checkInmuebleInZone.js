@@ -1,3 +1,4 @@
+import cors, { runMiddleware } from '../../utils/cors';
 import clientPromise from '../../lib/mongodb';
 
 // Function to check if a point is inside a polygon
@@ -18,6 +19,11 @@ function isPointInPolygon(point, polygon) {
 }
 
 export default async function handler(req, res) {
+
+  // Run CORS middleware
+  await runMiddleware(req, res, cors);
+
+
     if (req.method === 'POST') {
         const { codeID } = req.body;
         console.log('codeID', codeID);

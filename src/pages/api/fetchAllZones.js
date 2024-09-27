@@ -1,8 +1,14 @@
+import cors, { runMiddleware } from '../../utils/cors';
 // pages/api/fetchAllZones.js
 
 import clientPromise from '../../lib/mongodb';
 
 export default async function handler(req, res) {
+
+  // Run CORS middleware
+  await runMiddleware(req, res, cors);
+
+
     if (req.method === 'GET') {
         try {
             const client = await clientPromise;
