@@ -15,8 +15,12 @@ const cors = Cors({
     origin: (origin, callback) => {
         if (!origin || allowedOrigins.includes(origin)) {
             callback(null, origin);
+            console.log('Origin:', origin);
+
         } else {
             callback(new Error('Not allowed by CORS'));
+            console.log('Origin:', origin);
+
         }
     },
     credentials: true,  // Enable cookies if needed

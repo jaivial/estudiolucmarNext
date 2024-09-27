@@ -3,8 +3,8 @@ import clientPromise from '../../lib/mongodb';
 
 export default async function handler(req, res) {
 
-  // Run CORS middleware
-  await runMiddleware(req, res, cors);
+    // Run CORS middleware
+    await runMiddleware(req, res, cors);
 
 
     try {
@@ -12,7 +12,7 @@ export default async function handler(req, res) {
 
         const { email, password } = req.body;
 
-        const db = client.db('inmoprocrm'); // Use the correct database name
+        const db = await client.db('inmoprocrm'); // Use the correct database name
         const user = await db.collection('users').findOne({ email, password });
 
 
