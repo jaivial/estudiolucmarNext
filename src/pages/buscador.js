@@ -54,7 +54,7 @@ export default function Buscador() {
 
     return (
         <GeneralLayout title="Buscador" description="Buscador">
-            <div>
+            <div className="h-full">
                 <TablaAllData parentsEdificioProps={data} admin={admin} screenWidth={screenWidth} loadingLoader={loading} />
             </div>
         </GeneralLayout>

@@ -19,6 +19,7 @@ import { AiOutlineLoading } from "react-icons/ai";
 
 
 
+
 const Table = ({ parentsEdificioProps, admin, screenWidth, loadingLoader }) => {
     const [loading, setLoading] = useState(true);
     const [data, setData] = useState([]);
@@ -90,8 +91,10 @@ const Table = ({ parentsEdificioProps, admin, screenWidth, loadingLoader }) => {
     const [loadingTotalItems, setLoadingTotalItems] = useState(false);
     const [showMoreInfo, setShowMoreInfo] = useState(false); // New state for MoreInfo visibility
     const [showModal, setShowModal] = useState(false); // Controls the modal visibility
+    const [loadingPage, setLoadingPage] = useState(true);
 
     const fetchData = async (currentPage, searchTerm) => {
+        setLoadingPage(true);
         // Function to determine the value for each filter
         const determineFilterValue = (filterValue) => {
             if (typeof filterValue === 'undefined' || filterValue === 'undefined') {
@@ -167,6 +170,9 @@ const Table = ({ parentsEdificioProps, admin, screenWidth, loadingLoader }) => {
                 setAnalyticsData(data.analyitics[0]);
                 setTotalItems(data.analyitics[0].totalInmuebles);
                 console.log('totalItems', data.analyitics[0].totalInmuebles);
+                setTimeout(() => {
+                    setLoadingPage(false);
+                }, 1);
 
             }).catch((error) => {
                 console.error('Error fetching data:', error.message || error);
@@ -179,6 +185,7 @@ const Table = ({ parentsEdificioProps, admin, screenWidth, loadingLoader }) => {
 
             setLoading(false);
             setLoadingTotalItems(false);
+
 
 
         } catch (error) {
@@ -283,12 +290,14 @@ const Table = ({ parentsEdificioProps, admin, screenWidth, loadingLoader }) => {
 
     const handlePrevious = () => {
         if (currentPage > 1) {
+            setLoadingPage(true);
             setCurrentPage(currentPage - 1);
         }
     };
 
     const handleNext = () => {
         if (currentPage < totalPages) {
+            setLoadingPage(true);
             setCurrentPage(currentPage + 1);
         }
     };
@@ -1194,7 +1203,7 @@ const Table = ({ parentsEdificioProps, admin, screenWidth, loadingLoader }) => {
 
 
     return (
-        <div className="bg-slate-400 h-auto overflow-x-hidden">
+        <div className="bg-slate-400 h-full overflow-x-hidden">
             <div className="container mx-auto p-4 pb-24">
                 <form onSubmit={handleSearch} className="mb-4 flex flex-row gap-2 mt-0 w-full justify-center items-center bg-slate-200 rounded-2xl p-4 shadow-2xl">
                     <div className="relative w-[80%]">
@@ -1376,115 +1385,124 @@ const Table = ({ parentsEdificioProps, admin, screenWidth, loadingLoader }) => {
                                     </p>
                                 </div>
                                 <div className="flex flex-col gap-2 pt-3">
-                                    <div className="tableheader relative px-2 py-1 mt-2 rounded-xl shadow-xl flex items-center flex-row w-full bg-blue-950">
+                                    <div className="tableheader relative px-2 py-1 mt-2 rounded-xl shadow-xl flex items-center justify-center flex-row w-full bg-blue-950">
                                         <div className="true flex flex-row justify-between w-full">
-                                            <div className="flex flex-row justify-start items-center gap-1 w-[80%] py-2 text-white">
-                                                <p className="w-[50%] text-center">
+                                            <div className="flex flex-row justify-center items-center gap-1 w-[90%] py-2 text-white">
+                                                <p className="w-[70%] text-center m-0">
                                                     <strong>Dirección</strong>
                                                 </p>
-                                                <p className="text-center w-[23%]">
-                                                    <strong>Zona</strong>
-                                                </p>
-                                                <p className="text-center w-[27%]">
+                                                <p className="text-center w-[30%] m-0">
                                                     <strong>Actividad</strong>
                                                 </p>
                                             </div>
-                                            <div className="flex flex-row justify-end items-center gap-3 w-[20%]"></div>
+                                            <div className="flex flex-row justify-end items-center gap-3 w-[10%]"></div>
                                         </div>
                                     </div>
 
-                                    {Array.isArray(data) && data.length > 0 ? (
-                                        data.map((item) =>
-                                            item.tipoagrupacion === 1 ? (
-                                                <div
-                                                    key={item.id}
-                                                    className={`relative border px-2 py-4 mb-4 rounded-xl shadow-xl flex items-center flex-row w-full ${item.AgrupacionParent === '1' ? 'bg-slate-100' : item.dataUpdateTime === 'red' ? 'bg-red-100' : item.dataUpdateTime === 'yellow' ? 'bg-yellow-200' : 'bg-green-100'
-                                                        }`}
-                                                >
-                                                    <div className="flex flex-row justify-between w-full">
-                                                        {showExtraButtons && <input type="checkbox" checked={selectedItems.has(item.id)} onChange={() => handleCheckboxChange(item.id)} className="mr-4 w-[25px]" />}
-                                                        {showDeleteInmuebleButtons && <input type="checkbox" checked={selectedItems.has(item.id)} onChange={() => handleCheckboxChange(item.id)} className="mr-4 w-[25px]" />}
-                                                        <div className="flex flex-row justify-start items-center gap-1 w-[80%] py-2">
-                                                            <p className="w-[50%] text-center">{item.direccion}</p>
-                                                            <p className="text-center w-[20%]">{item.zona === 'NULL' ? 'N/A' : item.zona}</p>
-                                                        </div>
-                                                        <div className="flex flex-row justify-end items-center gap-3 w-[20%]">
-                                                            <div className="flex flex-row gap-2 mr-4">
-                                                                {item.noticiastate === true && (
-                                                                    <svg xmlns="http://www.w3.org/2000/svg" width="2.1em" height="2.1em" viewBox="0 0 24 24">
-                                                                        <path
-                                                                            fill="currentColor"
-                                                                            d="M10 7h4V5.615q0-.269-.173-.442T13.385 5h-2.77q-.269 0-.442.173T10 5.615zm8 15q-1.671 0-2.835-1.164Q14 19.67 14 18t1.165-2.835T18 14t2.836 1.165T22 18t-1.164 2.836T18 22M4.615 20q-.69 0-1.153-.462T3 18.384V8.616q0-.691.463-1.153T4.615 7H9V5.615q0-.69.463-1.153T10.616 4h2.769q.69 0 1.153.462T15 5.615V7h4.385q.69 0 1.152.463T21 8.616v4.198q-.683-.414-1.448-.614T18 12q-2.496 0-4.248 1.752T12 18q0 .506.086 1.009t.262.991zM18 20.423q.2 0 .33-.13t.132-.331t-.131-.331T18 19.5t-.33.13t-.132.332t.131.33t.331.131m-.385-1.846h.77v-3h-.77z"
-                                                                        />
-                                                                    </svg>
-                                                                )}
-                                                                {item.encargostate === true && (
-                                                                    <svg xmlns="http://www.w3.org/2000/svg" width="2em" height="2em" viewBox="0 0 20 20">
-                                                                        <path
-                                                                            fill="currentColor"
-                                                                            d="M2 3a1 1 0 0 1 2 0h13a1 1 0 1 1 0 2H4v12.5a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5zm3 3.5a.5.5 0 0 1 .5-.5h11a.5.5 0 0 1 .5.5v7a2.5 2.5 0 0 1-2.5 2.5h-7A2.5 2.5 0 0 1 5 13.5zm3 7a.5.5 0 0 0 .5.5h1a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 0 .5.5h1a.5.5 0 0 0 .5-.5v-2.55a1 1 0 0 0-.336-.748L11.332 8.13a.5.5 0 0 0-.664 0L8.336 10.2a1 1 0 0 0-.336.75z"
-                                                                        />
-                                                                    </svg>
-                                                                )}
-                                                            </div>
-                                                            <div onClick={() => handleItemClick(item.id)} className="cursor-pointer w-[20%] mr-4">
-                                                                <svg xmlns="http://www.w3.org/2000/svg" width="2.1em" height="2.1em" viewBox="0 0 16 16" className="text-cyan-800 bg-white rounded-full hover:w-[2.5em] hover:h-[2.5em] hover:shadow-lg hover:text-cyan-600">
-                                                                    <path fill="currentColor" d="M8 0a8 8 0 1 1 0 16A8 8 0 0 1 8 0m1.062 4.312a1 1 0 1 0-2 0v2.75h-2.75a1 1 0 0 0 0 2h2.75v2.75a1 1 0 1 0 2 0v-2.75h2.75a1 1 0 1 0 0-2h-2.75Z" />
-                                                                </svg>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            ) : (
-                                                item.tipoagrupacion === 2 && (
-                                                    <div
-                                                        key={item.EdificioID}
-                                                        className={`relative border border-gray-400 px-2 py-4 mb-4 rounded-xl shadow-xl flex items-center flex-row w-full bg-gray-100`}>
-                                                        <div className="w-full flex flex-col justify-center items-center">
-                                                            <div className="flex flex-row justify-start items-center gap-2 w-full  cursor-pointer" onClick={() => handleToggle(item.EdificioID)}>
-                                                                {showDeleteInmuebleButtons && <input type="checkbox" checked={selectedItems.has(item.id)} onChange={() => handleCheckboxChange(item.id)} className="mr-4 w-[25px] h-[25px]" />}
-                                                                <div className="flex flex-row justify-start items-center w-[80%] py-2">
-                                                                    <span className="flex flex-row justify-start items-center w-[75%] pl-1">
-                                                                        <svg xmlns="http://www.w3.org/2000/svg" width="3em" height="3em" viewBox="0 0 24 24">
-                                                                            <g fill="none">
-                                                                                <path d="M24 0v24H0V0zM12.593 23.258l-.011.002l-.071.035l-.02.004l-.014-.004l-.071-.035q-.016-.005-.024.005l-.004.01l-.017.428l.005.02l.01.013l.104.074l.015.004l.012-.004l.104-.074l.012-.016l.004-.017l-.017-.427q-.004-.016-.017-.018m.265-.113l-.013.002l-.185.093l-.01.01l-.003.011l.018.43l.005.012l.008.007l.201.093q.019.005.029-.008l.004-.014l-.034-.614q-.005-.019-.02-.022m-.715.002a.02.02 0 0 0-.027.006l-.006.014l-.034.614q.001.018.017.024l.015-.002l.201-.093l.01-.008l.004-.011l.017-.43l-.003-.012l-.01-.01z" />
-                                                                                <path fill="currentColor" d="M3 19h1V6.36a1.5 1.5 0 0 1 1.026-1.423l8-2.666A1.5 1.5 0 0 1 15 3.694V19h1V9.99a.5.5 0 0 1 .598-.49l2.196.44A1.5 1.5 0 0 1 20 11.41V19h1a1 1 0 1 1 0 2H3a1 1 0 1 1 0-2" />
-                                                                            </g>
-                                                                        </svg>
-                                                                        <p className="w-[60%] text-center">{item.direccion}</p>
-                                                                    </span>
-                                                                    <p className="text-start w-[40%]">{item.zona === 'NULL' ? 'N/A' : item.zona}</p>
-                                                                </div>
-                                                                <div className="cursor-pointer flex flex-row justify-center w-[30%]">
-                                                                    {!expandedItems[item.EdificioID] && (
-                                                                        <svg xmlns="http://www.w3.org/2000/svg" width="2.5em" height="2.5em" viewBox="0 0 24 24">
-                                                                            <path fill="currentColor" fillRule="evenodd" d="M7 9a1 1 0 0 0-.707 1.707l5 5a1 1 0 0 0 1.414 0l5-5A1 1 0 0 0 17 9z" clipRule="evenodd" />
-                                                                        </svg>
-                                                                    )}
-                                                                    {expandedItems[item.EdificioID] && (
-                                                                        <svg xmlns="http://www.w3.org/2000/svg" width="2.5em" height="2.5em" viewBox="0 0 24 24">
-                                                                            <path fill="currentColor" d="M18.2 13.3L12 7l-6.2 6.3c-.2.2-.3.5-.3.7s.1.5.3.7c.2.2.4.3.7.3h11c.3 0 .5-.1.7-.3c.2-.2.3-.5.3-.7s-.1-.5-.3-.7" />
-                                                                        </svg>
-                                                                    )}
-                                                                </div>
-                                                            </div>
-                                                            {expandedItems[item.EdificioID] && edifciosChildren(item)}
-                                                        </div>
-                                                    </div>
-                                                )
-                                            ),
-                                        )
-                                    ) : (
-                                        <div className="flex mt-4 pb-4 w-full flex-row items-center justify-center">
-                                            <p>No hay resultados</p>
+                                    {loadingPage ? (
+                                        <div className="skeleton flex flex-col gap-6 w-full pt-1 pb-4">
+                                            <Skeleton count={1} height={85} className='shadow-lg' style={{ borderRadius: '15px' }} />
+                                            <Skeleton count={1} height={85} className='shadow-lg' style={{ borderRadius: '15px' }} />
+                                            <Skeleton count={1} height={85} className='shadow-lg' style={{ borderRadius: '15px' }} />
+                                            <Skeleton count={1} height={85} className='shadow-lg' style={{ borderRadius: '15px' }} />
                                         </div>
+                                    ) : (
+
+
+                                        Array.isArray(data) && data.length > 0 ? (
+                                            data.map((item) =>
+                                                item.tipoagrupacion === 1 ? (
+                                                    <div
+                                                        key={item.id}
+                                                        className={`relative border px-2 py-4 mb-4 rounded-xl shadow-xl flex items-center flex-row w-full ${item.AgrupacionParent === '1' ? 'bg-slate-100' : item.dataUpdateTime === 'red' ? 'bg-red-100' : item.dataUpdateTime === 'yellow' ? 'bg-yellow-200' : 'bg-green-100'
+                                                            }`}
+                                                    >
+                                                        <div className="flex flex-row justify-between w-full">
+                                                            {showExtraButtons && <input type="checkbox" checked={selectedItems.has(item.id)} onChange={() => handleCheckboxChange(item.id)} className="mr-4 w-[25px]" />}
+                                                            {showDeleteInmuebleButtons && <input type="checkbox" checked={selectedItems.has(item.id)} onChange={() => handleCheckboxChange(item.id)} className="mr-4 w-[25px]" />}
+                                                            <div className="flex flex-row justify-start items-center gap-1 w-[90%] py-2">
+                                                                <p className="w-[70%] text-center">{item.direccion}</p>
+                                                                <div className="flex flex-row gap-2 w-[30%] h-auto justify-center items-center">
+                                                                    {item.noticiastate === true && (
+                                                                        <svg xmlns="http://www.w3.org/2000/svg" width="2.1em" height="2.1em" viewBox="0 0 24 24">
+                                                                            <path
+                                                                                fill="currentColor"
+                                                                                d="M10 7h4V5.615q0-.269-.173-.442T13.385 5h-2.77q-.269 0-.442.173T10 5.615zm8 15q-1.671 0-2.835-1.164Q14 19.67 14 18t1.165-2.835T18 14t2.836 1.165T22 18t-1.164 2.836T18 22M4.615 20q-.69 0-1.153-.462T3 18.384V8.616q0-.691.463-1.153T4.615 7H9V5.615q0-.69.463-1.153T10.616 4h2.769q.69 0 1.153.462T15 5.615V7h4.385q.69 0 1.152.463T21 8.616v4.198q-.683-.414-1.448-.614T18 12q-2.496 0-4.248 1.752T12 18q0 .506.086 1.009t.262.991zM18 20.423q.2 0 .33-.13t.132-.331t-.131-.331T18 19.5t-.33.13t-.132.332t.131.33t.331.131m-.385-1.846h.77v-3h-.77z"
+                                                                            />
+                                                                        </svg>
+                                                                    )}
+                                                                    {item.encargostate === true && (
+                                                                        <svg xmlns="http://www.w3.org/2000/svg" width="2em" height="2em" viewBox="0 0 20 20">
+                                                                            <path
+                                                                                fill="currentColor"
+                                                                                d="M2 3a1 1 0 0 1 2 0h13a1 1 0 1 1 0 2H4v12.5a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5zm3 3.5a.5.5 0 0 1 .5-.5h11a.5.5 0 0 1 .5.5v7a2.5 2.5 0 0 1-2.5 2.5h-7A2.5 2.5 0 0 1 5 13.5zm3 7a.5.5 0 0 0 .5.5h1a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 0 .5.5h1a.5.5 0 0 0 .5-.5v-2.55a1 1 0 0 0-.336-.748L11.332 8.13a.5.5 0 0 0-.664 0L8.336 10.2a1 1 0 0 0-.336.75z"
+                                                                            />
+                                                                        </svg>
+                                                                    )}
+                                                                </div>
+                                                            </div>
+                                                            <div className="flex flex-row justify-center items-center w-[10%]">
+                                                                <div onClick={() => handleItemClick(item.id)} className="cursor-pointer">
+                                                                    <svg xmlns="http://www.w3.org/2000/svg" width="2.1em" height="2.1em" viewBox="0 0 16 16" className="text-cyan-800 bg-white rounded-full hover:w-[2.5em] hover:h-[2.5em] hover:shadow-lg hover:text-cyan-600">
+                                                                        <path fill="currentColor" d="M8 0a8 8 0 1 1 0 16A8 8 0 0 1 8 0m1.062 4.312a1 1 0 1 0-2 0v2.75h-2.75a1 1 0 0 0 0 2h2.75v2.75a1 1 0 1 0 2 0v-2.75h2.75a1 1 0 1 0 0-2h-2.75Z" />
+                                                                    </svg>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                ) : (
+                                                    item.tipoagrupacion === 2 && (
+                                                        <div
+                                                            key={item.EdificioID}
+                                                            className={`relative border border-gray-400 px-2 py-4 mb-4 rounded-xl shadow-xl flex items-center flex-row w-full bg-gray-100`}>
+                                                            <div className="w-full flex flex-col justify-center items-center">
+                                                                <div className="flex flex-row justify-start items-center gap-2 w-full  cursor-pointer" onClick={() => handleToggle(item.EdificioID)}>
+                                                                    {showDeleteInmuebleButtons && <input type="checkbox" checked={selectedItems.has(item.id)} onChange={() => handleCheckboxChange(item.id)} className="mr-4 w-[25px] h-[25px]" />}
+                                                                    <div className="flex flex-row justify-start items-center w-[80%] py-2">
+                                                                        <span className="flex flex-row justify-start items-center w-[75%] pl-1">
+                                                                            <svg xmlns="http://www.w3.org/2000/svg" width="3em" height="3em" viewBox="0 0 24 24">
+                                                                                <g fill="none">
+                                                                                    <path d="M24 0v24H0V0zM12.593 23.258l-.011.002l-.071.035l-.02.004l-.014-.004l-.071-.035q-.016-.005-.024.005l-.004.01l-.017.428l.005.02l.01.013l.104.074l.015.004l.012-.004l.104-.074l.012-.016l.004-.017l-.017-.427q-.004-.016-.017-.018m.265-.113l-.013.002l-.185.093l-.01.01l-.003.011l.018.43l.005.012l.008.007l.201.093q.019.005.029-.008l.004-.014l-.034-.614q-.005-.019-.02-.022m-.715.002a.02.02 0 0 0-.027.006l-.006.014l-.034.614q.001.018.017.024l.015-.002l.201-.093l.01-.008l.004-.011l.017-.43l-.003-.012l-.01-.01z" />
+                                                                                    <path fill="currentColor" d="M3 19h1V6.36a1.5 1.5 0 0 1 1.026-1.423l8-2.666A1.5 1.5 0 0 1 15 3.694V19h1V9.99a.5.5 0 0 1 .598-.49l2.196.44A1.5 1.5 0 0 1 20 11.41V19h1a1 1 0 1 1 0 2H3a1 1 0 1 1 0-2" />
+                                                                                </g>
+                                                                            </svg>
+                                                                            <p className="w-[60%] text-center">{item.direccion}</p>
+                                                                        </span>
+                                                                        <p className="text-start w-[40%]">{item.zona === 'NULL' ? 'N/A' : item.zona}</p>
+                                                                    </div>
+                                                                    <div className="cursor-pointer flex flex-row justify-center w-[30%]">
+                                                                        {!expandedItems[item.EdificioID] && (
+                                                                            <svg xmlns="http://www.w3.org/2000/svg" width="2.5em" height="2.5em" viewBox="0 0 24 24">
+                                                                                <path fill="currentColor" fillRule="evenodd" d="M7 9a1 1 0 0 0-.707 1.707l5 5a1 1 0 0 0 1.414 0l5-5A1 1 0 0 0 17 9z" clipRule="evenodd" />
+                                                                            </svg>
+                                                                        )}
+                                                                        {expandedItems[item.EdificioID] && (
+                                                                            <svg xmlns="http://www.w3.org/2000/svg" width="2.5em" height="2.5em" viewBox="0 0 24 24">
+                                                                                <path fill="currentColor" d="M18.2 13.3L12 7l-6.2 6.3c-.2.2-.3.5-.3.7s.1.5.3.7c.2.2.4.3.7.3h11c.3 0 .5-.1.7-.3c.2-.2.3-.5.3-.7s-.1-.5-.3-.7" />
+                                                                            </svg>
+                                                                        )}
+                                                                    </div>
+                                                                </div>
+                                                                {expandedItems[item.EdificioID] && edifciosChildren(item)}
+                                                            </div>
+                                                        </div>
+                                                    )
+                                                ),
+                                            )
+                                        ) : (
+                                            <div className="flex mt-4 pb-4 w-full flex-row items-center justify-center">
+                                                <p>No hay resultados</p>
+                                            </div>
+                                        )
+
                                     )}
                                 </div>
                                 {data.length > 0 && (
+
                                     <div className="flex mt-4 pb-4 w-full flex-row items-center justify-center">
                                         <div className="flex flex-row justify-center items-center gap-3">
                                             {/* Previous Button */}
-                                            <button type="button" onClick={handlePrevious} disabled={currentPage === 1} className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded w-[100px]">
+                                            <button type="button" onClick={handlePrevious} disabled={currentPage === 1 || loadingPage} className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded w-[100px]">
                                                 Anterior
                                             </button>
 
@@ -1494,7 +1512,7 @@ const Table = ({ parentsEdificioProps, admin, screenWidth, loadingLoader }) => {
                                             </div>
 
                                             {/* Next Button */}
-                                            <button type="button" onClick={handleNext} disabled={currentPage === totalPages} className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded w-[100px]">
+                                            <button type="button" onClick={handleNext} disabled={currentPage === totalPages || loadingPage} className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded w-[100px]">
                                                 Siguiente
                                             </button>
                                         </div>
@@ -1699,72 +1717,78 @@ const Table = ({ parentsEdificioProps, admin, screenWidth, loadingLoader }) => {
                 )}
             </div>
 
-            {showAskForDeleteOrphan && (
-                <div className="popup-container fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-75 z-50">
-                    <div className="popup-content bg-white p-4 shadow-lg flex flex-col justify-center items-center gap-4 rounded-lg w-4/6">
-                        <h2 className="text-lg font-bold w-[80%] text-center flex justify-center">Los siguientes grupos se han quedado vacíos:</h2>
-                        {orphanInfo.map((info, index) => (
-                            <p key={index}>{info.direccion}</p>
-                        ))}
-                        <p>¿Desea eliminarlos?</p>
-                        <div className="flex justify-center gap-4">
-                            <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded w-[120px]" onClick={handleKeepOrphan}>
-                                Mantener
-                            </button>
-                            <button className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded w-[120px]" onClick={handleDeleteOrphan}>
-                                Eliminar
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
-            {showPopupDeleteInmueble && (
-                <div className="popup-container fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-75 z-50">
-                    <div className="popup-content bg-white p-4 shadow-lg flex flex-col justify-center items-center gap-4 rounded-lg w-4/6">
-                        <h2 className="text-lg font-bold w-[80%] text-center flex justify-center">Eliminar elemento</h2>
-                        {thereAreChildrenDelete ? (
-                            <div className="flex flex-col gap-4 w-fit justify-center items-center">
-                                <p className="text-center w-full">Alguno de los elementos seleccionados contiene elementos agrupados.</p>
-                                <p className="text-center w-full">¿Desea eliminar los elementos agrupados o mantenerlos?</p>
-                                <div className="flex flex-row justify-center items-center gap-4">
-                                    <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" onClick={handleDeleteInmueble}>
-                                        Eliminar
-                                    </button>
-                                    <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" onClick={handleDeleteKeepChildren}>
-                                        Mantener
-                                    </button>
-                                </div>
-                                <button className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded" onClick={handleKeepDeleteInmueble}>
-                                    Cancelar
+            {
+                showAskForDeleteOrphan && (
+                    <div className="popup-container fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-75 z-50">
+                        <div className="popup-content bg-white p-4 shadow-lg flex flex-col justify-center items-center gap-4 rounded-lg w-4/6">
+                            <h2 className="text-lg font-bold w-[80%] text-center flex justify-center">Los siguientes grupos se han quedado vacíos:</h2>
+                            {orphanInfo.map((info, index) => (
+                                <p key={index}>{info.direccion}</p>
+                            ))}
+                            <p>¿Desea eliminarlos?</p>
+                            <div className="flex justify-center gap-4">
+                                <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded w-[120px]" onClick={handleKeepOrphan}>
+                                    Mantener
+                                </button>
+                                <button className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded w-[120px]" onClick={handleDeleteOrphan}>
+                                    Eliminar
                                 </button>
                             </div>
-                        ) : (
-                            <div className="flex flex-col gap-4 w-full justify-center items-center text-center">
-                                <p>¿Está seguro?</p>
-                                <div className="flex justify-center gap-4">
-                                    <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" onClick={handleDeleteInmueble}>
-                                        Eliminar
-                                    </button>
+                        </div>
+                    </div>
+                )
+            }
+            {
+                showPopupDeleteInmueble && (
+                    <div className="popup-container fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-75 z-50">
+                        <div className="popup-content bg-white p-4 shadow-lg flex flex-col justify-center items-center gap-4 rounded-lg w-4/6">
+                            <h2 className="text-lg font-bold w-[80%] text-center flex justify-center">Eliminar elemento</h2>
+                            {thereAreChildrenDelete ? (
+                                <div className="flex flex-col gap-4 w-fit justify-center items-center">
+                                    <p className="text-center w-full">Alguno de los elementos seleccionados contiene elementos agrupados.</p>
+                                    <p className="text-center w-full">¿Desea eliminar los elementos agrupados o mantenerlos?</p>
+                                    <div className="flex flex-row justify-center items-center gap-4">
+                                        <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" onClick={handleDeleteInmueble}>
+                                            Eliminar
+                                        </button>
+                                        <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" onClick={handleDeleteKeepChildren}>
+                                            Mantener
+                                        </button>
+                                    </div>
                                     <button className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded" onClick={handleKeepDeleteInmueble}>
                                         Cancelar
                                     </button>
                                 </div>
-                            </div>
-                        )}
+                            ) : (
+                                <div className="flex flex-col gap-4 w-full justify-center items-center text-center">
+                                    <p>¿Está seguro?</p>
+                                    <div className="flex justify-center gap-4">
+                                        <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" onClick={handleDeleteInmueble}>
+                                            Eliminar
+                                        </button>
+                                        <button className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded" onClick={handleKeepDeleteInmueble}>
+                                            Cancelar
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
                     </div>
-                </div>
-            )}
-            {showAddNewInmueble && (
-                <AddNewInmueble
-                    showAddNewInmueble={showAddNewInmueble}
-                    setShowAddNewInmueble={setShowAddNewInmueble}
-                    fetchData={fetchData}
-                    currentPage={currentPage}
-                    searchTerm={searchTerm}
-                    handleIconAddInmueble={handleIconAddInmueble}
-                />
-            )}
-        </div>
+                )
+            }
+            {
+                showAddNewInmueble && (
+                    <AddNewInmueble
+                        showAddNewInmueble={showAddNewInmueble}
+                        setShowAddNewInmueble={setShowAddNewInmueble}
+                        fetchData={fetchData}
+                        currentPage={currentPage}
+                        searchTerm={searchTerm}
+                        handleIconAddInmueble={handleIconAddInmueble}
+                    />
+                )
+            }
+        </div >
     );
 };
 

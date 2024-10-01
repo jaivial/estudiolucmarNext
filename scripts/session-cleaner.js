@@ -17,7 +17,7 @@ const deleteOldSessions = async () => {
 
         // Delete documents where "date_time" is older than 6 hours
         const result = await db.collection('active_sessions').deleteMany({
-            "date_time": { $lt: sixHoursAgo }
+            date_time: { $lt: sixHoursAgo }
         });
 
         console.log(`Deleted ${result.deletedCount} old sessions`);
@@ -28,8 +28,8 @@ const deleteOldSessions = async () => {
     }
 };
 
-// Schedule the task to run every 10 minutes
-cron.schedule('*/10 * * * *', () => {
+// Schedule the task to run every second
+cron.schedule('*/10 * * * * *', () => {
     console.log('Running scheduled task to delete old sessions...');
     deleteOldSessions();
 });

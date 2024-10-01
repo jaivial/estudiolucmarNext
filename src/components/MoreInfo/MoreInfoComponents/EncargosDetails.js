@@ -19,12 +19,17 @@ import { MdOutlinePriceCheck } from 'react-icons/md';
 import { MdAttachMoney } from 'react-icons/md';
 import { TbPigMoney } from 'react-icons/tb';
 import { FaUserTag } from 'react-icons/fa';
+import { FaArrowTrendDown } from "react-icons/fa6";
 import esES from 'rsuite/locales/es_ES';
 import { Accordion, Panel, Modal, Button, InputNumber, DatePicker, CustomProvider, SelectPicker, Tabs, Table, Whisper, Tooltip, Tag } from 'rsuite'; // Import Accordion and Panel from rsuite
 import Skeleton from 'react-loading-skeleton'
 import 'react-loading-skeleton/dist/skeleton.css'
 import { Icon } from '@iconify/react';
 import './encargosdetails.css';
+import { MdKeyboardDoubleArrowDown } from "react-icons/md";
+
+
+
 const { Column, HeaderCell, Cell } = Table;
 
 const showToast = (message, backgroundColor) => {
@@ -71,10 +76,26 @@ const EncargosDetails = ({ data, setOnAddEncargoRefreshKey, onAddEncargoRefreshK
     const [verMásClienteEncargo, setVerMásClienteEncargo] = useState(false);
     const [infoClienteMathingEncargo, setInfoClienteMathingEncargo] = useState(null);
     const [lodingMoreInfoClienteMatchingEncargo, setLodingMoreInfoClienteMatchingEncargo] = useState(false);
+    const [isBajadaModalOpen, setIsBajadaModalOpen] = useState(false); // State for the modal
+    const [newPrecio, setNewPrecio] = useState(''); // State for the new price
 
 
-
-
+    // Function to handle price reduction
+    const handleBajadaPrecio = async () => {
+        try {
+            const encargo_ID = data.inmueble.id;
+            const response = await axios.post('/api/setBajadaPrecio', { newPrecio, encargo_ID });
+            if (response.data.success) {
+                showToast('Precio actualizado correctamente', 'linear-gradient(to right bottom, #00603c, #006f39, #007d31, #008b24, #069903)');
+                fetchEncargos(); // Refresh the encargos
+                setIsBajadaModalOpen(false); // Close the modal
+            } else {
+                alert('Error al actualizar el precio.');
+            }
+        } catch (error) {
+            console.error('Error updating price:', error);
+        }
+    };
 
     const fetchEncargos = async () => {
         if (data.inmueble.encargoState === false) {
@@ -87,6 +108,7 @@ const EncargosDetails = ({ data, setOnAddEncargoRefreshKey, onAddEncargoRefreshK
                 });
                 if (response.data !== null) {
                     const encargo = response.data;
+                    console.log('encargo', encargo);
                     setSelectedClienteEncargo(encargo.fullCliente);
                     setPrecio_1(encargo.precio_1);
                     setPrecio_2(encargo.precio_2);
@@ -400,32 +422,59 @@ const EncargosDetails = ({ data, setOnAddEncargoRefreshKey, onAddEncargoRefreshK
                                                 <div className="flex items-center gap-2 flex-col w-full">
                                                     <MdAttachMoney className="text-gray-900 text-3xl" />
                                                     <p className="text-base text-gray-950 py-1 text-center">Precio: {encargos[0].precio_1} €</p>
-                                                    <div className="border-b border-gray-300 w-4/6 -mt-1"></div>
+
+                                                    {encargos[0].precio_2 ? null : <div className="border-b border-gray-300 w-4/6 -mt-1"></div>}
                                                 </div>
+                                                {encargos[0].precio_2 && (
+                                                    <div className="flex items-center gap-2 flex-col w-full mt-2">
+                                                        <div className='flex flex-row items-center justify-center gap-3 mb-3'>
+                                                            <FaArrowTrendDown className='text-red-600 text-3xl' />
+                                                            <p className="text-base text-red-600 py-1 text-center">{Math.floor(encargos[0].precio_2 - encargos[0].precio_1).toLocaleString('es-ES', { minimumFractionDigits: 0 })} €</p>
+                                                        </div>
+                                                        <div className='flex flex-row items-center justify-center text-gray-900 text-3xl' onClick={() => setIsBajadaModalOpen(true)}>
+                                                            <MdAttachMoney className="text-3xl cursor-pointer" />
+                                                            <MdKeyboardDoubleArrowDown className="text-3xl cursor-pointer  -ml-2" />
+                                                        </div>
+                                                        <p className="text-base text-gray-900 py-1 text-center">Precio reducido: {encargos[0].precio_2} €</p>
+                                                        <div className="border-b border-gray-300 w-4/6 -mt-1"></div>
+                                                    </div>
+                                                )}
                                                 {encargos[0].tipo_comision_encargo === 'Porcentaje' ? (
                                                     <div className="flex items-center gap-2 flex-col w-full">
                                                         <TbPigMoney className="text-gray-900 text-3xl" />
                                                         <p className="text-base text-gray-950 py-1 text-center"> Comisión</p>
-                                                        <div className="flex flex-row items-center gap-2">
+                                                        <div className="flex flex-row items-center gap-2 justify-center">
                                                             <p className="text-base text-gray-950 py-1 text-center">{encargos[0].comision_encargo}%</p>
-                                                            <p>|</p>
-                                                            <p className="text-base text-gray-950 py-1 text-center">{(encargos[0].precio_1 * encargos[0].comision_encargo) / 100} €</p>
+                                                            <p className='-my-2'>|</p>
+                                                            {encargos[0].precio_2 ? (
+                                                                <p className="text-base text-gray-950 py-1 text-center m-0">{(encargos[0].precio_2 * encargos[0].comision_encargo) / 100} €</p>
+                                                            ) : (
+
+                                                                <p className="text-base text-gray-950 py-1 text-center m-0">{(encargos[0].precio_1 * encargos[0].comision_encargo) / 100} €</p>
+                                                            )}
                                                         </div>
                                                         <div className="border-b border-gray-300 w-4/6 -mt-1"></div>
                                                     </div>
                                                 ) : (
                                                     <div className="flex items-center gap-2 flex-col w-full">
                                                         <TbPigMoney className="text-gray-900 text-3xl" />
-                                                        <p className="text-base text-gray-950 py-1 text-center">{encargos[0].precio_1} €</p>
+                                                        <p className="text-base text-gray-950 py-1 text-center">{encargos[0].comision_encargo} €</p>
                                                         <div className="border-b border-gray-300 w-4/6 -mt-1"></div>
                                                     </div>
                                                 )}
                                                 <div className="flex items-center gap-2 flex-col w-full">
+
                                                     <FaUserTie className="text-gray-900 text-3xl" />
                                                     <p className="text-base text-gray-950 py-1 text-center">Asesor: {encargos[0].comercial_encargo}</p>
                                                 </div>
-                                                <div className="absolute top-2 right-2">
-                                                    <FiEdit className="text-2xl cursor-pointer text-blue-500" onClick={() => handleEditEncargo(encargos, asesorOptions, clienteOptions)} />
+                                                <div className="absolute top-0 right-0 flex flex-col gap-6">
+                                                    <div className='flex flex-col items-center gap-4'>
+                                                        <FiEdit className="text-2xl cursor-pointer text-blue-500" onClick={() => handleEditEncargo(encargos, asesorOptions, clienteOptions)} />
+                                                        <div className='flex flex-row items-center justify-center text-red-600 text-3xl' onClick={() => setIsBajadaModalOpen(true)}>
+                                                            <MdAttachMoney className="text-3xl cursor-pointer" />
+                                                            <MdKeyboardDoubleArrowDown className="text-3xl cursor-pointer  -ml-2" />
+                                                        </div>
+                                                    </div>
                                                 </div>
                                             </div>
                                         ) : (
@@ -434,6 +483,35 @@ const EncargosDetails = ({ data, setOnAddEncargoRefreshKey, onAddEncargoRefreshK
                                             </div>
                                         )}
                                     </div>
+
+                                    <Modal open={isBajadaModalOpen} onClose={() => setIsBajadaModalOpen(false)} size="xs">
+                                        <Modal.Header style={{ display: 'flex', flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: '10px', width: '100%', marginTop: '10px' }}>
+                                            <Modal.Title style={{ fontSize: '1.5rem', textAlign: 'center' }}>Bajada de precio</Modal.Title>
+                                        </Modal.Header>
+                                        <Modal.Body style={{ padding: '20px' }}>
+                                            <div className='flex flex-col gap-4 items-center px-10'>
+                                                <div className='flex flex-col gap-2 items-center bg-slate-200 rounded-md p-4 w-full'>
+                                                    <p>Precio actual:</p>
+                                                    <p className='text-lg font-semibold'>{precio_1.toLocaleString('es-ES', { minimumFractionDigits: 0 })} €</p>
+                                                </div>
+                                                <div className='flex flex-col gap-3 items-center bg-slate-200 rounded-md p-4 w-full'>
+                                                    <p>Nuevo precio:</p>
+                                                    <InputNumber
+                                                        min={0}
+                                                        max={precio_1} // Ensure new price cannot exceed current price
+                                                        value={newPrecio}
+                                                        onChange={setNewPrecio}
+                                                        placeholder="Introduce el nuevo precio"
+                                                        className="w-full"
+                                                    />
+                                                </div>
+                                            </div>
+                                        </Modal.Body>
+                                        <Modal.Footer style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', gap: '10px', marginTop: '10px' }}>
+                                            <Button onClick={handleBajadaPrecio} appearance="primary">Aceptar</Button>
+                                            <Button onClick={() => setIsBajadaModalOpen(false)} appearance="subtle" style={{ margin: '0px' }}>Cancelar</Button>
+                                        </Modal.Footer>
+                                    </Modal>
 
                                     <Modal open={isPopupOpen} onClose={handlePopupClose} size="md" overflow={false} backdrop={true} style={{ backgroundColor: 'rgba(0,0,0,0.15)', padding: '0px 2px' }}>
                                         <Modal.Header style={{ display: 'flex', flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: '10px', width: '100%', marginTop: '10px' }}>

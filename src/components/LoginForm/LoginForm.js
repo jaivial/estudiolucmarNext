@@ -33,11 +33,13 @@ const LoginForm = () => {
         const sessionID = response.data.sessionID;
         const user_id = response.data.user_id;
         const admin = response.data.admin;
+        const now = new Date();
+        const expires = new Date(now.getTime() + 6 * 60 * 60 * 1000); // 6 hours
 
-        // Set the cookie with an expiration time of 3 hours
-        Cookies.set('sessionID', sessionID, { expires: 3 / 24, path: '/' }); // 3/24 = 3 hours
-        Cookies.set('user_id', user_id, { expires: 3 / 24, path: '/' }); // 3/24 = 3 hours
-        Cookies.set('admin', admin, { expires: 3 / 24, path: '/' }); // 3/24 = 3 hours
+        // Set the cookie with an expiration time of 6 hours
+        Cookies.set('sessionID', sessionID, { expires, path: '/' });
+        Cookies.set('user_id', user_id, { expires, path: '/' });
+        Cookies.set('admin', admin, { expires, path: '/' });
         router.push('/home');
 
       }
