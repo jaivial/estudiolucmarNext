@@ -553,6 +553,7 @@ const EncargosDetails = ({ data, setOnAddEncargoRefreshKey, onAddEncargoRefreshK
                                                             )}
                                                         </p>
                                                     </div>
+                                                    <div className="border-b border-gray-300 w-4/6 mt-1 mx-auto"></div>
                                                 </div>
                                                 <div className="flex items-center gap-2 flex-col w-full">
 
