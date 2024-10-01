@@ -80,6 +80,22 @@ const EncargosDetails = ({ data, setOnAddEncargoRefreshKey, onAddEncargoRefreshK
     const [newPrecio, setNewPrecio] = useState(''); // State for the new price
 
 
+    // Function to handle delete price reduction
+    const handleDeleteBajadaPrecio = async (encargo_ID) => {
+        try {
+            const response = await axios.delete('/api/deleteBajadaPrecio', { data: { encargo_ID } });
+            if (response.data.success) {
+                showToast('Bajada de precio eliminada correctamente', 'linear-gradient(to right bottom, #00603c, #006f39, #007d31, #008b24, #069903)');
+                fetchEncargos(); // Refresh the encargos
+                setIsBajadaModalOpen(false); // Close the modal
+            } else {
+                alert('Error al eliminar la bajada de precio');
+            }
+        } catch (error) {
+            console.error('Error deleting price reduction:', error);
+        }
+    };
+
     // Function to handle price reduction
     const handleBajadaPrecio = async () => {
         try {
@@ -425,7 +441,7 @@ const EncargosDetails = ({ data, setOnAddEncargoRefreshKey, onAddEncargoRefreshK
 
                                                     {encargos[0].precio_2 ? null : <div className="border-b border-gray-300 w-4/6 -mt-1"></div>}
                                                 </div>
-                                                {encargos[0].precio_2 && (
+                                                {encargos[0].precio_2 && encargos[0].precio_2 > 0 && (
                                                     <div className="flex items-center gap-2 flex-col w-full mt-2">
                                                         <div className='flex flex-row items-center justify-center gap-3 mb-3'>
                                                             <FaArrowTrendDown className='text-red-600 text-3xl' />
@@ -446,7 +462,7 @@ const EncargosDetails = ({ data, setOnAddEncargoRefreshKey, onAddEncargoRefreshK
                                                         <div className="flex flex-row items-center gap-2 justify-center">
                                                             <p className="text-base text-gray-950 py-1 text-center">{encargos[0].comision_encargo}%</p>
                                                             <p className='-my-2'>|</p>
-                                                            {encargos[0].precio_2 ? (
+                                                            {encargos[0].precio_2 && encargos[0].precio_2 > 0 ? (
                                                                 <p className="text-base text-gray-950 py-1 text-center m-0">{(encargos[0].precio_2 * encargos[0].comision_encargo) / 100} €</p>
                                                             ) : (
 
@@ -491,24 +507,35 @@ const EncargosDetails = ({ data, setOnAddEncargoRefreshKey, onAddEncargoRefreshK
                                         <Modal.Body style={{ padding: '20px' }}>
                                             <div className='flex flex-col gap-4 items-center px-10'>
                                                 <div className='flex flex-col gap-2 items-center bg-slate-200 rounded-md p-4 w-full'>
-                                                    <p>Precio actual:</p>
-                                                    <p className='text-lg font-semibold'>{precio_1.toLocaleString('es-ES', { minimumFractionDigits: 0 })} €</p>
+                                                    <p>{encargos[0].precio_2 ? 'Precio Original' : 'Precio Actual'}:</p>
+                                                    <p className='text-lg font-semibold'>{encargos[0].precio_1.toLocaleString('es-ES', { minimumFractionDigits: 0 })} €</p>
                                                 </div>
-                                                <div className='flex flex-col gap-3 items-center bg-slate-200 rounded-md p-4 w-full'>
-                                                    <p>Nuevo precio:</p>
-                                                    <InputNumber
-                                                        min={0}
-                                                        max={precio_1} // Ensure new price cannot exceed current price
-                                                        value={newPrecio}
-                                                        onChange={setNewPrecio}
-                                                        placeholder="Introduce el nuevo precio"
-                                                        className="w-full"
-                                                    />
-                                                </div>
+                                                {encargos[0].precio_2 ? (
+                                                    <div className='flex flex-col gap-3 items-center bg-slate-200 rounded-md p-4 w-full'>
+                                                        <p>Precio rebajado:</p>
+                                                        <p className='text-lg font-semibold'>{encargos[0].precio_2.toLocaleString('es-ES', { minimumFractionDigits: 0 })} €</p>
+                                                    </div>
+                                                ) : (
+                                                    <div className='flex flex-col gap-3 items-center bg-slate-200 rounded-md p-4 w-full'>
+                                                        <p>Nuevo precio:</p>
+                                                        <InputNumber
+                                                            min={0}
+                                                            max={precio_1} // Ensure new price cannot exceed current price
+                                                            value={newPrecio}
+                                                            onChange={setNewPrecio}
+                                                            placeholder="Introduce el nuevo precio"
+                                                            className="w-full"
+                                                        />
+                                                    </div>
+                                                )}
                                             </div>
                                         </Modal.Body>
                                         <Modal.Footer style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', gap: '10px', marginTop: '10px' }}>
-                                            <Button onClick={handleBajadaPrecio} appearance="primary">Aceptar</Button>
+                                            {encargos[0].precio_2 ? (
+                                                <Button onClick={() => handleDeleteBajadaPrecio(encargos[0].encargo_id)} appearance="primary" style={{ backgroundColor: 'red' }}>Eliminar rebajada de precio</Button>
+                                            ) : (
+                                                <Button onClick={handleBajadaPrecio} appearance="primary">Aceptar</Button>
+                                            )}
                                             <Button onClick={() => setIsBajadaModalOpen(false)} appearance="subtle" style={{ margin: '0px' }}>Cancelar</Button>
                                         </Modal.Footer>
                                     </Modal>
