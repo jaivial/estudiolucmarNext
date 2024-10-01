@@ -64,7 +64,6 @@ const ItemDetailsHeader = ({ inmuebleId, onClose, address, setImages, setIsSlide
         };
 
         if (inmuebleId) {
-            setIsSliderLoading(true);
             loadImages();
         }
     }, [inmuebleId, getImageRefreshKey]);
@@ -98,7 +97,7 @@ const ItemDetailsHeader = ({ inmuebleId, onClose, address, setImages, setIsSlide
         for (const file of selectedFiles) {
             if (!supportedFormats.includes(file.type)) {
                 Toastify({
-                    text: 'Unsupported file format',
+                    text: 'Formato no soportado',
                     duration: 2500,
                     gravity: 'top',
                     position: 'center',
@@ -109,6 +108,8 @@ const ItemDetailsHeader = ({ inmuebleId, onClose, address, setImages, setIsSlide
                     },
                 }).showToast();
                 setIsImageValid(false);
+                setIsUploading(false);
+                setSelectedFiles([]);
                 return;
             }
 
@@ -364,13 +365,13 @@ const ItemDetailsHeader = ({ inmuebleId, onClose, address, setImages, setIsSlide
                         <div>
                             <button
                                 onClick={openDPVModal}
-                                className={`px-2 py-2.5 rounded-full shadow-lg hover:bg-gray-100 font-semibold text-base ${DPVboolean ? 'bg-blue-400 text-white' : ' text-gray-500'}`} // Added conditional class
+                                className={`px-2 py-[0.65rem] rounded-full shadow-lg hover:bg-gray-100 font-semibold flex items-center justify-center text-base ${DPVboolean ? 'bg-blue-400 text-white' : ' text-gray-500 bg-white'}`} // Added conditional class
                             >
                                 DPV
                             </button>
                         </div>
                         <div> {/* New div for the phone button */}
-                            <button onClick={openPhoneModal} className={`p-3 rounded-full shadow-lg hover:bg-gray-100 ${localizado ? 'bg-green-700' : ''}`}>
+                            <button onClick={openPhoneModal} className={`p-3 rounded-full shadow-lg hover:bg-gray-100 ${localizado ? 'bg-green-700' : 'bg-white'}`}>
                                 <AiOutlinePhone className={`${localizado ? 'text-white' : 'text-gray-500'}`} size={20} />
                             </button>
                         </div>

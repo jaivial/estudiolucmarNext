@@ -54,11 +54,9 @@ export default function Buscador() {
 
     return (
         <GeneralLayout title="Buscador" description="Buscador">
-            {loading ? (
-                <SmallLoadingScreen />
-            ) : (
-                <TablaAllData parentsEdificioProps={data} admin={admin} screenWidth={screenWidth} />
-            )}
+            <div>
+                <TablaAllData parentsEdificioProps={data} admin={admin} screenWidth={screenWidth} loadingLoader={loading} />
+            </div>
         </GeneralLayout>
     );
 }

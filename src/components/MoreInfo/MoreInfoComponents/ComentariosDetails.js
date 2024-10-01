@@ -265,7 +265,7 @@ const ComentariosDetails = ({ data }) => {
                             <div className="py-2 -mx-2">
                                 {programados.map((comentario) => (
                                     <div key={comentario._id} className="py-2 my-3 relative flex items-start justify-between bg-blue-100 rounded-md">
-                                        <div className="px-2 pb-4 w-full">
+                                        <div className="px-2 pb-10 w-full">
                                             <p className="text-sm text-gray-600 pb-2 -mt-1">{formatDateTime(comentario.date_time)}</p>
                                             {editMode && editingCommentId === comentario._id ? (
                                                 <div className='w-full'>
@@ -403,7 +403,7 @@ const ComentariosDetails = ({ data }) => {
                                 {commentType === 'Contacto Directo' && (
                                     <>
                                         <DatePicker
-                                            value={selectedDate}
+                                            value={selectedDate || new Date()}
                                             onChange={handleDateChange}
                                             className="w-full border border-gray-300 mt-2 mb-1 rounded"
                                             placeholder="Fecha"
@@ -412,7 +412,7 @@ const ComentariosDetails = ({ data }) => {
                                             isoWeek
                                         />
                                         <DatePicker
-                                            value={selectedTime}
+                                            value={selectedTime || new Date()}
                                             onChange={handleTimeChange}
                                             className="w-full border border-gray-300 my-1 rounded"
                                             placeholder="Hora"
@@ -434,7 +434,7 @@ const ComentariosDetails = ({ data }) => {
                                         />
 
                                         <DatePicker
-                                            value={selectedDate}
+                                            value={selectedDate || new Date()}
                                             onChange={handleDateChange}
                                             className="w-full border border-gray-300 mt-2 mb-1 rounded"
                                             placeholder="Fecha"
@@ -443,7 +443,7 @@ const ComentariosDetails = ({ data }) => {
                                             isoWeek
                                         />
                                         <DatePicker
-                                            value={selectedTime}
+                                            value={selectedDate || new Date()}
                                             onChange={handleTimeChange}
                                             className="w-full border border-gray-300 my-1 rounded"
                                             placeholder="Hora"
@@ -457,7 +457,7 @@ const ComentariosDetails = ({ data }) => {
                                 {commentType === 'Cita' && (
                                     <>
                                         <DatePicker
-                                            value={selectedDate}
+                                            value={selectedDate || new Date()}
                                             onChange={handleDateChange}
                                             className="w-full border border-gray-300 mt-2 mb-1 rounded"
                                             placeholder="Fecha"
@@ -466,7 +466,7 @@ const ComentariosDetails = ({ data }) => {
                                             isoWeek
                                         />
                                         <DatePicker
-                                            value={selectedTime}
+                                            value={selectedDate || new Date()}
                                             onChange={handleTimeChange}
                                             className="w-full border border-gray-300 my-1 rounded"
                                             placeholder="Hora"
