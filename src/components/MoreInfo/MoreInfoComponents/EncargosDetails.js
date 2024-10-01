@@ -27,6 +27,7 @@ import 'react-loading-skeleton/dist/skeleton.css'
 import { Icon } from '@iconify/react';
 import './encargosdetails.css';
 import { MdKeyboardDoubleArrowDown } from "react-icons/md";
+import { GiSandsOfTime } from "react-icons/gi";
 
 
 
@@ -78,7 +79,47 @@ const EncargosDetails = ({ data, setOnAddEncargoRefreshKey, onAddEncargoRefreshK
     const [lodingMoreInfoClienteMatchingEncargo, setLodingMoreInfoClienteMatchingEncargo] = useState(false);
     const [isBajadaModalOpen, setIsBajadaModalOpen] = useState(false); // State for the modal
     const [newPrecio, setNewPrecio] = useState(''); // State for the new price
+    const [tiempoExclusiva, setTiempoExclusiva] = useState(null); // State for the new price
+    const [tiempoExclusivaCounter, setTiempoExclusivaCounter] = useState(''); // State for the new price
+    const [comisionComprador, setComisionComprador] = useState(''); // State for the new price
+    const [comisionCompradorValue, setComisionCompradorValue] = useState(null); // State for the new price
 
+    // Function to disable past dates
+    const disablePastDates = (date) => {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0); // Remove time part of today for accurate comparison
+        return date < today; // Disable if the date is in the past
+    };
+
+
+    useEffect(() => {
+        let interval;
+
+        // If a date is selected, start the interval
+        if (tiempoExclusiva) {
+            interval = setInterval(() => {
+                const now = new Date();
+                const selectedDate = new Date(tiempoExclusiva);
+                const diff = selectedDate - now;
+
+                if (diff <= 0) {
+                    clearInterval(interval);
+                    setTiempoExclusivaCounter('¡Tiempo agotado!');
+                } else {
+                    const diffDays = Math.floor(diff / (1000 * 60 * 60 * 24));
+                    const diffHours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                    const diffMinutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+                    const diffSeconds = Math.floor((diff % (1000 * 60)) / 1000);
+                    const months = Math.floor(diffDays / 30);
+
+                    setTiempoExclusivaCounter(`${months} meses, ${diffDays % 30} días, ${diffHours} horas, ${diffMinutes} minutos, ${diffSeconds} segundos`);
+                }
+            }, 1000);
+        }
+
+        // Clean up the interval on component unmount or date change
+        return () => clearInterval(interval);
+    }, [tiempoExclusiva]);
 
     // Function to handle delete price reduction
     const handleDeleteBajadaPrecio = async (encargo_ID) => {
@@ -246,6 +287,10 @@ const EncargosDetails = ({ data, setOnAddEncargoRefreshKey, onAddEncargoRefreshK
             precio: precio,
             tipoComision: tipoComision,
             comision: comision,
+            comisionCompradorValue: comisionCompradorValue,
+            comisionComprador: comisionComprador,
+            tiempoExclusiva: tiempoExclusiva,
+
             fecha: fecha || new Date(),
         }
 
@@ -292,10 +337,7 @@ const EncargosDetails = ({ data, setOnAddEncargoRefreshKey, onAddEncargoRefreshK
 
     }, [selectedAsesor, selectedCliente]);
     const handleDeleteEncargo = async () => {
-        if (!isEditing || !currentEncargoId || !encargos.length) {
-            console.error('Encargo ID is missing, not in editing mode, or encargos array is empty.');
-            return;
-        }
+
 
         try {
             const encargoIdToDelete = encargos[0].encargo_id;
@@ -314,7 +356,7 @@ const EncargosDetails = ({ data, setOnAddEncargoRefreshKey, onAddEncargoRefreshK
                 const updatedEncargos = encargos.filter(encargo => encargo.encargo_id !== encargoIdToDelete);
 
                 // Update state with the new list of encargos
-                setEncargos(updatedEncargos);
+                setEncargos(null);
 
                 handlePopupClose();
                 setIsEditing(false);
@@ -426,6 +468,15 @@ const EncargosDetails = ({ data, setOnAddEncargoRefreshKey, onAddEncargoRefreshK
                                                     <div className="border-b border-gray-300 w-4/6 -mt-1"></div>
                                                 </div>
                                                 <div className="flex items-center gap-2 flex-col w-full">
+                                                    <GiSandsOfTime className="text-gray-900 text-4xl" />
+                                                    <p className="text-base text-gray-950 py-0 text-center">Tiempo de exclusiva: <br></br> {formatDate(encargos[0].tiempo_exclusiva)}</p>
+                                                    <div className='flex flex-col gap-2 items-center bg-slate-200 rounded-md p-4 w-full'>
+                                                        <p className='text-center text-gray-950 font-semibold'>Tiempo restante:</p>
+                                                        <p className="text-base text-gray-950 py-1 text-center font-semibold w-[100%]">{tiempoExclusivaCounter}</p>
+                                                    </div>
+                                                    <div className="border-b border-gray-300 w-4/6 -mt-1"></div>
+                                                </div>
+                                                <div className="flex items-center gap-2 flex-col w-full">
                                                     <BiSolidPurchaseTag className="text-gray-900 text-3xl" />
                                                     <p className="text-base text-gray-950 py-1 text-center">{encargos[0].tipo_encargo}</p>
                                                     <div className="border-b border-gray-300 w-4/6 -mt-1"></div>
@@ -437,7 +488,7 @@ const EncargosDetails = ({ data, setOnAddEncargoRefreshKey, onAddEncargoRefreshK
                                                 </div>
                                                 <div className="flex items-center gap-2 flex-col w-full">
                                                     <MdAttachMoney className="text-gray-900 text-3xl" />
-                                                    <p className="text-base text-gray-950 py-1 text-center">Precio: {encargos[0].precio_1} €</p>
+                                                    <p className="text-base text-gray-950 py-1 text-center">Precio: {encargos[0].precio_1.toLocaleString('es-ES', { minimumFractionDigits: 0 })} €</p>
 
                                                     {encargos[0].precio_2 ? null : <div className="border-b border-gray-300 w-4/6 -mt-1"></div>}
                                                 </div>
@@ -455,29 +506,54 @@ const EncargosDetails = ({ data, setOnAddEncargoRefreshKey, onAddEncargoRefreshK
                                                         <div className="border-b border-gray-300 w-4/6 -mt-1"></div>
                                                     </div>
                                                 )}
-                                                {encargos[0].tipo_comision_encargo === 'Porcentaje' ? (
-                                                    <div className="flex items-center gap-2 flex-col w-full">
-                                                        <TbPigMoney className="text-gray-900 text-3xl" />
-                                                        <p className="text-base text-gray-950 py-1 text-center"> Comisión</p>
-                                                        <div className="flex flex-row items-center gap-2 justify-center">
-                                                            <p className="text-base text-gray-950 py-1 text-center">{encargos[0].comision_encargo}%</p>
-                                                            <p className='-my-2'>|</p>
-                                                            {encargos[0].precio_2 && encargos[0].precio_2 > 0 ? (
-                                                                <p className="text-base text-gray-950 py-1 text-center m-0">{(encargos[0].precio_2 * encargos[0].comision_encargo) / 100} €</p>
-                                                            ) : (
+                                                <div className="flex flex-col gap-2 w-full">
 
-                                                                <p className="text-base text-gray-950 py-1 text-center m-0">{(encargos[0].precio_1 * encargos[0].comision_encargo) / 100} €</p>
-                                                            )}
-                                                        </div>
-                                                        <div className="border-b border-gray-300 w-4/6 -mt-1"></div>
-                                                    </div>
-                                                ) : (
-                                                    <div className="flex items-center gap-2 flex-col w-full">
+                                                    <div className="flex items-center gap-2 flex-col w-full bg-orange-100 rounded-xl p-4 ">
                                                         <TbPigMoney className="text-gray-900 text-3xl" />
-                                                        <p className="text-base text-gray-950 py-1 text-center">{encargos[0].comision_encargo} €</p>
-                                                        <div className="border-b border-gray-300 w-4/6 -mt-1"></div>
+                                                        <p className="text-base text-gray-950 py-1 text-center">Comisión Vendedor</p>
+                                                        {encargos[0].tipo_comision_encargo === 'Porcentaje' ? (
+                                                            <div className="flex flex-row items-center gap-2 justify-center">
+                                                                <p className="text-base text-gray-950 py-1 text-center">{encargos[0].comision_encargo}%</p>
+                                                                <p className='-my-2'>|</p>
+                                                                {encargos[0].precio_2 && encargos[0].precio_2 > 0 ? (
+                                                                    <p className="text-base text-gray-950 py-1 text-center m-0">{(encargos[0].precio_2 * encargos[0].comision_encargo) / 100} €</p>
+                                                                ) : (
+                                                                    <p className="text-base text-gray-950 py-1 text-center m-0">{(encargos[0].precio_1 * encargos[0].comision_encargo) / 100} €</p>
+                                                                )}
+                                                            </div>
+                                                        ) : (
+                                                            <p className="text-base text-gray-950 py-1 text-center">{encargos[0].comision_encargo} €</p>
+                                                        )}
                                                     </div>
-                                                )}
+                                                    <div className="flex items-center gap-2 flex-col w-full bg-blue-100 rounded-xl p-4 ">
+                                                        <TbPigMoney className="text-gray-900 text-3xl" />
+                                                        <p className="text-base text-gray-950 py-1 text-center">Comisión Pedido</p>
+                                                        {encargos[0].comisionComprador === 'Porcentaje' ? (
+                                                            <div className="flex flex-row items-center gap-2 justify-center">
+                                                                <p className="text-base text-gray-950 py-1 text-center">{encargos[0].comisionCompradorValue}%</p>
+                                                                <p className='-my-2'>|</p>
+                                                                {encargos[0].precio_2 && encargos[0].precio_2 > 0 ? (
+                                                                    <p className="text-base text-gray-950 py-1 text-center m-0">{(encargos[0].precio_2 * encargos[0].comisionCompradorValue) / 100} €</p>
+                                                                ) : (
+                                                                    <p className="text-base text-gray-950 py-1 text-center m-0">{(encargos[0].precio_1 * encargos[0].comisionCompradorValue) / 100} €</p>
+                                                                )}
+                                                            </div>
+                                                        ) : (
+                                                            <p className="text-base text-gray-950 py-1 text-center">{encargos[0].comisionCompradorValue} €</p>
+                                                        )}
+                                                    </div>
+                                                    <div className="flex items-center gap-2 flex-col w-full mt-2 bg-zinc-200 rounded-xl p-3 border-4 border-gray-400">
+                                                        <TbPigMoney className="text-gray-900 text-3xl" />
+                                                        <p className="text-base text-gray-950 py-1 text-center">Comisión total:</p>
+                                                        <p className="text-base text-gray-950 py-1 text-center m-0">
+                                                            {encargos[0].precio_2 && encargos[0].precio_2 > 0 ? (
+                                                                <span>{(((encargos[0].precio_2 * encargos[0].comision_encargo) / 100) + ((encargos[0].precio_2 * encargos[0].comisionCompradorValue) / 100)).toLocaleString('es-ES', { minimumFractionDigits: 0 })} €</span>
+                                                            ) : (
+                                                                <span>{(((encargos[0].precio_1 * encargos[0].comision_encargo) / 100) + ((encargos[0].precio_1 * encargos[0].comisionCompradorValue) / 100)).toLocaleString('es-ES', { minimumFractionDigits: 0 })} €</span>
+                                                            )}
+                                                        </p>
+                                                    </div>
+                                                </div>
                                                 <div className="flex items-center gap-2 flex-col w-full">
 
                                                     <FaUserTie className="text-gray-900 text-3xl" />
@@ -500,47 +576,49 @@ const EncargosDetails = ({ data, setOnAddEncargoRefreshKey, onAddEncargoRefreshK
                                         )}
                                     </div>
 
-                                    <Modal open={isBajadaModalOpen} onClose={() => setIsBajadaModalOpen(false)} size="xs">
-                                        <Modal.Header style={{ display: 'flex', flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: '10px', width: '100%', marginTop: '10px' }}>
-                                            <Modal.Title style={{ fontSize: '1.5rem', textAlign: 'center' }}>Bajada de precio</Modal.Title>
-                                        </Modal.Header>
-                                        <Modal.Body style={{ padding: '20px' }}>
-                                            <div className='flex flex-col gap-4 items-center px-10'>
-                                                <div className='flex flex-col gap-2 items-center bg-slate-200 rounded-md p-4 w-full'>
-                                                    <p>{encargos[0].precio_2 ? 'Precio Original' : 'Precio Actual'}:</p>
-                                                    <p className='text-lg font-semibold'>{encargos[0].precio_1.toLocaleString('es-ES', { minimumFractionDigits: 0 })} €</p>
+                                    {data.inmueble.encargoState === true && (
+                                        <Modal open={isBajadaModalOpen} onClose={() => setIsBajadaModalOpen(false)} size="xs">
+                                            <Modal.Header style={{ display: 'flex', flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: '10px', width: '100%', marginTop: '10px' }}>
+                                                <Modal.Title style={{ fontSize: '1.5rem', textAlign: 'center' }}>Bajada de precio</Modal.Title>
+                                            </Modal.Header>
+                                            <Modal.Body style={{ padding: '20px' }}>
+                                                <div className='flex flex-col gap-4 items-center px-10'>
+                                                    <div className='flex flex-col gap-2 items-center bg-slate-200 rounded-md p-4 w-full'>
+                                                        <p>{encargos[0].precio_2 ? 'Precio Original' : 'Precio Actual'}:</p>
+                                                        <p className='text-lg font-semibold'>{encargos[0].precio_1.toLocaleString('es-ES', { minimumFractionDigits: 0 })} €</p>
+                                                    </div>
+                                                    {encargos[0].precio_2 ? (
+                                                        <div className='flex flex-col gap-3 items-center bg-slate-200 rounded-md p-4 w-full'>
+                                                            <p>Precio rebajado:</p>
+                                                            <p className='text-lg font-semibold'>{encargos[0].precio_2.toLocaleString('es-ES', { minimumFractionDigits: 0 })} €</p>
+                                                        </div>
+                                                    ) : (
+                                                        <div className='flex flex-col gap-3 items-center bg-slate-200 rounded-md p-4 w-full'>
+                                                            <p>Nuevo precio:</p>
+                                                            <InputNumber
+                                                                min={0}
+                                                                max={precio_1} // Ensure new price cannot exceed current price
+                                                                value={newPrecio}
+                                                                onChange={setNewPrecio}
+                                                                placeholder="Introduce el nuevo precio"
+                                                                className="w-full"
+                                                            />
+                                                        </div>
+                                                    )}
                                                 </div>
+                                            </Modal.Body>
+                                            <Modal.Footer style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', gap: '10px', marginTop: '10px' }}>
                                                 {encargos[0].precio_2 ? (
-                                                    <div className='flex flex-col gap-3 items-center bg-slate-200 rounded-md p-4 w-full'>
-                                                        <p>Precio rebajado:</p>
-                                                        <p className='text-lg font-semibold'>{encargos[0].precio_2.toLocaleString('es-ES', { minimumFractionDigits: 0 })} €</p>
-                                                    </div>
+                                                    <Button onClick={() => handleDeleteBajadaPrecio(encargos[0].encargo_id)} appearance="primary" style={{ backgroundColor: 'red' }}>Eliminar rebajada de precio</Button>
                                                 ) : (
-                                                    <div className='flex flex-col gap-3 items-center bg-slate-200 rounded-md p-4 w-full'>
-                                                        <p>Nuevo precio:</p>
-                                                        <InputNumber
-                                                            min={0}
-                                                            max={precio_1} // Ensure new price cannot exceed current price
-                                                            value={newPrecio}
-                                                            onChange={setNewPrecio}
-                                                            placeholder="Introduce el nuevo precio"
-                                                            className="w-full"
-                                                        />
-                                                    </div>
+                                                    <Button onClick={handleBajadaPrecio} appearance="primary">Aceptar</Button>
                                                 )}
-                                            </div>
-                                        </Modal.Body>
-                                        <Modal.Footer style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', gap: '10px', marginTop: '10px' }}>
-                                            {encargos[0].precio_2 ? (
-                                                <Button onClick={() => handleDeleteBajadaPrecio(encargos[0].encargo_id)} appearance="primary" style={{ backgroundColor: 'red' }}>Eliminar rebajada de precio</Button>
-                                            ) : (
-                                                <Button onClick={handleBajadaPrecio} appearance="primary">Aceptar</Button>
-                                            )}
-                                            <Button onClick={() => setIsBajadaModalOpen(false)} appearance="subtle" style={{ margin: '0px' }}>Cancelar</Button>
-                                        </Modal.Footer>
-                                    </Modal>
+                                                <Button onClick={() => setIsBajadaModalOpen(false)} appearance="subtle" style={{ margin: '0px' }}>Cancelar</Button>
+                                            </Modal.Footer>
+                                        </Modal>
+                                    )}
 
-                                    <Modal open={isPopupOpen} onClose={handlePopupClose} size="md" overflow={false} backdrop={true} style={{ backgroundColor: 'rgba(0,0,0,0.15)', padding: '0px 2px' }}>
+                                    <Modal open={isPopupOpen} onClose={handlePopupClose} size="md" overflow={false} backdrop={true} style={{ backgroundColor: 'rgba(0,0,0,0.15)', padding: '0px 2px', marginBottom: '70px' }}>
                                         <Modal.Header style={{ display: 'flex', flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: '10px', width: '100%', marginTop: '10px' }}>
                                             <Modal.Title style={{ fontSize: '1.5rem', fontWeight: 'bold', textAlign: 'center' }}>{isEditing ? 'Editar Encargo' : 'Añadir Encargo'}</Modal.Title>
                                         </Modal.Header>
@@ -554,8 +632,7 @@ const EncargosDetails = ({ data, setOnAddEncargoRefreshKey, onAddEncargoRefreshK
                                                         id="tipoEncargo"
                                                         options={[
                                                             { value: 'Venta', label: 'Venta' },
-                                                            { value: 'Alquiler', label: 'Alquiler' },
-                                                            { value: 'Comercial', label: 'Comercial' },
+                                                            { value: 'Alquiler', label: 'Alquiler' }
                                                         ]}
                                                         value={tipoEncargo ? { value: tipoEncargo, label: tipoEncargo } : null}
                                                         onChange={(option) => setTipoEncargo(option?.value || '')}
@@ -604,33 +681,67 @@ const EncargosDetails = ({ data, setOnAddEncargoRefreshKey, onAddEncargoRefreshK
                                                         className="w-full"
                                                     />
                                                 </div>
-                                                <div className="mb-4">
-                                                    <label className="block text-sm font-medium mb-2" htmlFor="tipoComision">
-                                                        Tipo de Comisión
-                                                    </label>
-                                                    <Select
-                                                        id="tipoComision"
-                                                        options={[
-                                                            { value: 'Porcentaje', label: 'Porcentaje' },
-                                                            { value: 'Fijo', label: 'Fijo' },
-                                                        ]}
-                                                        value={tipoComision ? { value: tipoComision, label: tipoComision } : null}
-                                                        onChange={(option) => setTipoComision(option?.value || '')}
-                                                        placeholder="Selecciona el tipo de comisión"
-                                                    />
+                                                <div className='flex flex-col gap-3 items-center bg-orange-100 rounded-md p-4 w-full'>
+                                                    <p>Comisión del vendedor:</p>
+                                                    <div className="mb-4 w-full">
+                                                        <label className="block text-sm font-medium mb-2" htmlFor="tipoComision">
+                                                            Tipo de Comisión
+                                                        </label>
+                                                        <Select
+                                                            id="tipoComision"
+                                                            options={[
+                                                                { value: 'Porcentaje', label: 'Porcentaje' },
+                                                                { value: 'Fijo', label: 'Fijo' },
+                                                            ]}
+                                                            value={tipoComision ? { value: tipoComision, label: tipoComision } : null}
+                                                            onChange={(option) => setTipoComision(option?.value || '')}
+                                                            placeholder="Tipo de comisión"
+                                                        />
+                                                    </div>
+                                                    <div className="mb-4 w-full">
+                                                        <label className="block text-sm font-medium mb-2" htmlFor="comision">
+                                                            Comisión
+                                                        </label>
+                                                        <InputNumber
+                                                            id="comision"
+                                                            min={0}
+                                                            value={comision}
+                                                            onChange={setComision}
+                                                            placeholder="Comisión"
+                                                            className="w-full"
+                                                        />
+                                                    </div>
                                                 </div>
-                                                <div className="mb-4">
-                                                    <label className="block text-sm font-medium mb-2" htmlFor="comision">
-                                                        Comisión
-                                                    </label>
-                                                    <InputNumber
-                                                        id="comision"
-                                                        min={0}
-                                                        value={comision}
-                                                        onChange={setComision}
-                                                        placeholder="Introduce la comisión"
-                                                        className="w-full"
-                                                    />
+                                                <div className='flex flex-col gap-3 items-center bg-blue-100 rounded-md p-4 w-full'>
+                                                    <p>Comisión del pedido:</p>
+                                                    <div className="mb-4 w-full">
+                                                        <label className="block text-sm font-medium mb-2" htmlFor="comisionComprador">
+                                                            Tipo de Comisión
+                                                        </label>
+                                                        <Select
+                                                            id="comisionComprador"
+                                                            options={[
+                                                                { value: 'Porcentaje', label: 'Porcentaje' },
+                                                                { value: 'Fijo', label: 'Fijo' },
+                                                            ]}
+                                                            value={comisionComprador ? { value: comisionComprador, label: comisionComprador } : null}
+                                                            onChange={(option) => setComisionComprador(option?.value || '')}
+                                                            placeholder="Tipo de comisión"
+                                                        />
+                                                    </div>
+                                                    <div className="mb-4 w-full">
+                                                        <label className="block text-sm font-medium mb-2" htmlFor="comision">
+                                                            Comisión
+                                                        </label>
+                                                        <InputNumber
+                                                            id="comision"
+                                                            min={0}
+                                                            value={comisionCompradorValue}
+                                                            onChange={setComisionCompradorValue}
+                                                            placeholder="Comisión"
+                                                            className="w-full"
+                                                        />
+                                                    </div>
                                                 </div>
                                                 <div className="mb-4">
                                                     <label className="block text-sm font-medium mb-2" htmlFor="fecha">
@@ -646,19 +757,42 @@ const EncargosDetails = ({ data, setOnAddEncargoRefreshKey, onAddEncargoRefreshK
                                                         style={{ width: '100%' }}
                                                     />
                                                 </div>
+                                                <div className="mb-4">
+                                                    <label className="block text-sm font-medium mb-2" htmlFor="tiempoExclusiva">
+                                                        Tiempo de Exclusiva
+                                                    </label>
+                                                    <DatePicker
+                                                        id="tiempoExclusiva"
+                                                        format="dd/MM/yyyy"
+                                                        value={tiempoExclusiva ? new Date(tiempoExclusiva) : null}
+                                                        onChange={(value) => {
+                                                            setTiempoExclusiva(value);
+                                                        }}
+                                                        placeholder="Fecha de exclusiva"
+                                                        oneTap
+                                                        style={{ width: '100%' }}
+                                                        disabledDate={disablePastDates} // This will disable past dates
+                                                    />
+                                                    <div className='flex flex-col gap-2 items-center bg-slate-200 rounded-md p-4 w-full'>
+                                                        <p>Tiempo restante:</p>
+                                                        <p className='text-center font-semibold w-[60%]'>{tiempoExclusivaCounter}</p>
+                                                    </div>
+                                                </div>
+
                                             </div>
                                         </Modal.Body>
-                                        <Modal.Footer>
-                                            <Button onClick={handlePopupClose} appearance="subtle">
-                                                Cerrar
+                                        <Modal.Footer style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', gap: '10px', marginTop: '10px' }}>
+
+                                            <Button onClick={handleAddEncargo} appearance="primary">
+                                                {isEditing ? 'Actualizar' : 'Añadir'}
                                             </Button>
                                             {isEditing && (
-                                                <Button onClick={handleDeleteEncargo} color="red" appearance="primary">
+                                                <Button onClick={handleDeleteEncargo} color="red" appearance="primary" style={{ margin: '0px' }}>
                                                     Eliminar
                                                 </Button>
                                             )}
-                                            <Button onClick={handleAddEncargo} appearance="primary">
-                                                {isEditing ? 'Actualizar' : 'Añadir'}
+                                            <Button onClick={handlePopupClose} appearance="subtle" style={{ margin: '0px' }}>
+                                                Cerrar
                                             </Button>
                                         </Modal.Footer>
                                     </Modal>
