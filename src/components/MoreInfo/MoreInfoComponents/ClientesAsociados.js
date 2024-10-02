@@ -12,8 +12,9 @@ import './clientesasociados.css';
 const { Column, HeaderCell, Cell } = Table;
 import SearchIcon from '@rsuite/icons/Search';
 import MemberIcon from '@rsuite/icons/Member';
+import { set } from 'date-fns';
 
-const ClientesAsociados = ({ inmuebleId, inmuebleDireccion, screenWidth }) => {
+const ClientesAsociados = ({ inmuebleId, inmuebleDireccion, screenWidth, setFetchClientPhoneNumberRefreshKey, fetchClientesPhoneNumberRefreshKey }) => {
     const [clientesAsociados, setClientesAsociados] = useState([]);
     const [clientesAsociadosInmueble, setClientesAsociadosInmueble] = useState([]);
     const [open, setOpen] = useState(false);
@@ -183,6 +184,7 @@ const ClientesAsociados = ({ inmuebleId, inmuebleDireccion, screenWidth }) => {
             if (response.status === 201) {
                 showToast('Cliente agregado.', 'linear-gradient(to right bottom, #00603c, #006f39, #007d31, #008b24, #069903)');
                 fetchClientes();
+                setFetchClientPhoneNumberRefreshKey(setFetchClientPhoneNumberRefreshKey + 1);
                 fetchClientesAsociados();
                 resetForm();
             }
@@ -260,6 +262,7 @@ const ClientesAsociados = ({ inmuebleId, inmuebleDireccion, screenWidth }) => {
             if (response.data.status === 'success') {
                 fetchClientesAsociados();
                 showToast('Clientes asociados correctamente.', 'linear-gradient(to right bottom, #00603c, #006f39, #007d31, #008b24, #069903)');
+                setFetchClientPhoneNumberRefreshKey(setFetchClientPhoneNumberRefreshKey + 1);
                 setOpen(false);
                 handleClose();
             } else {
@@ -313,7 +316,7 @@ const ClientesAsociados = ({ inmuebleId, inmuebleDireccion, screenWidth }) => {
             const response = await axios.post('/api/unassociate_client', { clienteId, inmuebleId });
             if (response.data.status === 'success') {
                 showToast('Cliente eliminado con éxito', 'linear-gradient(to right bottom, #00603c, #006f39, #007d31, #008b24, #069903)');
-                console.log(clienteId);
+                setFetchClientPhoneNumberRefreshKey(setFetchClientPhoneNumberRefreshKey + 1);
                 setClientesAsociadosInmueble(clientesAsociadosInmueble.filter(cliente => cliente._id !== clienteId));
                 setFilteredClientes(clientesAsociadosInmueble.filter(cliente => cliente._id !== clienteId));
             } else {
@@ -331,7 +334,6 @@ const ClientesAsociados = ({ inmuebleId, inmuebleDireccion, screenWidth }) => {
             ...cliente.inmuebles_asociados_propietario,
             ...cliente.inmuebles_asociados_inquilino
         ].map(inmueble => inmueble.id);
-        console.log('allInmuebleIds', allInmuebleIds);
         try {
             const response = await axios.post('/api/fetch_cliente_inmuebles', {
                 clientInmuebleIds: allInmuebleIds
@@ -347,7 +349,6 @@ const ClientesAsociados = ({ inmuebleId, inmuebleDireccion, screenWidth }) => {
         } catch (error) {
             console.error('Error al obtener inmuebles:', error);
         }
-        console.log('handleViewCliente', cliente._id);
         setViewMoreClienteAsociadoModalOpen(true);
     };
 
@@ -358,7 +359,7 @@ const ClientesAsociados = ({ inmuebleId, inmuebleDireccion, screenWidth }) => {
     };
 
     const handleEditClienteAsociado = (clienteId) => {
-        console.log('handleEditClienteAsociado', clienteId);
+        setFetchClientPhoneNumberRefreshKey(setFetchClientPhoneNumberRefreshKey + 1);
         setEditCliente(clienteId);
         setEditClienteAsociadoModalOpen(true);
     };
@@ -395,6 +396,7 @@ const ClientesAsociados = ({ inmuebleId, inmuebleDireccion, screenWidth }) => {
                 showToast('Cliente actualizado con éxito', 'linear-gradient(to right bottom, #00603c, #006f39, #007d31, #008b24, #069903)');
                 fetchClientesAsociados();
                 setEditClienteAsociado(null);
+                setFetchClientPhoneNumberRefreshKey(setFetchClientPhoneNumberRefreshKey + 1);
                 setEditClienteAsociadoModalOpen(false);
             } else {
                 showToast('Error al actualizar el cliente', 'linear-gradient(to right bottom, #c62828, #b92125, #ac1a22, #a0131f, #930b1c)');

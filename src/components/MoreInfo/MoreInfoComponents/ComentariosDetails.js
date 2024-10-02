@@ -51,7 +51,7 @@ const commentTypes = {
     Cita: 'bg-yellow-500',
 };
 
-const ComentariosDetails = ({ data }) => {
+const ComentariosDetails = ({ data, fetchClientPhoneNumberRefreshKey }) => {
     const [isOpen, setIsOpen] = useState(false);
     const [newComment, setNewComment] = useState('');
     const [comentarios, setComentarios] = useState([]);
@@ -67,19 +67,22 @@ const ComentariosDetails = ({ data }) => {
     const [editingCommentId, setEditingCommentId] = useState(null);
     const [editCommentText, setEditCommentText] = useState('');
 
+    const getPhoneNumbers = async () => {
+        try {
+            const response = await axios.get('/api/fetchClientPhoneNumber', { params: { inmuebleId: data.inmueble.id } });
+            console.log('data phone options', response.data);
+            setPhoneOptions(response.data);
+        } catch (error) {
+            console.error('Error fetching phone numbers:', error);
+        }
+    };
     useEffect(() => {
-        const getPhoneNumbers = async () => {
-            try {
-                const response = await fetch('/api/fetchClientPhoneNumber');
-                const data = await response.json();
-                setPhoneOptions(data);
-            } catch (error) {
-                console.error('Error fetching phone numbers:', error);
-            }
-        };
-
         getPhoneNumbers();
     }, []);
+
+    useEffect(() => {
+        getPhoneNumbers();
+    }, [fetchClientPhoneNumberRefreshKey]);
 
     const handleDateChange = (date) => {
         setSelectedDate(date);

@@ -47,6 +47,7 @@ const ItemDetails = ({ id, onClose, showModal, setShowModal, fetchData, currentP
     const [passedDPVinfo, setPassedDPVinfo] = useState(null);
     const [DPVInfo, setDPVInfo] = useState(null);
     const [loadingThing, setLoadingThing] = useState(true);
+    const [fetchClientPhoneNumberRefreshKey, setFetchClientPhoneNumberRefreshKey] = useState(1);
 
 
 
@@ -299,14 +300,14 @@ const ItemDetails = ({ id, onClose, showModal, setShowModal, fetchData, currentP
                                 </div>
                             )}
                             <DetailsInfoTwo data={data} descripcion={descripcion} setDescripcion={setDescripcion} newDescripcion={newDescripcion} setNewDescripcion={setNewDescripcion} />
-                            <ClientesAsociados inmuebleId={data.inmueble.id} inmuebleDireccion={data.inmueble.direccion} screenWidth={screenWidth} />
+                            <ClientesAsociados inmuebleId={data.inmueble.id} inmuebleDireccion={data.inmueble.direccion} screenWidth={screenWidth} setFetchClientPhoneNumberRefreshKey={setFetchClientPhoneNumberRefreshKey} fetchClientPhoneNumberRefreshKey={fetchClientPhoneNumberRefreshKey} />
                             {data.inmueble.DPV && <DPVInfoComponent DPVInfo={DPVInfo} />}
                         </>
                     )}
                     <DetailsInfoThree data={data} isVisible={isVisible} />
                     {!isVisible && (
                         <>
-                            <ComentariosDetails data={data} />
+                            <ComentariosDetails data={data} fetchClientPhoneNumberRefreshKey={fetchClientPhoneNumberRefreshKey} />
                             <NoticiasDetails data={data} setOnAddNoticiaRefreshKey={setOnAddNoticiaRefreshKey} onAddNoticiaRefreshKey={onAddNoticiaRefreshKey} fetchData={fetchData} currentPage={currentPage} searchTerm={searchTerm} />
                             <EncargosDetails data={data} setOnAddEncargoRefreshKey={setOnAddEncargoRefreshKey} onAddEncargoRefreshKey={onAddEncargoRefreshKey} fetchData={fetchData} currentPage={currentPage} searchTerm={searchTerm} screenWidth={screenWidth} />
                         </>
