@@ -19,7 +19,8 @@ function isPointInPolygon(point, polygon) {
 }
 
 // Recursive function to process nested inmuebles
-function processNestedInmuebles(nestedInmuebles, zone, inmueble, bulkOps) {
+function processNestedInmuebles(nestedInmuebles, zone, bulkOps) {
+
     for (const nestedInmueble of nestedInmuebles) {
         const { coordinates } = nestedInmueble;
 
@@ -61,10 +62,73 @@ function processNestedInmuebles(nestedInmuebles, zone, inmueble, bulkOps) {
 
         // If the nestedInmueble has further nestedInmuebles, process them recursively
         if (nestedInmueble.nestedinmuebles && Array.isArray(nestedInmueble.nestedinmuebles)) {
-            processNestedInmuebles(nestedInmueble.nestedinmuebles, zone, inmueble, bulkOps);
+            processNestedInmuebles(nestedInmueble.nestedinmuebles, zone, bulkOps);
+        }
+    }
+
+}
+
+// Updated function to process nested escaleras
+function processNestedEscaleras(nestedEscaleras, zone, bulkOps) {
+    for (const nestedEscalera of nestedEscaleras) {
+        const { coordinates, nestedinmuebles } = nestedEscalera;
+
+        if (coordinates && Array.isArray(coordinates)) {
+            let pointInZone = false;
+
+            // Check if the point is in the polygon
+            if (coordinates.length === 2) {
+                const point = { lat: coordinates[0], lng: coordinates[1] };
+                const polygon = zone.latlngs[0];
+                if (isPointInPolygon(point, polygon)) {
+                    pointInZone = true;
+                }
+            } else if (coordinates.length === 4) {
+                const boundingBox = [
+                    { lat: coordinates[0], lng: coordinates[2] },
+                    { lat: coordinates[0], lng: coordinates[3] },
+                    { lat: coordinates[1], lng: coordinates[2] },
+                    { lat: coordinates[1], lng: coordinates[3] },
+                ];
+
+                const polygon = zone.latlngs[0];
+                if (boundingBox.some(point => isPointInPolygon(point, polygon))) {
+                    pointInZone = true;
+                }
+            }
+
+            if (pointInZone) {
+                // Set zona and responsable on nested escaleras
+                bulkOps.find({ 'nestedescaleras.id': nestedEscalera.id }).updateOne({
+                    $set: {
+                        'nestedescaleras.$.zona': zone.zone_name,
+                        'nestedescaleras.$.responsable': zone.zone_responsable
+                    }
+                });
+
+                // Set zona and responsable on nestedinmuebles
+                if (nestedinmuebles && nestedinmuebles.length > 0) {
+                    bulkOps.find({ 'nestedescaleras.id': nestedEscalera.id }).updateOne({
+                        $set: {
+                            'nestedescaleras.$.nestedinmuebles': nestedinmuebles.map(inmueble => ({
+                                ...inmueble,
+                                zona: zone.zone_name,
+                                responsable: zone.zone_responsable
+                            }))
+                        }
+                    });
+                }
+            }
         }
     }
 }
+
+
+
+
+
+
+
 
 export default async function handler(req, res) {
     await runMiddleware(req, res, cors);
@@ -91,7 +155,7 @@ export default async function handler(req, res) {
             }
 
             // Fetch inmuebles, projecting only the necessary fields including nested inmuebles
-            const inmuebles = await db.collection('inmuebles').find({}, { projection: { id: 1, coordinates: 1, nestedinmuebles: 1 } }).toArray();
+            const inmuebles = await db.collection('inmuebles').find({}, { projection: { id: 1, coordinates: 1, nestedinmuebles: 1, nestedescaleras: 1 } }).toArray();
 
             if (!inmuebles.length) {
                 return res.status(200).json([]); // Return empty array if no inmuebles found
@@ -102,7 +166,7 @@ export default async function handler(req, res) {
             const bulkOps = db.collection('inmuebles').initializeUnorderedBulkOp();
 
             for (const inmueble of inmuebles) {
-                const { coordinates, nestedinmuebles } = inmueble;
+                const { coordinates, nestedinmuebles, nestedescaleras } = inmueble;
                 let pointInZone = false;
 
                 if (coordinates && Array.isArray(coordinates)) {
@@ -152,32 +216,27 @@ export default async function handler(req, res) {
 
                 // Process nested inmuebles if present
                 if (nestedinmuebles && Array.isArray(nestedinmuebles)) {
-                    processNestedInmuebles(nestedinmuebles, zone, inmueble, bulkOps);
+                    processNestedInmuebles(nestedinmuebles, zone, bulkOps);
                 }
+
+                // Process nested escaleras if present
+                if (nestedescaleras && Array.isArray(nestedescaleras)) {
+                    processNestedEscaleras(nestedescaleras, zone, bulkOps);
+                }
+
             }
 
             // Execute bulk operations
-            if (inmueblesInZones.length > 0) {
+            if (bulkOps.length > 0) {
                 await bulkOps.execute();
             }
 
-            // Set zona and responsable to null for inmuebles not in the specified zone
-            const allInmuebleIds = inmuebles.map(inmueble => inmueble.id);
-            const inmueblesNotInZones = allInmuebleIds.filter(id => !inmueblesIdsInZones.has(id));
-            if (inmueblesNotInZones.length > 0) {
-                await db.collection('inmuebles').updateMany(
-                    { id: { $in: inmueblesNotInZones } },
-                    { $set: { zona: null, responsable: null } }
-                );
-            }
-
-            res.status(200).json(inmueblesInZones);
+            return res.status(200).json(inmueblesInZones);
         } catch (error) {
             console.error('Error processing request:', error);
-            res.status(500).json({ message: 'Internal Server Error', error: error.message });
+            return res.status(500).json({ message: 'Internal server error' });
         }
-    } else {
-        res.setHeader('Allow', ['POST']);
-        res.status(405).end(`Method ${req.method} Not Allowed`);
     }
+
+    return res.status(405).json({ message: 'Method not allowed' });
 }
