@@ -198,6 +198,7 @@ const Table = ({ parentsEdificioProps, admin, screenWidth, loadingLoader }) => {
     const fetchParentsEdificio = async () => {
         try {
             const { data } = await axios.get('/api/fetch_parents'); // Use axios to fetch parents
+            console.log('parents edificio', data);
 
             setParentsEdificio(data.edificios || []); // Set the state with fetched data
             setParentsEscalera(data.escaleras || []); // Set the state with fetched data
@@ -205,6 +206,10 @@ const Table = ({ parentsEdificioProps, admin, screenWidth, loadingLoader }) => {
             console.error('Error fetching parents:', error);
         }
     };
+
+    useEffect(() => {
+        fetchParentsEdificio();
+    }, []);
 
     // UseEffect to update options whenever selectedType changes
     useEffect(() => {
