@@ -320,7 +320,7 @@ const MapComponent = () => {
             // Make the Axios request
             const response = await axios.post('/api/checkInmuebleInZone', { codeID: codeId },
                 // Simulate progress from 21 to 49 with a 100ms interval
-                await simulateProgress(0, 100, 50),
+                await simulateProgress(0, 100, 10),
             );
             console.log('Response from checkInmuebleInZone:', response);
 
@@ -500,8 +500,6 @@ const MapComponent = () => {
                     open={isPopupOpen}
                     onClose={closePopup}
                     size="sm"
-                    className="w-full max-w-lg"
-                    style={{ marginTop: '130px', overflow: 'visible' }}
                 >
                     <Modal.Header>
                         <Modal.Title className="text-center" style={{ fontSize: '1.4rem', marginTop: '10px' }}>Crear Zona</Modal.Title>
