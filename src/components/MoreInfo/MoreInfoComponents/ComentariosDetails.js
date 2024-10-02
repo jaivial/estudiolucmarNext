@@ -7,7 +7,7 @@ import axios from 'axios';
 import Toastify from 'toastify-js';
 import 'toastify-js/src/toastify.css'; // Import Toastify CSS
 import Cookies from 'js-cookie';
-import { DatePicker, Stack } from 'rsuite';
+import { DatePicker, Stack, Toggle } from 'rsuite';
 import { FaClock } from 'react-icons/fa';
 import Select from 'react-select';
 import esES from 'rsuite/locales/es_ES';
@@ -58,7 +58,7 @@ const ComentariosDetails = ({ data, fetchClientPhoneNumberRefreshKey }) => {
     const [isAdmin, setIsAdmin] = useState(Cookies.get('admin'));
     const [commentType, setCommentType] = useState('Contacto Directo');
     const [phoneNumber, setPhoneNumber] = useState('');
-    const [selectedDate, setSelectedDate] = useState(null);
+    const [selectedDate, setSelectedDate] = useState(new Date());
     const [selectedTime, setSelectedTime] = useState(null);
     const [phoneOptions, setPhoneOptions] = useState([]);
 
@@ -66,6 +66,7 @@ const ComentariosDetails = ({ data, fetchClientPhoneNumberRefreshKey }) => {
     const [editMode, setEditMode] = useState(false);
     const [editingCommentId, setEditingCommentId] = useState(null);
     const [editCommentText, setEditCommentText] = useState('');
+    const [comentarioProgramado, setComentarioProgramado] = useState(false);
 
     const getPhoneNumbers = async () => {
         try {
@@ -103,6 +104,7 @@ const ComentariosDetails = ({ data, fetchClientPhoneNumberRefreshKey }) => {
 
             if (response.data.success) {
                 setComentarios(response.data.comments);
+                console.log('comentarios', response.data.comments);
             }
         } catch (error) {
             console.error('Error fetching comments:', error);
@@ -160,6 +162,7 @@ const ComentariosDetails = ({ data, fetchClientPhoneNumberRefreshKey }) => {
                     fecha: selectedDate, // Pass the selected date
                     hora: selectedTime, // Pass the selected time
                     user_id: userId, // Pass the user_id
+                    comentarioProgramado: comentarioProgramado,
                 },
             });
 
@@ -169,6 +172,7 @@ const ComentariosDetails = ({ data, fetchClientPhoneNumberRefreshKey }) => {
                 setPhoneNumber('');
                 setSelectedDate(null);
                 setSelectedTime(null);
+                setComentarioProgramado(false);
                 showToast('Comentario añadido', 'linear-gradient(to right bottom, #00603c, #006f39, #007d31, #008b24, #069903)');
             } else {
                 showToast(response.data.message, 'linear-gradient(to right bottom, #c62828, #b92125, #ac1a22, #a0131f, #930b1c)');
@@ -253,8 +257,8 @@ const ComentariosDetails = ({ data, fetchClientPhoneNumberRefreshKey }) => {
         setEditCommentText('');
     };
 
-    const programados = comentarios.filter(comment => !comment.completed);
-    const completados = comentarios.filter(comment => comment.completed);
+    const programados = comentarios.filter(comment => comment.comentarioProgramado === true);
+    const completados = comentarios.filter(comment => comment.comentarioProgramado === false);
 
     return (
         <CustomProvider locale={esES}>
@@ -297,25 +301,25 @@ const ComentariosDetails = ({ data, fetchClientPhoneNumberRefreshKey }) => {
                                             ) : (
                                                 <>
                                                     <p className="text-base text-gray-950 py-1">{comentario.texto}</p>
-                                                    {isAdmin === "true" && (
-                                                        <div className="absolute flex flex-row-reverse justify-center items-center gap-4 bottom-1 right-1 bg-slate-50 rounded-md pr-2">
-                                                            <AiOutlineEdit
-                                                                className="text-xl text-blue-500 cursor-pointer"
-                                                                onClick={() => handleEditComment(comentario._id, comentario.texto)}
-                                                            />
+                                                    <div className="absolute flex flex-row-reverse justify-center items-center gap-4 bottom-1 right-1 bg-slate-50 rounded-md pr-2">
+                                                        <AiOutlineEdit
+                                                            className="text-xl text-blue-500 cursor-pointer"
+                                                            onClick={() => handleEditComment(comentario._id, comentario.texto)}
+                                                        />
+                                                        {isAdmin === "true" && (
                                                             <AiOutlineDelete
                                                                 className="text-xl text-red-500 cursor-pointer"
                                                                 onClick={() => handleDeleteComment(comentario._id)}
                                                             />
-                                                            <Checkbox
-                                                                className="text-black"
-                                                                onChange={() => handleCheckboxChange(comentario._id)}
-                                                                color='green'
-                                                            >
-                                                                Completado
-                                                            </Checkbox>
-                                                        </div>
-                                                    )}
+                                                        )}
+                                                        <Checkbox
+                                                            className="text-black"
+                                                            onChange={() => handleCheckboxChange(comentario._id)}
+                                                            color='green'
+                                                        >
+                                                            Completado
+                                                        </Checkbox>
+                                                    </div>
                                                 </>
                                             )}
                                         </div>
@@ -344,13 +348,55 @@ const ComentariosDetails = ({ data, fetchClientPhoneNumberRefreshKey }) => {
                         <div>
                             {programados.length > 0 && <Divider />}
 
-                            <h3 className="font-bold text-lg mb-2">Completados</h3>
+                            <h3 className="font-bold text-lg mb-2">Realizados</h3>
                             <div className="py-4 -mx-2">
                                 {completados.map((comentario) => (
-                                    <div key={comentario._id} className="py-2 my-3 relative flex items-start justify-between bg-gray-100 rounded-md">
-                                        <div className="pl-2 pb-2">
+                                    <div key={comentario._id} className="py-2 my-3 relative flex items-start justify-between bg-zinc-200 rounded-md">
+                                        <div className="px-2 pb-10 w-full">
                                             <p className="text-sm text-gray-600 pb-2 -mt-1">{formatDateTime(comentario.date_time)}</p>
-                                            <p className="text-base text-gray-950 py-1">{comentario.texto}</p>
+                                            {editMode && editingCommentId === comentario._id ? (
+                                                <div className='w-full'>
+                                                    <textarea
+                                                        value={editCommentText}
+                                                        onChange={(e) => setEditCommentText(e.target.value)}
+                                                        rows="3"
+                                                        className="w-full border border-gray-300 p-2 rounded-md"
+                                                        placeholder="Edita tu comentario aquí..."
+                                                    />
+                                                    <div className="mt-2 w-full flex flex-row justify-center items-center">
+                                                        <button
+                                                            onClick={handleUpdateComment}
+                                                            className="bg-blue-500 text-white p-2 rounded mr-2"
+                                                        >
+                                                            Actualizar
+                                                        </button>
+                                                        <button
+                                                            onClick={handleCancelEdit}
+                                                            className="bg-gray-500 text-white p-2 rounded"
+                                                        >
+                                                            Cerrar
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            ) : (
+                                                <>
+                                                    <p className="text-base text-gray-950 py-1">{comentario.texto}</p>
+
+                                                    <div className="absolute flex flex-row-reverse justify-center items-center gap-4 bottom-1 right-1 bg-slate-50 rounded-md px-4 py-2">
+                                                        <AiOutlineEdit
+                                                            className="text-xl text-blue-500 cursor-pointer"
+                                                            onClick={() => handleEditComment(comentario._id, comentario.texto)}
+                                                        />
+                                                        {isAdmin === "true" && (
+                                                            <AiOutlineDelete
+                                                                className="text-xl text-red-500 cursor-pointer"
+                                                                onClick={() => handleDeleteComment(comentario._id)}
+                                                            />
+                                                        )}
+                                                    </div>
+
+                                                </>
+                                            )}
                                         </div>
                                         <div className="absolute top-0 right-0 flex flex-row items-center space-x-2">
                                             <div className={`px-2 py-1 text-white text-xs rounded-md ${commentTypes[comentario.TipoComentario]}`}>
@@ -423,6 +469,13 @@ const ComentariosDetails = ({ data, fetchClientPhoneNumberRefreshKey }) => {
                                             caretAs={FaClock}
                                             placement='topEnd'
                                         />
+                                        <Toggle
+                                            checked={comentarioProgramado}
+                                            onChange={(checked) => setComentarioProgramado(checked)}
+                                            className="mt-2"
+                                        >
+                                            {comentarioProgramado ? 'Programado' : 'Realizado'}
+                                        </Toggle>
                                     </>
                                 )}
                                 {commentType === 'Llamada' && (
@@ -454,6 +507,13 @@ const ComentariosDetails = ({ data, fetchClientPhoneNumberRefreshKey }) => {
                                             caretAs={FaClock}
                                             placement='topEnd'
                                         />
+                                        <Toggle
+                                            checked={comentarioProgramado}
+                                            onChange={(checked) => setComentarioProgramado(checked)}
+                                            className="mt-2"
+                                        >
+                                            {comentarioProgramado ? 'Programado' : 'Realizado'}
+                                        </Toggle>
                                     </>
                                 )}
 
@@ -477,6 +537,13 @@ const ComentariosDetails = ({ data, fetchClientPhoneNumberRefreshKey }) => {
                                             caretAs={FaClock}
                                             placement='topEnd'
                                         />
+                                        <Toggle
+                                            checked={comentarioProgramado}
+                                            onChange={(checked) => setComentarioProgramado(checked)}
+                                            className="mt-2"
+                                        >
+                                            {comentarioProgramado ? 'Realizado' : 'Programado'}
+                                        </Toggle>
                                     </>
                                 )}
                             </div>
