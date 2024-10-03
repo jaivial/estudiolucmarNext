@@ -8,7 +8,7 @@ import { format, set, startOfDay } from 'date-fns';
 import { IoMdCheckmarkCircleOutline } from "react-icons/io";
 import axios from 'axios';
 
-const CalendarApp = ({ tasksSSR, allTasksSSR, datesWithCompletedTasks, datesWithIncompleteTasks }) => {
+const CalendarApp = ({ tasksSSR, allTasksSSR, datesWithCompletedTasks, datesWithIncompleteTasks, admin, setModalAsignarTarea }) => {
     const [date, setDate] = useState(new Date());
     const [filteredTasksByDate, setFilteredTasksByDate] = useState([]);
     const [tasks, setTasks] = useState(tasksSSR);
@@ -148,7 +148,7 @@ const CalendarApp = ({ tasksSSR, allTasksSSR, datesWithCompletedTasks, datesWith
                 tileClassName={tileClassName}
                 tileContent={renderTileContent}
             />
-            {selectedDay && <TaskList day={selectedDay} tasks={tasks} refreshTasks={refreshTasks} filteredTasksByDate={filteredTasksByDate} setDisplayedMonth={setDisplayedMonth} />}
+            {selectedDay && <TaskList day={selectedDay} tasks={tasks} refreshTasks={refreshTasks} filteredTasksByDate={filteredTasksByDate} setDisplayedMonth={setDisplayedMonth} admin={admin} setModalAsignarTarea={setModalAsignarTarea} />}
         </div>
     );
 };

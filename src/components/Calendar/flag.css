@@ -1,0 +1,40 @@
+.p-speeddial-button {
+   @apply bg-blue-400;
+    padding: 14px 16px;
+    border-radius: 1048px;
+    width: auto;
+    height: auto;
+    margin: 0px;
+
+}
+
+.p-speeddial-button svg {
+    width: 1.2em;
+    height: 1.2em;
+}
+
+.speeddial-bottom-left {
+    align-items: center;
+    flex-direction: column-reverse;
+    gap: 15px;
+    position: absolute;
+    top: -112px;
+    right: 9px;
+}
+
+
+.p-speeddial-list {
+    gap: 10px;
+}
+
+/* flag.css */
+.tooltip-custom {
+    color: black;
+}
+
+@media (max-width: 768px) {
+    .tooltip-custom {
+        display: none;
+        
+    }
+}
