@@ -67,6 +67,10 @@ const EditModal = ({ isModalOpen, closeModal, data, onAddEdtMoreInfoRefreshKey, 
         return null;
     };
 
+    useEffect(() => {
+        console.log('formData', formData);
+    }, [formData]);
+
     // Toggle map visibility
     const toggleMap = () => setShowMap(!showMap);
 
@@ -145,11 +149,13 @@ const EditModal = ({ isModalOpen, closeModal, data, onAddEdtMoreInfoRefreshKey, 
                                     { label: 'Inquilino', value: 'Inquilino' },
                                     { label: 'Propietario', value: 'Propietario' }
                                 ]}
-                                value={formData.categoria}
+                                value={['Vacio', 'Inquilino', 'Propietario'].includes(formData.categoria) ? formData.categoria : 'Vacio'}
                                 onChange={(value) => handleChange(value, 'categoria')}
                                 block
+                                searchable={false}
                             />
                         </Form.Group>
+
                         <Form.Group>
                             <Form.ControlLabel>Uso</Form.ControlLabel>
                             <SelectPicker
@@ -201,12 +207,14 @@ const EditModal = ({ isModalOpen, closeModal, data, onAddEdtMoreInfoRefreshKey, 
                         <Form.Group>
                             <Form.ControlLabel>Año de Construcción</Form.ControlLabel>
                             <InputPicker
-                                data={generateOptions(1900, new Date().getFullYear())}
-                                value={formData.ano_construccion}
+                                data={generateOptions(1800, new Date().getFullYear())}
+                                value={generateOptions(1800, new Date().getFullYear()).find(option => option.value === formData.ano_construccion) ? formData.ano_construccion : ''}
                                 onChange={(value) => handleChange(value, 'ano_construccion')}
                                 block
                             />
                         </Form.Group>
+
+
                         <Form.Group>
                             <Form.ControlLabel>
                                 Ubicación
@@ -229,7 +237,7 @@ const EditModal = ({ isModalOpen, closeModal, data, onAddEdtMoreInfoRefreshKey, 
                                 </MapContainer>
                             </div>
                         )}
-                        <Panel header="Más Opciones" collapsible defaultExpanded={false}>
+                        <Panel header="Más Opciones" collapsible defaultExpanded={true}>
                             <Form.Group>
                                 <Form.ControlLabel>Localidad</Form.ControlLabel>
                                 <SelectPicker
@@ -259,11 +267,11 @@ const EditModal = ({ isModalOpen, closeModal, data, onAddEdtMoreInfoRefreshKey, 
                                     block
                                 />
                             </Form.Group>
-                            <Grid>
+                            <Grid gap={4}>
                                 <Row>
                                     <Col xs={12} md={6}>
-                                        <Form.Group>
-                                            <Form.ControlLabel>Garaje</Form.ControlLabel>
+                                        <Form.Group className='flex flex-row-reverse gap-2 items-center justify-end mb-3'>
+                                            <Form.ControlLabel style={{ marginBottom: '0px' }}>Garaje</Form.ControlLabel>
                                             <input
                                                 type="checkbox"
                                                 name="garaje"
@@ -273,8 +281,8 @@ const EditModal = ({ isModalOpen, closeModal, data, onAddEdtMoreInfoRefreshKey, 
                                         </Form.Group>
                                     </Col>
                                     <Col xs={12} md={6}>
-                                        <Form.Group>
-                                            <Form.ControlLabel>Ascensor</Form.ControlLabel>
+                                        <Form.Group className='flex flex-row-reverse gap-2 items-center justify-end mb-3'>
+                                            <Form.ControlLabel style={{ marginBottom: '0px' }}>Ascensor</Form.ControlLabel>
                                             <input
                                                 type="checkbox"
                                                 name="ascensor"
@@ -284,8 +292,8 @@ const EditModal = ({ isModalOpen, closeModal, data, onAddEdtMoreInfoRefreshKey, 
                                         </Form.Group>
                                     </Col>
                                     <Col xs={12} md={6}>
-                                        <Form.Group>
-                                            <Form.ControlLabel>Trastero</Form.ControlLabel>
+                                        <Form.Group className='flex flex-row-reverse gap-2 items-center justify-end mb-3'>
+                                            <Form.ControlLabel style={{ marginBottom: '0px' }}>Trastero</Form.ControlLabel>
                                             <input
                                                 type="checkbox"
                                                 name="trastero"
@@ -295,8 +303,8 @@ const EditModal = ({ isModalOpen, closeModal, data, onAddEdtMoreInfoRefreshKey, 
                                         </Form.Group>
                                     </Col>
                                     <Col xs={12} md={6}>
-                                        <Form.Group>
-                                            <Form.ControlLabel>Jardín</Form.ControlLabel>
+                                        <Form.Group className='flex flex-row-reverse gap-2 items-center justify-end mb-3'>
+                                            <Form.ControlLabel style={{ marginBottom: '0px' }}>Jardín</Form.ControlLabel>
                                             <input
                                                 type="checkbox"
                                                 name="jardin"
@@ -306,8 +314,8 @@ const EditModal = ({ isModalOpen, closeModal, data, onAddEdtMoreInfoRefreshKey, 
                                         </Form.Group>
                                     </Col>
                                     <Col xs={12} md={6}>
-                                        <Form.Group>
-                                            <Form.ControlLabel>Terraza</Form.ControlLabel>
+                                        <Form.Group className='flex flex-row-reverse gap-2 items-center justify-end mb-3'>
+                                            <Form.ControlLabel style={{ marginBottom: '0px' }}>Terraza</Form.ControlLabel>
                                             <input
                                                 type="checkbox"
                                                 name="terraza"
@@ -317,8 +325,8 @@ const EditModal = ({ isModalOpen, closeModal, data, onAddEdtMoreInfoRefreshKey, 
                                         </Form.Group>
                                     </Col>
                                     <Col xs={12} md={6}>
-                                        <Form.Group>
-                                            <Form.ControlLabel>Aire Acondicionado</Form.ControlLabel>
+                                        <Form.Group className='flex flex-row-reverse gap-2 items-center justify-end mb-3'>
+                                            <Form.ControlLabel style={{ marginBottom: '0px' }}>Aire Acondicionado</Form.ControlLabel>
                                             <input
                                                 type="checkbox"
                                                 name="aireAcondicionado"
