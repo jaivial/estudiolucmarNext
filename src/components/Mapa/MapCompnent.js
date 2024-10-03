@@ -14,6 +14,9 @@ import { GeoSearchControl, OpenStreetMapProvider } from 'leaflet-geosearch';
 import L from 'leaflet'; // Ensure Leaflet is imported correctly
 import SmallLoadingScreen from '../LoadingScreen/SmallLoadingScreen';
 
+
+
+
 const icon = L.icon({
     iconUrl: 'https://cdn.jsdelivr.net/npm/leaflet@1.7.1/dist/images/marker-icon.png',
     iconSize: [25, 41],
@@ -160,7 +163,7 @@ const ColorPicker = ({ value, onChange }) => (
 );
 
 
-const MapComponent = () => {
+const MapComponent = ({ admin }) => {
     const [center] = useState({ lat: 39.4033747, lng: -0.4028759 });
     const ZOOM_LEVEL = 15;
     const mapRef = useRef();
@@ -480,20 +483,22 @@ const MapComponent = () => {
                             />
                         ))}
 
-                        <EditControl
-                            position="topright"
-                            onCreated={onCreated}
-                            onDeleted={onDeleted}
-                            onEdited={onEdited}
-                            draw={{
-                                rectangle: false,
-                                polyline: false,
-                                circle: false,
-                                circlemarker: false,
-                                marker: false,
-                                polygon: true,
-                            }}
-                        />
+                        {admin && (
+                            <EditControl
+                                position="topright"
+                                onCreated={onCreated}
+                                onDeleted={onDeleted}
+                                onEdited={onEdited}
+                                draw={{
+                                    rectangle: false,
+                                    polyline: false,
+                                    circle: false,
+                                    circlemarker: false,
+                                    marker: false,
+                                    polygon: true,
+                                }}
+                            />
+                        )}
                     </FeatureGroup>
                 </MapContainer>
                 <Modal

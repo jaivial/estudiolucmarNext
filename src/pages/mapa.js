@@ -4,12 +4,21 @@ import LayoutMenu from '../components/layouts/GeneralLayout';
 import { useEffect } from 'react';
 
 
-export default function MapPage() {
+
+export async function getServerSideProps(context) {
+    const cookies = context.req.cookies; // Corrected to access cookies from the request
+    const admin = cookies.admin || null;
+
+    return {
+        props: { admin }
+    };
+}
+
+
+export default function MapPage({ admin }) {
     return (
         <LayoutMenu title="Mapa">
-            <div>
-                <MapComponent />
-            </div>
+            <MapComponent admin={admin} />
         </LayoutMenu>
     );
 }
