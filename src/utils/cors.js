@@ -8,7 +8,11 @@ const allowedOrigins = [
     'http://estudiolucmar.com',
     'http://www.estudiolucmar.com',
     'http://localhost:3000',
-    'http://192.168.0.12:3000'
+    'http://192.168.0.12:3000',
+    'https://crm.estudiolucmar.com',
+    'http://crm.estudiolucmar.com',
+    'https://www.crm.estudiolucmar.com',
+    'http://www.crm.estudiolucmar.com',
 ];
 
 const cors = Cors({
