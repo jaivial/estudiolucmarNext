@@ -89,8 +89,8 @@ const EncargosDetails = ({ data, setOnAddEncargoRefreshKey, onAddEncargoRefreshK
 
 
     useEffect(() => {
-        console.log('DATA LUCAS', encargoState);
-    }, [encargoState]);
+        console.log('DATA LUCAS', data);
+    }, [data]);
 
     function toThousands(value) {
         return value ? `${value}`.replace(/\d{1,3}(?=(\d{3})+(\.\d*)?$)/g, '$&.') : value;
@@ -230,8 +230,10 @@ const EncargosDetails = ({ data, setOnAddEncargoRefreshKey, onAddEncargoRefreshK
     };
 
     const fetchClientes = async () => {
+        const inmuebleId = data.inmueble.id;
         try {
-            const response = await axios.get('/api/seleccionaClienteEncargos');
+            const response = await axios.get('/api/seleccionaClienteEncargos', { params: { inmuebleId } });
+            console.log('response clientes encargos', response.data);
             if (Array.isArray(response.data)) {
                 setClienteOptions(
                     response.data.map((cliente) => ({
@@ -382,7 +384,6 @@ const EncargosDetails = ({ data, setOnAddEncargoRefreshKey, onAddEncargoRefreshK
     }, [selectedAsesor, selectedCliente]);
     const handleDeleteEncargo = async () => {
 
-
         try {
             const encargoIdToDelete = encargos[0].encargo_id;
 
@@ -401,7 +402,7 @@ const EncargosDetails = ({ data, setOnAddEncargoRefreshKey, onAddEncargoRefreshK
 
                 // Update state with the new list of encargos
                 setEncargos(null);
-
+                setEncargoState(false);
                 handlePopupClose();
                 setIsEditing(false);
                 setOnAddEncargoRefreshKey(onAddEncargoRefreshKey + 1);
