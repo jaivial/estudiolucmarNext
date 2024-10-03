@@ -481,8 +481,8 @@ export default function Settings({ isAdmin: initialIsAdmin }) {
 
                 {/* Sección del usuario logueado */}
                 <div className="p-4 pt-8 w-[90%]">
-                    <PanelGroup accordion bordered activeKey={activeKey} onSelect={setActiveKey}>
-                        <Panel header="Tu Perfil" eventKey="0" className="bg-slate-50 rounded-lg shadow-xl">
+                    <PanelGroup accordion bordered defaultActiveKey={0} onSelect={() => setActiveKey(0)}>
+                        <Panel header="Tu Perfil" eventKey={0} defaultExpanded={true} className="bg-slate-50 rounded-lg shadow-xl">
                             <div className="relative flex flex-col items-center gap-4 py-3 w-full">
                                 <div className="absolute top-0 right-0">
                                     <Icon
@@ -588,8 +588,8 @@ export default function Settings({ isAdmin: initialIsAdmin }) {
                 {isAdministrador && (
                     <>
                         <div className="p-4 w-[90%]">
-                            <PanelGroup accordion bordered>
-                                <Panel header="Gestionar Usuarios" eventKey="1" className="bg-slate-50 rounded-lg shadow-xl">
+                            <PanelGroup accordion bordered defaultActiveKey={1}>
+                                <Panel header="Gestionar Usuarios" eventKey={1} defaultExpanded={true} className="bg-slate-50 rounded-lg shadow-xl" onSelect={() => setActiveKey(1)}>
                                     <Form layout="inline" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', width: '100%' }}>
                                         <Form.Group style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', width: '100%', marginBottom: '10px', marginTop: '0px', marginRight: '0px', gap: '5px' }}>
                                             <Form.ControlLabel>Buscar:</Form.ControlLabel>
@@ -718,8 +718,8 @@ export default function Settings({ isAdmin: initialIsAdmin }) {
 
 
                         <div className="p-4 mb-32 w-[90%]">
-                            <PanelGroup accordion bordered activeKey={activeKey} onSelect={setActiveKey} >
-                                <Panel header="Agregar Nuevo Usuario" eventKey="2" className="bg-slate-50 rounded-lg shadow-xl">
+                            <PanelGroup accordion bordered defaultActiveKey={2} onSelect={() => setActiveKey(2)}>
+                                <Panel header="Agregar Nuevo Usuario" eventKey={2} defaultExpanded={true} className="bg-slate-50 rounded-lg shadow-xl">
                                     <Form fluid onSubmit={handleAddUser} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', width: '100%' }}>
                                         <Form.Group style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', width: '100%', marginBottom: '10px', marginTop: '0px', marginRight: '0px', gap: '5px' }}>
                                             <Form.ControlLabel>Foto de Perfil</Form.ControlLabel>
