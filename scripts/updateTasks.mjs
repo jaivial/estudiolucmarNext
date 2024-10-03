@@ -2,7 +2,7 @@ import cron from 'node-cron';
 import { MongoClient } from 'mongodb';
 import moment from 'moment-timezone'; // To handle timezone
 
-const MONGODB_URI = 'mongodb://localhost:27017/inmoprocrm';
+const MONGODB_URI = 'mongodb://121.0.0.0:27017/inmoprocrm';
 const MONGODB_DB = 'inmoprocrm';
 
 const client = new MongoClient(MONGODB_URI, { useNewUrlParser: true, useUnifiedTopology: true });
