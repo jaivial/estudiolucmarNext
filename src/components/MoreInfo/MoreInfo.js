@@ -44,8 +44,11 @@ const ItemDetails = ({ id, onClose, showModal, setShowModal, fetchData, currentP
     const [apellido, setApellido] = useState(null);
     const [inmuebles_asociados_inquilino, setInmueblesAsociadosInquilino] = useState(null);
     const [inmuebles_asociados_propietario, setInmueblesAsociadosPropietario] = useState(null);
+    const [inmuebles_asociados_informador, setInmueblesAsociadosInformador] = useState(null);
     const [passedDPVinfo, setPassedDPVinfo] = useState(null);
     const [DPVInfo, setDPVInfo] = useState(null);
+    const [loadingThing, setLoadingThing] = useState(true);
+    const [fetchClientPhoneNumberRefreshKey, setFetchClientPhoneNumberRefreshKey] = useState(1);
 
 
 
@@ -180,143 +183,156 @@ const ItemDetails = ({ id, onClose, showModal, setShowModal, fetchData, currentP
         );
     }
 
-    if (!data) {
-        return <SmallLoadingScreen />;
-    }
 
 
     return (
-        <Modal open={showModal} onClose={onClose} size="full" overflow={false} backdrop="static" >
-            < Modal.Header >
-            </Modal.Header >
-            <Modal.Body>
-                {isSliderLoading && (
-                    <div className="bg-gray-100 w-full h-full fixed top-0 left-0 z-[100]">
-                        <div className="flex items-center justify-center h-full">
-                            <AiOutlineLoading className="text-blue-500 text-6xl animate-spin" />
-                            <span className="ml-4 text-gray-800 font-sans text-xl font-semibold">Cargando...</span>
-                        </div>
+        <div className='w-full pt-6 overflow-y-scroll bg-slate-200 pb-0 rounded-2xl shadow-2xl'>
+            {!data && isSliderLoading ? (
+
+                <div
+                    id="small-loading-screen"
+                    className="flex justify-center h-svh items-center z-[9900]"
+                >
+                    <div className="bg-white rounded-xl p-4 bg-opacity-100">
+                        <AiOutlineLoading className="text-blue-500 text-4xl animate-spin" />
                     </div>
-                )}
-                <ItemDetailsHeader
-                    onClose={onClose}
-                    address={data.inmueble.direccion}
-                    inmuebleId={data.inmueble.id}
-                    setImages={setImages}
-                    setIsSliderLoading={setIsSliderLoading}
-                    isVisible={isVisible}
-                    setIsVisible={setIsVisible}
-                    data={data}
-                    onAddEdtMoreInfoRefreshKey={onAddEdtMoreInfoRefreshKey}
-                    setOnAddEdtMoreInfoRefreshKey={setOnAddEdtMoreInfoRefreshKey}
-                    DPVboolean={DPVboolean} setDPVboolean={setDPVboolean}
-                    admin={admin}
-                    onAddDeleteDPVRefreshKey={onAddDeleteDPVRefreshKey}
-                    setOnAddDeleteDPVRefreshKey={setOnAddDeleteDPVRefreshKey}
-                    localizado={localizado}
-                    setLocalizado={setLocalizado}
-                    direccion={direccion}
-                    nombre={nombre}
-                    setNombre={setNombre}
-                    apellido={apellido}
-                    setApellido={setApellido}
-                    passedDPVinfo={passedDPVinfo}
-                    setPassedDPVinfo={setPassedDPVinfo}
-                    inmuebles_asociados_inquilino={inmuebles_asociados_inquilino}
-                    setInmueblesAsociadosInquilino={setInmueblesAsociadosInquilino}
-                    inmuebles_asociados_propietario={inmuebles_asociados_propietario}
-                    setInmueblesAsociadosPropietario={setInmueblesAsociadosPropietario}
-                />
-
-                <div className="py-4 h-[300px] w-full rounded-lg">
-                    {/* Slider Component */}
-                    {images.length > 0 && (
-                        <div ref={sliderRef} className="keen-slider h-full">
-                            {images.map((image, index) => (
-                                <div key={index} className="keen-slider__slide h-full flex justify-center items-center">
-                                    <img src={`data:${image.type};base64,${image.data}`} alt={`Slide ${index}`} className="w-auto h-full object-contain" />
-                                </div>
-                            ))}
-                            {loaded && slider.current && (
-                                <>
-                                    <Arrow left onClick={(e) => e.stopPropagation() || slider.current?.prev()} disabled={currentSlide === 0} />
-
-                                    <Arrow onClick={(e) => e.stopPropagation() || slider.current?.next()} disabled={currentSlide === slider.current.track.details.slides.length - 1} />
-                                </>
-                            )}
-                        </div>
-                    )}
-                    {images.length === 0 && <p className="text-center h-full flex flex-row justify-center items-center">No hay fotos disponibles</p>}
                 </div>
-                {!isVisible && (
-                    <>
-                        <h1 className="text-xl font-semibold text-start w-full leading-7 px-6">{data.inmueble.direccion}</h1>
-                        <DetailsInfoOne data={data} encargoData={encargoData} isVisible={isVisible} setIsVisible={setIsVisible} />
+            ) : (
 
-                        {data.inmueble.localizado && (
-                            <div className='w-full flex flex-col justify-center items-center'>
-                                <div class="w-[90%] max-w-4xl bg-gradient-to-l from-slate-300 to-slate-100 text-slate-600 border border-slate-300 grid grid-cols-3 p-6 gap-x-4 gap-y-4 rounded-lg shadow-md">
-                                    <div class="col-span-3 text-lg font-bold capitalize">
-                                        Información del localizado
+                <div>
+                    <ItemDetailsHeader
+                        onClose={onClose}
+                        address={data.inmueble.direccion}
+                        inmuebleId={data.inmueble.id}
+                        setImages={setImages}
+                        setIsSliderLoading={setIsSliderLoading}
+                        isVisible={isVisible}
+                        setIsVisible={setIsVisible}
+                        data={data}
+                        onAddEdtMoreInfoRefreshKey={onAddEdtMoreInfoRefreshKey}
+                        setOnAddEdtMoreInfoRefreshKey={setOnAddEdtMoreInfoRefreshKey}
+                        DPVboolean={DPVboolean} setDPVboolean={setDPVboolean}
+                        admin={admin}
+                        onAddDeleteDPVRefreshKey={onAddDeleteDPVRefreshKey}
+                        setOnAddDeleteDPVRefreshKey={setOnAddDeleteDPVRefreshKey}
+                        localizado={localizado}
+                        setLocalizado={setLocalizado}
+                        direccion={direccion}
+                        nombre={nombre}
+                        setNombre={setNombre}
+                        apellido={apellido}
+                        setApellido={setApellido}
+                        passedDPVinfo={passedDPVinfo}
+                        setPassedDPVinfo={setPassedDPVinfo}
+                        inmuebles_asociados_inquilino={inmuebles_asociados_inquilino}
+                        setInmueblesAsociadosInquilino={setInmueblesAsociadosInquilino}
+                        inmuebles_asociados_propietario={inmuebles_asociados_propietario}
+                        setInmueblesAsociadosPropietario={setInmueblesAsociadosPropietario}
+                        inmuebles_asociados_informador={inmuebles_asociados_informador}
+                        setInmueblesAsociadosInformador={setInmueblesAsociadosInformador}
+                    />
+
+                    <div className="py-4 h-[300px] w-full rounded-lg">
+                        {/* Slider Component */}
+                        {images.length > 0 && (
+                            <div ref={sliderRef} className="keen-slider h-full">
+                                {images.map((image, index) => (
+                                    <div key={index} className="keen-slider__slide h-full flex justify-center items-center">
+                                        <img src={`data:${image.type};base64,${image.data}`} alt={`Slide ${index}`} className="w-auto h-full object-contain" />
                                     </div>
-                                    <div class="col-span-3">
-                                        <div className='gap-4 flex flex-col justify-center'>
-                                            <p>Cliente: {nombre} {apellido}</p>
-                                            <div class="flex flex-row gap-2 items-center">
-                                                <p>Teléfono: <a href={`tel:${data.inmueble.localizado_phone}`}>{data.inmueble.localizado_phone}</a></p>
+                                ))}
+                                {loaded && slider.current && (
+                                    <>
+                                        <Arrow left onClick={(e) => e.stopPropagation() || slider.current?.prev()} disabled={currentSlide === 0} />
 
-                                                <a href={`tel:${data.inmueble.localizado_phone}`} class="rounded-md bg-slate-300 duration-300 p-2">
-                                                    <svg xmlns="http://www.w3.org/2000/svg" width="1.5em" height="1.5em" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path fill="currentColor" fill-opacity="0" stroke-dasharray="64" stroke-dashoffset="64" d="M8 3c0.5 0 2.5 4.5 2.5 5c0 1 -1.5 2 -2 3c-0.5 1 0.5 2 1.5 3c0.39 0.39 2 2 3 1.5c1 -0.5 2 -2 3 -2c0.5 0 5 2 5 2.5c0 2 -1.5 3.5 -3 4c-1.5 0.5 -2.5 0.5 -4.5 0c-2 -0.5 -3.5 -1 -6 -3.5c-2.5 -2.5 -3 -4 -3.5 -6c-0.5 -2 -0.5 -3 0 -4.5c0.5 -1.5 2 -3 4 -3Z"><animate fill="freeze" attributeName="fill-opacity" begin="0.6s" dur="0.15s" values="0;0.3" /><animate fill="freeze" attributeName="stroke-dashoffset" dur="0.6s" values="64;0" /><animateTransform id="lineMdPhoneCallTwotoneLoop0" fill="freeze" attributeName="transform" begin="0.6s;lineMdPhoneCallTwotoneLoop0.begin+2.7s" dur="0.5s" type="rotate" values="0 12 12;15 12 12;0 12 12;-12 12 12;0 12 12;12 12 12;0 12 12;-15 12 12;0 12 12" /></path><path stroke-dasharray="4" stroke-dashoffset="4" d="M15.76 8.28c-0.5 -0.51 -1.1 -0.93 -1.76 -1.24M15.76 8.28c0.49 0.49 0.9 1.08 1.2 1.72"><animate fill="freeze" attributeName="stroke-dashoffset" begin="lineMdPhoneCallTwotoneLoop0.begin+0s" dur="2.7s" keyTimes="0;0.111;0.259;0.37;1" values="4;0;0;4;4" /></path><path stroke-dasharray="6" stroke-dashoffset="6" d="M18.67 5.35c-1 -1 -2.26 -1.73 -3.67 -2.1M18.67 5.35c0.99 1 1.72 2.25 2.08 3.65"><animate fill="freeze" attributeName="stroke-dashoffset" begin="lineMdPhoneCallTwotoneLoop0.begin+0.2s" dur="2.7s" keyTimes="0;0.074;0.185;0.333;0.444;1" values="6;6;0;0;6;6" /></path></g></svg>
-                                                </a>
+                                        <Arrow onClick={(e) => e.stopPropagation() || slider.current?.next()} disabled={currentSlide === slider.current.track.details.slides.length - 1} />
+                                    </>
+                                )}
+                            </div>
+                        )}
+                        {images.length === 0 && <p className="text-center h-full flex flex-row justify-center items-center">No hay fotos disponibles</p>}
+                    </div>
+                    {!isVisible && (
+                        <>
+                            <h1 className="text-xl font-semibold text-start w-full leading-7 px-6">{data.inmueble.direccion}</h1>
+                            <DetailsInfoOne data={data} encargoData={encargoData} isVisible={isVisible} setIsVisible={setIsVisible} />
 
-                                            </div>
-                                            {(inmuebles_asociados_inquilino || inmuebles_asociados_propietario) && (
-                                                <div className="flex flex-row gap-2">
-                                                    <p>Tipo de Cliente:</p>
-                                                    <div>
-                                                        {inmuebles_asociados_inquilino.length > 0 && (
-                                                            <Tag
-                                                                color="orange"
-                                                                style={{ marginBottom: '5px', marginRight: '5px' }}
-                                                            >
-                                                                Inquilino
-                                                            </Tag>
-                                                        )}
-                                                        {inmuebles_asociados_propietario.length > 0 && (
-                                                            <Tag
-                                                                color="green"
-                                                                style={{ marginBottom: '5px', marginRight: '5px' }}
-                                                            >
-                                                                Propietario
-                                                            </Tag>
-                                                        )}
-                                                    </div>
+                            {data.inmueble.localizado && (
+                                <div className='w-full flex flex-col justify-center items-center'>
+                                    <div class="w-[90%] max-w-4xl bg-gradient-to-l from-slate-300 to-slate-100 text-slate-600 border border-slate-300 grid grid-cols-3 p-6 gap-x-4 gap-y-4 rounded-lg shadow-md">
+                                        <div class="col-span-3 text-lg font-bold capitalize">
+                                            Información del localizado
+                                        </div>
+                                        <div class="col-span-3">
+                                            <div className='gap-4 flex flex-col justify-center'>
+                                                <p>Cliente: {nombre} {apellido}</p>
+                                                <div class="flex flex-row gap-2 items-center">
+                                                    <p>Teléfono: <a href={`tel:${data.inmueble.localizado_phone}`}>{data.inmueble.localizado_phone}</a></p>
+
+                                                    <a href={`tel:${data.inmueble.localizado_phone}`} class="rounded-md bg-slate-300 duration-300 p-2">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" width="1.5em" height="1.5em" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path fill="currentColor" fill-opacity="0" stroke-dasharray="64" stroke-dashoffset="64" d="M8 3c0.5 0 2.5 4.5 2.5 5c0 1 -1.5 2 -2 3c-0.5 1 0.5 2 1.5 3c0.39 0.39 2 2 3 1.5c1 -0.5 2 -2 3 -2c0.5 0 5 2 5 2.5c0 2 -1.5 3.5 -3 4c-1.5 0.5 -2.5 0.5 -4.5 0c-2 -0.5 -3.5 -1 -6 -3.5c-2.5 -2.5 -3 -4 -3.5 -6c-0.5 -2 -0.5 -3 0 -4.5c0.5 -1.5 2 -3 4 -3Z"><animate fill="freeze" attributeName="fill-opacity" begin="0.6s" dur="0.15s" values="0;0.3" /><animate fill="freeze" attributeName="stroke-dashoffset" dur="0.6s" values="64;0" /><animateTransform id="lineMdPhoneCallTwotoneLoop0" fill="freeze" attributeName="transform" begin="0.6s;lineMdPhoneCallTwotoneLoop0.begin+2.7s" dur="0.5s" type="rotate" values="0 12 12;15 12 12;0 12 12;-12 12 12;0 12 12;12 12 12;0 12 12;-15 12 12;0 12 12" /></path><path stroke-dasharray="4" stroke-dashoffset="4" d="M15.76 8.28c-0.5 -0.51 -1.1 -0.93 -1.76 -1.24M15.76 8.28c0.49 0.49 0.9 1.08 1.2 1.72"><animate fill="freeze" attributeName="stroke-dashoffset" begin="lineMdPhoneCallTwotoneLoop0.begin+0s" dur="2.7s" keyTimes="0;0.111;0.259;0.37;1" values="4;0;0;4;4" /></path><path stroke-dasharray="6" stroke-dashoffset="6" d="M18.67 5.35c-1 -1 -2.26 -1.73 -3.67 -2.1M18.67 5.35c0.99 1 1.72 2.25 2.08 3.65"><animate fill="freeze" attributeName="stroke-dashoffset" begin="lineMdPhoneCallTwotoneLoop0.begin+0.2s" dur="2.7s" keyTimes="0;0.074;0.185;0.333;0.444;1" values="6;6;0;0;6;6" /></path></g></svg>
+                                                    </a>
+
                                                 </div>
-                                            )}
+                                                {((inmuebles_asociados_inquilino && inmuebles_asociados_inquilino.some(inquilino => inquilino.id === data.inmueble.id)) || (inmuebles_asociados_propietario && inmuebles_asociados_propietario.some(propietario => propietario.id === data.inmueble.id)) || (inmuebles_asociados_informador && inmuebles_asociados_informador.some(informador => informador.id === data.inmueble.id))) ? (
+                                                    <div className="flex flex-row gap-2 items-center">
+                                                        <p>Tipo de Cliente:</p>
+                                                        <div>
+                                                            {inmuebles_asociados_inquilino.some(inquilino => inquilino.id === data.inmueble.id) && (
+                                                                <Tag
+                                                                    color="orange"
+                                                                    style={{ marginBottom: '5px', marginRight: '5px' }}
+                                                                >
+                                                                    Inquilino
+                                                                </Tag>
+                                                            )}
+                                                            {inmuebles_asociados_propietario.some(propietario => propietario.id === data.inmueble.id) && (
+                                                                <Tag
+                                                                    color="green"
+                                                                    style={{ marginBottom: '5px', marginRight: '5px' }}
+                                                                >
+                                                                    Propietario
+                                                                </Tag>
+                                                            )}
+                                                            {inmuebles_asociados_informador && inmuebles_asociados_informador.some(informador => informador.id === data.inmueble.id) && (
+                                                                <Tag
+                                                                    style={{ marginBottom: '0px', marginRight: '5px', backgroundColor: '#dbeafe', borderRadius: '8px', border: '2px solid #60a5fa', color: '#2563eb' }}
+                                                                >
+                                                                    Informador
+                                                                </Tag>
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                ) : (
+                                                    <div className="flex flex-row gap-2">
+                                                        <p>Tipo de Cliente:  Sin Asignar</p>
+                                                    </div>
+                                                )}
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
-                            </div>
-                        )}
-                        <DetailsInfoTwo data={data} descripcion={descripcion} setDescripcion={setDescripcion} newDescripcion={newDescripcion} setNewDescripcion={setNewDescripcion} />
-                        <ClientesAsociados inmuebleId={data.inmueble.id} inmuebleDireccion={data.inmueble.direccion} screenWidth={screenWidth} />
-                        {data.inmueble.DPV && <DPVInfoComponent DPVInfo={DPVInfo} />}
-                    </>
-                )}
-                <DetailsInfoThree data={data} isVisible={isVisible} />
-                {!isVisible && (
-                    <>
-                        <ComentariosDetails data={data} />
-                        <NoticiasDetails data={data} setOnAddNoticiaRefreshKey={setOnAddNoticiaRefreshKey} onAddNoticiaRefreshKey={onAddNoticiaRefreshKey} fetchData={fetchData} currentPage={currentPage} searchTerm={searchTerm} />
-                        <EncargosDetails data={data} setOnAddEncargoRefreshKey={setOnAddEncargoRefreshKey} onAddEncargoRefreshKey={onAddEncargoRefreshKey} fetchData={fetchData} currentPage={currentPage} searchTerm={searchTerm} screenWidth={screenWidth} />
-                    </>
-                )}
-                <div className='flex justify-center gap-4 mt-4 pb-[50px] z-[10]' >
-                    <Button onClick={onClose} appearance="default" style={{ fontSize: '1rem', padding: '10px 20px' }}>Cerrar</Button>
+                            )}
+                            <DetailsInfoTwo data={data} descripcion={descripcion} setDescripcion={setDescripcion} newDescripcion={newDescripcion} setNewDescripcion={setNewDescripcion} />
+                            <ClientesAsociados inmuebleId={data.inmueble.id} inmuebleDireccion={data.inmueble.direccion} screenWidth={screenWidth} setFetchClientPhoneNumberRefreshKey={setFetchClientPhoneNumberRefreshKey} fetchClientPhoneNumberRefreshKey={fetchClientPhoneNumberRefreshKey} />
+                            {data.inmueble.DPV && <DPVInfoComponent DPVInfo={DPVInfo} />}
+                        </>
+                    )}
+                    <DetailsInfoThree data={data} isVisible={isVisible} />
+                    {!isVisible && (
+                        <>
+                            <ComentariosDetails data={data} fetchClientPhoneNumberRefreshKey={fetchClientPhoneNumberRefreshKey} />
+                            <NoticiasDetails data={data} setOnAddNoticiaRefreshKey={setOnAddNoticiaRefreshKey} onAddNoticiaRefreshKey={onAddNoticiaRefreshKey} fetchData={fetchData} currentPage={currentPage} searchTerm={searchTerm} />
+                            <EncargosDetails data={data} setOnAddEncargoRefreshKey={setOnAddEncargoRefreshKey} onAddEncargoRefreshKey={onAddEncargoRefreshKey} fetchData={fetchData} currentPage={currentPage} searchTerm={searchTerm} screenWidth={screenWidth} />
+                        </>
+                    )}
+                    <div className='flex justify-center gap-4 mt-4 pb-[50px] z-[10]' >
+                        <Button onClick={onClose} appearance="default" style={{ fontSize: '1rem', padding: '10px 20px' }}>Cerrar</Button>
+                    </div>
                 </div>
-            </Modal.Body>
+            )}
 
-        </Modal >
+        </div>
     );
 };
 

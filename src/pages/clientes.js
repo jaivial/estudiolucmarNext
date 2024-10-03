@@ -48,6 +48,8 @@ export default function Clientes({ isAdmin }) {
         informador: false,
         pedido: false,
         email: '',
+        direccionfuerazonainquilino: '',
+        direccionfuerazonapropietario: '',
         interes: 'comprar',  // Default value
         rango_precios: [0, 1000000]  // Default price range as array
     });
@@ -383,6 +385,7 @@ export default function Clientes({ isAdmin }) {
             informador: false,
             pedido: false,
             email: '',
+            direccionfuerazonainquilino: '',
         });
     };
 
@@ -510,7 +513,9 @@ export default function Clientes({ isAdmin }) {
                                                     <Cell>
                                                         {rowData =>
                                                             rowData.inmuebles_asociados_propietario.length +
-                                                            rowData.inmuebles_asociados_inquilino.length}
+                                                            rowData.inmuebles_asociados_inquilino.length +
+                                                            (rowData.direccionfuerazonapropietario ? 1 : 0) +
+                                                            (rowData.direccionfuerazonainquilino ? 1 : 0)}
                                                     </Cell>
                                                 </Column>
 
@@ -644,7 +649,7 @@ export default function Clientes({ isAdmin }) {
                                                 </Form.Group>
 
                                                 {newCliente.tipo_de_cliente.includes('propietario') && (
-                                                    <Form.Group>
+                                                    <Form.Group className="bg-slate-200 p-4 rounded-md">
                                                         <Form.ControlLabel>Inmuebles Asociados (Propietario)</Form.ControlLabel>
                                                         <div style={{ marginBottom: '10px' }}>
                                                             {newCliente.inmuebles_asociados_propietario.map(item => (
@@ -667,11 +672,22 @@ export default function Clientes({ isAdmin }) {
                                                             menuStyle={{ maxHeight: 200, overflowY: 'auto' }}
                                                             placement="bottomEnd"
                                                         />
+                                                        <div className="mt-3 flex flex-col gap-2">
+                                                            <p>¿El inmueble está fuera de zona?</p>
+                                                            <Form.Control
+                                                                name="direccionfuerazonapropietario"
+                                                                type="text"
+                                                                placeholder="Introduce una dirección"
+                                                                value={newCliente.direccionfuerazonapropietario}
+                                                                onChange={value => setNewCliente(prevState => ({ ...newCliente, direccionfuerazonapropietario: value }))}
+                                                                className="w-full"
+                                                            />
+                                                        </div>
                                                     </Form.Group>
                                                 )}
 
                                                 {newCliente.tipo_de_cliente.includes('inquilino') && (
-                                                    <Form.Group>
+                                                    <Form.Group className="bg-slate-200 p-4 rounded-md">
                                                         <Form.ControlLabel>Inmuebles Asociados (Inquilino)</Form.ControlLabel>
                                                         <div style={{ marginBottom: '10px' }}>
                                                             {newCliente.inmuebles_asociados_inquilino.map(item => (
@@ -694,8 +710,20 @@ export default function Clientes({ isAdmin }) {
                                                             menuStyle={{ maxHeight: 200, overflowY: 'auto' }}
                                                             placement="bottomEnd"
                                                         />
+                                                        <div className="mt-3 flex flex-col gap-2">
+                                                            <p>¿El inmueble está fuera de zona?</p>
+                                                            <Form.Control
+                                                                name="direccionfuerazonainquilino"
+                                                                type="text"
+                                                                placeholder="Introduce una dirección"
+                                                                value={newCliente.direccionfuerazonainquilino}
+                                                                onChange={value => setNewCliente(prevState => ({ ...newCliente, direccionfuerazonainquilino: value }))}
+                                                                className="w-full"
+                                                            />
+                                                        </div>
                                                     </Form.Group>
                                                 )}
+
 
                                                 <Form.Group controlId="informador-toggle" className="w-full flex flex-col gap-4 justify-center items-center">
                                                     <p>¿Es un informador?</p>
@@ -823,7 +851,7 @@ export default function Clientes({ isAdmin }) {
                             <div className="flex flex-row gap-2 mt-[10px]">
                                 <p><strong>Tipo de Cliente:</strong></p>
                                 <div>
-                                    {selectedCliente.inmuebles_asociados_propietario && selectedCliente.inmuebles_asociados_propietario.length > 0 && (
+                                    {(selectedCliente.inmuebles_asociados_propietario && selectedCliente.inmuebles_asociados_propietario.length > 0) || selectedCliente.direccionfuerazonapropietario && (
                                         <Tag
                                             key="propietario"
                                             color="green"
@@ -832,7 +860,7 @@ export default function Clientes({ isAdmin }) {
                                             Propietario
                                         </Tag>
                                     )}
-                                    {selectedCliente.inmuebles_asociados_inquilino && selectedCliente.inmuebles_asociados_inquilino.length > 0 && (
+                                    {(selectedCliente.inmuebles_asociados_inquilino && selectedCliente.inmuebles_asociados_inquilino.length > 0) || selectedCliente.direccionfuerazonainquilino && (
                                         <Tag
                                             key="inquilino"
                                             color="red"
@@ -851,7 +879,7 @@ export default function Clientes({ isAdmin }) {
                                     </Tag>
                                 </div>
                             )}
-                            {(selectedCliente.inmuebles_asociados_propietario && selectedCliente.inmuebles_asociados_propietario.length > 0) || (selectedCliente.inmuebles_asociados_inquilino && selectedCliente.inmuebles_asociados_inquilino.length > 0) ? (
+                            {(selectedCliente.inmuebles_asociados_propietario && selectedCliente.inmuebles_asociados_propietario.length > 0) || (selectedCliente.inmuebles_asociados_inquilino && selectedCliente.inmuebles_asociados_inquilino.length > 0) || selectedCliente.direccionfuerazonainquilino || selectedCliente.direccionfuerazonapropietario ? (
                                 <div>
                                     {['propietario', 'inquilino'].map(tipo => (
                                         selectedCliente[`inmuebles_asociados_${tipo}`] && selectedCliente[`inmuebles_asociados_${tipo}`].length > 0 && (
@@ -872,6 +900,8 @@ export default function Clientes({ isAdmin }) {
                                                 >
                                                     {tipo.charAt(0).toUpperCase() + tipo.slice(1)}
                                                 </div>
+
+
 
                                                 <Table data={selectedCliente.inmueblesDetalle.filter(inmueble =>
                                                     selectedCliente[`inmuebles_asociados_${tipo}`].some(assoc => assoc.id === inmueble.id)
@@ -918,198 +948,263 @@ export default function Clientes({ isAdmin }) {
                                                 </Table>
                                             </div>
                                         )
+
                                     ))}
+                                    {selectedCliente.direccionfuerazonainquilino || selectedCliente.direccionfuerazonapropietario ? (
+                                        <div className="bg-slate-200 rounded-md p-3 flex flex-col gap-4 w-full items-center">
+                                            {selectedCliente.direccionfuerazonainquilino && (
+                                                <div className="flex flex-col items-center justify-center gap-2 py-2">
+                                                    <div className="flex flex-col items-center justify-center gap-2">
+                                                        <p><strong>Dirección fuera de zona:</strong></p>
+                                                        <Tag
+                                                            key="inquilino"
+                                                            color="red"
+                                                            style={{ marginBottom: '5px', marginRight: '5px' }}
+                                                        >
+                                                            Inquilino
+                                                        </Tag>
+                                                    </div>
+                                                    <p>{selectedCliente.direccionfuerazonainquilino}</p>
+                                                </div>
+                                            )}
+                                            {selectedCliente.direccionfuerazonapropietario && (
+                                                <div className="flex flex-col items-center justify-center gap-2 py-2">
+                                                    <div className="flex flex-col items-center justify-center gap-2">
+                                                        <p><strong>Dirección fuera de zona:</strong></p>
+                                                        <Tag
+                                                            key="propietario"
+                                                            color="green"
+                                                            style={{ marginBottom: '5px', marginRight: '5px' }}
+                                                        >
+                                                            Propietario
+                                                        </Tag>
+                                                    </div>
+                                                    <p>{selectedCliente.direccionfuerazonapropietario}</p>
+                                                </div>
+                                            )}
+                                        </div>
+                                    ) : null}
+
                                 </div>
                             ) : null}
                         </Modal.Body>
                         <Modal.Footer style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
                             <Button onClick={handleClose} appearance="subtle">Cerrar</Button>
                         </Modal.Footer>
-                    </Modal>
-                )}
-
-                {editCliente && editModalOpen && (
-                    <Modal open={editModalOpen} onClose={handleCloseEditModal} backdrop={true} size="lg" overflow={true}>
-                        <Modal.Header>
-                            <Modal.Title style={{ fontSize: '1.5rem', fontWeight: 'bold', textAlign: 'center' }}>Editar Cliente</Modal.Title>
-                        </Modal.Header>
-                        <Modal.Body style={{ padding: '35px', fontSize: '1rem', lineHeight: '1.5', display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                            <Form fluid>
-                                <Form.Group>
-                                    <Form.ControlLabel>Nombre</Form.ControlLabel>
-                                    <Form.Control name="nombre" value={editCliente.nombre} onChange={value => {
-                                        setEditCliente({ ...editCliente, nombre: value });
-                                    }} />
-                                </Form.Group>
-
-                                <Form.Group>
-                                    <Form.ControlLabel>Apellido</Form.ControlLabel>
-                                    <Form.Control name="apellido" value={editCliente.apellido} onChange={value => {
-                                        setEditCliente({ ...editCliente, apellido: value });
-                                    }} />
-                                </Form.Group>
-
-                                <Form.Group>
-                                    <Form.ControlLabel>DNI</Form.ControlLabel>
-                                    <Form.Control name="dni" value={editCliente.dni} onChange={value => {
-                                        setEditCliente({ ...editCliente, dni: value });
-                                    }} />
-                                </Form.Group>
-
-                                <Form.Group>
-                                    <Form.ControlLabel>Teléfono</Form.ControlLabel>
-                                    <Form.Control name="telefono" value={editCliente.telefono} onChange={value => {
-                                        setEditCliente({ ...editCliente, telefono: value });
-                                    }} />
-                                </Form.Group>
-
-                                <Form.Group>
-                                    <Form.ControlLabel>Email</Form.ControlLabel>
-                                    <Form.Control name="email" value={editCliente.email} onChange={value => {
-                                        setEditCliente({ ...editCliente, email: value });
-                                    }} />
-                                </Form.Group>
-
-                                <Form.Group>
-                                    <Form.ControlLabel>Tipo de Cliente</Form.ControlLabel>
-                                    <SelectPicker
-                                        data={[
-                                            { label: 'Propietario', value: 'propietario' },
-                                            { label: 'Inquilino', value: 'inquilino' },
-                                        ]}
-                                        value={editCliente.tipo_de_cliente}
-                                        onChange={value => handleSelectTipoDeCliente(value, 'edit')}
-                                        searchable={false}
-                                        multiple
-                                        block
-                                    />
-                                </Form.Group>
-
-
-                                {editCliente.tipo_de_cliente.includes('propietario') && (
-                                    <Form.Group>
-                                        <Form.ControlLabel>Inmuebles Asociados (Propietario)</Form.ControlLabel>
-                                        <div style={{ marginBottom: '10px' }}>
-                                            {editCliente.inmuebles_asociados_propietario.map(item => (
-                                                <Tag
-                                                    key={item.id}
-                                                    closable
-                                                    onClose={() => handleRemoveInmueble('propietario', item.id, 'edit')}
-                                                    style={{ marginRight: '5px', marginBottom: '5px' }}
-                                                >
-                                                    {item.direccion}
-                                                </Tag>
-                                            ))}
-                                        </div>
-                                        <SelectPicker
-                                            data={inmuebles.map(inmueble => ({ label: inmueble.direccion, value: inmueble.id }))}
-                                            onSearch={handleSearchInmuebles}
-                                            onChange={(value) => handleSelectInmueble('propietario', value, 'edit')}
-                                            searchable
-                                            block
-                                            menuStyle={{ maxHeight: 200, overflowY: 'auto' }}
-                                            placement="topStart"
-                                        />
-                                    </Form.Group>
-                                )}
-
-                                {editCliente.tipo_de_cliente.includes('inquilino') && (
-                                    <Form.Group>
-                                        <Form.ControlLabel>Inmuebles Asociados (Inquilino)</Form.ControlLabel>
-                                        <div style={{ marginBottom: '10px' }}>
-                                            {editCliente.inmuebles_asociados_inquilino.map(item => (
-                                                <Tag
-                                                    key={item.id}
-                                                    closable
-                                                    onClose={() => handleRemoveInmueble('inquilino', item.id, 'edit')}
-                                                    style={{ marginRight: '5px', marginBottom: '5px' }}
-                                                >
-                                                    {item.direccion}
-                                                </Tag>
-                                            ))}
-                                        </div>
-                                        <SelectPicker
-                                            data={inmuebles.map(inmueble => ({ label: inmueble.direccion, value: inmueble.id }))}
-                                            onSearch={handleSearchInmuebles}
-                                            onChange={(value) => handleSelectInmueble('inquilino', value, 'edit')}
-                                            searchable
-                                            block
-                                            menuStyle={{ maxHeight: 200, overflowY: 'auto' }}
-                                            placement="topStart"
-                                        />
-                                    </Form.Group>
-                                )}
-                                <Form.Group controlId="informador-toggle" className="w-full flex flex-col gap-4 justify-center items-center">
-                                    <p>¿Es un informador?</p>
-                                    <Toggle
-                                        checkedChildren="Informador"
-                                        unCheckedChildren="No Informador"
-                                        defaultChecked={editCliente.informador}
-                                        onChange={(checked) => handleInformadorEdit(checked)}
-                                        size={'lg'}
-                                    />
-                                </Form.Group>
-                                <Form.Group controlId="pedido-toggle" className="w-full flex flex-col gap-4 justify-center items-center">
-                                    <p>¿Es un pedido?</p>
-                                    <Toggle
-                                        checkedChildren="Pedido"
-                                        unCheckedChildren="No Pedido"
-                                        defaultChecked={editCliente.pedido}
-                                        onChange={(checked) => handlePedidoEdit(checked)}
-                                        size={'lg'}
-                                    />
-                                </Form.Group>
-                                {editCliente.pedido && (
-                                    <div className="w-full flex flex-col gap-4 justify-center items-center mt-10">
-                                        <div className="w-full flex flex-row gap-32 justify-center items-start">
-                                            <Form.Group controlId="interes">
-                                                <Form.ControlLabel style={{ textAlign: 'center' }}>Interés</Form.ControlLabel>
-                                                <RadioGroup
-                                                    name="interes"
-                                                    value={editCliente.interes}
-                                                    onChange={handleInteresChangeEdit}
-                                                >
-                                                    <Radio value="comprar">Comprar</Radio>
-                                                    <Radio value="alquilar">Alquilar</Radio>
-                                                </RadioGroup>
-                                            </Form.Group>
-
-                                            <Form.Group controlId="rango_precios">
-                                                <Form.ControlLabel style={{ textAlign: 'center' }}>Rango de Precios</Form.ControlLabel>
-                                                <div className="flex justify-center gap-4 mt-4">
-                                                    <Form.Group controlId="precio_minimo">
-                                                        <Form.ControlLabel>Precio Mínimo (€)</Form.ControlLabel>
-                                                        <Form.Control
-                                                            type="number"
-                                                            min={0}
-                                                            value={editCliente.rango_precios[0]}
-                                                            onChange={value => setEditCliente({ ...editCliente, rango_precios: [parseInt(value, 10), editCliente.rango_precios[1]] })}
-                                                        />
-                                                    </Form.Group>
-                                                    <Form.Group controlId="precio_maximo">
-                                                        <Form.ControlLabel>Precio Máximo (€)</Form.ControlLabel>
-                                                        <Form.Control
-                                                            type="number"
-                                                            min={editCliente.rango_precios[0]}
-                                                            max={editCliente.interes === 'comprar' ? 1000000 : 2500}
-                                                            value={editCliente.rango_precios[1]}
-                                                            onChange={value => setEditCliente({ ...editCliente, rango_precios: [editCliente.rango_precios[0], parseInt(value, 10)] })}
-                                                        />
-                                                    </Form.Group>
-                                                </div>
-                                            </Form.Group>
-                                        </div>
-                                    </div>
-                                )}
-                            </Form>
-                        </Modal.Body>
-
-                        <Modal.Footer style={{ display: 'flex', justifyContent: 'center', gap: '10px' }}>
-                            <Button onClick={handleUpdateCliente} appearance="primary">Actualizar</Button>
-                            <Button onClick={handleCloseEditModal} appearance="subtle">Cancelar</Button>
-                        </Modal.Footer>
-                    </Modal>
+                    </Modal >
                 )
+                }
+
+                {
+                    editCliente && editModalOpen && (
+                        <Modal open={editModalOpen} onClose={handleCloseEditModal} backdrop={true} size="lg" overflow={true}>
+                            <Modal.Header>
+                                <Modal.Title style={{ fontSize: '1.5rem', fontWeight: 'bold', textAlign: 'center' }}>Editar Cliente</Modal.Title>
+                            </Modal.Header>
+                            <Modal.Body style={{ padding: '35px', fontSize: '1rem', lineHeight: '1.5', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                                <Form fluid>
+                                    <Form.Group>
+                                        <Form.ControlLabel>Nombre</Form.ControlLabel>
+                                        <Form.Control name="nombre" value={editCliente.nombre} onChange={value => {
+                                            setEditCliente({ ...editCliente, nombre: value });
+                                        }} />
+                                    </Form.Group>
+
+                                    <Form.Group>
+                                        <Form.ControlLabel>Apellido</Form.ControlLabel>
+                                        <Form.Control name="apellido" value={editCliente.apellido} onChange={value => {
+                                            setEditCliente({ ...editCliente, apellido: value });
+                                        }} />
+                                    </Form.Group>
+
+                                    <Form.Group>
+                                        <Form.ControlLabel>DNI</Form.ControlLabel>
+                                        <Form.Control name="dni" value={editCliente.dni} onChange={value => {
+                                            setEditCliente({ ...editCliente, dni: value });
+                                        }} />
+                                    </Form.Group>
+
+                                    <Form.Group>
+                                        <Form.ControlLabel>Teléfono</Form.ControlLabel>
+                                        <Form.Control name="telefono" value={editCliente.telefono} onChange={value => {
+                                            setEditCliente({ ...editCliente, telefono: value });
+                                        }} />
+                                    </Form.Group>
+
+                                    <Form.Group>
+                                        <Form.ControlLabel>Email</Form.ControlLabel>
+                                        <Form.Control name="email" value={editCliente.email} onChange={value => {
+                                            setEditCliente({ ...editCliente, email: value });
+                                        }} />
+                                    </Form.Group>
+
+                                    <Form.Group>
+                                        <Form.ControlLabel>Tipo de Cliente</Form.ControlLabel>
+                                        <SelectPicker
+                                            data={[
+                                                { label: 'Propietario', value: 'propietario' },
+                                                { label: 'Inquilino', value: 'inquilino' },
+                                            ]}
+                                            value={editCliente.tipo_de_cliente}
+                                            onChange={value => handleSelectTipoDeCliente(value, 'edit')}
+                                            searchable={false}
+                                            multiple
+                                            block
+                                        />
+                                    </Form.Group>
+
+
+                                    {editCliente.tipo_de_cliente.includes('propietario') && (
+                                        <Form.Group className="bg-slate-200 p-4 rounded-md">
+                                            <Form.ControlLabel>Inmuebles Asociados (Propietario)</Form.ControlLabel>
+                                            <div style={{ marginBottom: '10px' }}>
+                                                {editCliente.inmuebles_asociados_propietario.map(item => (
+                                                    <Tag
+                                                        key={item.id}
+                                                        closable
+                                                        onClose={() => handleRemoveInmueble('propietario', item.id, 'edit')}
+                                                        style={{ marginRight: '5px', marginBottom: '5px' }}
+                                                    >
+                                                        {item.direccion}
+                                                    </Tag>
+                                                ))}
+                                            </div>
+                                            <SelectPicker
+                                                data={inmuebles.map(inmueble => ({ label: inmueble.direccion, value: inmueble.id }))}
+                                                onSearch={handleSearchInmuebles}
+                                                onChange={(value) => handleSelectInmueble('propietario', value, 'edit')}
+                                                searchable
+                                                block
+                                                menuStyle={{ maxHeight: 200, overflowY: 'auto' }}
+                                                placement="topStart"
+                                            />
+
+                                            <div className="mt-3 flex flex-col gap-2">
+                                                <p>¿El inmueble está fuera de zona?</p>
+                                                <Form.Control
+                                                    name="direccionfuerazonapropietarioedit"
+                                                    type="text"
+                                                    placeholder="Introduce una dirección"
+                                                    value={editCliente.direccionfuerazonapropietario ? editCliente.direccionfuerazonapropietario : ''}
+                                                    onChange={value => setEditCliente(prevState => ({ ...editCliente, direccionfuerazonapropietario: value }))}
+                                                    className="w-full"
+                                                />
+                                            </div>
+
+
+                                        </Form.Group>
+                                    )}
+
+                                    {editCliente.tipo_de_cliente.includes('inquilino') && (
+                                        <Form.Group className="bg-slate-200 p-4 rounded-md">
+                                            <Form.ControlLabel>Inmuebles Asociados (Inquilino)</Form.ControlLabel>
+                                            <div style={{ marginBottom: '10px' }}>
+                                                {editCliente.inmuebles_asociados_inquilino.map(item => (
+                                                    <Tag
+                                                        key={item.id}
+                                                        closable
+                                                        onClose={() => handleRemoveInmueble('inquilino', item.id, 'edit')}
+                                                        style={{ marginRight: '5px', marginBottom: '5px' }}
+                                                    >
+                                                        {item.direccion}
+                                                    </Tag>
+                                                ))}
+                                            </div>
+                                            <SelectPicker
+                                                data={inmuebles.map(inmueble => ({ label: inmueble.direccion, value: inmueble.id }))}
+                                                onSearch={handleSearchInmuebles}
+                                                onChange={(value) => handleSelectInmueble('inquilino', value, 'edit')}
+                                                searchable
+                                                block
+                                                menuStyle={{ maxHeight: 200, overflowY: 'auto' }}
+                                                placement="topStart"
+                                            />
+
+                                            <div className="mt-3 flex flex-col gap-2">
+                                                <p>¿El inmueble está fuera de zona?</p>
+                                                <Form.Control
+                                                    name="direccionfuerazonainquilinoedit"
+                                                    type="text"
+                                                    placeholder="Introduce una dirección"
+                                                    value={editCliente.direccionfuerazonainquilino ? editCliente.direccionfuerazonainquilino : ''}
+                                                    onChange={value => setEditCliente(prevState => ({ ...editCliente, direccionfuerazonainquilino: value }))}
+                                                    className="w-full"
+                                                />
+                                            </div>
+
+                                        </Form.Group>
+                                    )}
+                                    <Form.Group controlId="informador-toggle" className="w-full flex flex-col gap-4 justify-center items-center">
+                                        <p>¿Es un informador?</p>
+                                        <Toggle
+                                            checkedChildren="Informador"
+                                            unCheckedChildren="No Informador"
+                                            defaultChecked={editCliente.informador}
+                                            onChange={(checked) => handleInformadorEdit(checked)}
+                                            size={'lg'}
+                                        />
+                                    </Form.Group>
+                                    <Form.Group controlId="pedido-toggle" className="w-full flex flex-col gap-4 justify-center items-center">
+                                        <p>¿Es un pedido?</p>
+                                        <Toggle
+                                            checkedChildren="Pedido"
+                                            unCheckedChildren="No Pedido"
+                                            defaultChecked={editCliente.pedido}
+                                            onChange={(checked) => handlePedidoEdit(checked)}
+                                            size={'lg'}
+                                        />
+                                    </Form.Group>
+                                    {editCliente.pedido && (
+                                        <div className="w-full flex flex-col gap-4 justify-center items-center mt-10">
+                                            <div className="w-full flex flex-row gap-32 justify-center items-start">
+                                                <Form.Group controlId="interes">
+                                                    <Form.ControlLabel style={{ textAlign: 'center' }}>Interés</Form.ControlLabel>
+                                                    <RadioGroup
+                                                        name="interes"
+                                                        value={editCliente.interes}
+                                                        onChange={handleInteresChangeEdit}
+                                                    >
+                                                        <Radio value="comprar">Comprar</Radio>
+                                                        <Radio value="alquilar">Alquilar</Radio>
+                                                    </RadioGroup>
+                                                </Form.Group>
+
+                                                <Form.Group controlId="rango_precios">
+                                                    <Form.ControlLabel style={{ textAlign: 'center' }}>Rango de Precios</Form.ControlLabel>
+                                                    <div className="flex justify-center gap-4 mt-4">
+                                                        <Form.Group controlId="precio_minimo">
+                                                            <Form.ControlLabel>Precio Mínimo (€)</Form.ControlLabel>
+                                                            <Form.Control
+                                                                type="number"
+                                                                min={0}
+                                                                value={editCliente.rango_precios[0]}
+                                                                onChange={value => setEditCliente({ ...editCliente, rango_precios: [parseInt(value, 10), editCliente.rango_precios[1]] })}
+                                                            />
+                                                        </Form.Group>
+                                                        <Form.Group controlId="precio_maximo">
+                                                            <Form.ControlLabel>Precio Máximo (€)</Form.ControlLabel>
+                                                            <Form.Control
+                                                                type="number"
+                                                                min={editCliente.rango_precios[0]}
+                                                                max={editCliente.interes === 'comprar' ? 1000000 : 2500}
+                                                                value={editCliente.rango_precios[1]}
+                                                                onChange={value => setEditCliente({ ...editCliente, rango_precios: [editCliente.rango_precios[0], parseInt(value, 10)] })}
+                                                            />
+                                                        </Form.Group>
+                                                    </div>
+                                                </Form.Group>
+                                            </div>
+                                        </div>
+                                    )}
+                                </Form>
+                            </Modal.Body>
+
+                            <Modal.Footer style={{ display: 'flex', justifyContent: 'center', gap: '10px' }}>
+                                <Button onClick={handleUpdateCliente} appearance="primary">Actualizar</Button>
+                                <Button onClick={handleCloseEditModal} appearance="subtle">Cancelar</Button>
+                            </Modal.Footer>
+                        </Modal>
+                    )
                 }
                 {/* Modal for editing Comprador */}
                 {

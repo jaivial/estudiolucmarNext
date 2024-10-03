@@ -5,8 +5,8 @@ const generateRandomId = () => Math.floor(Math.random() * 1000000); // Generates
 
 export default async function handler(req, res) {
 
-  // Run CORS middleware
-  await runMiddleware(req, res, cors);
+    // Run CORS middleware
+    await runMiddleware(req, res, cors);
 
 
     if (req.method === 'GET') {
@@ -18,7 +18,8 @@ export default async function handler(req, res) {
                 telefono,
                 fecha,
                 hora,
-                user_id
+                user_id,
+                comentarioProgramado
             } = req.query;
 
             // Check if required parameters are set
@@ -33,6 +34,14 @@ export default async function handler(req, res) {
             const now = new Date();
             const dateTime = now.toISOString(); // Use ISO string for date-time
 
+            let programado = null;
+            if (comentarioProgramado === "true") {
+                programado = true;
+            } else if (comentarioProgramado === "false") {
+                programado = false;
+            }
+
+
             // Insert comment into 'comentarios' collection
             const comentariosCollection = db.collection('comentarios');
             const insertResult = await comentariosCollection.insertOne({
@@ -40,7 +49,8 @@ export default async function handler(req, res) {
                 date_time: dateTime,
                 texto: comentario,
                 TipoComentario: tipo,
-                telefono: telefono || ''
+                telefono: telefono || '',
+                comentarioProgramado: programado,
             });
 
             // Debugging: Log the insertResult to verify

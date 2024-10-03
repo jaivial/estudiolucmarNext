@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet';
 import Select from 'react-select';
 import axios from 'axios';
@@ -6,7 +6,7 @@ import 'leaflet/dist/leaflet.css';
 import Toastify from 'toastify-js';
 import { FaArrowDown, FaArrowUp } from 'react-icons/fa';
 import SmallLoadingScreen from '../LoadingScreen/SmallLoadingScreen';
-
+import { Modal, Button, Accordion } from 'rsuite';
 
 const icon = L.icon({
     iconUrl: 'https://cdn.jsdelivr.net/npm/leaflet@1.7.1/dist/images/marker-icon.png',
@@ -45,7 +45,6 @@ const AddInmueblePopup = ({ showAddNewInmueble, setShowAddNewInmueble, fetchData
     const [aireAcondicionado, setAireAcondicionado] = useState(false);
     const [loading, setLoading] = useState(false);
 
-
     const toggleOptions = () => {
         setShowOptions(!showOptions);
     };
@@ -54,7 +53,9 @@ const AddInmueblePopup = ({ showAddNewInmueble, setShowAddNewInmueble, fetchData
         return Array.from({ length: max + 1 }, (_, i) => ({ value: i, label: i.toString() }));
     };
 
-    // ... existing code ...
+    useEffect(() => {
+        console.log('coordiantes', markerPosition);
+    }, [markerPosition]);
 
     const handleAddInmueble = () => {
         if (!direccion || tipo === 'Selecciona un tipo' || uso === 'Selecciona un uso' || !anoConstruccion || !superficie || categoriaOcupacion === 'Elige una opción' || !markerPosition) {
@@ -141,11 +142,12 @@ const AddInmueblePopup = ({ showAddNewInmueble, setShowAddNewInmueble, fetchData
     };
 
     return (
-        <div className={`popup-container fixed inset-0 flex justify-center bg-gray-800 bg-opacity-75 ${showAddNewInmueble ? '' : 'hidden'} z-50 overflow-y-auto ${showOptions ? 'items-start pb-20 pt-12' : 'items-center pb-12'}`}>
-            {loading && <SmallLoadingScreen />}
-            <div className="popup-content bg-white p-4 shadow-lg flex flex-col justify-center items-center gap-4 rounded-lg w-4/6 overflow-y-auto">
-                <h2 className="text-lg font-bold w-[80%] text-center flex justify-center">Añadir Inmueble</h2>
-                <div className="flex flex-col gap-4 w-full justify-center items-center text-center">
+        <Modal open={showAddNewInmueble} onClose={() => setShowAddNewInmueble(false)} style={{ backgroundColor: 'rgba(0,0,0,0.15)', borderRadius: '10px', padding: '0px', marginBottom: '70px' }} size="xs" overflow={false} backdrop>
+            <Modal.Header style={{ display: 'flex', flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: '10px', width: '100%', marginTop: '10px' }}>
+                <Modal.Title style={{ fontSize: '1.5rem', textAlign: 'center' }}>Añadir Inmueble</Modal.Title>
+            </Modal.Header>
+            <Modal.Body style={{ padding: '20px 20px 0px 20px' }}>
+                <div className="flex flex-col gap-4">
                     <input type="text" placeholder="Dirección" value={direccion} onChange={(e) => setDireccion(e.target.value)} className="border p-2 rounded w-full" />
                     <select value={tipo} onChange={(e) => setTipo(e.target.value)} className="border p-2 rounded w-full">
                         <option>Selecciona un tipo</option>
@@ -169,16 +171,16 @@ const AddInmueblePopup = ({ showAddNewInmueble, setShowAddNewInmueble, fetchData
                         <option>Inquilino</option>
                         <option>Vacío</option>
                     </select>
-                    <button onClick={toggleOptions} className='bg-gray-800 text-white justify-center z-20 font-bold text-sm py-2 px-4 rounded flex items-center w-full'>
-                        Más opciones {showOptions ? <FaArrowUp className="ml-2" /> : <FaArrowDown className="ml-2" />}
-                    </button>
-                    {showOptions && (
-                        <div className="additional-options flex flex-col gap-2 border border-gray-300 rb-lg p-4 w-full shadow-2xl mb-2 -mt-5">
+                    <Accordion defaultActiveKey={['0']} className='w-auto ml-[16px] mr-[16px] mt-[20px] border-1 border-gray-300 bg-gray-100 rounded-lg shadow-lg'>
+                        <Accordion.Panel header="Más Opciones" eventKey="0" style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+
                             <div>
-                                <Select options={numberOptions(15)} value={habitaciones} onChange={setHabitaciones} />
+                                <label className='ml-1'>Habitaciones</label>
+                                <Select placeholder='Habitaciones' options={numberOptions(15)} value={habitaciones} onChange={setHabitaciones} />
                             </div>
                             <div>
-                                <Select options={numberOptions(10)} value={banyos} onChange={setBanyos} />
+                                <label className='ml-1'>Baños</label>
+                                <Select placeholder='Baños' options={numberOptions(10)} value={banyos} onChange={setBanyos} />
                             </div>
                             <div className='checkbox-options grid grid-cols-1 gap-2 rounded-b-md p-4 w-full'>
                                 <div className='flex items-center justify-start gap-3'>
@@ -206,25 +208,26 @@ const AddInmueblePopup = ({ showAddNewInmueble, setShowAddNewInmueble, fetchData
                                     <label>Aire Acondicionado</label>
                                 </div>
                             </div>
-                        </div>
-                    )}
-                    <h2 className="text-lg font-bold w-[80%] text-center flex justify-center">Selecciona su ubicación</h2>
+
+                        </Accordion.Panel>
+                    </Accordion>
+                    <h2 className="text-lg font-bold w-[80%] text-center flex justify-center items-center mx-auto">Selecciona su ubicación</h2>
                     <MapContainer center={[39.4033747, -0.4028759]} zoom={14} className="h-[200px] w-[100%]">
                         <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
                         {markerPosition && <Marker position={markerPosition} icon={icon} />}
                         <MapEvents />
                     </MapContainer>
                     <div className="flex justify-center gap-4">
-                        <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" onClick={handleAddInmueble}>
+                        <Button appearance="primary" onClick={handleAddInmueble}>
                             Añadir
-                        </button>
-                        <button className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded" onClick={() => handleIconAddInmueble()}>
+                        </Button>
+                        <Button appearance="subtle" onClick={() => handleIconAddInmueble()}>
                             Cerrar
-                        </button>
+                        </Button>
                     </div>
                 </div>
-            </div>
-        </div>
+            </Modal.Body>
+        </Modal>
     );
 };
 

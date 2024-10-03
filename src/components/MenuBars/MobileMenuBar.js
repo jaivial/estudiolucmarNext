@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
 import { FaHome, FaSearch, FaMapMarkedAlt, FaTasks, FaNewspaper, FaCog, FaEllipsisV, FaSignOutAlt } from 'react-icons/fa';
@@ -11,6 +11,7 @@ const MobileMenuBar = () => {
     const router = useRouter();
     const [isDesplegarMoreMenu, setIsDesplegarMoreMenu] = useState(false);
     const [currentPage, setCurrentPage] = useState('');
+    const menuRef = useRef(null);
 
     const showToast = (message, backgroundColor) => {
         Toastify({
@@ -79,6 +80,25 @@ const MobileMenuBar = () => {
             ? 'h-[55px] bg-blue-400 p-2 text-white'
             : 'h-[45px] bg-white p-2 text-black';
 
+    // Handle click outside the menu
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (menuRef.current && !menuRef.current.contains(event.target)) {
+                setIsDesplegarMoreMenu(false); // Close the menu
+            }
+        };
+
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, [menuRef]);
+
+    // Prevent menu from folding on link click
+    const handleLinkClick = (event) => {
+        event.stopPropagation();
+    };
+
     return (
         <div id="completesidenavbar" className="relative z-[9999] bg-slate-50">
             <nav className="h-10 w-full flex flex-row justify-between border-t border-slate-300 shadow-2xl fixed bottom-0 left-0 z-[9999] overflow-visible bg-slate-50">
@@ -96,6 +116,7 @@ const MobileMenuBar = () => {
                         id="mobile-itemMoreMenuIcon"
                         className={`relative ${isDesplegarMoreMenu ? 'bg-blue-400 text-white h-auto px-1 pb-2.5' : 'h-[45px] bg-white px-1'} rounded-3xl shadow-lg flex flex-col-reverse items-center justify-center gap-1 hover:cursor-pointer hover:bg-blue-400 hover:text-white`}
                         onClick={toggleDesplegarMoreMenu}
+                        ref={menuRef}
                     >
                         <FaEllipsisV size="1.9em" />
 
@@ -106,21 +127,19 @@ const MobileMenuBar = () => {
                                 }`}
                         >
                             <ul className="w-full flex flex-col justify-around items-center gap-8">
-                                <Link href="/encargos" className={`${isActive('Encargos')} w-full flex justify-center px-3.5 py-2 rounded-3xl shadow-lg`}>
+                                <Link href="/encargos" onClick={handleLinkClick} className={`${isActive('Encargos')} w-full flex justify-center px-3.5 py-2 rounded-3xl shadow-lg`}>
                                     <Icon icon="fluent:real-estate-24-filled" className='text-3xl' />
                                 </Link>
-                                <Link href="/noticias" className={`${isActive('Noticias')} w-full flex justify-center px-3.5 py-2 rounded-3xl shadow-lg`}>
+                                <Link href="/noticias" onClick={handleLinkClick} className={`${isActive('Noticias')} w-full flex justify-center px-3.5 py-2 rounded-3xl shadow-lg`}>
                                     <Icon icon="material-symbols:work-alert" className='text-3xl' />
                                 </Link>
-                                <Link href="/settings" className={`${isActive('Settings')} w-full flex justify-center px-3.5 py-2 rounded-3xl shadow-lg`}>
+                                <Link href="/settings" onClick={handleLinkClick} className={`${isActive('Settings')} w-full flex justify-center px-3.5 py-2 rounded-3xl shadow-lg`}>
                                     <FaCog size="1.8em" />
                                 </Link>
-                                <Link href="/clientes" className={`${isActive('Clientes')} w-full flex justify-center px-3.5 py-2 rounded-3xl shadow-lg`}>
+                                <Link href="/clientes" onClick={handleLinkClick} className={`${isActive('Clientes')} w-full flex justify-center px-3.5 py-2 rounded-3xl shadow-lg`}>
                                     <Icon icon="bi:people-fill" className='text-3xl' />
                                 </Link>
-                                {/* New link to /mizona */}
-                                <Link href="/buscador" className={`${isActive('Buscador')} w-full flex justify-center px-3.5 py-2 rounded-3xl shadow-lg`}>
-                                    {/* Example icon */}
+                                <Link href="/buscador" onClick={handleLinkClick} className={`${isActive('Buscador')} w-full flex justify-center px-3.5 py-2 rounded-3xl shadow-lg`}>
                                     <FaSearch size="1.8em" />
                                 </Link>
                                 <div

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, use } from 'react';
-import { Accordion, Tag, Button, SelectPicker, Modal, IconButton, Radio, RadioGroup, Toggle, Form, Grid, TagPicker, InputNumber, Table, Whisper, Tooltip, AutoComplete, InputGroup } from 'rsuite';
+import { Accordion, Tag, Button, SelectPicker, Modal, IconButton, Radio, RadioGroup, Toggle, Form, Grid, TagPicker, InputNumber, Table, Whisper, Tooltip, AutoComplete, InputGroup, Panel } from 'rsuite';
 import axios from 'axios';
 import { Close } from '@rsuite/icons';
 import Toastify from 'toastify-js';
@@ -12,8 +12,9 @@ import './clientesasociados.css';
 const { Column, HeaderCell, Cell } = Table;
 import SearchIcon from '@rsuite/icons/Search';
 import MemberIcon from '@rsuite/icons/Member';
+import { set } from 'date-fns';
 
-const ClientesAsociados = ({ inmuebleId, inmuebleDireccion, screenWidth }) => {
+const ClientesAsociados = ({ inmuebleId, inmuebleDireccion, screenWidth, setFetchClientPhoneNumberRefreshKey, fetchClientesPhoneNumberRefreshKey }) => {
     const [clientesAsociados, setClientesAsociados] = useState([]);
     const [clientesAsociadosInmueble, setClientesAsociadosInmueble] = useState([]);
     const [open, setOpen] = useState(false);
@@ -183,6 +184,7 @@ const ClientesAsociados = ({ inmuebleId, inmuebleDireccion, screenWidth }) => {
             if (response.status === 201) {
                 showToast('Cliente agregado.', 'linear-gradient(to right bottom, #00603c, #006f39, #007d31, #008b24, #069903)');
                 fetchClientes();
+                setFetchClientPhoneNumberRefreshKey(setFetchClientPhoneNumberRefreshKey + 1);
                 fetchClientesAsociados();
                 resetForm();
             }
@@ -260,6 +262,7 @@ const ClientesAsociados = ({ inmuebleId, inmuebleDireccion, screenWidth }) => {
             if (response.data.status === 'success') {
                 fetchClientesAsociados();
                 showToast('Clientes asociados correctamente.', 'linear-gradient(to right bottom, #00603c, #006f39, #007d31, #008b24, #069903)');
+                setFetchClientPhoneNumberRefreshKey(setFetchClientPhoneNumberRefreshKey + 1);
                 setOpen(false);
                 handleClose();
             } else {
@@ -313,7 +316,7 @@ const ClientesAsociados = ({ inmuebleId, inmuebleDireccion, screenWidth }) => {
             const response = await axios.post('/api/unassociate_client', { clienteId, inmuebleId });
             if (response.data.status === 'success') {
                 showToast('Cliente eliminado con éxito', 'linear-gradient(to right bottom, #00603c, #006f39, #007d31, #008b24, #069903)');
-                console.log(clienteId);
+                setFetchClientPhoneNumberRefreshKey(setFetchClientPhoneNumberRefreshKey + 1);
                 setClientesAsociadosInmueble(clientesAsociadosInmueble.filter(cliente => cliente._id !== clienteId));
                 setFilteredClientes(clientesAsociadosInmueble.filter(cliente => cliente._id !== clienteId));
             } else {
@@ -331,7 +334,6 @@ const ClientesAsociados = ({ inmuebleId, inmuebleDireccion, screenWidth }) => {
             ...cliente.inmuebles_asociados_propietario,
             ...cliente.inmuebles_asociados_inquilino
         ].map(inmueble => inmueble.id);
-        console.log('allInmuebleIds', allInmuebleIds);
         try {
             const response = await axios.post('/api/fetch_cliente_inmuebles', {
                 clientInmuebleIds: allInmuebleIds
@@ -347,7 +349,6 @@ const ClientesAsociados = ({ inmuebleId, inmuebleDireccion, screenWidth }) => {
         } catch (error) {
             console.error('Error al obtener inmuebles:', error);
         }
-        console.log('handleViewCliente', cliente._id);
         setViewMoreClienteAsociadoModalOpen(true);
     };
 
@@ -358,7 +359,7 @@ const ClientesAsociados = ({ inmuebleId, inmuebleDireccion, screenWidth }) => {
     };
 
     const handleEditClienteAsociado = (clienteId) => {
-        console.log('handleEditClienteAsociado', clienteId);
+        setFetchClientPhoneNumberRefreshKey(setFetchClientPhoneNumberRefreshKey + 1);
         setEditCliente(clienteId);
         setEditClienteAsociadoModalOpen(true);
     };
@@ -395,6 +396,7 @@ const ClientesAsociados = ({ inmuebleId, inmuebleDireccion, screenWidth }) => {
                 showToast('Cliente actualizado con éxito', 'linear-gradient(to right bottom, #00603c, #006f39, #007d31, #008b24, #069903)');
                 fetchClientesAsociados();
                 setEditClienteAsociado(null);
+                setFetchClientPhoneNumberRefreshKey(setFetchClientPhoneNumberRefreshKey + 1);
                 setEditClienteAsociadoModalOpen(false);
             } else {
                 showToast('Error al actualizar el cliente', 'linear-gradient(to right bottom, #c62828, #b92125, #ac1a22, #a0131f, #930b1c)');
@@ -410,8 +412,8 @@ const ClientesAsociados = ({ inmuebleId, inmuebleDireccion, screenWidth }) => {
     }, [newCliente]);
 
     return (
-        <Accordion defaultActiveKey={['0']} className='w-auto ml-[16px] mr-[16px] mt-[20px] border-1 border-gray-300 bg-gray-100 rounded-lg shadow-lg'>
-            <Accordion.Panel header="Clientes Asociados" eventKey="0" style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+        <Accordion defaultActiveKey={0} className='w-auto ml-[16px] mr-[16px] mt-[20px] border-1 border-gray-300 bg-gray-100 rounded-lg shadow-lg'>
+            <Accordion.Panel header="Clientes Asociados" eventKey={0} defaultExpanded={true} style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                 <Modal open={open} onClose={handleClose} style={{ backgroundColor: 'rgba(0,0,0,0.15)', borderRadius: '10px', padding: '0px' }} backdrop="static">
                     <Modal.Header>
                         <Modal.Title style={{ fontSize: '1.5rem', fontWeight: 'semibold', textAlign: 'center' }}>Asociar Cliente</Modal.Title>
@@ -744,11 +746,11 @@ const ClientesAsociados = ({ inmuebleId, inmuebleDireccion, screenWidth }) => {
                                                     <p>{cliente.telefono}</p>
                                                 </div>
                                             )}
-                                            <div className='w-[200px] text-center flex flex-row justify-center items-center gap-3'>
-                                                <button className='rounded-md text-3xl' onClick={() => handleViewCliente(cliente)}>
+                                            <div className='w-[100px] text-center flex flex-row justify-center items-center gap-2 pl-2'>
+                                                <button className='rounded-md text-xl' onClick={() => handleViewCliente(cliente)}>
                                                     <FaEye />
                                                 </button>
-                                                <button className='rounded-md text-3xl' onClick={() => handleEditClienteAsociado(cliente)}>
+                                                <button className='rounded-md text-xl' onClick={() => handleEditClienteAsociado(cliente)}>
                                                     <AiOutlineEdit />
                                                 </button>
                                                 <button onClick={() => handleRemoveCliente(cliente._id)} className='text-black text-xl'>
@@ -1054,7 +1056,7 @@ const ClientesAsociados = ({ inmuebleId, inmuebleDireccion, screenWidth }) => {
                     </Modal.Body>
                 </Modal>
 
-            </Accordion.Panel >
+            </Accordion.Panel>
         </Accordion >
     );
 };

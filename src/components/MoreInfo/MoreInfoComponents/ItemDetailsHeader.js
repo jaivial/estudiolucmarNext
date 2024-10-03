@@ -16,7 +16,7 @@ import Skeleton from 'react-loading-skeleton'
 import 'react-loading-skeleton/dist/skeleton.css'
 
 
-const ItemDetailsHeader = ({ inmuebleId, onClose, address, setImages, setIsSliderLoading, isVisible, setIsVisible, data, onAddEdtMoreInfoRefreshKey, setOnAddEdtMoreInfoRefreshKey, DPVboolean, setDPVboolean, admin, onAddDeleteDPVRefreshKey, setOnAddDeleteDPVRefreshKey, localizado, setLocalizado, direccion, nombre, setNombre, apellido, setApellido, inmuebles_asociados_inquilino, setInmueblesAsociadosInquilino, inmuebles_asociados_propietario, setInmueblesAsociadosPropietario }) => {
+const ItemDetailsHeader = ({ inmuebleId, onClose, address, setImages, setIsSliderLoading, isVisible, setIsVisible, data, onAddEdtMoreInfoRefreshKey, setOnAddEdtMoreInfoRefreshKey, DPVboolean, setDPVboolean, admin, onAddDeleteDPVRefreshKey, setOnAddDeleteDPVRefreshKey, localizado, setLocalizado, direccion, nombre, setNombre, apellido, setApellido, inmuebles_asociados_inquilino, setInmueblesAsociadosInquilino, inmuebles_asociados_propietario, setInmueblesAsociadosPropietario, inmuebles_asociados_informador, setInmueblesAsociadosInformador }) => {
     const [selectedFiles, setSelectedFiles] = useState([]);
     const [uploadStatus, setUploadStatus] = useState('');
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -64,7 +64,6 @@ const ItemDetailsHeader = ({ inmuebleId, onClose, address, setImages, setIsSlide
         };
 
         if (inmuebleId) {
-            setIsSliderLoading(true);
             loadImages();
         }
     }, [inmuebleId, getImageRefreshKey]);
@@ -98,7 +97,7 @@ const ItemDetailsHeader = ({ inmuebleId, onClose, address, setImages, setIsSlide
         for (const file of selectedFiles) {
             if (!supportedFormats.includes(file.type)) {
                 Toastify({
-                    text: 'Unsupported file format',
+                    text: 'Formato no soportado',
                     duration: 2500,
                     gravity: 'top',
                     position: 'center',
@@ -109,6 +108,8 @@ const ItemDetailsHeader = ({ inmuebleId, onClose, address, setImages, setIsSlide
                     },
                 }).showToast();
                 setIsImageValid(false);
+                setIsUploading(false);
+                setSelectedFiles([]);
                 return;
             }
 
@@ -340,7 +341,7 @@ const ItemDetailsHeader = ({ inmuebleId, onClose, address, setImages, setIsSlide
                 <div className="header-container">
                     <EditModal closeModal={closeModal} isModalOpen={isModalOpen} setIsModalOpen={setIsModalOpen} data={data} onAddEdtMoreInfoRefreshKey={onAddEdtMoreInfoRefreshKey} setOnAddEdtMoreInfoRefreshKey={setOnAddEdtMoreInfoRefreshKey} />
                     <DPVComponent isOpen={dpvModalOpen} setDPVModalOpen={setDPVModalOpen} inmuebleId={inmuebleId} DPVboolean={DPVboolean} setDPVboolean={setDPVboolean} admin={admin} onAddDeleteDPVRefreshKey={onAddDeleteDPVRefreshKey} setOnAddDeleteDPVRefreshKey={setOnAddDeleteDPVRefreshKey} /> {/* Add DPVComponent modal */}
-                    <PhoneModal isOpen={phoneModalOpen} setPhoneModalOpen={setPhoneModalOpen} localizado={localizado} setLocalizado={setLocalizado} inmuebleId={inmuebleId} direccion={direccion} admin={admin} nombreReturn={nombre} setNombreReturn={setNombre} apellidoReturn={apellido} setApellidoReturn={setApellido} inmuebles_asociados_inquilino={inmuebles_asociados_inquilino} inmuebles_asociados_propietario={inmuebles_asociados_propietario} setInmueblesAsociadosInquilino={setInmueblesAsociadosInquilino} setInmueblesAsociadosPropietario={setInmueblesAsociadosPropietario} /> {/* Add PhoneModal modal */}
+                    <PhoneModal isOpen={phoneModalOpen} setPhoneModalOpen={setPhoneModalOpen} localizado={localizado} setLocalizado={setLocalizado} inmuebleId={inmuebleId} direccion={direccion} admin={admin} nombreReturn={nombre} setNombreReturn={setNombre} apellidoReturn={apellido} setApellidoReturn={setApellido} inmuebles_asociados_inquilino={inmuebles_asociados_inquilino} inmuebles_asociados_propietario={inmuebles_asociados_propietario} setInmueblesAsociadosInquilino={setInmueblesAsociadosInquilino} setInmueblesAsociadosPropietario={setInmueblesAsociadosPropietario} inmuebles_asociados_informador={inmuebles_asociados_informador} setInmueblesAsociadosInformador={setInmueblesAsociadosInformador} /> {/* Add PhoneModal modal */}
                     <div className='flex flex-row justify-center gap-3 items-center py-1'>
                         <div>
                             <button onClick={openModal} className="p-3 rounded-full border bg-white shadow-lg hover:bg-gray-900">
@@ -364,13 +365,13 @@ const ItemDetailsHeader = ({ inmuebleId, onClose, address, setImages, setIsSlide
                         <div>
                             <button
                                 onClick={openDPVModal}
-                                className={`px-2 py-2.5 rounded-full shadow-lg hover:bg-gray-100 font-semibold text-base ${DPVboolean ? 'bg-blue-400 text-white' : ' text-gray-500'}`} // Added conditional class
+                                className={`px-2 py-[0.65rem] rounded-full shadow-lg hover:bg-gray-100 font-semibold flex items-center justify-center text-base ${DPVboolean ? 'bg-blue-400 text-white' : ' text-gray-500 bg-white'}`} // Added conditional class
                             >
                                 DPV
                             </button>
                         </div>
                         <div> {/* New div for the phone button */}
-                            <button onClick={openPhoneModal} className={`p-3 rounded-full shadow-lg hover:bg-gray-100 ${localizado ? 'bg-green-700' : ''}`}>
+                            <button onClick={openPhoneModal} className={`p-3 rounded-full shadow-lg hover:bg-gray-100 ${localizado ? 'bg-green-700' : 'bg-white'}`}>
                                 <AiOutlinePhone className={`${localizado ? 'text-white' : 'text-gray-500'}`} size={20} />
                             </button>
                         </div>

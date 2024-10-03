@@ -4,8 +4,8 @@ import clientPromise from '../../lib/mongodb';
 
 export default async function handler(req, res) {
 
-  // Run CORS middleware
-  await runMiddleware(req, res, cors);
+    // Run CORS middleware
+    await runMiddleware(req, res, cors);
 
 
     if (req.method !== 'POST') {
@@ -13,7 +13,7 @@ export default async function handler(req, res) {
         return res.status(405).json({ error: 'Method Not Allowed' });
     }
 
-    const { encargo_id, fecha, comercial, tipoEncargo, comision, cliente, precio, tipoComision, fullCliente } = req.body;
+    const { encargo_id, fecha, comercial, tipoEncargo, comision, cliente, precio, tipoComision, fullCliente, comisionCompradorValue, comisionComprador, tiempoExclusiva } = req.body;
 
     console.log('encargo_id', encargo_id);
     console.log('fecha', fecha);
@@ -23,6 +23,9 @@ export default async function handler(req, res) {
     console.log('cliente', cliente);
     console.log('precio', precio);
     console.log('tipoComision', tipoComision);
+    console.log('comisionCompradorValue', comisionCompradorValue);
+    console.log('comisionComprador', comisionComprador);
+    console.log('tiempoExclusiva', tiempoExclusiva);
 
 
     if (isNaN(parseInt(encargo_id))) {
@@ -47,7 +50,10 @@ export default async function handler(req, res) {
                     cliente_id: parseInt(cliente, 10),
                     precio_1: parseInt(precio, 10),
                     tipo_comision_encargo: tipoComision,
-                    fullCliente: fullCliente
+                    fullCliente: fullCliente,
+                    comisionCompradorValue: parseInt(comisionCompradorValue, 10),
+                    comisionComprador: comisionComprador,
+                    tiempoExclusiva: tiempoExclusiva,
                 }
             }
         );

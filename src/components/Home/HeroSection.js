@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import '../Home/HeroSection.css';
 import CalendarApp from '../Calendar/Calendar';
 
-const HeroSection = ({ initialUserName, tasksSSR, allTasksSSR, datesWithCompletedTasks, datesWithIncompleteTasks }) => {
+const HeroSection = ({ initialUserName, tasksSSR, allTasksSSR, datesWithCompletedTasks, datesWithIncompleteTasks, admin, setModalAsignarTarea }) => {
     const [time, setTime] = useState('');
 
     useEffect(() => {
@@ -44,7 +44,7 @@ const HeroSection = ({ initialUserName, tasksSSR, allTasksSSR, datesWithComplete
                 <p className="text-4xl font-bold text-center animate-fade-in-up">Bienvenido a</p>
                 <h1 className="animate-fade-in-up-delayed text-5xl font-sans font-extrabold text-transparent bg-clip-text bg-gradient-to-br from-sky-800 via-sky-600 to-sky-300 inline-block">Lucmar Cloud</h1>
             </div>
-            <CalendarApp tasksSSR={tasksSSR} allTasksSSR={allTasksSSR} datesWithCompletedTasks={datesWithCompletedTasks} datesWithIncompleteTasks={datesWithIncompleteTasks} />
+            <CalendarApp tasksSSR={tasksSSR} allTasksSSR={allTasksSSR} datesWithCompletedTasks={datesWithCompletedTasks} datesWithIncompleteTasks={datesWithIncompleteTasks} admin={admin} setModalAsignarTarea={setModalAsignarTarea} />
         </div>
     );
 };

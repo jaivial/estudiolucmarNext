@@ -4,8 +4,8 @@ import { ObjectId } from 'mongodb';
 
 export default async function handler(req, res) {
 
-  // Run CORS middleware
-  await runMiddleware(req, res, cors);
+    // Run CORS middleware
+    await runMiddleware(req, res, cors);
 
 
     if (req.method === 'POST') {
@@ -27,7 +27,7 @@ export default async function handler(req, res) {
             const comentariosCollection = db.collection('comentarios');
             const updateResult = await comentariosCollection.updateOne(
                 { _id: commentId },
-                { $set: { completed: completed } }
+                { $set: { comentarioProgramado: false } }
             );
 
             // Check if a document was updated

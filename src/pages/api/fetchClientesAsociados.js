@@ -3,12 +3,10 @@ import clientPromise from '../../lib/mongodb';
 
 export default async function handler(req, res) {
 
-  // Run CORS middleware
-  await runMiddleware(req, res, cors);
-
+    // Run CORS middleware
+    await runMiddleware(req, res, cors);
 
     const { inmuebleId } = req.query;
-    console.log('inmuebleId GATOOOOO', inmuebleId);
     try {
         const client = await clientPromise;
         const db = client.db('inmoprocrm');
@@ -23,6 +21,15 @@ export default async function handler(req, res) {
             }
             if (cliente.inmuebles_asociados_propietario && cliente.inmuebles_asociados_propietario.some(inmueble => inmueble.id === parseInt(inmuebleId))) {
                 tipoDeCliente.push('propietario');
+            }
+            // Check if there are no matches on inmuebles_asociados_inquilino nor on inmuebles_asociados_propietario
+            if (!cliente.inmuebles_asociados_inquilino || !cliente.inmuebles_asociados_inquilino.some(inmueble => inmueble.id === parseInt(inmuebleId))) {
+                if (!cliente.inmuebles_asociados_propietario || !cliente.inmuebles_asociados_propietario.some(inmueble => inmueble.id === parseInt(inmuebleId))) {
+                    // Check if the cliente is an informador
+                    if (cliente.inmuebles_asociados_informador && cliente.inmuebles_asociados_informador.some(inmueble => inmueble.id === parseInt(inmuebleId))) {
+                        tipoDeCliente.push('informador'); // Push 'informador' if found
+                    }
+                }
             }
 
             if (tipoDeCliente.length > 0) {

@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import { metadata } from "../components/layouts/IndexLayout.js";
 import GeneralLayout from "../components/layouts/GeneralLayout.js";
 import Image from "next/image";
@@ -5,7 +6,6 @@ import logoLucmar from "../../public/assets/icons/icon-256.webp";
 import "../app/globals.css";
 import LoginForm from "../components/LoginForm/LoginForm.js";
 import { useRouter } from 'next/navigation'
-import { useEffect } from "react";
 import 'toastify-js/src/toastify.css'; // Import Toastify CSS
 import Toastify from 'toastify-js';
 import { checkLogin } from "../lib/mongodb/login/checkLogin.js";
@@ -13,6 +13,11 @@ import HeroSection from "../components/Home/HeroSection.js";
 import { parse } from 'cookie';
 import { fetchUserName } from "../lib/mongodb/home/fetchuserHome.js";
 import { getTasksByDaySSR, getTasksSSR } from "../lib/mongodb/calendar/calendarFunctions.js";
+import { Modal, Button, Form, SelectPicker, Input } from 'rsuite';
+import { DatePicker } from 'rsuite';
+import 'rsuite/dist/rsuite.min.css'; // Make sure to include RSuite styles
+import axios from 'axios';
+
 
 
 
@@ -51,6 +56,7 @@ export async function getServerSideProps(context) {
 
     const cookies = parse(req.headers.cookie || '');
     const user_id = cookies.user_id;
+    const admin = cookies.admin;
     let initialUserName = null;
 
     try {
@@ -123,18 +129,58 @@ export async function getServerSideProps(context) {
     return {
         props: {
             user,
+            user_id,
             initialUserName,
             tasksSSR,
             allTasksSSR,
             datesWithCompletedTasks,
             datesWithIncompleteTasks,
+            admin,
         },
     };
 }
 
 
 
-export default function Home({ user, initialUserName, tasksSSR, allTasksSSR, datesWithCompletedTasks, datesWithIncompleteTasks }) {
+export default function Home({ user, user_id, initialUserName, tasksSSR, allTasksSSR, datesWithCompletedTasks, datesWithIncompleteTasks, admin }) {
+
+    const [modalAsignarTarea, setModalAsignarTarea] = useState(false);
+    const [selectedAsesor, setSelectedAsesor] = useState(null);
+    const [asesorOptions, setAsesorOptions] = useState([]);
+    const [taskInput, setTaskInput] = useState('');
+    const [day, setDay] = useState(new Date());
+    const [taskTimeInput, setTaskTimeInput] = useState(new Date());
+
+
+    const handleTaskSubmit = async () => {
+        try {
+            // Format day to YYYY-MM-DD
+            const formattedDay = day.toISOString().split('T')[0]; // Convert to 'YYYY-MM-DD'
+
+            // Format taskTimeInput to HH:mm
+            const formattedTime = taskTimeInput.toTimeString().split(' ')[0].slice(0, 5); // Convert to 'HH:mm'
+
+            const response = await axios.post(`/api/asignarTarea`, {
+                userId: parseInt(selectedAsesor), // Parse the userId to an integer
+                task: taskInput,
+                taskDate: formattedDay,
+                taskTime: formattedTime,
+            });
+            if (response.data.success) {
+                showToast('Tarea asignada', 'linear-gradient(to right bottom, #00603c, #006f39, #007d31, #008b24, #069903)');
+                setTaskInput('');
+                setTaskTimeInput(new Date()); // Reset task time input
+                setDay(new Date()); // Reset day
+                setModalAsignarTarea(false);
+                setSelectedAsesor(null);
+            } else {
+                showToast('Error al asignar tarea', 'linear-gradient(to right bottom, #c62828, #b92125, #ac1a22, #a0131f, #930b1c)');
+            }
+        } catch (error) {
+            console.error('Error adding task:', error);
+        }
+    };
+
 
     useEffect(() => {
         const toastMessage = localStorage.getItem('toastMessage');
@@ -147,11 +193,112 @@ export default function Home({ user, initialUserName, tasksSSR, allTasksSSR, dat
         }
     }, []);
 
+    const fetchAsesores = async () => {
+        try {
+            const response = await axios.get('/api/fetchAsesores');
+            console.log('Asesores fetched:', response.data.asesores);
+            const asesoresToMap = response.data.asesores;
+
+            setAsesorOptions(
+                asesoresToMap.map((asesor) => ({
+                    label: `${asesor.nombre} ${asesor.apellido}`,
+                    value: asesor.user_id,
+                })),
+            );
+        } catch (error) {
+            console.error('Error fetching asesores:', error);
+        }
+    };
+
+    useEffect(() => {
+        fetchAsesores();
+    }, []);
+
+    useEffect(() => {
+        console.log('asesorOptions', asesorOptions);
+    }, [asesorOptions]);
+
+    const handleTaskInputChange2 = (value) => {
+        setTaskInput(value);
+    };
+
+    const handleTaskTimeInputChange2 = (value) => {
+        setTaskTimeInput(value);
+    };
+
+    const handleAsesorChange = (value) => {
+        setSelectedAsesor(value);
+    };
+    const handleDateChange = (value) => {
+        setDay(value); // Set the selected date
+    };
+
     return (
         <GeneralLayout title={metadata.title} description={metadata.description} user={user}>
-            <div style={{ paddingTop: 'var(--safe-area-inset-top)' }} className="h-full w-full">
-                <HeroSection initialUserName={initialUserName} tasksSSR={tasksSSR} allTasksSSR={allTasksSSR} datesWithCompletedTasks={datesWithCompletedTasks} datesWithIncompleteTasks={datesWithIncompleteTasks} />
+            <div>
+                <Modal open={modalAsignarTarea} onClose={() => setModalAsignarTarea(false)} size="md" overflow={false} backdrop={true} style={{ backgroundColor: 'rgba(0,0,0,0.15)', padding: '0px 2px', marginBottom: '70px' }}>
+                    <Modal.Header style={{ display: 'flex', flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: '10px', width: '100%', marginTop: '10px' }}>
+                        <Modal.Title style={{ fontSize: '1.5rem', fontWeight: 'bold', textAlign: 'center' }}>Asignar Tarea</Modal.Title>
+                    </Modal.Header>
+                    <Modal.Body style={{ padding: '10px 25px', fontSize: '1rem', lineHeight: '1.5', display: 'flex', flexDirection: 'column', gap: '10px', alignItems: 'center', width: '100%' }}>
+                        <Form fluid style={{ width: '60%' }}>
+                            <Form.Group>
+                                <Form.ControlLabel>Descripción de la Tarea</Form.ControlLabel>
+                                <Input
+                                    as="textarea" // Change this to a textarea
+                                    name="task"
+                                    value={taskInput}
+                                    onChange={handleTaskInputChange2}
+                                    placeholder="Añade una tarea"
+                                    required
+                                    rows={3} // Set the number of visible rows
+                                />
+                            </Form.Group>
+                            <Form.Group>
+                                <Form.ControlLabel>Selecciona una fecha</Form.ControlLabel>
+                                <DatePicker
+                                    value={day} // Bind the selected date to the state
+                                    onChange={handleDateChange} // Update state on change
+                                    format="dd-MM-yyyy" // Set the desired date format to dd-MM-yyyy
+                                    placeholder="dd-MM-yyyy" // Optional: placeholder for the input
+                                />
+                            </Form.Group>
+                            <Form.Group>
+                                <Form.ControlLabel>Hora de la Tarea</Form.ControlLabel>
+                                <DatePicker
+                                    value={taskTimeInput} // Bind the selected date to the state
+                                    onChange={handleTaskTimeInputChange2} // Update state on change
+                                    format="HH:mm" // Set the desired date format to dd-MM-yyyy
+
+                                />
+
+                            </Form.Group>
+                            <Form.Group>
+                                <Form.ControlLabel>Asesor</Form.ControlLabel>
+                                <SelectPicker
+                                    data={asesorOptions}
+                                    value={selectedAsesor}
+                                    onChange={handleAsesorChange}
+                                    placeholder="Selecciona un asesor"
+                                    block
+                                />
+                            </Form.Group>
+                        </Form>
+                        <Modal.Footer className="flex flex-col justify-center gap-1 mt-2">
+                            <Button type="submit" appearance="primary" onClick={handleTaskSubmit}>
+                                Asignar Tarea
+                            </Button>
+                            <Button onClick={() => setModalAsignarTarea(false)} appearance="subtle" style={{ margin: '0px' }}>
+                                Cancelar
+                            </Button>
+                        </Modal.Footer>
+                    </Modal.Body>
+                </Modal>
+
+                <div style={{ paddingTop: 'var(--safe-area-inset-top)' }} className="h-full w-full">
+                    <HeroSection initialUserName={initialUserName} tasksSSR={tasksSSR} allTasksSSR={allTasksSSR} datesWithCompletedTasks={datesWithCompletedTasks} datesWithIncompleteTasks={datesWithIncompleteTasks} admin={admin} setModalAsignarTarea={setModalAsignarTarea} />
+                </div>
             </div>
-        </GeneralLayout>
+        </GeneralLayout >
     );
 }
