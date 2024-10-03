@@ -160,7 +160,7 @@ const NoticiasDetails = ({ data, setOnAddNoticiaRefreshKey, onAddNoticiaRefreshK
         const params = {
             id: isEditing ? currentNoticiaId : data.inmueble.id,
             tipoPVA: tipoVenta,
-            valoracion: valoracion === 'Con Valoración' ? '1' : '0',
+            valoracion: valoracion === 'Con Valoración' ? 1 : 0,
             valoraciontext: valoracionPrice,
             fecha: noticiaDateTime,
             prioridad: draggableValue === 0 ? 'Baja' : 'Alta',
@@ -180,6 +180,8 @@ const NoticiasDetails = ({ data, setOnAddNoticiaRefreshKey, onAddNoticiaRefreshK
 
             // Send POST request
             const response = await axios.post(endpoint, params);
+
+            console.log('PARAMS', params);
 
             if (response.data.success) {
                 showToast(isEditing ? 'Noticia actualizada' : 'Noticia añadida', 'linear-gradient(to right bottom, #00603c, #006f39, #007d31, #008b24, #069903)');
@@ -288,7 +290,7 @@ const NoticiasDetails = ({ data, setOnAddNoticiaRefreshKey, onAddNoticiaRefreshK
                                             {noticia.valoracion === 0 && <div className="border-b border-gray-300 w-4/6 -mt-1"></div>}
                                         </div>
 
-                                        {noticia.valoracion === '1' && (
+                                        {noticia.valoracion === 1 && (
                                             <div className="flex flex-col items-center gap-2 w-full">
                                                 <div className="flex flex-row items-center justify-center gap-8 w-full">
                                                     <div className="flex items-center gap-2 flex-col w-fit">
@@ -300,7 +302,7 @@ const NoticiasDetails = ({ data, setOnAddNoticiaRefreshKey, onAddNoticiaRefreshK
                                                     <div className="flex items-center gap-2 flex-col w-fit">
                                                         <FaHandHoldingDollar className="text-gray-900 text-3xl" />
                                                         <p className="text-base text-gray-950 py-1 text-center">
-                                                            Valoración <br /> establecida: <br /> {noticia.valoracion_establecida} €
+                                                            Valoración <br /> establecida: <br /> {noticia.valoracion_establecida.toLocaleString('es-ES', { minimumFractionDigits: 0 })} €
                                                         </p>
                                                     </div>
                                                 </div>

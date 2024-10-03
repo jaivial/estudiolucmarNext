@@ -34,7 +34,7 @@ export default async function handler(req, res) {
                 noticia_id: Number(id),
                 tipo_PV: tipoPVA,
                 valoracion: Number(valoracion),
-                valoracion_establecida,
+                valoracion_establecida: parseInt(valoracion_establecida),
                 noticia_fecha: fechaWithDefault,
                 prioridad,
                 comercial_noticia: comercial,

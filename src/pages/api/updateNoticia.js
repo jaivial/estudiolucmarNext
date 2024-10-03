@@ -20,7 +20,7 @@ export default async function handler(req, res) {
             } = req.body;
 
 
-            console.log('req.body', comercial);
+            console.log('req.body', valoracion);
 
 
 
@@ -37,8 +37,8 @@ export default async function handler(req, res) {
                 noticia_fecha: fecha || null,
                 prioridad: prioridad || null,
                 tipo_PV: tipoPVA || null,
-                valoracion: valoracion || null,
-                valoracion_establecida: valoraciontext || null,
+                valoracion: Number(valoracion),
+                valoracion_establecida: parseInt(valoraciontext) || null,
                 comercial_noticia: comercial || null,
                 valoracionDate: fechaValoracion || null
             };
