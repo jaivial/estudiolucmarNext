@@ -11,7 +11,9 @@ import { useRouter } from 'next/router';
 import './flag.css';
 import { Tooltip } from 'primereact/tooltip';
 import './flag.css';
-import { Modal, Button, Form, FormGroup, ControlLabel, FormControl, SelectPicker } from 'rsuite';
+import { List, Tag, Panel, Checkbox, Button } from 'rsuite';
+import './tasklist.css';
+
 
 
 const showToast = (message, backgroundColor) => {
@@ -159,6 +161,9 @@ const TaskList = ({ day, tasks, refreshTasks, filteredTasksByDate, setDisplayedM
         return a.task_time.localeCompare(b.task_time);
     });
 
+    const assignedTasks = sortedTasks.filter(task => task.asignada);
+    const unassignedTasks = sortedTasks.filter(task => !task.asignada);
+
 
 
     return (
@@ -167,7 +172,7 @@ const TaskList = ({ day, tasks, refreshTasks, filteredTasksByDate, setDisplayedM
             <div className="bg-white rounded-xl p-4 shadow-md w-[90%] relative flex flex-col items-start justify-center gap-3">
 
                 <div className="flex flex-col items-center justify-center gap-2 bg-blue-50 rounded-xl p-4 w-full">
-                    <h3 className="text-center">
+                    <h3 className="text-center font-sans font-bold text-lg" >
                         Tareas para <br />
                         {SpanishDateString}
                     </h3>
@@ -194,31 +199,57 @@ const TaskList = ({ day, tasks, refreshTasks, filteredTasksByDate, setDisplayedM
 
                 )
                 }
-
-                {
-                    Array.isArray(sortedTasks) ? (
-                        sortedTasks.length > 0 ? (
-                            <ul className="flex flex-col gap-2 w-full">
-                                {sortedTasks.map((task) => (
-                                    <li key={task.id} className="flex items-center gap-2 flex-row justify-between w-full px-3">
-                                        <input type="checkbox" checked={task.completed} onChange={() => handleTaskCompletion(task.id)} className="form-checkbox h-5 w-5 text-green-600" />
-                                        <div className="flex items-center gap-2 flex-grow">
-                                            {task.task_time && <span className="font-bold text-gray-700">{formatTime(task.task_time)}</span>}
-                                            <span className={task.completed ? 'line-through text-gray-500' : ''}>{task.task}</span>
-                                        </div>
-                                        <button onClick={() => handleDeleteTask(task.id)} className="text-red-600 hover:text-red-800">
+                <div className="flex flex-col gap-4 w-full">
+                    {/* Assigned Tasks Section */}
+                    {assignedTasks.length > 0 && (
+                        <Panel header={
+                            <>
+                                Tareas Asignadas <Tag className='ml-4 tag border-2 border-red-700'>Asignada por admin</Tag>
+                            </>
+                        } bordered>                    <List>
+                                {assignedTasks.map(task => (
+                                    <List.Item key={task.id} className="flex items-center gap-2 justify-between">
+                                        <Checkbox checked={task.completed} onChange={() => handleTaskCompletion(task.id)}>
+                                            <div className='flex flex-row items-center gap-4 w-full'>
+                                                {task.task_time && <span className="font-bold">{formatTime(task.task_time)}</span>}
+                                                <span className={task.completed ? 'line-through text-gray-500' : ''}>{task.task}</span>
+                                            </div>
+                                        </Checkbox>
+                                        <Button appearance="link" onClick={() => handleDeleteTask(task.id)} className="text-red-600">
                                             <FaTrash />
-                                        </button>
-                                    </li>
+                                        </Button>
+                                    </List.Item>
                                 ))}
-                            </ul>
-                        ) : (
-                            <p className="text-gray-500 italic">No hay tareas pendientes</p>
-                        )
-                    ) : (
-                        <p className="text-red-500">Tasks data is not an array</p>
-                    )
-                }
+                            </List>
+                        </Panel>
+                    )}
+
+                    {/* Unassigned Tasks Section */}
+                    {unassignedTasks.length > 0 && (
+                        <Panel header="Tareas No Asignadas" bordered>
+                            <List>
+                                {unassignedTasks.map(task => (
+                                    <List.Item key={task.id} className="flex items-center gap-2 justify-between">
+                                        <Checkbox checked={task.completed} onChange={() => handleTaskCompletion(task.id)}>
+                                            <div className='flex flex-row items-center gap-4 w-full'>
+                                                {task.task_time && <span className="font-bold">{formatTime(task.task_time)}</span>}
+                                                <span className={task.completed ? 'line-through text-gray-500' : ''}>{task.task}</span>
+                                            </div>
+                                        </Checkbox>
+                                        <Button appearance="link" onClick={() => handleDeleteTask(task.id)} className="text-red-600">
+                                            <FaTrash />
+                                        </Button>
+                                    </List.Item>
+                                ))}
+                            </List>
+                        </Panel>
+                    )}
+
+                    {/* No Tasks Message */}
+                    {sortedTasks.length === 0 && (
+                        <p className="text-gray-500 italic">No hay tareas pendientes</p>
+                    )}
+                </div>
                 {
                     isAdding && (
                         <form onSubmit={handleTaskSubmit} className="transition-transform transform rounded-md mt-2 flex flex-row items-center justify-center gap-2 w-full">

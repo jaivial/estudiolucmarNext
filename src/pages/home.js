@@ -154,28 +154,28 @@ export default function Home({ user, user_id, initialUserName, tasksSSR, allTask
 
     const handleTaskSubmit = async () => {
         try {
-            const functionToActivate = 'addTask';
-
             // Format day to YYYY-MM-DD
             const formattedDay = day.toISOString().split('T')[0]; // Convert to 'YYYY-MM-DD'
 
             // Format taskTimeInput to HH:mm
             const formattedTime = taskTimeInput.toTimeString().split(' ')[0].slice(0, 5); // Convert to 'HH:mm'
 
-            await axios.post(`/api/calendar_functions`, {
-                userId: parseInt(selectedAsesor),
+            const response = await axios.post(`/api/asignarTarea`, {
+                userId: parseInt(selectedAsesor), // Parse the userId to an integer
                 task: taskInput,
-                taskDate: formattedDay, // Use formatted day
-                taskTime: formattedTime, // Use formatted time
-                functionToActivate,
+                taskDate: formattedDay,
+                taskTime: formattedTime,
             });
-
-            showToast('Tarea añadida', 'linear-gradient(to right bottom, #00603c, #006f39, #007d31, #008b24, #069903)');
-            setTaskInput('');
-            setTaskTimeInput(new Date()); // Reset task time input
-            setDay(new Date()); // Reset day
-            setModalAsignarTarea(false);
-            setSelectedAsesor(null);
+            if (response.data.success) {
+                showToast('Tarea asignada', 'linear-gradient(to right bottom, #00603c, #006f39, #007d31, #008b24, #069903)');
+                setTaskInput('');
+                setTaskTimeInput(new Date()); // Reset task time input
+                setDay(new Date()); // Reset day
+                setModalAsignarTarea(false);
+                setSelectedAsesor(null);
+            } else {
+                showToast('Error al asignar tarea', 'linear-gradient(to right bottom, #c62828, #b92125, #ac1a22, #a0131f, #930b1c)');
+            }
         } catch (error) {
             console.error('Error adding task:', error);
         }
