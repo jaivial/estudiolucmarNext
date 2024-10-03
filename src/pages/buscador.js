@@ -2,17 +2,35 @@ import GeneralLayout from "../components/layouts/GeneralLayout";
 import { useState, useEffect } from "react";
 import TablaAllData from "../components/Buscador/TablaAllData";
 import SmallLoadingScreen from '../components/LoadingScreen/SmallLoadingScreen'; // Corrected component import name
-import Cookies from 'js-cookie'; // Import js-cookie
-import axios from 'axios'; // Import axios
 
-export default function Buscador() {
-    const [loading, setLoading] = useState(true);
-    const [data, setData] = useState({
+
+export async function getServerSideProps(context) {
+    const cookies = context.req.cookies; // Corrected to access cookies from the request
+    const admin = cookies.admin || null;
+
+    // Fetch data on the server side
+    let data = {
         edificios: [],
         escaleras: []
-    });
-    const [admin, setAdmin] = useState(null); // State for admin cookie value
-    const [searchTerm, setSearchTerm] = useState('');
+    };
+    try {
+        const response = await fetch('http://localhost:3000/api/fetchInmueblesData'); // Update with your actual API URL
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        data = await response.json();
+    } catch (error) {
+        console.error('Error fetching data:', error);
+    }
+
+    return {
+        props: { admin, data } // Pass fetched data as props
+    };
+}
+
+export default function Buscador({ admin, data }) {
+    const [loading, setLoading] = useState(false);
+
     const [screenWidth, setScreenWidth] = useState(0);
 
     useEffect(() => {
@@ -33,24 +51,11 @@ export default function Buscador() {
 
 
     useEffect(() => {
-        const fetchData = async () => {
-            try {
-                // Fetch the admin cookie
-                const adminCookie = Cookies.get('admin');
-                setAdmin(adminCookie);
+        if (data) {
+            setLoading(false);
+        }
+    }, [data]);
 
-                // Fetch the rest of the data using axios
-                const response = await axios.get('/api/fetchInmueblesData');
-                setData(response.data);
-            } catch (error) {
-                console.error('Error fetching data:', error);
-            } finally {
-                setLoading(false); // Ensure loading is set to false regardless of success or failure
-            }
-        };
-
-        fetchData();
-    }, []);
 
     return (
         <GeneralLayout title="Buscador" description="Buscador">

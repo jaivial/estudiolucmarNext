@@ -1300,7 +1300,7 @@ const Table = ({ parentsEdificioProps, admin, screenWidth, loadingLoader }) => {
                                 {showAnalytics && <Analytics analyticsData={analyticsData} />}
                                 {showFilters && <FilterMenu setFilters={setFilters} currentPage={currentPage} data={data} setData={setData} filters={filters} setCurrentPage={setCurrentPage} setTotalPages={setTotalPages} setLoading={setLoading} resetFiltersKey={resetFiltersKey} />}
                                 {showEditTable && (
-                                    <div className={`flex flex-row gap-4 pt-2 pb-2 w-full justify-between iconscontainertrue`}>
+                                    <div className={`flex flex-row gap-4 pt-2 pb-2 w-full ${admin ? 'justify-between' : 'justify-center'} iconscontainertrue`}>
                                         <div className="flex flex-row gap-4">
                                             <button type="button" onClick={handleIconClick} className={`flex items-center justify-center p-2 rounded shadow-lg hover:bg-blue-950 hover:text-white w-fit ${showExtraButtons ? 'bg-blue-950 text-white' : 'bg-blue-300 text-black'}`}>
                                                 <svg xmlns="http://www.w3.org/2000/svg" width="2em" height="2em" viewBox="0 0 24 24">
@@ -1317,20 +1317,23 @@ const Table = ({ parentsEdificioProps, admin, screenWidth, loadingLoader }) => {
                                                 </svg>
                                             </button>
                                         </div>
+
                                         <div className="flex flex-row gap-4">
-                                            <button
-                                                type="button"
-                                                onClick={handleIconDeleteInmueble}
-                                                className={`flex items-center justify-center p-2 rounded shadow-lg bg-blue-300 hover:bg-blue-950 hover:text-white w-fit ${showDeleteInmuebleButtons ? 'bg-blue-950 text-white' : 'bg-blue-300 text-black'}`}
-                                            >
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="2em" height="2em" viewBox="0 0 16 16">
-                                                    <g fill="currentColor">
-                                                        <path d="M8.707 1.5a1 1 0 0 0-1.414 0L.646 8.146a.5.5 0 0 0 .708.708L8 2.207l6.646 6.647a.5.5 0 0 0 .708-.708L13 5.793V2.5a.5.5 0 0 0-.5-.5h-1a.5.5 0 0 0-.5.5v1.293z" />
-                                                        <path d="m8 3.293l4.712 4.712A4.5 4.5 0 0 0 8.758 15H3.5A1.5 1.5 0 0 1 2 13.5V9.293z" />
-                                                        <path d="M12.5 16a3.5 3.5 0 1 0 0-7a3.5 3.5 0 0 0 0 7M11 12h3a.5.5 0 0 1 0 1h-3a.5.5 0 1 1 0-1" />
-                                                    </g>
-                                                </svg>
-                                            </button>
+                                            {admin && (
+                                                <button
+                                                    type="button"
+                                                    onClick={handleIconDeleteInmueble}
+                                                    className={`flex items-center justify-center p-2 rounded shadow-lg bg-blue-300 hover:bg-blue-950 hover:text-white w-fit ${showDeleteInmuebleButtons ? 'bg-blue-950 text-white' : 'bg-blue-300 text-black'}`}
+                                                >
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="2em" height="2em" viewBox="0 0 16 16">
+                                                        <g fill="currentColor">
+                                                            <path d="M8.707 1.5a1 1 0 0 0-1.414 0L.646 8.146a.5.5 0 0 0 .708.708L8 2.207l6.646 6.647a.5.5 0 0 0 .708-.708L13 5.793V2.5a.5.5 0 0 0-.5-.5h-1a.5.5 0 0 0-.5.5v1.293z" />
+                                                            <path d="m8 3.293l4.712 4.712A4.5 4.5 0 0 0 8.758 15H3.5A1.5 1.5 0 0 1 2 13.5V9.293z" />
+                                                            <path d="M12.5 16a3.5 3.5 0 1 0 0-7a3.5 3.5 0 0 0 0 7M11 12h3a.5.5 0 0 1 0 1h-3a.5.5 0 1 1 0-1" />
+                                                        </g>
+                                                    </svg>
+                                                </button>
+                                            )}
                                             <button
                                                 type="button"
                                                 onClick={handleIconAddInmueble}
@@ -1368,7 +1371,7 @@ const Table = ({ parentsEdificioProps, admin, screenWidth, loadingLoader }) => {
                                         </button>
                                     </div>
                                 )}
-                                {showDeleteInmuebleButtons && (
+                                {showDeleteInmuebleButtons && admin && (
                                     <div className="flex gap-4 mt-4 pb-4 w-full justify-center">
                                         <button type="button" onClick={handlePopupToggleDeleteInmueble} className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
                                             Eliminar
