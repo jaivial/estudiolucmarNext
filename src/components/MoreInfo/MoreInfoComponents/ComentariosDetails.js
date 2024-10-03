@@ -192,7 +192,7 @@ const ComentariosDetails = ({ data, fetchClientPhoneNumberRefreshKey }) => {
             });
 
             if (response.data.success) {
-                await fetchComments();
+                setComentarios(comentarios.filter(comment => comment._id !== commentId));
                 showToast('Comentario eliminado', 'linear-gradient(to right bottom, #00603c, #006f39, #007d31, #008b24, #069903)');
             } else {
                 showToast(response.data.message, 'linear-gradient(to right bottom, #c62828, #b92125, #ac1a22, #a0131f, #930b1c)');
