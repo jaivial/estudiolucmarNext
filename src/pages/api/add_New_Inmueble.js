@@ -4,13 +4,17 @@ import clientPromise from '../../lib/mongodb';
 
 export default async function handler(req, res) {
 
-  // Run CORS middleware
-  await runMiddleware(req, res, cors);
+    // Run CORS middleware
+    await runMiddleware(req, res, cors);
 
 
     if (req.method !== 'POST') {
         return res.status(405).json({ message: 'Method not allowed' });
     }
+
+    const coordinatesNumber = req.body.coordinates.map(Number); // Convert to numbers
+
+
 
     const {
         direccion,
@@ -31,6 +35,26 @@ export default async function handler(req, res) {
         categoria
     } = req.body;
 
+    // Function to check if a point is inside a polygon
+    const isPointInPolygon = (point, polygon) => {
+        let inside = false;
+        for (let i = 0, j = polygon.length - 1; i < polygon.length; j = i++) {
+            const xi = polygon[i][0], yi = polygon[i][1];
+            const xj = polygon[j][0], yj = polygon[j][1];
+
+            const intersect = ((yi > point[1]) !== (yj > point[1]) &&
+                (point[0] < (xj - xi) * (point[1] - yi) / (yj - yi) + xi));
+            if (intersect) inside = !inside;
+        }
+        return inside;
+    };
+
+
+
+
+
+
+
     if (!direccion || !tipo || !uso || !ano_construccion || !superficie || !coordinates || !location || !categoria) {
         return res.status(400).json({ message: 'Invalid input' });
     }
@@ -38,6 +62,25 @@ export default async function handler(req, res) {
     try {
         const client = await clientPromise;
         const db = client.db('inmoprocrm'); // Use the correct database name
+        // Step: Check if coordinates are within any map zone
+        const mapZones = await db.collection('map_zones').find().toArray();
+        let matchedZone = null;
+        for (const zone of mapZones) {
+            // Assuming there's only one array inside latlngs for each zone
+            const polygon = zone.latlngs[0].map(p => [p.lng, p.lat]); // Convert to [lng, lat] format
+            const point = [coordinatesNumber[1], coordinatesNumber[0]]; // [lng, lat]
+
+            console.log('Checking zone:', zone);
+            console.log('Polygon Points:', polygon);
+            console.log('Point to check:', point);
+
+            if (isPointInPolygon(point, polygon)) {
+                matchedZone = zone; // Store the matched zone
+                console.log('matchedZone', matchedZone);
+                break; // Exit loop if a match is found
+            }
+        }
+
 
         // Get the current date and time in the Madrid timezone
         // Get the current date and time in the Madrid timezone
@@ -80,6 +123,7 @@ export default async function handler(req, res) {
         // Generate a new inmueble ID
         const newInmuebleId = maxExistingId + 1;
 
+
         // Step 2: Insert the new inmueble into inmuebles
         await db.collection('inmuebles').insertOne({
             id: newInmuebleId,
@@ -101,8 +145,8 @@ export default async function handler(req, res) {
             categoria,
             noticiastate: false,
             encargostate: false,
-            responsable: '',
-            zona: '',
+            responsable: matchedZone ? matchedZone.zone_responsable : '',
+            zona: matchedZone ? matchedZone.zone_name : '',
             date_time: currentDateTime,
             inmuebleimages: null,
             descripcion: '',

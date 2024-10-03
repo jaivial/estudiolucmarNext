@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet';
 import Select from 'react-select';
 import axios from 'axios';
@@ -53,7 +53,9 @@ const AddInmueblePopup = ({ showAddNewInmueble, setShowAddNewInmueble, fetchData
         return Array.from({ length: max + 1 }, (_, i) => ({ value: i, label: i.toString() }));
     };
 
-    // ... existing code ...
+    useEffect(() => {
+        console.log('coordiantes', markerPosition);
+    }, [markerPosition]);
 
     const handleAddInmueble = () => {
         if (!direccion || tipo === 'Selecciona un tipo' || uso === 'Selecciona un uso' || !anoConstruccion || !superficie || categoriaOcupacion === 'Elige una opción' || !markerPosition) {
