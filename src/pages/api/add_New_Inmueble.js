@@ -70,13 +70,9 @@ export default async function handler(req, res) {
             const polygon = zone.latlngs[0].map(p => [p.lng, p.lat]); // Convert to [lng, lat] format
             const point = [coordinatesNumber[1], coordinatesNumber[0]]; // [lng, lat]
 
-            console.log('Checking zone:', zone);
-            console.log('Polygon Points:', polygon);
-            console.log('Point to check:', point);
 
             if (isPointInPolygon(point, polygon)) {
                 matchedZone = zone; // Store the matched zone
-                console.log('matchedZone', matchedZone);
                 break; // Exit loop if a match is found
             }
         }
