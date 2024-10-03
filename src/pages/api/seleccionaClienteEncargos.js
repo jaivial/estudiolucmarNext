@@ -4,9 +4,14 @@ import clientPromise from '../../lib/mongodb';
 
 export default async function handler(req, res) {
 
-  // Run CORS middleware
-  await runMiddleware(req, res, cors);
+    // Run CORS middleware
+    await runMiddleware(req, res, cors);
 
+    // Extract inmuebleId from request query
+    const inmuebleId = req.query.inmuebleId;
+
+    console.log('inmuebleId', inmuebleId);
+    console.log('typeof inmuebleId', typeof inmuebleId);
 
     if (req.method !== 'GET') {
         // Only allow GET requests
@@ -18,9 +23,15 @@ export default async function handler(req, res) {
         const client = await clientPromise;
         const db = client.db('inmoprocrm');
 
-        // Fetch all documents from the 'clientes' collection
+        // Fetch all documents from the 'clientes' collection that match the inmuebleId
         const clientes = await db.collection('clientes')
-            .find({}, { projection: { _id: 0, nombre: 1, apellido: 1, client_id: 1 } })
+            .find({
+                $or: [
+                    { inmuebles_asociados_informador: { $elemMatch: { id: parseInt(inmuebleId) } } },
+                    { inmuebles_asociados_propietario: { $elemMatch: { id: parseInt(inmuebleId) } } },
+                    { inmuebles_asociados_inquilino: { $elemMatch: { id: parseInt(inmuebleId) } } }
+                ]
+            }, { projection: { _id: 0, nombre: 1, apellido: 1, client_id: 1 } })
             .toArray();
 
         // Transform the data

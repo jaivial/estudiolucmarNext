@@ -169,6 +169,7 @@ const FilterMenu = ({ setFilters, currentPage, filters, data, setData, setCurren
                 <Select
                     options={filterLocalizadoOptions}
                     onChange={handleFilterLocalizadoChange}
+                    isClearable={true}
                     value={filterLocalizadoOptions.find((option) => option.value === filterLocalizado) || null}
                     className="w-full z-[999]"
                     placeholder={
@@ -182,6 +183,7 @@ const FilterMenu = ({ setFilters, currentPage, filters, data, setData, setCurren
                 <Select
                     options={categoriaOptions}
                     onChange={setSelectedCategoria}
+                    isClearable={true}
                     value={selectedCategoria}
                     placeholder={
                         <span className="flex flex-row justify-start items-center gap-3 text-black">
@@ -198,6 +200,7 @@ const FilterMenu = ({ setFilters, currentPage, filters, data, setData, setCurren
                 <Select
                     options={zoneOptions}
                     onChange={setSelectedZone}
+                    isClearable={true}
                     value={selectedZone}
                     placeholder={
                         <span className="flex flex-row justify-start items-center gap-3 text-black">
@@ -218,6 +221,7 @@ const FilterMenu = ({ setFilters, currentPage, filters, data, setData, setCurren
                 <Select
                     options={responsableOptions}
                     onChange={setSelectedResponsable}
+                    isClearable={true}
                     value={selectedResponsable}
                     placeholder={
                         <span className="flex flex-row justify-start items-center gap-3 text-black">
@@ -243,6 +247,7 @@ const FilterMenu = ({ setFilters, currentPage, filters, data, setData, setCurren
                 <Select
                     options={filterOptionsNoticia}
                     onChange={handleFilterNoticiaChange}
+                    isClearable={true}
                     value={filterOptionsNoticia.find((option) => option.value === filterNoticia) || null}
                     placeholder={
                         <span className="flex flex-row justify-start items-center gap-3 text-black">
@@ -262,6 +267,7 @@ const FilterMenu = ({ setFilters, currentPage, filters, data, setData, setCurren
                 <Select
                     options={filterOptionsEncargo}
                     onChange={handleFilterEncargoChange}
+                    isClearable={true}
                     value={filterOptionsEncargo.find((option) => option.value === filterEncargo) || null}
                     placeholder={
                         <span className="flex flex-row justify-start items-center gap-3 text-black">
@@ -279,6 +285,7 @@ const FilterMenu = ({ setFilters, currentPage, filters, data, setData, setCurren
             </div>
             <Select
                 options={filterOptionsDPV}
+                isClearable={true}
                 onChange={(selectedOption) => setFilterDPV(selectedOption ? selectedOption.value : null)}
                 value={filterOptionsDPV.find((option) => option.value === filterDPV) || null}
                 placeholder="DPV"

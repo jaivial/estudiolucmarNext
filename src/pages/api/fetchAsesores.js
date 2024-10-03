@@ -4,8 +4,8 @@ import clientPromise from '../../lib/mongodb';
 
 export default async function handler(req, res) {
 
-  // Run CORS middleware
-  await runMiddleware(req, res, cors);
+    // Run CORS middleware
+    await runMiddleware(req, res, cors);
 
 
     try {
@@ -14,7 +14,7 @@ export default async function handler(req, res) {
         const db = client.db('inmoprocrm');
 
         // Fetch 'name' and 'apellido' from 'users' collection
-        const asesores = await db.collection('users').find({}, { projection: { _id: 0, nombre: 1, apellido: 1 } }).toArray();
+        const asesores = await db.collection('users').find({}, { projection: { _id: 0, nombre: 1, apellido: 1, user_id: 1 } }).toArray();
         console.log('asesores', asesores);
 
         // Return the fetched data

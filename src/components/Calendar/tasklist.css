@@ -1,0 +1,14 @@
+.rs-checkbox-checker {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    @apply w-full;
+}
+
+.rs-checkbox {
+    @apply w-full flex flex-row items-center gap-2 justify-between;
+}
+
+.tag {
+    @apply bg-red-100 text-red-900 text-xs rounded-md;
+}

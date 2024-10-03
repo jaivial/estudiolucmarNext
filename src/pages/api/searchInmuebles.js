@@ -4,8 +4,8 @@ import { getFilteredCategoriesAndResponsiblesByAddress } from "./calculate_analy
 
 export default async function handler(req, res) {
 
-  // Run CORS middleware
-  await runMiddleware(req, res, cors);
+    // Run CORS middleware
+    await runMiddleware(req, res, cors);
 
 
     try {
@@ -18,6 +18,7 @@ export default async function handler(req, res) {
         const { pattern = '', currentPage = 1, itemsPerPage = 10, selectedZone = '', selectedCategoria = '', selectedResponsable = '', filterNoticia = null, filterEncargo = null, superficieMin = 0, superficieMax = 800000, yearMin = 1800, yearMax = new Date().getFullYear(), localizado = null, garaje = null, aireacondicionado = null, ascensor = null, trastero = null, jardin = null, terraza = null, tipo, banos, habitaciones, DPV = null } = req.query;
         console.log('garaje', garaje);
         console.log('typeof garaje', typeof garaje);
+        console.log('tipo', tipo);
         const page = parseInt(currentPage, 10);
         const limit = parseInt(itemsPerPage, 10);
         const skip = (page - 1) * limit;
@@ -294,11 +295,15 @@ export default async function handler(req, res) {
             };
 
             const applyFilters = (inmueble) => {
+                if (result.tipoagrupacion === 2) {
+                    // If tipoagrupacion is 2, skip filters and include all nestedinmuebles and nestedescaleras
+                    return true;
+                }
+                // Otherwise, apply all filters
                 return applyHabitacionesFilter(inmueble) && applyBanosFilter(inmueble) &&
                     applyNoticiaFilter(inmueble) && applyEncargoFilter(inmueble) && applyCategoriaFilter(inmueble) && applyZoneFilter(inmueble) && applyResponsableFilter(inmueble) && applyLocalizadoFilter(inmueble) && applySuperficieFilter(inmueble)
                     && applyAireAcondicionadoFilter(inmueble) && applyAscensorFilter(inmueble) && applyGarajeFilter(inmueble) && applyTrasteroFilter(inmueble) && applyTerrazaFilter(inmueble) && applyJardinFilter(inmueble) && applyTipoAgrupacionFilter(inmueble) && applyDPVFilter(inmueble);
             };
-
 
             if (result.tipoagrupacion === 2 && new RegExp(pattern, 'i').test(result.direccion)) {
                 return {
@@ -364,7 +369,8 @@ export default async function handler(req, res) {
                         $regex: pattern,
                         $options: 'i'
                     },
-                    'tipoagrupacion': 2
+                    'tipoagrupacion': 2,
+                    ...(tipo !== 'undefined' ? { tipoagrupacion: parseInt(tipo, 10) } : {})
                 }
             },
 
@@ -670,7 +676,8 @@ export default async function handler(req, res) {
                         $regex: pattern,
                         $options: 'i'
                     },
-                    'tipoagrupacion': 2
+                    'tipoagrupacion': 2,
+                    ...(tipo !== 'undefined' ? { "nestedinmuebles.tipoagrupacion": parseInt(tipo, 10) } : {}) // {{ edit_2 }}
                 }
             },
 
@@ -985,7 +992,8 @@ export default async function handler(req, res) {
                         $regex: pattern,
                         $options: 'i'
                     },
-                    'tipoagrupacion': 1
+                    'tipoagrupacion': 1,
+                    ...(tipo !== 'undefined' ? { tipoagrupacion: parseInt(tipo, 10) } : {}) // {{ edit_3 }}
                 }
             },
 
@@ -1259,6 +1267,7 @@ export default async function handler(req, res) {
         ]).toArray();
 
 
+
         const result4 = await db.collection('inmuebles').aggregate([
             // Desenrollamos el array de nestedinmuebles para aplicar el filtro de dirección en los subdocumentos
             {
@@ -1275,6 +1284,7 @@ export default async function handler(req, res) {
                         $regex: pattern,
                         $options: 'i'
                     },
+                    ...(tipo !== 'undefined' ? { "nestedinmuebles.tipoagrupacion": parseInt(tipo, 10) } : {}) // {{ edit_4 }}
                 }
             },
 
@@ -1571,7 +1581,8 @@ export default async function handler(req, res) {
                     'nestedescaleras.nestedinmuebles.direccion': {
                         $regex: pattern,
                         $options: 'i'
-                    }
+                    },
+                    ...(tipo !== 'undefined' ? { "nestedescaleras.nestedinmuebles.tipoagrupacion": parseInt(tipo, 10) } : {}) // {{ edit_5 }}
                 }
             },
 
@@ -1912,11 +1923,23 @@ export default async function handler(req, res) {
         }
 
         // escribe contrabarra
+        const newresults = [];
+
+        // Include result1 and result2 unconditionally
+        newresults.push(result1);
+        newresults.push(result2);
+
+        // Include result3 only if tipo is not 'undefined' and not equal to '2'
+        if (tipo !== '2') {
+            newresults.push(result3); // {{ edit_1 }}
+        }
+
+        // Include result4 and result5 unconditionally
+        newresults.push(result4);
+        newresults.push(result5);
 
 
-
-
-        const finalResultAnalytics = combineResults([result1, result2, result3, result4, result5]);
+        const finalResultAnalytics = combineResults(newresults);
 
         console.log('\nFINAL RESULTS', finalResultAnalytics);
 

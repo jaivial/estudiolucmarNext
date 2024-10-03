@@ -19,12 +19,19 @@ import { MdOutlinePriceCheck } from 'react-icons/md';
 import { MdAttachMoney } from 'react-icons/md';
 import { TbPigMoney } from 'react-icons/tb';
 import { FaUserTag } from 'react-icons/fa';
+import { FaArrowTrendDown } from "react-icons/fa6";
 import esES from 'rsuite/locales/es_ES';
-import { Accordion, Panel, Modal, Button, InputNumber, DatePicker, CustomProvider, SelectPicker, Tabs, Table, Whisper, Tooltip, Tag } from 'rsuite'; // Import Accordion and Panel from rsuite
+import { Accordion, Panel, Modal, Button, InputNumber, DatePicker, CustomProvider, SelectPicker, Tabs, Table, Whisper, Tooltip, Tag, Input } from 'rsuite'; // Import Accordion and Panel from rsuite
 import Skeleton from 'react-loading-skeleton'
 import 'react-loading-skeleton/dist/skeleton.css'
 import { Icon } from '@iconify/react';
 import './encargosdetails.css';
+import { MdKeyboardDoubleArrowDown } from "react-icons/md";
+import { GiSandsOfTime } from "react-icons/gi";
+
+
+
+
 const { Column, HeaderCell, Cell } = Table;
 
 const showToast = (message, backgroundColor) => {
@@ -71,13 +78,98 @@ const EncargosDetails = ({ data, setOnAddEncargoRefreshKey, onAddEncargoRefreshK
     const [verMásClienteEncargo, setVerMásClienteEncargo] = useState(false);
     const [infoClienteMathingEncargo, setInfoClienteMathingEncargo] = useState(null);
     const [lodingMoreInfoClienteMatchingEncargo, setLodingMoreInfoClienteMatchingEncargo] = useState(false);
+    const [isBajadaModalOpen, setIsBajadaModalOpen] = useState(false); // State for the modal
+    const [newPrecio, setNewPrecio] = useState(''); // State for the new price
+    const [tiempoExclusiva, setTiempoExclusiva] = useState(null); // State for the new price
+    const [tiempoExclusivaCounter, setTiempoExclusivaCounter] = useState(''); // State for the new price
+    const [comisionComprador, setComisionComprador] = useState(''); // State for the new price
+    const [comisionCompradorValue, setComisionCompradorValue] = useState(null); // State for the new price
+    const [loadingTiempoExclusiva, setLoadingTiempoExclusiva] = useState(false);
+    const [encargoState, setEncargoState] = useState(null);
 
 
+    useEffect(() => {
+        console.log('DATA LUCAS', data);
+    }, [data]);
+
+    function toThousands(value) {
+        return value ? `${value}`.replace(/\d{1,3}(?=(\d{3})+(\.\d*)?$)/g, '$&.') : value;
+    }
+
+    // Function to disable past dates
+    const disablePastDates = (date) => {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0); // Remove time part of today for accurate comparison
+        return date < today; // Disable if the date is in the past
+    };
 
 
+    useEffect(() => {
+        let interval;
+
+        // If a date is selected, start the interval
+        if (tiempoExclusiva) {
+            setLoadingTiempoExclusiva(true);
+            interval = setInterval(() => {
+                const now = new Date();
+                const selectedDate = new Date(tiempoExclusiva);
+                const diff = selectedDate - now;
+
+                if (diff <= 0) {
+                    clearInterval(interval);
+                    setTiempoExclusivaCounter('¡Tiempo agotado!');
+                } else {
+                    const diffDays = Math.floor(diff / (1000 * 60 * 60 * 24));
+                    const diffHours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                    const diffMinutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+                    const diffSeconds = Math.floor((diff % (1000 * 60)) / 1000);
+                    const months = Math.floor(diffDays / 30);
+
+                    setTiempoExclusivaCounter(`${months} meses, ${diffDays % 30} días, ${diffHours} horas, ${diffMinutes} minutos, ${diffSeconds} segundos`);
+                }
+                setLoadingTiempoExclusiva(false);
+            }, 1000);
+        }
+
+        // Clean up the interval on component unmount or date change
+        return () => clearInterval(interval);
+    }, [tiempoExclusiva]);
+
+    // Function to handle delete price reduction
+    const handleDeleteBajadaPrecio = async (encargo_ID) => {
+        try {
+            const response = await axios.delete('/api/deleteBajadaPrecio', { data: { encargo_ID } });
+            if (response.data.success) {
+                showToast('Bajada de precio eliminada correctamente', 'linear-gradient(to right bottom, #00603c, #006f39, #007d31, #008b24, #069903)');
+                fetchEncargos(); // Refresh the encargos
+                setIsBajadaModalOpen(false); // Close the modal
+            } else {
+                alert('Error al eliminar la bajada de precio');
+            }
+        } catch (error) {
+            console.error('Error deleting price reduction:', error);
+        }
+    };
+
+    // Function to handle price reduction
+    const handleBajadaPrecio = async () => {
+        try {
+            const encargo_ID = data.inmueble.id;
+            const response = await axios.post('/api/setBajadaPrecio', { newPrecio, encargo_ID });
+            if (response.data.success) {
+                showToast('Precio actualizado correctamente', 'linear-gradient(to right bottom, #00603c, #006f39, #007d31, #008b24, #069903)');
+                fetchEncargos(); // Refresh the encargos
+                setIsBajadaModalOpen(false); // Close the modal
+            } else {
+                alert('Error al actualizar el precio.');
+            }
+        } catch (error) {
+            console.error('Error updating price:', error);
+        }
+    };
 
     const fetchEncargos = async () => {
-        if (data.inmueble.encargoState === false) {
+        if (data.inmueble.encargostate === false) {
             return;
         } else {
             try {
@@ -87,7 +179,8 @@ const EncargosDetails = ({ data, setOnAddEncargoRefreshKey, onAddEncargoRefreshK
                 });
                 if (response.data !== null) {
                     const encargo = response.data;
-                    setSelectedClienteEncargo(encargo.fullCliente);
+                    console.log('encargo', encargo);
+                    setSelectedClienteEncargo(encargo.cliente_id);
                     setPrecio_1(encargo.precio_1);
                     setPrecio_2(encargo.precio_2);
                     setTipo_encargo(encargo.tipo_encargo);
@@ -97,6 +190,8 @@ const EncargosDetails = ({ data, setOnAddEncargoRefreshKey, onAddEncargoRefreshK
                         console.error('No encargo data available');
                         setEncargos([]);
                     }
+                    setTiempoExclusiva(encargo.tiempo_exclusiva);
+                    setEncargoState(data.inmueble.encargostate);
                 }
             } catch (error) {
                 console.error('Error fetching encargos:', error);
@@ -104,6 +199,10 @@ const EncargosDetails = ({ data, setOnAddEncargoRefreshKey, onAddEncargoRefreshK
             }
         }
     };
+
+    useEffect(() => {
+        console.log('selectedClienteEncargo', selectedClienteEncargo);
+    }, [selectedClienteEncargo]);
 
     const fetchAsesores = async () => {
         try {
@@ -131,8 +230,10 @@ const EncargosDetails = ({ data, setOnAddEncargoRefreshKey, onAddEncargoRefreshK
     };
 
     const fetchClientes = async () => {
+        const inmuebleId = data.inmueble.id;
         try {
-            const response = await axios.get('/api/seleccionaClienteEncargos');
+            const response = await axios.get('/api/seleccionaClienteEncargos', { params: { inmuebleId } });
+            console.log('response clientes encargos', response.data);
             if (Array.isArray(response.data)) {
                 setClienteOptions(
                     response.data.map((cliente) => ({
@@ -193,9 +294,28 @@ const EncargosDetails = ({ data, setOnAddEncargoRefreshKey, onAddEncargoRefreshK
             showToast('Selecciona un asesor', 'linear-gradient(to right bottom, #c62828, #b92125, #ac1a22, #a0131f, #930b1c)');
             return;
         }
-
         if (!precio) {
             showToast('Introduce el precio', 'linear-gradient(to right bottom, #c62828, #b92125, #ac1a22, #a0131f, #930b1c)');
+            return;
+        }
+        if (!tipoComision) {
+            showToast('Selecciona el tipo de comisión', 'linear-gradient(to right bottom, #c62828, #b92125, #ac1a22, #a0131f, #930b1c)');
+            return;
+        }
+        if (!comision) {
+            showToast('Introduce la comisión', 'linear-gradient(to right bottom, #c62828, #b92125, #ac1a22, #a0131f, #930b1c)');
+            return;
+        }
+        if (!comisionCompradorValue) {
+            showToast('Introduce el valor de la comisión del pedido', 'linear-gradient(to right bottom, #c62828, #b92125, #ac1a22, #a0131f, #930b1c)');
+            return;
+        }
+        if (!comisionComprador) {
+            showToast('Selecciona el tipo de comisión del pedido', 'linear-gradient(to right bottom, #c62828, #b92125, #ac1a22, #a0131f, #930b1c)');
+            return;
+        }
+        if (!selectedCliente) {
+            showToast('Selecciona un cliente', 'linear-gradient(to right bottom, #c62828, #b92125, #ac1a22, #a0131f, #930b1c)');
             return;
         }
 
@@ -203,11 +323,15 @@ const EncargosDetails = ({ data, setOnAddEncargoRefreshKey, onAddEncargoRefreshK
             encargo_id: isEditing ? encargos[0].encargo_id : data.inmueble.id,
             tipoEncargo: tipoEncargo,
             comercial: selectedAsesor,
-            cliente: selectedCliente?.value || '',
+            cliente: selectedCliente.value || '',
             fullCliente: selectedCliente || '',
-            precio: precio,
+            precio: precio.replace(/\D/g, ''),
             tipoComision: tipoComision,
             comision: comision,
+            comisionCompradorValue: comisionCompradorValue,
+            comisionComprador: comisionComprador,
+            tiempoExclusiva: tiempoExclusiva,
+
             fecha: fecha || new Date(),
         }
 
@@ -215,6 +339,8 @@ const EncargosDetails = ({ data, setOnAddEncargoRefreshKey, onAddEncargoRefreshK
             const endpoint = isEditing ? '/api/updateEncargo' : '/api/agregarEncargo';
 
             const response = await axios.post(endpoint, params);
+
+            console.log('PARAMS', params);
 
             if (response.data) {
                 showToast(isEditing ? 'Encargo actualizado' : 'Encargo añadido', 'linear-gradient(to right bottom, #00603c, #006f39, #007d31, #008b24, #069903)');
@@ -237,14 +363,17 @@ const EncargosDetails = ({ data, setOnAddEncargoRefreshKey, onAddEncargoRefreshK
         // Assuming encargo is the object with the details of the encargo you want to edit
         setTipoEncargo(encargo[0].tipo_encargo);
         setSelectedAsesor({ label: encargo[0].comercial_encargo, value: encargo[0].comercial_encargo });
-        setPrecio(encargo[0].precio_1 || '');
+        setPrecio(toThousands(encargo[0].precio_1) || '');
         setTipoComision(encargo[0].tipo_comision_encargo || '');
         setComision(encargo[0].comision_encargo || '');
         setFecha(encargo[0].encargo_fecha || '');
-        setSelectedCliente({ label: encargo[0].label, value: encargo[0].value });
         setIsEditing(true);
         setCurrentEncargoId(encargo.encargo_id);
         setIsPopupOpen(true);
+        setComisionComprador(encargo[0].comisionComprador);
+        setComisionCompradorValue(encargo[0].comisionCompradorValue);
+        setTiempoExclusiva(encargo[0].tiempo_exclusiva);
+        setSelectedCliente(clienteOptions.find(option => option.value === encargo[0].cliente_id)?.value || '');
     };
     useEffect(() => {
         console.log('selectedAsesror', selectedAsesor);
@@ -254,10 +383,6 @@ const EncargosDetails = ({ data, setOnAddEncargoRefreshKey, onAddEncargoRefreshK
 
     }, [selectedAsesor, selectedCliente]);
     const handleDeleteEncargo = async () => {
-        if (!isEditing || !currentEncargoId || !encargos.length) {
-            console.error('Encargo ID is missing, not in editing mode, or encargos array is empty.');
-            return;
-        }
 
         try {
             const encargoIdToDelete = encargos[0].encargo_id;
@@ -276,8 +401,8 @@ const EncargosDetails = ({ data, setOnAddEncargoRefreshKey, onAddEncargoRefreshK
                 const updatedEncargos = encargos.filter(encargo => encargo.encargo_id !== encargoIdToDelete);
 
                 // Update state with the new list of encargos
-                setEncargos(updatedEncargos);
-
+                setEncargos(null);
+                setEncargoState(false);
                 handlePopupClose();
                 setIsEditing(false);
                 setOnAddEncargoRefreshKey(onAddEncargoRefreshKey + 1);
@@ -365,26 +490,59 @@ const EncargosDetails = ({ data, setOnAddEncargoRefreshKey, onAddEncargoRefreshK
             console.error('Error fetching client info:', error);
         }
     };
+
+    useEffect(() => {
+        console.log('precio', precio);
+    }, [precio]);
+
+    const handlePrecioChange = (value) => {
+        // Remove non-numeric characters to get a clean number
+        const numericValue = value.replace(/\D/g, '');
+
+        if (numericValue) {
+            // Convert the cleaned string back to a number
+            const number = parseInt(numericValue, 10);
+
+            // Format the number with thousands separator (.)
+            const formattedValue = number.toLocaleString('es-ES', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+
+            console.log('formattedValue', formattedValue);
+            setPrecio(formattedValue);
+        } else {
+            // If there's no numeric value, set the price to 0 or handle it as needed
+            setPrecio('');
+        }
+    };
+
+
+
     return (
         data.inmueble.noticiastate === true && (
             <CustomProvider locale={esES}>
                 <Accordion defaultActiveKey={1} bordered style={{ margin: '0px 16px', marginTop: '20px' }}>
-                    <Accordion.Panel style={{ backgroundColor: '#f4f4f5', padding: '0px' }} header={
-                        <h2 className="font-bold text-xl">Encargos</h2>
-                    } eventKey="1">
-                        <Tabs defaultActiveKey="1" appearance="pills" style={{ alignItems: 'center', width: '100%' }} onSelect={(eventKey) => {
-                            if (eventKey === '2') {
-                                fetchMatchingEncargos();
-                            }
-                        }}>
-                            <Tabs.Tab eventKey="1" title="Información">
-                                <div className="p-4">
-                                    <div className="py-1 px-2 relative">
-                                        {encargos.length > 0 ? (
+                    <Accordion.Panel style={{ backgroundColor: '#f4f4f5', padding: '0px' }} header={'Encargos'} eventKey={1}>
+                        {encargoState === true && encargos.length > 0 ? (
+                            <Tabs defaultActiveKey="1" appearance="pills" style={{ alignItems: 'center', width: '100%' }} onSelect={(eventKey) => {
+                                if (eventKey === '2') {
+                                    fetchMatchingEncargos();
+                                }
+                            }}>
+                                <Tabs.Tab eventKey="1" title="Información">
+                                    <div className="p-4">
+                                        <div className="py-1 px-2 relative">
                                             <div className="py-2 my-3 flex flex-col items-center gap-2 md:grid md:grid-cols-2 md:gap-4">
                                                 <div className="flex items-center gap-2 flex-col w-full">
                                                     <IoCalendarNumber className="text-gray-900 text-3xl" />
                                                     <p className="text-base text-gray-950 py-1 text-center">{formatDate(encargos[0].encargo_fecha)}</p>
+                                                    <div className="border-b border-gray-300 w-4/6 -mt-1"></div>
+                                                </div>
+                                                <div className="flex items-center gap-2 flex-col w-full">
+                                                    <GiSandsOfTime className="text-gray-900 text-4xl" />
+                                                    <p className="text-base text-gray-950 py-0 text-center">Tiempo de exclusiva: <br></br> {formatDate(encargos[0].tiempo_exclusiva)}</p>
+                                                    <div className='flex flex-col gap-2 items-center bg-slate-200 rounded-md p-4 w-full'>
+                                                        <p className='text-center text-gray-950 font-semibold'>Tiempo restante:</p>
+                                                        <p className="text-base text-gray-950 py-1 text-center font-semibold w-[100%]">{tiempoExclusivaCounter}</p>
+                                                    </div>
                                                     <div className="border-b border-gray-300 w-4/6 -mt-1"></div>
                                                 </div>
                                                 <div className="flex items-center gap-2 flex-col w-full">
@@ -399,355 +557,525 @@ const EncargosDetails = ({ data, setOnAddEncargoRefreshKey, onAddEncargoRefreshK
                                                 </div>
                                                 <div className="flex items-center gap-2 flex-col w-full">
                                                     <MdAttachMoney className="text-gray-900 text-3xl" />
-                                                    <p className="text-base text-gray-950 py-1 text-center">Precio: {encargos[0].precio_1} €</p>
-                                                    <div className="border-b border-gray-300 w-4/6 -mt-1"></div>
+                                                    <p className="text-base text-gray-950 py-1 text-center">Precio: {encargos[0].precio_1.toLocaleString('es-ES', { minimumFractionDigits: 0 })} €</p>
+
+                                                    {encargos[0].precio_2 ? null : <div className="border-b border-gray-300 w-4/6 -mt-1"></div>}
                                                 </div>
-                                                {encargos[0].tipo_comision_encargo === 'Porcentaje' ? (
-                                                    <div className="flex items-center gap-2 flex-col w-full">
-                                                        <TbPigMoney className="text-gray-900 text-3xl" />
-                                                        <p className="text-base text-gray-950 py-1 text-center"> Comisión</p>
-                                                        <div className="flex flex-row items-center gap-2">
-                                                            <p className="text-base text-gray-950 py-1 text-center">{encargos[0].comision_encargo}%</p>
-                                                            <p>|</p>
-                                                            <p className="text-base text-gray-950 py-1 text-center">{(encargos[0].precio_1 * encargos[0].comision_encargo) / 100} €</p>
+                                                {encargos[0].precio_2 && encargos[0].precio_2 > 0 && (
+                                                    <div className="flex items-center gap-2 flex-col w-full mt-2">
+                                                        <div className='flex flex-row items-center justify-center gap-3 mb-3'>
+                                                            <FaArrowTrendDown className='text-red-600 text-3xl' />
+                                                            <p className="text-base text-red-600 py-1 text-center">{Math.floor(encargos[0].precio_2 - encargos[0].precio_1).toLocaleString('es-ES', { minimumFractionDigits: 0 })} €</p>
                                                         </div>
-                                                        <div className="border-b border-gray-300 w-4/6 -mt-1"></div>
-                                                    </div>
-                                                ) : (
-                                                    <div className="flex items-center gap-2 flex-col w-full">
-                                                        <TbPigMoney className="text-gray-900 text-3xl" />
-                                                        <p className="text-base text-gray-950 py-1 text-center">{encargos[0].precio_1} €</p>
+                                                        <div className='flex flex-row items-center justify-center text-gray-900 text-3xl' onClick={() => setIsBajadaModalOpen(true)}>
+                                                            <MdAttachMoney className="text-3xl cursor-pointer" />
+                                                            <MdKeyboardDoubleArrowDown className="text-3xl cursor-pointer  -ml-2" />
+                                                        </div>
+                                                        <p className="text-base text-gray-900 py-1 text-center">Precio reducido: {encargos[0].precio_2} €</p>
                                                         <div className="border-b border-gray-300 w-4/6 -mt-1"></div>
                                                     </div>
                                                 )}
+                                                <div className="flex flex-col gap-2 w-full">
+
+                                                    <div className="flex items-center gap-2 flex-col w-full bg-orange-100 rounded-xl p-4 ">
+                                                        <TbPigMoney className="text-gray-900 text-3xl" />
+                                                        <p className="text-base text-gray-950 py-1 text-center">Comisión Vendedor</p>
+                                                        {encargos[0].tipo_comision_encargo === 'Porcentaje' ? (
+                                                            <div className="flex flex-row items-center gap-2 justify-center">
+                                                                <p className="text-base text-gray-950 py-1 text-center">{encargos[0].comision_encargo}%</p>
+                                                                <p className='-my-2'>|</p>
+                                                                {encargos[0].precio_2 && encargos[0].precio_2 > 0 ? (
+                                                                    <p className="text-base text-gray-950 py-1 text-center m-0">{toThousands(((encargos[0].precio_2 * encargos[0].comision_encargo) / 100))} €</p>
+                                                                ) : (
+                                                                    <p className="text-base text-gray-950 py-1 text-center m-0">{toThousands(((encargos[0].precio_1 * encargos[0].comision_encargo) / 100))} €</p>
+                                                                )}
+                                                            </div>
+                                                        ) : (
+                                                            <p className="text-base text-gray-950 py-1 text-center">{(encargos[0].comision_encargo.toLocaleString('es-ES', { minimumFractionDigits: 0 }))} €</p>
+                                                        )}
+                                                    </div>
+                                                    <div className="flex items-center gap-2 flex-col w-full bg-blue-100 rounded-xl p-4 ">
+                                                        <TbPigMoney className="text-gray-900 text-3xl" />
+                                                        <p className="text-base text-gray-950 py-1 text-center">Comisión Pedido</p>
+                                                        {encargos[0].comisionComprador === 'Porcentaje' ? (
+                                                            <div className="flex flex-row items-center gap-2 justify-center">
+                                                                <p className="text-base text-gray-950 py-1 text-center">{encargos[0].comisionCompradorValue}%</p>
+                                                                <p className='-my-2'>|</p>
+                                                                {encargos[0].precio_2 && encargos[0].precio_2 > 0 ? (
+                                                                    <p className="text-base text-gray-950 py-1 text-center m-0">{toThousands(((encargos[0].precio_2 * encargos[0].comisionCompradorValue) / 100))} €</p>
+                                                                ) : (
+                                                                    <p className="text-base text-gray-950 py-1 text-center m-0">{toThousands(((encargos[0].precio_1 * encargos[0].comisionCompradorValue) / 100))} €</p>
+                                                                )}
+                                                            </div>
+                                                        ) : (
+
+                                                            encargos[0].comisionCompradorValue ? (
+                                                                <p className="text-base text-gray-950 py-1 text-center">{encargos[0].comisionCompradorValue.toLocaleString('es-ES')} €</p>
+                                                            ) : (
+                                                                <p className="text-base text-gray-950 py-1 text-center">N/A</p>
+                                                            )
+
+                                                        )}
+                                                    </div>
+                                                    <div className="flex items-center gap-2 flex-col w-full mt-2 bg-zinc-200 rounded-xl p-3 border-4 border-gray-400">
+                                                        <TbPigMoney className="text-gray-900 text-3xl" />
+                                                        <p className="text-base text-gray-950 py-1 text-center">Comisión total:</p>
+                                                        <p className="text-base text-gray-950 py-1 text-center m-0">
+                                                            {encargos[0].precio_2 && encargos[0].precio_2 > 0 ? (
+                                                                <span>{toThousands(((encargos[0].precio_2 * encargos[0].comision_encargo) / 100) + ((encargos[0].precio_2 * encargos[0].comisionCompradorValue) / 100))} €</span>
+                                                            ) : (
+                                                                <span>{toThousands(((encargos[0].precio_1 * encargos[0].comision_encargo) / 100) + ((encargos[0].precio_1 * encargos[0].comisionCompradorValue) / 100))} €</span>
+                                                            )}
+                                                        </p>
+                                                    </div>
+                                                    <div className="border-b border-gray-300 w-4/6 mt-1 mx-auto"></div>
+                                                </div>
                                                 <div className="flex items-center gap-2 flex-col w-full">
+
                                                     <FaUserTie className="text-gray-900 text-3xl" />
                                                     <p className="text-base text-gray-950 py-1 text-center">Asesor: {encargos[0].comercial_encargo}</p>
                                                 </div>
-                                                <div className="absolute top-2 right-2">
-                                                    <FiEdit className="text-2xl cursor-pointer text-blue-500" onClick={() => handleEditEncargo(encargos, asesorOptions, clienteOptions)} />
+                                                <div className="absolute top-0 right-0 flex flex-col gap-6">
+                                                    <div className='flex flex-col items-center gap-4'>
+                                                        <FiEdit className="text-2xl cursor-pointer text-blue-500" onClick={() => handleEditEncargo(encargos, asesorOptions, clienteOptions)} />
+                                                        <div className='flex flex-row items-center justify-center text-red-600 text-3xl' onClick={() => setIsBajadaModalOpen(true)}>
+                                                            <MdAttachMoney className="text-3xl cursor-pointer" />
+                                                            <MdKeyboardDoubleArrowDown className="text-3xl cursor-pointer  -ml-2" />
+                                                        </div>
+                                                    </div>
                                                 </div>
                                             </div>
-                                        ) : (
-                                            <div className="flex justify-center items-center py-3">
-                                                <AiOutlinePlus className="text-4xl cursor-pointer text-blue-500" onClick={() => setIsPopupOpen(true)} />
+                                        </div>
+
+                                        {encargoState === true && (
+                                            <Modal open={isBajadaModalOpen} onClose={() => setIsBajadaModalOpen(false)} size="xs">
+                                                <Modal.Header style={{ display: 'flex', flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: '10px', width: '100%', marginTop: '10px' }}>
+                                                    <Modal.Title style={{ fontSize: '1.5rem', textAlign: 'center' }}>Bajada de precio</Modal.Title>
+                                                </Modal.Header>
+                                                <Modal.Body style={{ padding: '20px' }}>
+                                                    <div className='flex flex-col gap-4 items-center px-10'>
+                                                        <div className='flex flex-col gap-2 items-center bg-slate-200 rounded-md p-4 w-full'>
+                                                            <p>{encargos[0].precio_2 ? 'Precio Original' : 'Precio Actual'}:</p>
+                                                            <p className='text-lg font-semibold'>{encargos[0].precio_1.toLocaleString('es-ES', { minimumFractionDigits: 0 })} €</p>
+                                                        </div>
+                                                        {encargos[0].precio_2 ? (
+                                                            <div className='flex flex-col gap-3 items-center bg-slate-200 rounded-md p-4 w-full'>
+                                                                <p>Precio rebajado:</p>
+                                                                <p className='text-lg font-semibold'>{encargos[0].precio_2.toLocaleString('es-ES', { minimumFractionDigits: 0 })} €</p>
+                                                            </div>
+                                                        ) : (
+                                                            <div className='flex flex-col gap-3 items-center bg-slate-200 rounded-md p-4 w-full'>
+                                                                <p>Nuevo precio:</p>
+                                                                <InputNumber
+                                                                    min={0}
+                                                                    max={precio_1} // Ensure new price cannot exceed current price
+                                                                    value={newPrecio}
+                                                                    onChange={setNewPrecio}
+                                                                    placeholder="Introduce el nuevo precio"
+                                                                    className="w-full"
+                                                                />
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                </Modal.Body>
+                                                <Modal.Footer style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', gap: '10px', marginTop: '10px' }}>
+                                                    {encargos[0].precio_2 ? (
+                                                        <Button onClick={() => handleDeleteBajadaPrecio(encargos[0].encargo_id)} appearance="primary" style={{ backgroundColor: 'red' }}>Eliminar rebajada de precio</Button>
+                                                    ) : (
+                                                        <Button onClick={handleBajadaPrecio} appearance="primary">Aceptar</Button>
+                                                    )}
+                                                    <Button onClick={() => setIsBajadaModalOpen(false)} appearance="subtle" style={{ margin: '0px' }}>Cancelar</Button>
+                                                </Modal.Footer>
+                                            </Modal>
+                                        )}
+
+
+                                    </div>
+                                </Tabs.Tab>
+                                <Tabs.Tab eventKey="2" title="Pedidos">
+
+                                    <div className='w-full'>
+                                        <Table height={300} data={matchingClientesEncargos}>
+                                            <Table.Column align="center" flexGrow={1} >
+                                                <Table.HeaderCell>Nombre</Table.HeaderCell>
+                                                <Table.Cell>
+                                                    {(rowData) => `${rowData.nombre} ${rowData.apellido}`}
+                                                </Table.Cell>
+                                            </Table.Column>
+                                            {screenWidth >= 640 && (
+                                                <>
+                                                    <Table.Column flexGrow={1} align='center' className='column-telefono'>
+                                                        <Table.HeaderCell>Teléfono</Table.HeaderCell>
+                                                        <Table.Cell dataKey="telefono" />
+                                                    </Table.Column>
+
+                                                </>
+                                            )}
+                                            {screenWidth >= 768 && (
+                                                <>
+                                                    <Table.Column flexGrow={1} align='center' className='column-email'>
+                                                        <Table.HeaderCell>Email</Table.HeaderCell>
+                                                        <Table.Cell dataKey="email" />
+                                                    </Table.Column>
+                                                </>
+                                            )}
+                                            <Table.Column flexGrow={1} align='center'>
+                                                <Table.HeaderCell>Acciones</Table.HeaderCell>
+                                                <Table.Cell>
+                                                    {rowData => (
+                                                        <div className="flex flex-row gap-4">
+                                                            <Whisper placement="top" trigger="hover" speaker={<Tooltip>Ver más</Tooltip>}>
+                                                                <Icon icon="mdi:eye-outline" style={{ cursor: 'pointer', fontSize: '1.5rem' }} onClick={() => handleOpen(rowData._id)} />
+                                                            </Whisper>
+                                                        </div>
+                                                    )}
+                                                </Table.Cell>
+                                            </Table.Column>
+                                        </Table>
+
+                                    </div>
+                                    <Modal open={verMásClienteEncargo} onClose={() => setVerMásClienteEncargo(false)} size="md" overflow={false} backdrop={true} style={{ backgroundColor: 'rgba(0,0,0,0.15)', padding: '0px 2px', marginBottom: '70px' }}>
+                                        <Modal.Header>
+                                            <Modal.Title style={{ fontSize: '1.5rem', fontWeight: 'semibold', textAlign: 'center' }}>Detalles del Cliente</Modal.Title>
+                                        </Modal.Header>
+                                        <Modal.Body style={{ padding: '0px 25px' }}>
+                                            {lodingMoreInfoClienteMatchingEncargo ? (
+                                                <Skeleton count={10} height={30} />
+                                            ) : infoClienteMathingEncargo ? (
+                                                <div className='flex flex-col gap-2'>
+                                                    <div className='flex flex-col gap-2 px-6 py-6 bg-slate-200 rounded-md shadow-lg mb-4'>
+                                                        <p><strong>Nombre:</strong> {infoClienteMathingEncargo.nombre}</p>
+                                                        <p><strong>Apellido:</strong> {infoClienteMathingEncargo.apellido}</p>
+                                                        <p><strong>DNI:</strong> {infoClienteMathingEncargo.dni}</p>
+                                                        <p><strong>Teléfono:</strong> {infoClienteMathingEncargo.telefono}</p>
+                                                        <p><strong>Email:</strong> {infoClienteMathingEncargo.email}</p>
+                                                        {infoClienteMathingEncargo.interes && (
+                                                            <p><strong>Interés:</strong> {infoClienteMathingEncargo.interes.charAt(0).toUpperCase() + infoClienteMathingEncargo.interes.slice(1)}</p>
+                                                        )}
+
+                                                        <div className="flex flex-row gap-2 mt-[20px]">
+                                                            <p><strong>Tipo de Cliente:</strong></p>
+                                                            <div>
+                                                                {infoClienteMathingEncargo.inmuebles_asociados_propietario && infoClienteMathingEncargo.inmuebles_asociados_propietario.length > 0 && (
+                                                                    <Tag
+                                                                        key="propietario"
+                                                                        color="green"
+                                                                        style={{ marginBottom: '5px', marginRight: '5px' }}
+                                                                    >
+                                                                        Propietario
+                                                                    </Tag>
+                                                                )}
+                                                                {infoClienteMathingEncargo.inmuebles_asociados_inquilino && infoClienteMathingEncargo.inmuebles_asociados_inquilino.length > 0 && (
+                                                                    <Tag
+                                                                        key="inquilino"
+                                                                        color="red"
+                                                                        style={{ marginBottom: '5px', marginRight: '5px' }}
+                                                                    >
+                                                                        Inquilino
+                                                                    </Tag>
+                                                                )}
+                                                            </div>
+                                                        </div>
+
+                                                        {infoClienteMathingEncargo.informador && (
+                                                            <div className="flex flex-row gap-2 mt-[10px]">
+                                                                <p><strong>Informador:</strong></p>
+                                                                <Tag color="cyan" style={{ marginBottom: '5px', marginRight: '5px' }}>
+                                                                    Informador
+                                                                </Tag>
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                    {infoClienteMathingEncargo.pedido && (
+                                                        <div className="flex flex-row gap-2 mt-[10px]">
+                                                            <Tag color="orange" style={{
+                                                                borderRadius: '10px',
+                                                                padding: '8px 0px',
+                                                                color: '#fff',
+                                                                textAlign: 'center',
+                                                                marginBottom: '10px',
+                                                                width: '100px',
+                                                                marginRight: 'auto',
+                                                                marginLeft: 'auto',
+                                                                fontSize: '14px',
+                                                            }}>
+                                                                Pedido
+                                                            </Tag>
+                                                        </div>
+                                                    )}
+                                                    {infoClienteMathingEncargo.pedido && (
+                                                        <div style={{ display: 'grid', placeItems: 'center' }} className='flex flex-col gap-2 px-4 py-2 pb-8 bg-slate-200 rounded-md shadow-lg mb-4'>
+                                                            <h4 className='text-base my-2'>Información del pedido</h4>
+                                                            <p className='text-sm'><strong>Interés:</strong> {infoClienteMathingEncargo.interes.charAt(0).toUpperCase() + infoClienteMathingEncargo.interes.slice(1)}</p>
+                                                            <p className='text-sm'><strong>Rango de Precios:</strong> {infoClienteMathingEncargo.rango_precios.join(' - ')} €</p>
+                                                        </div>
+                                                    )}
+                                                    {['propietario', 'inquilino'].map(tipo => (
+                                                        infoClienteMathingEncargo[`inmuebles_asociados_${tipo}`] && infoClienteMathingEncargo[`inmuebles_asociados_${tipo}`].length > 0 && (
+                                                            <div key={tipo} className='mb-14 mt-8'>
+                                                                <div
+                                                                    style={{
+                                                                        backgroundColor: tipo === 'propietario' ? '#28a745' :
+                                                                            tipo === 'inquilino' ? '#ef4444' : '#ef4444',
+                                                                        borderRadius: '10px',
+                                                                        padding: '8px 0px',
+                                                                        color: '#fff',
+                                                                        textAlign: 'center',
+                                                                        marginBottom: '10px',
+                                                                        width: '100px',
+                                                                        marginRight: 'auto',
+                                                                        marginLeft: 'auto',
+                                                                    }}
+
+                                                                >
+                                                                    {tipo.charAt(0).toUpperCase() + tipo.slice(1)}
+                                                                </div>
+
+                                                                <Table data={infoClienteMathingEncargo.inmueblesDetalle.filter(inmueble =>
+                                                                    infoClienteMathingEncargo[`inmuebles_asociados_${tipo}`].some(assoc => assoc.id === inmueble.id)
+                                                                )} autoHeight={true}>
+                                                                    <Column width={320} align="center">
+                                                                        <HeaderCell>Dirección</HeaderCell>
+                                                                        <Cell dataKey="direccion" />
+                                                                    </Column>
+                                                                    <Column width={200} align="center">
+                                                                        <HeaderCell>Zona</HeaderCell>
+                                                                        <Cell dataKey="zona" />
+                                                                    </Column>
+                                                                    <Column width={80} align="center">
+                                                                        <HeaderCell>Noticias</HeaderCell>
+                                                                        <Cell>
+                                                                            {rowData => rowData.noticiastate ? 'Sí' : 'No'}
+                                                                        </Cell>
+                                                                    </Column>
+                                                                    <Column width={80} align="center">
+                                                                        <HeaderCell>Encargos</HeaderCell>
+                                                                        <Cell>
+                                                                            {rowData => rowData.encargostate ? 'Sí' : 'No'}
+                                                                        </Cell>
+                                                                    </Column>
+                                                                    <Column width={100} align="center">
+                                                                        <HeaderCell>Superficie</HeaderCell>
+                                                                        <Cell>
+                                                                            {rowData => (
+                                                                                <span>{rowData.superficie} m²</span>
+                                                                            )}
+                                                                        </Cell>
+                                                                    </Column>
+                                                                </Table>
+                                                            </div>
+                                                        )
+                                                    ))}
+
+
+                                                </div>
+                                            ) : (
+                                                <p>No hay información disponible del cliente.</p>
+                                            )}
+                                            <Modal.Footer style={{ display: 'flex', justifyContent: 'center', marginTop: '20px' }}>
+                                                <Button onClick={() => setVerMásClienteEncargo(false)} appearance="subtle">
+                                                    Cerrar
+                                                </Button>
+                                            </Modal.Footer>
+                                        </Modal.Body>
+                                    </Modal>
+                                </Tabs.Tab>
+                            </Tabs>
+                        ) : (
+                            <div className="flex justify-center items-center py-3">
+                                <AiOutlinePlus className="text-4xl cursor-pointer text-blue-500" onClick={() => setIsPopupOpen(true)} />
+                            </div>
+                        )}
+                        <Modal open={isPopupOpen} onClose={handlePopupClose} size="md" overflow={false} backdrop={true} style={{ backgroundColor: 'rgba(0,0,0,0.15)', padding: '0px 2px', marginBottom: '70px' }}>
+                            <Modal.Header style={{ display: 'flex', flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: '10px', width: '100%', marginTop: '10px' }}>
+                                <Modal.Title style={{ fontSize: '1.5rem', fontWeight: 'bold', textAlign: 'center' }}>{isEditing ? 'Editar Encargo' : 'Añadir Encargo'}</Modal.Title>
+                            </Modal.Header>
+                            <Modal.Body style={{ padding: '10px 25px', fontSize: '1rem', lineHeight: '1.5', display: 'flex', flexDirection: 'column', gap: '10px', alignItems: 'center', width: '100%' }}>
+                                <div className="flex flex-col gap-4 w-full">
+                                    <div className="mb-4">
+                                        <label className="block text-sm font-medium mb-2" htmlFor="tipoEncargo">
+                                            Tipo de Encargo
+                                        </label>
+                                        <Select
+                                            id="tipoEncargo"
+                                            options={[
+                                                { value: 'Venta', label: 'Venta' },
+                                                { value: 'Alquiler', label: 'Alquiler' }
+                                            ]}
+                                            value={tipoEncargo ? { value: tipoEncargo, label: tipoEncargo } : null}
+                                            onChange={(option) => setTipoEncargo(option?.value || '')}
+                                            placeholder="Selecciona el tipo de encargo"
+                                            className='z-[900]'
+                                        />
+                                    </div>
+                                    <div className="mb-4">
+                                        <label className="block text-sm font-medium mb-2" htmlFor="asesor">
+                                            Asesor
+                                        </label>
+                                        <SelectPicker
+                                            data={asesorOptions}
+                                            value={selectedAsesor ? selectedAsesor.value : undefined}
+                                            onChange={(value, item) => setSelectedAsesor(value)}
+                                            placeholder="Asesor"
+                                            className="basic-single z-[900]"
+                                            style={{ width: '100%' }}
+                                        />
+                                    </div>
+                                    <div className="mb-4">
+                                        <label className="block text-sm font-medium mb-2" htmlFor="cliente">
+                                            Cliente
+                                        </label>
+                                        <SelectPicker
+                                            id="cliente"
+                                            data={clienteOptions}
+                                            value={clienteOptions.find(option => option.value === selectedClienteEncargo)?.value} // Inline matching
+                                            onChange={handleSelectCliente}
+                                            placeholder="Cliente"
+                                            className="basic-single z-[800]"
+                                            searchable={true}
+                                            style={{ width: '100%' }}
+                                        />
+                                    </div>
+                                    <div className="mb-4">
+                                        <label className="block text-sm font-medium mb-2" htmlFor="precio">
+                                            Precio
+                                        </label>
+                                        <div className="flex items-center w-full">
+                                            <Input
+                                                id="precio"
+                                                min={0}
+                                                value={precio + ' ' + '€'}
+                                                onChange={handlePrecioChange}
+                                                placeholder="Introduce el precio"
+                                                className="w-full"
+                                            />
+                                        </div>
+                                    </div>
+                                    <div className='flex flex-col gap-3 items-center bg-orange-100 rounded-md p-4 w-full'>
+                                        <p>Comisión del vendedor:</p>
+                                        <div className="mb-4 w-full">
+                                            <label className="block text-sm font-medium mb-2" htmlFor="tipoComision">
+                                                Tipo de Comisión
+                                            </label>
+                                            <Select
+                                                id="tipoComision"
+                                                options={[
+                                                    { value: 'Porcentaje', label: 'Porcentaje' },
+                                                    { value: 'Fijo', label: 'Fijo' },
+                                                ]}
+                                                value={tipoComision ? { value: tipoComision, label: tipoComision } : null}
+                                                onChange={(option) => setTipoComision(option?.value || '')}
+                                                placeholder="Tipo de comisión"
+                                            />
+                                        </div>
+                                        <div className="mb-4 w-full">
+                                            <label className="block text-sm font-medium mb-2" htmlFor="comision">
+                                                Comisión
+                                            </label>
+                                            <InputNumber
+                                                id="comision"
+                                                min={0}
+                                                value={comision}
+                                                onChange={setComision}
+                                                placeholder="Comisión"
+                                                className="w-full"
+                                            />
+                                        </div>
+                                    </div>
+                                    <div className='flex flex-col gap-3 items-center bg-blue-100 rounded-md p-4 w-full'>
+                                        <p>Comisión del pedido:</p>
+                                        <div className="mb-4 w-full">
+                                            <label className="block text-sm font-medium mb-2" htmlFor="comisionComprador">
+                                                Tipo de Comisión
+                                            </label>
+                                            <Select
+                                                id="comisionComprador"
+                                                options={[
+                                                    { value: 'Porcentaje', label: 'Porcentaje' },
+                                                    { value: 'Fijo', label: 'Fijo' },
+                                                ]}
+                                                value={comisionComprador ? { value: comisionComprador, label: comisionComprador } : null}
+                                                onChange={(option) => setComisionComprador(option?.value || '')}
+                                                placeholder="Tipo de comisión"
+                                            />
+                                        </div>
+                                        <div className="mb-4 w-full">
+                                            <label className="block text-sm font-medium mb-2" htmlFor="comision">
+                                                Comisión
+                                            </label>
+                                            <InputNumber
+                                                id="comision"
+                                                min={0}
+                                                value={comisionCompradorValue}
+                                                onChange={setComisionCompradorValue}
+                                                placeholder="Comisión"
+                                                className="w-full"
+                                            />
+                                        </div>
+                                    </div>
+                                    <div className="mb-4">
+                                        <label className="block text-sm font-medium mb-2" htmlFor="fecha">
+                                            Fecha
+                                        </label>
+                                        <DatePicker
+                                            id="fecha"
+                                            format="dd/MM/yyyy"
+                                            value={fecha ? new Date(fecha) : new Date()}
+                                            onChange={(value) => setFecha(formatDateTwo(value))}
+                                            placeholder="Fecha"
+                                            oneTap
+                                            style={{ width: '100%' }}
+                                        />
+                                    </div>
+                                    <div className="mb-4">
+                                        <label className="block text-sm font-medium mb-2" htmlFor="tiempoExclusiva">
+                                            Tiempo de Exclusiva
+                                        </label>
+                                        <DatePicker
+                                            id="tiempoExclusiva"
+                                            format="dd/MM/yyyy"
+                                            value={tiempoExclusiva ? new Date(tiempoExclusiva) : null}
+                                            onChange={(value) => {
+                                                setTiempoExclusiva(value);
+                                            }}
+                                            placeholder="Fecha de exclusiva"
+                                            oneTap
+                                            style={{ width: '100%' }}
+                                            disabledDate={disablePastDates} // This will disable past dates
+                                        />
+                                        {tiempoExclusiva && (
+                                            <div className='flex flex-col gap-2 items-center bg-slate-200 rounded-md p-4 w-full'>
+                                                <p>Tiempo restante:</p>
+                                                {!loadingTiempoExclusiva ? (
+                                                    <>
+                                                        <p className='text-center font-semibold w-[60%]'>{tiempoExclusivaCounter}</p>
+                                                    </>
+                                                ) : (
+                                                    <Skeleton width={220} height={70}>
+                                                    </Skeleton>
+                                                )}
+
                                             </div>
                                         )}
                                     </div>
 
-                                    <Modal open={isPopupOpen} onClose={handlePopupClose} size="md" overflow={false} backdrop={true} style={{ backgroundColor: 'rgba(0,0,0,0.15)', padding: '0px 2px' }}>
-                                        <Modal.Header style={{ display: 'flex', flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: '10px', width: '100%', marginTop: '10px' }}>
-                                            <Modal.Title style={{ fontSize: '1.5rem', fontWeight: 'bold', textAlign: 'center' }}>{isEditing ? 'Editar Encargo' : 'Añadir Encargo'}</Modal.Title>
-                                        </Modal.Header>
-                                        <Modal.Body style={{ padding: '10px 25px', fontSize: '1rem', lineHeight: '1.5', display: 'flex', flexDirection: 'column', gap: '10px', alignItems: 'center', width: '100%' }}>
-                                            <div className="flex flex-col gap-4 w-full">
-                                                <div className="mb-4">
-                                                    <label className="block text-sm font-medium mb-2" htmlFor="tipoEncargo">
-                                                        Tipo de Encargo
-                                                    </label>
-                                                    <Select
-                                                        id="tipoEncargo"
-                                                        options={[
-                                                            { value: 'Venta', label: 'Venta' },
-                                                            { value: 'Alquiler', label: 'Alquiler' },
-                                                            { value: 'Comercial', label: 'Comercial' },
-                                                        ]}
-                                                        value={tipoEncargo ? { value: tipoEncargo, label: tipoEncargo } : null}
-                                                        onChange={(option) => setTipoEncargo(option?.value || '')}
-                                                        placeholder="Selecciona el tipo de encargo"
-                                                        className='z-[900]'
-                                                    />
-                                                </div>
-                                                <div className="mb-4">
-                                                    <label className="block text-sm font-medium mb-2" htmlFor="asesor">
-                                                        Asesor
-                                                    </label>
-                                                    <SelectPicker
-                                                        data={asesorOptions}
-                                                        value={selectedAsesor ? selectedAsesor.value : undefined}
-                                                        onChange={(value, item) => setSelectedAsesor(value)}
-                                                        placeholder="Asesor"
-                                                        className="basic-single z-[900]"
-                                                        style={{ width: '100%' }}
-                                                    />
-                                                </div>
-                                                <div className="mb-4">
-                                                    <label className="block text-sm font-medium mb-2" htmlFor="cliente">
-                                                        Cliente
-                                                    </label>
-                                                    <SelectPicker
-                                                        id="cliente"
-                                                        data={clienteOptions}
-                                                        value={selectedClienteEncargo ? selectedClienteEncargo.value : undefined}
-                                                        onChange={(value) => handleSelectCliente(value)}
-                                                        placeholder="Cliente"
-                                                        className="basic-single z-[800]"
-                                                        searchable={true}
-                                                        style={{ width: '100%' }}
-                                                    />
-                                                </div>
-                                                <div className="mb-4">
-                                                    <label className="block text-sm font-medium mb-2" htmlFor="precio">
-                                                        Precio
-                                                    </label>
-                                                    <InputNumber
-                                                        id="precio"
-                                                        min={0}
-                                                        value={precio}
-                                                        onChange={setPrecio}
-                                                        placeholder="Introduce el precio"
-                                                        className="w-full"
-                                                    />
-                                                </div>
-                                                <div className="mb-4">
-                                                    <label className="block text-sm font-medium mb-2" htmlFor="tipoComision">
-                                                        Tipo de Comisión
-                                                    </label>
-                                                    <Select
-                                                        id="tipoComision"
-                                                        options={[
-                                                            { value: 'Porcentaje', label: 'Porcentaje' },
-                                                            { value: 'Fijo', label: 'Fijo' },
-                                                        ]}
-                                                        value={tipoComision ? { value: tipoComision, label: tipoComision } : null}
-                                                        onChange={(option) => setTipoComision(option?.value || '')}
-                                                        placeholder="Selecciona el tipo de comisión"
-                                                    />
-                                                </div>
-                                                <div className="mb-4">
-                                                    <label className="block text-sm font-medium mb-2" htmlFor="comision">
-                                                        Comisión
-                                                    </label>
-                                                    <InputNumber
-                                                        id="comision"
-                                                        min={0}
-                                                        value={comision}
-                                                        onChange={setComision}
-                                                        placeholder="Introduce la comisión"
-                                                        className="w-full"
-                                                    />
-                                                </div>
-                                                <div className="mb-4">
-                                                    <label className="block text-sm font-medium mb-2" htmlFor="fecha">
-                                                        Fecha
-                                                    </label>
-                                                    <DatePicker
-                                                        id="fecha"
-                                                        format="dd/MM/yyyy"
-                                                        value={fecha ? new Date(fecha) : new Date()}
-                                                        onChange={(value) => setFecha(formatDateTwo(value))}
-                                                        placeholder="Fecha"
-                                                        oneTap
-                                                        style={{ width: '100%' }}
-                                                    />
-                                                </div>
-                                            </div>
-                                        </Modal.Body>
-                                        <Modal.Footer>
-                                            <Button onClick={handlePopupClose} appearance="subtle">
-                                                Cerrar
-                                            </Button>
-                                            {isEditing && (
-                                                <Button onClick={handleDeleteEncargo} color="red" appearance="primary">
-                                                    Eliminar
-                                                </Button>
-                                            )}
-                                            <Button onClick={handleAddEncargo} appearance="primary">
-                                                {isEditing ? 'Actualizar' : 'Añadir'}
-                                            </Button>
-                                        </Modal.Footer>
-                                    </Modal>
                                 </div>
-                            </Tabs.Tab>
-                            <Tabs.Tab eventKey="2" title="Pedidos">
+                            </Modal.Body>
+                            <Modal.Footer style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', gap: '10px', marginTop: '10px' }}>
 
-                                <div className='w-full'>
-                                    <Table height={300} data={matchingClientesEncargos}>
-                                        <Table.Column align="center" flexGrow={1} >
-                                            <Table.HeaderCell>Nombre</Table.HeaderCell>
-                                            <Table.Cell>
-                                                {(rowData) => `${rowData.nombre} ${rowData.apellido}`}
-                                            </Table.Cell>
-                                        </Table.Column>
-                                        {screenWidth >= 640 && (
-                                            <>
-                                                <Table.Column flexGrow={1} align='center' className='column-telefono'>
-                                                    <Table.HeaderCell>Teléfono</Table.HeaderCell>
-                                                    <Table.Cell dataKey="telefono" />
-                                                </Table.Column>
-
-                                            </>
-                                        )}
-                                        {screenWidth >= 768 && (
-                                            <>
-                                                <Table.Column flexGrow={1} align='center' className='column-email'>
-                                                    <Table.HeaderCell>Email</Table.HeaderCell>
-                                                    <Table.Cell dataKey="email" />
-                                                </Table.Column>
-                                            </>
-                                        )}
-                                        <Table.Column flexGrow={1} align='center'>
-                                            <Table.HeaderCell>Acciones</Table.HeaderCell>
-                                            <Table.Cell>
-                                                {rowData => (
-                                                    <div className="flex flex-row gap-4">
-                                                        <Whisper placement="top" trigger="hover" speaker={<Tooltip>Ver más</Tooltip>}>
-                                                            <Icon icon="mdi:eye-outline" style={{ cursor: 'pointer', fontSize: '1.5rem' }} onClick={() => handleOpen(rowData._id)} />
-                                                        </Whisper>
-                                                    </div>
-                                                )}
-                                            </Table.Cell>
-                                        </Table.Column>
-                                    </Table>
-
-                                </div>
-                                <Modal open={verMásClienteEncargo} onClose={() => setVerMásClienteEncargo(false)} size="md" overflow={false} backdrop={true} style={{ backgroundColor: 'rgba(0,0,0,0.15)', padding: '0px 2px', marginBottom: '70px' }}>
-                                    <Modal.Header>
-                                        <Modal.Title style={{ fontSize: '1.5rem', fontWeight: 'semibold', textAlign: 'center' }}>Detalles del Cliente</Modal.Title>
-                                    </Modal.Header>
-                                    <Modal.Body style={{ padding: '0px 25px' }}>
-                                        {lodingMoreInfoClienteMatchingEncargo ? (
-                                            <Skeleton count={10} height={30} />
-                                        ) : infoClienteMathingEncargo ? (
-                                            <div className='flex flex-col gap-2'>
-                                                <div className='flex flex-col gap-2 px-6 py-6 bg-slate-200 rounded-md shadow-lg mb-4'>
-                                                    <p><strong>Nombre:</strong> {infoClienteMathingEncargo.nombre}</p>
-                                                    <p><strong>Apellido:</strong> {infoClienteMathingEncargo.apellido}</p>
-                                                    <p><strong>DNI:</strong> {infoClienteMathingEncargo.dni}</p>
-                                                    <p><strong>Teléfono:</strong> {infoClienteMathingEncargo.telefono}</p>
-                                                    <p><strong>Email:</strong> {infoClienteMathingEncargo.email}</p>
-                                                    {infoClienteMathingEncargo.interes && (
-                                                        <p><strong>Interés:</strong> {infoClienteMathingEncargo.interes.charAt(0).toUpperCase() + infoClienteMathingEncargo.interes.slice(1)}</p>
-                                                    )}
-
-                                                    <div className="flex flex-row gap-2 mt-[20px]">
-                                                        <p><strong>Tipo de Cliente:</strong></p>
-                                                        <div>
-                                                            {infoClienteMathingEncargo.inmuebles_asociados_propietario && infoClienteMathingEncargo.inmuebles_asociados_propietario.length > 0 && (
-                                                                <Tag
-                                                                    key="propietario"
-                                                                    color="green"
-                                                                    style={{ marginBottom: '5px', marginRight: '5px' }}
-                                                                >
-                                                                    Propietario
-                                                                </Tag>
-                                                            )}
-                                                            {infoClienteMathingEncargo.inmuebles_asociados_inquilino && infoClienteMathingEncargo.inmuebles_asociados_inquilino.length > 0 && (
-                                                                <Tag
-                                                                    key="inquilino"
-                                                                    color="red"
-                                                                    style={{ marginBottom: '5px', marginRight: '5px' }}
-                                                                >
-                                                                    Inquilino
-                                                                </Tag>
-                                                            )}
-                                                        </div>
-                                                    </div>
-
-                                                    {infoClienteMathingEncargo.informador && (
-                                                        <div className="flex flex-row gap-2 mt-[10px]">
-                                                            <p><strong>Informador:</strong></p>
-                                                            <Tag color="cyan" style={{ marginBottom: '5px', marginRight: '5px' }}>
-                                                                Informador
-                                                            </Tag>
-                                                        </div>
-                                                    )}
-                                                </div>
-                                                {infoClienteMathingEncargo.pedido && (
-                                                    <div className="flex flex-row gap-2 mt-[10px]">
-                                                        <Tag color="orange" style={{
-                                                            borderRadius: '10px',
-                                                            padding: '8px 0px',
-                                                            color: '#fff',
-                                                            textAlign: 'center',
-                                                            marginBottom: '10px',
-                                                            width: '100px',
-                                                            marginRight: 'auto',
-                                                            marginLeft: 'auto',
-                                                            fontSize: '14px',
-                                                        }}>
-                                                            Pedido
-                                                        </Tag>
-                                                    </div>
-                                                )}
-                                                {infoClienteMathingEncargo.pedido && (
-                                                    <div style={{ display: 'grid', placeItems: 'center' }} className='flex flex-col gap-2 px-4 py-2 pb-8 bg-slate-200 rounded-md shadow-lg mb-4'>
-                                                        <h4 className='text-base my-2'>Información del pedido</h4>
-                                                        <p className='text-sm'><strong>Interés:</strong> {infoClienteMathingEncargo.interes.charAt(0).toUpperCase() + infoClienteMathingEncargo.interes.slice(1)}</p>
-                                                        <p className='text-sm'><strong>Rango de Precios:</strong> {infoClienteMathingEncargo.rango_precios.join(' - ')} €</p>
-                                                    </div>
-                                                )}
-                                                {['propietario', 'inquilino'].map(tipo => (
-                                                    infoClienteMathingEncargo[`inmuebles_asociados_${tipo}`] && infoClienteMathingEncargo[`inmuebles_asociados_${tipo}`].length > 0 && (
-                                                        <div key={tipo} className='mb-14 mt-8'>
-                                                            <div
-                                                                style={{
-                                                                    backgroundColor: tipo === 'propietario' ? '#28a745' :
-                                                                        tipo === 'inquilino' ? '#ef4444' : '#ef4444',
-                                                                    borderRadius: '10px',
-                                                                    padding: '8px 0px',
-                                                                    color: '#fff',
-                                                                    textAlign: 'center',
-                                                                    marginBottom: '10px',
-                                                                    width: '100px',
-                                                                    marginRight: 'auto',
-                                                                    marginLeft: 'auto',
-                                                                }}
-
-                                                            >
-                                                                {tipo.charAt(0).toUpperCase() + tipo.slice(1)}
-                                                            </div>
-
-                                                            <Table data={infoClienteMathingEncargo.inmueblesDetalle.filter(inmueble =>
-                                                                infoClienteMathingEncargo[`inmuebles_asociados_${tipo}`].some(assoc => assoc.id === inmueble.id)
-                                                            )} autoHeight={true}>
-                                                                <Column width={320} align="center">
-                                                                    <HeaderCell>Dirección</HeaderCell>
-                                                                    <Cell dataKey="direccion" />
-                                                                </Column>
-                                                                <Column width={200} align="center">
-                                                                    <HeaderCell>Zona</HeaderCell>
-                                                                    <Cell dataKey="zona" />
-                                                                </Column>
-                                                                <Column width={80} align="center">
-                                                                    <HeaderCell>Noticias</HeaderCell>
-                                                                    <Cell>
-                                                                        {rowData => rowData.noticiastate ? 'Sí' : 'No'}
-                                                                    </Cell>
-                                                                </Column>
-                                                                <Column width={80} align="center">
-                                                                    <HeaderCell>Encargos</HeaderCell>
-                                                                    <Cell>
-                                                                        {rowData => rowData.encargostate ? 'Sí' : 'No'}
-                                                                    </Cell>
-                                                                </Column>
-                                                                <Column width={100} align="center">
-                                                                    <HeaderCell>Superficie</HeaderCell>
-                                                                    <Cell>
-                                                                        {rowData => (
-                                                                            <span>{rowData.superficie} m²</span>
-                                                                        )}
-                                                                    </Cell>
-                                                                </Column>
-                                                            </Table>
-                                                        </div>
-                                                    )
-                                                ))}
-
-
-                                            </div>
-                                        ) : (
-                                            <p>No hay información disponible del cliente.</p>
-                                        )}
-                                        <Modal.Footer style={{ display: 'flex', justifyContent: 'center', marginTop: '20px' }}>
-                                            <Button onClick={() => setVerMásClienteEncargo(false)} appearance="subtle">
-                                                Cerrar
-                                            </Button>
-                                        </Modal.Footer>
-                                    </Modal.Body>
-                                </Modal>
-                            </Tabs.Tab>
-                        </Tabs >
+                                <Button onClick={handleAddEncargo} appearance="primary">
+                                    {isEditing ? 'Actualizar' : 'Añadir'}
+                                </Button>
+                                {isEditing && (
+                                    <Button onClick={handleDeleteEncargo} color="red" appearance="primary" style={{ margin: '0px' }}>
+                                        Eliminar
+                                    </Button>
+                                )}
+                                <Button onClick={handlePopupClose} appearance="subtle" style={{ margin: '0px' }}>
+                                    Cerrar
+                                </Button>
+                            </Modal.Footer>
+                        </Modal>
                     </Accordion.Panel >
                 </Accordion >
             </CustomProvider >

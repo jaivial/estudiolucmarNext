@@ -4,8 +4,8 @@ import clientPromise from '../../lib/mongodb';
 
 export default async function handler(req, res) {
 
-  // Run CORS middleware
-  await runMiddleware(req, res, cors);
+    // Run CORS middleware
+    await runMiddleware(req, res, cors);
 
 
     if (req.method !== 'POST') {
@@ -13,7 +13,7 @@ export default async function handler(req, res) {
         return res.status(405).json({ error: 'Method Not Allowed' });
     }
 
-    const { encargo_id, tipoEncargo, comercial, cliente, precio, tipoComision, comision, fecha } = req.body;
+    const { encargo_id, tipoEncargo, comercial, cliente, precio, tipoComision, comision, fecha, comisionCompradorValue, comisionComprador, tiempoExclusiva } = req.body;
 
     console.log('encargo_id', encargo_id);
     console.log('tipoEncargo', tipoEncargo);
@@ -23,6 +23,9 @@ export default async function handler(req, res) {
     console.log('tipoComision', tipoComision);
     console.log('comision', comision);
     console.log('fecha', fecha);
+    console.log('comisionCompradorValue', comisionCompradorValue);
+    console.log('comisionComprador', comisionComprador);
+    console.log('tiempoExclusiva', tiempoExclusiva);
 
 
     try {
@@ -30,42 +33,40 @@ export default async function handler(req, res) {
         const client = await clientPromise;
         const db = client.db('inmoprocrm');
 
-        // Start a session for transaction
-        const session = client.startSession();
-        session.startTransaction();
+        // Insert into 'encargos' collection
+        await db.collection('encargos').insertOne({
+            encargo_id: parseInt(encargo_id, 10),
+            encargo_fecha: fecha,
+            comercial_encargo: comercial,
+            tipo_encargo: tipoEncargo,
+            comision_encargo: parseInt(comision, 10),
+            cliente_id: cliente,
+            precio_1: parseInt(precio, 10),
+            tipo_comision_encargo: tipoComision,
+            comisionComprador: comisionComprador,
+            comisionCompradorValue: parseInt(comisionCompradorValue, 10),
+            tiempo_exclusiva: tiempoExclusiva,
+        });
 
-        try {
-            // Insert into 'encargos' collection
-            await db.collection('encargos').insertOne({
-                encargo_id: parseInt(encargo_id, 10),
-                encargo_fecha: fecha,
-                comercial_encargo: comercial,
-                tipo_encargo: tipoEncargo,
-                comision_encargo: parseInt(comision, 10),
-                cliente_id: parseInt(cliente, 10),
-                precio_1: parseInt(precio, 10),
-                tipo_comision_encargo: tipoComision
-            }, { session });
+        // Update 'inmuebles' collection
+        await db.collection('inmuebles').updateOne(
+            { id: parseInt(encargo_id, 10) },
+            { $set: { encargostate: true } }
+        );
 
-            // Update 'inmuebles' collection
-            await db.collection('inmuebles').updateOne(
-                { id: parseInt(encargo_id, 10) },
-                { $set: { encargostate: true } },
-                { session }
-            );
+        // Update 'inmuebles.nestedinmuebles' collection
+        await db.collection('inmuebles.nestedinmuebles').updateOne(
+            { id: parseInt(encargo_id, 10) },
+            { $set: { encargostate: true } }
+        );
 
-            // Commit transaction
-            await session.commitTransaction();
-            session.endSession();
+        // Update 'inmuebles.nestedescaleras.nestedinmuebles' collection
+        await db.collection('inmuebles.nestedescaleras.nestedinmuebles').updateOne(
+            { id: parseInt(encargo_id, 10) },
+            { $set: { encargostate: true } }
+        );
 
-            res.status(200).json({ success: 'Record added and encargoState updated successfully' });
-        } catch (error) {
-            // Abort transaction on error
-            await session.abortTransaction();
-            session.endSession();
-            console.error('Error in transaction:', error);
-            res.status(500).json({ error: 'Transaction failed: ' + error.message });
-        }
+        res.status(200).json({ success: 'Record added and encargoState updated successfully' });
     } catch (error) {
         console.error('Error connecting to database:', error);
         res.status(500).json({ error: 'Error connecting to database' });

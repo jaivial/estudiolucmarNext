@@ -99,7 +99,8 @@ export const getTasks = async (userId, month) => {
             task: task.task,
             completed: task.completed,
             task_date: task.task_date,
-            task_time: task.task_time
+            task_time: task.task_time,
+            asignada: task.asignada ? task.asignada : false
         }));
     } catch (error) {
         console.error("Error fetching tasks: ", error);
@@ -130,7 +131,8 @@ export const getTasksSSR = async (userId) => {
             task: task.task,
             completed: task.completed,
             task_date: task.task_date,
-            task_time: task.task_time
+            task_time: task.task_time,
+            asignada: task.asignada ? task.asignada : false
         }));
     } catch (error) {
         console.error("Error fetching tasks: ", error);

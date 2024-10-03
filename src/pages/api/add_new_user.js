@@ -13,8 +13,8 @@ export const config = {
 
 export default async function handler(req, res) {
 
-  // Run CORS middleware
-  await runMiddleware(req, res, cors);
+    // Run CORS middleware
+    await runMiddleware(req, res, cors);
 
 
     if (req.method === 'POST') {
@@ -74,29 +74,29 @@ async function sendConfirmationEmail(email, nombre, apellido, password) {
 
     // Contenido del email con estilos en línea
     const mailOptions = {
-        from: process.env.EMAIL_USER,
+        from: 'Estudio LUCMAR <' + process.env.EMAIL_USER + '>',
         to: email,
-        subject: 'Bienvenido a InmoProCRM',
+        subject: 'Bienvenido a Estudio LUCMAR',
         html: `
             <div style="
-                margin: 32px;
-                padding: 64px;
+                margin: 0px;
+                padding: 44px;
                 background-color: #f1f5f9;
                 border-radius: 12px;
                 box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
                 font-family: Arial, sans-serif;
                 text-align: center;
             ">
-                <img src="https://i.imgur.com/6t1DkSh.png" alt="InmoProCRM Logo" style="width: 150px; margin-bottom: 32px;">
+                <img src="https://i.imgur.com/6t1DkSh.png" alt="InmoProCRM Logo" style="width: 150px; margin-bottom: 32px; border-radius: 50%;">
                 <div style="font-size: 48px; margin-bottom: 24px; color: #3b82f6;">🏠</div>
                 <div style="font-size: 16px; color: #333333;">
                     <p>Hola <strong>${nombre} ${apellido}</strong>,</p>
-                    <p>¡Gracias por registrarte en InmoProCRM!</p>
-                    <p>A continuación, te proporcionamos tus credenciales de acceso:</p>
+                    <p>¡Bienvenido a Estudio LUCMAR!</p>
+                    <p>A continuación, te proporcionamos tus credenciales de acceso a nuestro CRM:</p>
                     <p><strong>Email:</strong> ${email}</p>
                     <p><strong>Contraseña:</strong> ${password}</p>
                     <p>Puedes acceder a la aplicación haciendo clic en el siguiente enlace:</p>
-                    <a href="https://yourdomain.com" style="
+                    <a href="https://estudiolucmar.com" style="
                         display: inline-block;
                         padding: 12px 24px;
                         margin-top: 24px;
@@ -105,24 +105,24 @@ async function sendConfirmationEmail(email, nombre, apellido, password) {
                         text-decoration: none;
                         border-radius: 8px;
                         font-weight: bold;
-                    ">Ir a InmoProCRM</a>
-                    <p>Saludos,<br>El equipo de InmoProCRM</p>
+                    ">Ir al CRM de Estudio LUCMAR</a>
+                    <p>Saludos,<br>El equipo de Estudio LUCMAR</p>
                 </div>
             </div>
         `,
         text: `Hola ${nombre} ${apellido},
 
-¡Gracias por registrarte en InmoProCRM!
+¡Bienvenido a Estudio LUCMAR!
 
-A continuación, te proporcionamos tus credenciales de acceso:
+A continuación, te proporcionamos tus credenciales de acceso a nuestro CRM:
 
 Email: ${email}
 Contraseña: ${password}
 
-Puedes acceder a la aplicación en el siguiente enlace: https://yourdomain.com
+Puedes acceder a la aplicación en el siguiente enlace: https://estudiolucmar.com
 
 Saludos,
-El equipo de InmoProCRM
+El equipo de Estudio LUCMAR
         `,
     };
 

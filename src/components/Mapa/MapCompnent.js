@@ -14,6 +14,9 @@ import { GeoSearchControl, OpenStreetMapProvider } from 'leaflet-geosearch';
 import L from 'leaflet'; // Ensure Leaflet is imported correctly
 import SmallLoadingScreen from '../LoadingScreen/SmallLoadingScreen';
 
+
+
+
 const icon = L.icon({
     iconUrl: 'https://cdn.jsdelivr.net/npm/leaflet@1.7.1/dist/images/marker-icon.png',
     iconSize: [25, 41],
@@ -160,7 +163,7 @@ const ColorPicker = ({ value, onChange }) => (
 );
 
 
-const MapComponent = () => {
+const MapComponent = ({ admin }) => {
     const [center] = useState({ lat: 39.4033747, lng: -0.4028759 });
     const ZOOM_LEVEL = 15;
     const mapRef = useRef();
@@ -320,7 +323,7 @@ const MapComponent = () => {
             // Make the Axios request
             const response = await axios.post('/api/checkInmuebleInZone', { codeID: codeId },
                 // Simulate progress from 21 to 49 with a 100ms interval
-                await simulateProgress(0, 100, 50),
+                await simulateProgress(0, 100, 10),
             );
             console.log('Response from checkInmuebleInZone:', response);
 
@@ -480,28 +483,28 @@ const MapComponent = () => {
                             />
                         ))}
 
-                        <EditControl
-                            position="topright"
-                            onCreated={onCreated}
-                            onDeleted={onDeleted}
-                            onEdited={onEdited}
-                            draw={{
-                                rectangle: false,
-                                polyline: false,
-                                circle: false,
-                                circlemarker: false,
-                                marker: false,
-                                polygon: true,
-                            }}
-                        />
+                        {admin && (
+                            <EditControl
+                                position="topright"
+                                onCreated={onCreated}
+                                onDeleted={onDeleted}
+                                onEdited={onEdited}
+                                draw={{
+                                    rectangle: false,
+                                    polyline: false,
+                                    circle: false,
+                                    circlemarker: false,
+                                    marker: false,
+                                    polygon: true,
+                                }}
+                            />
+                        )}
                     </FeatureGroup>
                 </MapContainer>
                 <Modal
                     open={isPopupOpen}
                     onClose={closePopup}
                     size="sm"
-                    className="w-full max-w-lg"
-                    style={{ marginTop: '130px', overflow: 'visible' }}
                 >
                     <Modal.Header>
                         <Modal.Title className="text-center" style={{ fontSize: '1.4rem', marginTop: '10px' }}>Crear Zona</Modal.Title>
