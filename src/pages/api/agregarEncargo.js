@@ -40,7 +40,7 @@ export default async function handler(req, res) {
             comercial_encargo: comercial,
             tipo_encargo: tipoEncargo,
             comision_encargo: parseInt(comision, 10),
-            cliente_id: parseInt(cliente, 10),
+            cliente_id: cliente,
             precio_1: parseInt(precio, 10),
             tipo_comision_encargo: tipoComision,
             comisionComprador: comisionComprador,
