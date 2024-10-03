@@ -44,6 +44,7 @@ const ItemDetails = ({ id, onClose, showModal, setShowModal, fetchData, currentP
     const [apellido, setApellido] = useState(null);
     const [inmuebles_asociados_inquilino, setInmueblesAsociadosInquilino] = useState(null);
     const [inmuebles_asociados_propietario, setInmueblesAsociadosPropietario] = useState(null);
+    const [inmuebles_asociados_informador, setInmueblesAsociadosInformador] = useState(null);
     const [passedDPVinfo, setPassedDPVinfo] = useState(null);
     const [DPVInfo, setDPVInfo] = useState(null);
     const [loadingThing, setLoadingThing] = useState(true);
@@ -227,6 +228,8 @@ const ItemDetails = ({ id, onClose, showModal, setShowModal, fetchData, currentP
                         setInmueblesAsociadosInquilino={setInmueblesAsociadosInquilino}
                         inmuebles_asociados_propietario={inmuebles_asociados_propietario}
                         setInmueblesAsociadosPropietario={setInmueblesAsociadosPropietario}
+                        inmuebles_asociados_informador={inmuebles_asociados_informador}
+                        setInmueblesAsociadosInformador={setInmueblesAsociadosInformador}
                     />
 
                     <div className="py-4 h-[300px] w-full rounded-lg">
@@ -271,11 +274,11 @@ const ItemDetails = ({ id, onClose, showModal, setShowModal, fetchData, currentP
                                                     </a>
 
                                                 </div>
-                                                {(inmuebles_asociados_inquilino || inmuebles_asociados_propietario) && (
-                                                    <div className="flex flex-row gap-2">
+                                                {((inmuebles_asociados_inquilino && inmuebles_asociados_inquilino.some(inquilino => inquilino.id === data.inmueble.id)) || (inmuebles_asociados_propietario && inmuebles_asociados_propietario.some(propietario => propietario.id === data.inmueble.id)) || (inmuebles_asociados_informador && inmuebles_asociados_informador.some(informador => informador.id === data.inmueble.id))) ? (
+                                                    <div className="flex flex-row gap-2 items-center">
                                                         <p>Tipo de Cliente:</p>
                                                         <div>
-                                                            {inmuebles_asociados_inquilino.length > 0 && (
+                                                            {inmuebles_asociados_inquilino.some(inquilino => inquilino.id === data.inmueble.id) && (
                                                                 <Tag
                                                                     color="orange"
                                                                     style={{ marginBottom: '5px', marginRight: '5px' }}
@@ -283,7 +286,7 @@ const ItemDetails = ({ id, onClose, showModal, setShowModal, fetchData, currentP
                                                                     Inquilino
                                                                 </Tag>
                                                             )}
-                                                            {inmuebles_asociados_propietario.length > 0 && (
+                                                            {inmuebles_asociados_propietario.some(propietario => propietario.id === data.inmueble.id) && (
                                                                 <Tag
                                                                     color="green"
                                                                     style={{ marginBottom: '5px', marginRight: '5px' }}
@@ -291,7 +294,18 @@ const ItemDetails = ({ id, onClose, showModal, setShowModal, fetchData, currentP
                                                                     Propietario
                                                                 </Tag>
                                                             )}
+                                                            {inmuebles_asociados_informador && inmuebles_asociados_informador.some(informador => informador.id === data.inmueble.id) && (
+                                                                <Tag
+                                                                    style={{ marginBottom: '0px', marginRight: '5px', backgroundColor: '#dbeafe', borderRadius: '8px', border: '2px solid #60a5fa', color: '#2563eb' }}
+                                                                >
+                                                                    Informador
+                                                                </Tag>
+                                                            )}
                                                         </div>
+                                                    </div>
+                                                ) : (
+                                                    <div className="flex flex-row gap-2">
+                                                        <p>Tipo de Cliente:  Sin Asignar</p>
                                                     </div>
                                                 )}
                                             </div>

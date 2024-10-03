@@ -2,8 +2,8 @@ import cors, { runMiddleware } from '../../utils/cors';
 import clientPromise from '../../lib/mongodb';
 export default async function handler(req, res) {
 
-  // Run CORS middleware
-  await runMiddleware(req, res, cors);
+    // Run CORS middleware
+    await runMiddleware(req, res, cors);
 
 
     if (req.method === 'POST') {
@@ -19,6 +19,8 @@ export default async function handler(req, res) {
                 fechaValoracion,
             } = req.body;
 
+
+            console.log('req.body', comercial);
 
 
 
@@ -37,7 +39,7 @@ export default async function handler(req, res) {
                 tipo_PV: tipoPVA || null,
                 valoracion: valoracion || null,
                 valoracion_establecida: valoraciontext || null,
-                comercial_noticia: comercial.value || null,
+                comercial_noticia: comercial || null,
                 valoracionDate: fechaValoracion || null
             };
 

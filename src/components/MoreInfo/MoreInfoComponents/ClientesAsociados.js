@@ -1,5 +1,5 @@
 import React, { useState, useEffect, use } from 'react';
-import { Accordion, Tag, Button, SelectPicker, Modal, IconButton, Radio, RadioGroup, Toggle, Form, Grid, TagPicker, InputNumber, Table, Whisper, Tooltip, AutoComplete, InputGroup } from 'rsuite';
+import { Accordion, Tag, Button, SelectPicker, Modal, IconButton, Radio, RadioGroup, Toggle, Form, Grid, TagPicker, InputNumber, Table, Whisper, Tooltip, AutoComplete, InputGroup, Panel } from 'rsuite';
 import axios from 'axios';
 import { Close } from '@rsuite/icons';
 import Toastify from 'toastify-js';
@@ -412,8 +412,8 @@ const ClientesAsociados = ({ inmuebleId, inmuebleDireccion, screenWidth, setFetc
     }, [newCliente]);
 
     return (
-        <Accordion defaultActiveKey={['0']} className='w-auto ml-[16px] mr-[16px] mt-[20px] border-1 border-gray-300 bg-gray-100 rounded-lg shadow-lg'>
-            <Accordion.Panel header="Clientes Asociados" eventKey="0" style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+        <Accordion defaultActiveKey={0} className='w-auto ml-[16px] mr-[16px] mt-[20px] border-1 border-gray-300 bg-gray-100 rounded-lg shadow-lg'>
+            <Accordion.Panel header="Clientes Asociados" eventKey={0} defaultExpanded={true} style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                 <Modal open={open} onClose={handleClose} style={{ backgroundColor: 'rgba(0,0,0,0.15)', borderRadius: '10px', padding: '0px' }} backdrop="static">
                     <Modal.Header>
                         <Modal.Title style={{ fontSize: '1.5rem', fontWeight: 'semibold', textAlign: 'center' }}>Asociar Cliente</Modal.Title>
@@ -746,11 +746,11 @@ const ClientesAsociados = ({ inmuebleId, inmuebleDireccion, screenWidth, setFetc
                                                     <p>{cliente.telefono}</p>
                                                 </div>
                                             )}
-                                            <div className='w-[200px] text-center flex flex-row justify-center items-center gap-3'>
-                                                <button className='rounded-md text-3xl' onClick={() => handleViewCliente(cliente)}>
+                                            <div className='w-[100px] text-center flex flex-row justify-center items-center gap-2 pl-2'>
+                                                <button className='rounded-md text-xl' onClick={() => handleViewCliente(cliente)}>
                                                     <FaEye />
                                                 </button>
-                                                <button className='rounded-md text-3xl' onClick={() => handleEditClienteAsociado(cliente)}>
+                                                <button className='rounded-md text-xl' onClick={() => handleEditClienteAsociado(cliente)}>
                                                     <AiOutlineEdit />
                                                 </button>
                                                 <button onClick={() => handleRemoveCliente(cliente._id)} className='text-black text-xl'>
@@ -1056,7 +1056,7 @@ const ClientesAsociados = ({ inmuebleId, inmuebleDireccion, screenWidth, setFetc
                     </Modal.Body>
                 </Modal>
 
-            </Accordion.Panel >
+            </Accordion.Panel>
         </Accordion >
     );
 };

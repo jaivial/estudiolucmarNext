@@ -4,8 +4,8 @@ import clientPromise from '../../lib/mongodb';
 
 export default async function handler(req, res) {
 
-  // Run CORS middleware
-  await runMiddleware(req, res, cors);
+    // Run CORS middleware
+    await runMiddleware(req, res, cors);
 
 
     if (req.method === 'POST') {
@@ -40,6 +40,7 @@ export default async function handler(req, res) {
 
             let inmuebles_asociados_propietario_toAdd = {};
             let inmuebles_asociados_inquilino_toAdd = {};
+            let inmuebles_asociados_informador_toAdd = {};
             let tipo_de_cliente_toAdd = [];
 
             // Update interes and rango_precios only if pedido is true
@@ -72,10 +73,12 @@ export default async function handler(req, res) {
                 tipo_de_cliente_toAdd.push('inquilino');
             }
 
-            console.log('inmuebles_asociados_propietario_toAdd', inmuebles_asociados_propietario_toAdd);
-            console.log('inmuebles_asociados_inquilino_toAdd', inmuebles_asociados_inquilino_toAdd);
-
-            console.log('tipo_de_cliente_toAdd', tipo_de_cliente_toAdd);
+            if (!propietario && !inquilino) {
+                inmuebles_asociados_informador_toAdd = {
+                    id: inmuebleId,
+                    direccion: inmuebleDireccion,
+                };
+            }
 
             // Perform the update on the specific cliente
             const result = await db.collection('clientes').updateOne(
@@ -107,6 +110,20 @@ export default async function handler(req, res) {
                     }
                 );
             }
+
+            if (!inmuebles_asociados_inquilino_toAdd.id && !inmuebles_asociados_propietario_toAdd.id) {
+                await db.collection('clientes').updateOne(
+                    {
+                        _id: new ObjectId(clientsToAssociate),
+                        'inmuebles_asociados_informador.id': { $ne: inmuebles_asociados_informador_toAdd.id }
+                    },
+                    {
+                        $push: { 'inmuebles_asociados_informador': inmuebles_asociados_informador_toAdd }
+                    }
+
+                );
+            }
+
             if (!inquilino) {
                 await db.collection('clientes').updateOne(
                     { _id: new ObjectId(clientsToAssociate) },

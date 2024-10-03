@@ -263,12 +263,10 @@ const ComentariosDetails = ({ data, fetchClientPhoneNumberRefreshKey }) => {
     return (
         <CustomProvider locale={esES}>
             <Accordion defaultActiveKey={1} bordered style={{ margin: '0px 16px' }}>
-                <Accordion.Panel style={{ backgroundColor: '#f4f4f5', padding: '0px' }} header={
-                    <h2 className="font-bold text-xl">Comentarios</h2>
-                } eventKey="1">
+                <Accordion.Panel style={{ backgroundColor: '#f4f4f5', padding: '0px' }} header={'Comentarios'} eventKey={1}>
                     {programados.length > 0 && (
                         <div>
-                            <h3 className="font-bold text-lg mb-2">Programados</h3>
+                            <h3 className="font-bold text-base underline -mb-1">Programados</h3>
                             <div className="py-2 -mx-2">
                                 {programados.map((comentario) => (
                                     <div key={comentario._id} className="py-2 my-3 relative flex items-start justify-between bg-blue-100 rounded-md">
@@ -348,7 +346,7 @@ const ComentariosDetails = ({ data, fetchClientPhoneNumberRefreshKey }) => {
                         <div>
                             {programados.length > 0 && <Divider />}
 
-                            <h3 className="font-bold text-lg mb-2">Realizados</h3>
+                            <h3 className="font-bold text-base underline -mb-3">Realizados</h3>
                             <div className="py-4 -mx-2">
                                 {completados.map((comentario) => (
                                     <div key={comentario._id} className="py-2 my-3 relative flex items-start justify-between bg-zinc-200 rounded-md">

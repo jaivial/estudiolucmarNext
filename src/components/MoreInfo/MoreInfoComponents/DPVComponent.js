@@ -5,6 +5,7 @@ import Toastify from 'toastify-js';
 import 'toastify-js/src/toastify.css'; // Import Toastify CSS
 import axios from 'axios';
 import { format, parse } from 'date-fns';
+import { parseISO } from 'date-fns';
 
 const DPVComponent = ({ isOpen, setDPVModalOpen, inmuebleId, DPVboolean, setDPVboolean, admin, onAddDeleteDPVRefreshKey, setOnAddDeleteDPVRefreshKey, passedDPVinfo, setpassedDPVinfo }) => {
     const [isDPV, setIsDPV] = useState(false);
@@ -23,7 +24,7 @@ const DPVComponent = ({ isOpen, setDPVModalOpen, inmuebleId, DPVboolean, setDPVb
             valoracionEstimada: 0,
             inmuebleId: inmuebleId,
             precioActual: 0,
-            fechaPublicacion: '',
+            fechaPublicacion: new Date(),
             accionDPV: '',
             DPVboolean: false,
         }
@@ -214,12 +215,12 @@ const DPVComponent = ({ isOpen, setDPVModalOpen, inmuebleId, DPVboolean, setDPVb
         setEditDPVMode(true);
     };
     return (
-        <Modal open={isOpen} onClose={closeDPVModal} size="md" backdrop="static" style={{ backgroundColor: 'rgba(0,0,0,0.15)', padding: '0px 2px' }}>
+        <Modal open={isOpen} onClose={closeDPVModal} size="md" backdrop overflow={false} style={{ backgroundColor: 'rgba(0,0,0,0.15)', padding: '0px 2px', marginBottom: '70px' }}>
             <Modal.Header>
                 <Modal.Title className='text-center'>DPV</Modal.Title>
 
             </Modal.Header>
-            <Modal.Body style={{ padding: '35px' }}>
+            <Modal.Body style={{ padding: '35px 35px 0px 35px' }}>
                 <div className='flex flex-col justify-center items-center gap-4'>
                     {!DPVboolean && (
                         <label>¿Este inmueble es un DPV?</label>
@@ -232,6 +233,7 @@ const DPVComponent = ({ isOpen, setDPVModalOpen, inmuebleId, DPVboolean, setDPVb
                                 onChange={(value) => setDPVInfo(prev => ({ ...prev, DPVboolean: value }))}
                                 checkedChildren={<FaCheckCircle />}
                                 unCheckedChildren={<FaTimesCircle />}
+                                style={{ marginBottom: '20px' }}
                             />
                         )}
                         {DPVboolean && (
@@ -282,7 +284,7 @@ const DPVComponent = ({ isOpen, setDPVModalOpen, inmuebleId, DPVboolean, setDPVb
                         </div>
                         <div className="bg-gray-100 rounded-md p-3 flex flex-col gap-2 w-full items-center">
                             <h3 className="text-lg font-medium text-gray-700">Fecha de publicación:</h3>
-                            <p className="text-gray-600">{DPVInfo.fechaPublicacion ? format(parse(DPVInfo.fechaPublicacion, 'yyyy-MM-dd', new Date()), 'dd-MM-yyyy') : 'Fecha no establecida'}</p>
+                            <p className="text-gray-600">{DPVInfo.fechaPublicacion ? format(new Date(DPVInfo.fechaPublicacion), 'dd-MM-yyyy') : 'Fecha no establecida'}</p>
                         </div>
                     </div>
                 )}
@@ -491,12 +493,12 @@ const DPVComponent = ({ isOpen, setDPVModalOpen, inmuebleId, DPVboolean, setDPVb
                         </div>
                     </Form>
                 )}
+                <Modal.Footer className="flex flex-row justify-center gap-1">
+                    <Button onClick={closeDPVModal} appearance="subtle">
+                        Cerrar
+                    </Button>
+                </Modal.Footer>
             </Modal.Body>
-            <Modal.Footer className="flex flex-row justify-center gap-1">
-                <Button onClick={closeDPVModal} appearance="subtle">
-                    Cerrar
-                </Button>
-            </Modal.Footer>
         </Modal>
     );
 };

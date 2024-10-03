@@ -79,6 +79,7 @@ const NoticiasDetails = ({ data, setOnAddNoticiaRefreshKey, onAddNoticiaRefreshK
                 if (response.data.status === 'success') {
                     const noticia = response.data.noticia; // Get the noticia object
                     if (noticia) {
+                        console.log('noticia', noticia);
                         // Wrap the single noticia object in an array
                         setNoticias([noticia]);
                     } else {
@@ -131,6 +132,8 @@ const NoticiasDetails = ({ data, setOnAddNoticiaRefreshKey, onAddNoticiaRefreshK
         setIsPopupOpen(false);
     };
 
+
+
     const handleAddNoticia = async () => {
         // Validate the input fields
         if (!tipoVenta) {
@@ -166,6 +169,8 @@ const NoticiasDetails = ({ data, setOnAddNoticiaRefreshKey, onAddNoticiaRefreshK
             comercial: selectedAsesor,
         };
 
+
+
         try {
 
             // Determine the endpoint based on whether we are editing or adding
@@ -179,7 +184,7 @@ const NoticiasDetails = ({ data, setOnAddNoticiaRefreshKey, onAddNoticiaRefreshK
             if (response.data.success) {
                 showToast(isEditing ? 'Noticia actualizada' : 'Noticia añadida', 'linear-gradient(to right bottom, #00603c, #006f39, #007d31, #008b24, #069903)');
                 handlePopupClose(); // Close the popup and reset fields
-                await fetchNoticias(); // Refresh noticias
+                fetchNoticias(); // Refresh noticias
                 setOnAddNoticiaRefreshKey(onAddNoticiaRefreshKey + 1); // Refresh the key to trigger a re-render
                 fetchData(currentPage, searchTerm);
             } else {
@@ -191,13 +196,19 @@ const NoticiasDetails = ({ data, setOnAddNoticiaRefreshKey, onAddNoticiaRefreshK
         }
     };
 
+    useEffect(() => {
+        console.log('noticias', noticias);
+    }, [noticias]);
+
+    useEffect(() => {
+        console.log('selectedAsesor', selectedAsesor);
+    }, [selectedAsesor]);
+
+
 
     const handleEditNoticia = (noticia) => {
         setTipoVenta(noticia.tipo_PV);
-        setSelectedAsesor({
-            value: noticia.comercial_noticia,
-            label: noticia.comercial_noticia,
-        });
+        setSelectedAsesor(noticia.comercial_noticia);
         setValoracion(noticia.valoracion === 1 ? 'Con Valoración' : 'Sin Valoración');
         setValoracionPrice(noticia.valoracion_establecida || '');
         setValoracionDateTime(noticia.valoracionDate || '');
@@ -248,12 +259,12 @@ const NoticiasDetails = ({ data, setOnAddNoticiaRefreshKey, onAddNoticiaRefreshK
         console.log('valoracionDateTime', valoracionDateTime);
     }, [noticiaDateTime, valoracionDateTime]);
 
+
+
     return (
         <CustomProvider locale={esES}>
             <Accordion defaultActiveKey={1} bordered style={{ margin: '0px 16px', marginTop: '20px' }}>
-                <Accordion.Panel style={{ backgroundColor: '#f4f4f5', padding: '0px' }} header={
-                    <h2 className="font-bold text-xl">Noticias</h2>
-                } eventKey="1">
+                <Accordion.Panel style={{ backgroundColor: '#f4f4f5', padding: '0px' }} header={'Noticias'} eventKey={1}>
                     <div className="p-4">
                         <div className="py-1 px-2 relative">
                             {data.inmueble.noticiastate === true ? (
@@ -305,7 +316,7 @@ const NoticiasDetails = ({ data, setOnAddNoticiaRefreshKey, onAddNoticiaRefreshK
 
                                         <div className="flex items-center gap-2 flex-col w-full">
                                             <FaUserTie className="text-gray-900 text-3xl" />
-                                            <p className="text-base text-gray-950 py-1 text-center">Asesor: {noticia.comercial_noticia}</p>
+                                            <p className="text-base text-gray-950 py-1 text-center">Asesor: {noticia.comercial_noticia.value ? noticia.comercial_noticia.value : noticia.comercial_noticia}</p>
                                         </div>
                                         <div className="absolute top-2 right-2">
                                             <FiEdit className="text-2xl cursor-pointer text-blue-500" onClick={() => handleEditNoticia(noticia)} />
@@ -348,13 +359,20 @@ const NoticiasDetails = ({ data, setOnAddNoticiaRefreshKey, onAddNoticiaRefreshK
                                     />
 
                                     <SelectPicker
-                                        data={asesorOptions}
-                                        value={selectedAsesor ? selectedAsesor.value : undefined}
-                                        onChange={(value, item) => setSelectedAsesor(value)}
+                                        data={asesorOptions.map(option => ({
+                                            ...option,
+                                            selected: option.label === selectedAsesor,
+                                        }))}
+                                        value={selectedAsesor ? asesorOptions.find(option => option.label === selectedAsesor)?.value : null}
+                                        onChange={(value, item) => {
+                                            setSelectedAsesor(value);
+                                        }}
                                         placeholder="Asesor"
+                                        clearable={true}
                                         className="basic-single z-[900]"
                                         style={{ width: '100%' }}
                                     />
+
                                     <Select
                                         value={valoracion ? { value: valoracion, label: valoracion } : null}
                                         onChange={(option) => setValoracion(option.value)}
@@ -399,20 +417,26 @@ const NoticiasDetails = ({ data, setOnAddNoticiaRefreshKey, onAddNoticiaRefreshK
                                         <CustomSlider value={draggableValue} onChange={handleSliderChange} />
                                     </div>
                                 </div>
+                                <Modal.Footer>
+                                    <div className='flex flex-col items-center justify-center gap-4 mt-4'>
+                                        <div>
+                                            <Button onClick={handleAddNoticia} appearance="primary">
+                                                {isEditing ? 'Actualizar' : 'Añadir'}
+                                            </Button>
+                                            {isEditing && (
+                                                <Button onClick={handleDeleteNoticia} color="red" appearance="primary">
+                                                    Eliminar
+                                                </Button>
+                                            )}
+                                        </div>
+                                        <div>
+                                            <Button onClick={handlePopupClose} appearance="subtle">
+                                                Cerrar
+                                            </Button>
+                                        </div>
+                                    </div>
+                                </Modal.Footer>
                             </Modal.Body>
-                            <Modal.Footer>
-                                <Button onClick={handleAddNoticia} appearance="primary">
-                                    {isEditing ? 'Actualizar' : 'Añadir'}
-                                </Button>
-                                {isEditing && (
-                                    <Button onClick={handleDeleteNoticia} color="red" appearance="primary">
-                                        Eliminar
-                                    </Button>
-                                )}
-                                <Button onClick={handlePopupClose} appearance="subtle">
-                                    Cerrar
-                                </Button>
-                            </Modal.Footer>
                         </Modal>
                     </div>
                 </Accordion.Panel>
