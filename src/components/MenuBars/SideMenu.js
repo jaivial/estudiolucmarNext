@@ -122,7 +122,7 @@ const Sidebar = ({ userData }) => {
 
 
             {/* User Information Section */}
-            <div className={`bg-slate-800 text-white mt-auto  rounded-br-2xl flex flex-col items-center transition-all duration-[1000ms] ${isExpanded ? 'h-[35%] gap-5 justify-center' : 'justify-center h-[20%]'}`}>
+            <div className={`bg-slate-800 text-white mt-auto  rounded-br-2xl flex flex-col items-center transition-all duration-[1000ms] ${isExpanded ? 'h-[35%] gap-5 pt-6' : 'justify-center h-[20%]'}`}>
 
                 <>
                     <Image
