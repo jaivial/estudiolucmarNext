@@ -15,6 +15,31 @@ import Cookies from 'js-cookie';  // Import js-cookie to access cookies
 
 
 export const getServerSideProps = async (context) => {
+    const cookies = context.req.cookies; // Corrected to access cookies from the request
+    const user_id = cookies.user_id;
+    let userData = null;
+    if (user_id) {
+        try {
+            // Construct the URL
+            const response = await fetch(`http://localhost:3000/api/fetchuserinformation`, {
+                method: 'POST', // Specify the method
+                headers: {
+                    'Content-Type': 'application/json', // Specify the content type
+                },
+                body: JSON.stringify({ user_id }) // Pass user_id in the body
+            });
+
+            if (response.status === 200) {
+                userData = await response.json();
+            } else {
+                console.error('Error fetching user data:', response.statusText);
+            }
+        } catch (error) {
+            console.error('Error fetching user data:', error);
+        }
+    }
+
+    let isAdmin = null;
     try {
         const client = await clientPromise;
         const db = client.db('inmoprocrm');
@@ -29,22 +54,22 @@ export const getServerSideProps = async (context) => {
         console.log('Serialized props size:', sizeInBytes, 'bytes');
         console.log('Serialized props size:', sizeInKB.toFixed(2), 'KB');
 
-        return {
-            props: {
-                isAdmin: adminCookie,  // Passing the admin status to props
-            },
-        };
+
+        isAdmin = adminCookie;  // Passing the admin status to props
+
     } catch (error) {
         console.error('Error al obtener los datos del usuario:', error);
-        return {
-            props: {
-                isAdmin: false,
-            },
-        };
+        isAdmin = false;
     }
+    return {
+        props: {
+            isAdmin,
+            userData,
+        },
+    };
 };
 
-export default function Settings({ isAdmin: initialIsAdmin }) {
+export default function Settings({ isAdmin: initialIsAdmin, userData }) {
     const [searchTerm, setSearchTerm] = useState('');
     const [passwordVisible, setPasswordVisible] = useState(false);
     const [newUserPasswordVisible, setNewUserPasswordVisible] = useState(false);
@@ -74,6 +99,11 @@ export default function Settings({ isAdmin: initialIsAdmin }) {
     const [editUserId, setEditUserId] = useState(null); // Store the user_id of the user being edited
 
     const toaster = useToaster();
+
+    useEffect(() => { // Fetch user data on mount
+        console.log('userData', userData);
+        console.log('isAdmin', isAdmin);
+    }, []);
 
     useEffect(() => {
         const fetchLoggedInUser = async () => {
@@ -455,7 +485,7 @@ export default function Settings({ isAdmin: initialIsAdmin }) {
 
 
     return (
-        <GeneralLayout title="Configuración de Usuarios" description="Panel de administración de usuarios">
+        <GeneralLayout title="Configuración de Usuarios" description="Panel de administración de usuarios" userData={userData}>
             {Loading && <LoadingScreen />}
             {isLoading && (
                 <div className="fixed inset-0 bg-slate-800 bg-opacity-30 flex items-center justify-center z-50">

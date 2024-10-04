@@ -2,11 +2,52 @@ import GeneralLayout from "../components/layouts/GeneralLayout";
 import { useState, useEffect } from "react";
 import TablaAllData from "../components/Buscador/TablaAllData";
 import SmallLoadingScreen from '../components/LoadingScreen/SmallLoadingScreen'; // Corrected component import name
+import { checkLogin } from "../lib/mongodb/login/checkLogin.js";
 
 
 export async function getServerSideProps(context) {
+    const { req } = context;
+    let user = null;
+
+    try {
+        user = await checkLogin(req); // Pass the request object to checkActiveUser
+        if (!user || user.length === 0) {
+            return {
+                redirect: {
+                    destination: '/',
+                    permanent: false,
+                },
+            };
+        }
+    } catch (error) {
+        console.error('Error during server-side data fetching:', error.message);
+    }
+
     const cookies = context.req.cookies; // Corrected to access cookies from the request
     const admin = cookies.admin || null;
+    const user_id = cookies.user_id;
+
+    let userData = null;
+    if (user_id) {
+        try {
+            // Construct the URL
+            const response = await fetch(`http://localhost:3000/api/fetchuserinformation`, {
+                method: 'POST', // Specify the method
+                headers: {
+                    'Content-Type': 'application/json', // Specify the content type
+                },
+                body: JSON.stringify({ user_id }) // Pass user_id in the body
+            });
+
+            if (response.status === 200) {
+                userData = await response.json();
+            } else {
+                console.error('Error fetching user data:', response.statusText);
+            }
+        } catch (error) {
+            console.error('Error fetching user data:', error);
+        }
+    }
 
     // Fetch data on the server side
     let data = {
@@ -24,11 +65,11 @@ export async function getServerSideProps(context) {
     }
 
     return {
-        props: { admin, data } // Pass fetched data as props
+        props: { admin, data, userData } // Pass fetched data as props
     };
 }
 
-export default function Buscador({ admin, data }) {
+export default function Buscador({ admin, data, userData }) {
     const [loading, setLoading] = useState(false);
 
     const [screenWidth, setScreenWidth] = useState(0);
@@ -58,7 +99,7 @@ export default function Buscador({ admin, data }) {
 
 
     return (
-        <GeneralLayout title="Buscador" description="Buscador">
+        <GeneralLayout title="Buscador" description="Buscador" userData={userData}>
             <div className="h-full">
                 <TablaAllData parentsEdificioProps={data} admin={admin} screenWidth={screenWidth} loadingLoader={loading} />
             </div>

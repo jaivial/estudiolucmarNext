@@ -119,11 +119,35 @@ export async function getServerSideProps(context) {
             console.error('Error processing tasks:', error);
         }
 
+
+
+
+
     } catch (error) {
         console.error('Error fetching all tasks:', error);
     }
 
+    let userData = null;
+    if (user_id) {
+        try {
+            // Construct the URL
+            const response = await fetch(`http://localhost:3000/api/fetchuserinformation`, {
+                method: 'POST', // Specify the method
+                headers: {
+                    'Content-Type': 'application/json', // Specify the content type
+                },
+                body: JSON.stringify({ user_id }) // Pass user_id in the body
+            });
 
+            if (response.status === 200) {
+                userData = await response.json();
+            } else {
+                console.error('Error fetching user data:', response.statusText);
+            }
+        } catch (error) {
+            console.error('Error fetching user data:', error);
+        }
+    }
 
 
     return {
@@ -136,13 +160,14 @@ export async function getServerSideProps(context) {
             datesWithCompletedTasks,
             datesWithIncompleteTasks,
             admin,
+            userData
         },
     };
 }
 
 
 
-export default function Home({ user, user_id, initialUserName, tasksSSR, allTasksSSR, datesWithCompletedTasks, datesWithIncompleteTasks, admin }) {
+export default function Home({ user, user_id, initialUserName, tasksSSR, allTasksSSR, datesWithCompletedTasks, datesWithIncompleteTasks, admin, userData }) {
 
     const [modalAsignarTarea, setModalAsignarTarea] = useState(false);
     const [selectedAsesor, setSelectedAsesor] = useState(null);
@@ -234,8 +259,8 @@ export default function Home({ user, user_id, initialUserName, tasksSSR, allTask
     };
 
     return (
-        <GeneralLayout title={metadata.title} description={metadata.description} user={user}>
-            <div>
+        <GeneralLayout title={metadata.title} description={metadata.description} user={user} userData={userData}>
+            <div className="h-full">
                 <Modal open={modalAsignarTarea} onClose={() => setModalAsignarTarea(false)} size="md" overflow={false} backdrop={true} style={{ backgroundColor: 'rgba(0,0,0,0.15)', padding: '0px 2px', marginBottom: '70px' }}>
                     <Modal.Header style={{ display: 'flex', flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: '10px', width: '100%', marginTop: '10px' }}>
                         <Modal.Title style={{ fontSize: '1.5rem', fontWeight: 'bold', textAlign: 'center' }}>Asignar Tarea</Modal.Title>
