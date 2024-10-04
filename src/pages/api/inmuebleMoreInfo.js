@@ -3,9 +3,8 @@ import clientPromise from '../../lib/mongodb';
 
 export default async function handler(req, res) {
 
-  // Run CORS middleware
-  await runMiddleware(req, res, cors);
-
+    // Run CORS middleware
+    await runMiddleware(req, res, cors);
 
     if (req.method === 'GET') {
         try {
@@ -19,18 +18,30 @@ export default async function handler(req, res) {
                 return res.status(400).json({ message: 'ID is required' });
             }
 
-            // Fetch the 'inmuebles' collection
-            const inmueble = await db.collection('inmuebles').findOne({ id: parseInt(id) });
+            // Try to find the inmueble by id in 'inmuebles'
+            let inmueble = await db.collection('inmuebles').findOne({ id: parseInt(id) });
 
+            // If not found, search in 'nestedinmuebles'
+            if (!inmueble) {
+                inmueble = await db.collection('inmuebles').findOne({ "nestedinmuebles.id": parseInt(id) });
+            }
+
+            // If still not found, search in 'nestedescaleras.nestedinmuebles'
+            if (!inmueble) {
+                inmueble = await db.collection('inmuebles').findOne({ "nestedescaleras.nestedinmuebles.id": parseInt(id) });
+            }
+
+            // If inmueble is still not found, return 404
             if (!inmueble) {
                 return res.status(404).json({ message: 'Inmueble not found' });
             }
 
-            // Fetch the 'comentarios' collection
+            // Fetch the 'comentarios' collection based on the inmueble ID
             const comentarios = await db.collection('comentarios').find({ comentario_id: parseInt(id) }).toArray();
 
-            // Calculate dataUpdateTime based on the date_time of the comments
-            let dataUpdateTime = 'red'; // Default to 'red' if there are no comments
+            // Default dataUpdateTime to 'gray' if there are no comments
+            let dataUpdateTime = 'gray';
+
             if (comentarios.length > 0) {
                 const mostRecentComment = comentarios.reduce((latest, comment) => {
                     return new Date(comment.date_time) > new Date(latest.date_time) ? comment : latest;
