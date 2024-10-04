@@ -96,7 +96,7 @@ async function sendConfirmationEmail(email, nombre, apellido, password) {
                     <p><strong>Email:</strong> ${email}</p>
                     <p><strong>Contraseña:</strong> ${password}</p>
                     <p>Puedes acceder a la aplicación haciendo clic en el siguiente enlace:</p>
-                    <a href="https://estudiolucmar.com" style="
+                    <a href="https://crm.estudiolucmar.com" style="
                         display: inline-block;
                         padding: 12px 24px;
                         margin-top: 24px;
@@ -119,7 +119,7 @@ A continuación, te proporcionamos tus credenciales de acceso a nuestro CRM:
 Email: ${email}
 Contraseña: ${password}
 
-Puedes acceder a la aplicación en el siguiente enlace: https://estudiolucmar.com
+Puedes acceder a la aplicación en el siguiente enlace: https://crm.estudiolucmar.com
 
 Saludos,
 El equipo de Estudio LUCMAR
