@@ -820,6 +820,7 @@ export default function Settings({ isAdmin: initialIsAdmin }) {
                                             <Toggle
                                                 name="admin"
                                                 checked={isAdmin}
+                                                value={isAdmin}
                                                 onChange={setIsAdmin}
                                                 checkedChildren="Administrador"
                                                 unCheckedChildren="&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Asesor&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"

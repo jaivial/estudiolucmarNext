@@ -47,7 +47,6 @@ const TaskList = ({ day, tasks, refreshTasks, filteredTasksByDate, setDisplayedM
     const userId = Cookies.get('user_id');
 
 
-
     const onClose = () => {
         setModalAsignarTarea(false);
     };
@@ -177,7 +176,7 @@ const TaskList = ({ day, tasks, refreshTasks, filteredTasksByDate, setDisplayedM
                         {SpanishDateString}
                     </h3>
                 </div>
-                {!admin ? (
+                {admin === 'false' ? (
                     <>
                         <button className="absolute top-3 right-3 bg-blue-500 text-white rounded-full font-sans font-bold text-2xl text-center flex flex-row justify-center items-center h-10 w-10 pb-0.5" onClick={handleAddTaskClick}>
                             <p>+</p>
@@ -215,9 +214,11 @@ const TaskList = ({ day, tasks, refreshTasks, filteredTasksByDate, setDisplayedM
                                                 <span className={task.completed ? 'line-through text-gray-500' : ''}>{task.task}</span>
                                             </div>
                                         </Checkbox>
-                                        <Button appearance="link" onClick={() => handleDeleteTask(task.id)} className="text-red-600">
-                                            <FaTrash />
-                                        </Button>
+                                        {admin === 'true' && (
+                                            <Button appearance="link" onClick={() => handleDeleteTask(task.id)} className="text-red-600">
+                                                <FaTrash />
+                                            </Button>
+                                        )}
                                     </List.Item>
                                 ))}
                             </List>

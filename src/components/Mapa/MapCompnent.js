@@ -483,7 +483,7 @@ const MapComponent = ({ admin }) => {
                             />
                         ))}
 
-                        {admin && (
+                        {admin === true && (
                             <EditControl
                                 position="topright"
                                 onCreated={onCreated}

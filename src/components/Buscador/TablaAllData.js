@@ -1300,7 +1300,7 @@ const Table = ({ parentsEdificioProps, admin, screenWidth, loadingLoader }) => {
                                 {showAnalytics && <Analytics analyticsData={analyticsData} />}
                                 {showFilters && <FilterMenu setFilters={setFilters} currentPage={currentPage} data={data} setData={setData} filters={filters} setCurrentPage={setCurrentPage} setTotalPages={setTotalPages} setLoading={setLoading} resetFiltersKey={resetFiltersKey} />}
                                 {showEditTable && (
-                                    <div className={`flex flex-row gap-4 pt-2 pb-2 w-full ${admin ? 'justify-between' : 'justify-center'} iconscontainertrue`}>
+                                    <div className={`flex flex-row gap-4 pt-2 pb-2 w-full ${admin === 'true' ? 'justify-between' : 'justify-center'} iconscontainertrue`}>
                                         <div className="flex flex-row gap-4">
                                             <button type="button" onClick={handleIconClick} className={`flex items-center justify-center p-2 rounded shadow-lg hover:bg-blue-950 hover:text-white w-fit ${showExtraButtons ? 'bg-blue-950 text-white' : 'bg-blue-300 text-black'}`}>
                                                 <svg xmlns="http://www.w3.org/2000/svg" width="2em" height="2em" viewBox="0 0 24 24">
@@ -1319,7 +1319,7 @@ const Table = ({ parentsEdificioProps, admin, screenWidth, loadingLoader }) => {
                                         </div>
 
                                         <div className="flex flex-row gap-4">
-                                            {admin && (
+                                            {admin === 'true' && (
                                                 <button
                                                     type="button"
                                                     onClick={handleIconDeleteInmueble}
