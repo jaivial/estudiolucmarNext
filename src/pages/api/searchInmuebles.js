@@ -1,6 +1,7 @@
 import cors, { runMiddleware } from '../../utils/cors';
 import clientPromise from '../../lib/mongodb';
 import { getFilteredCategoriesAndResponsiblesByAddress } from "./calculate_analytics";
+import { data } from 'autoprefixer';
 
 export default async function handler(req, res) {
 
@@ -120,7 +121,8 @@ export default async function handler(req, res) {
             localizado_phone: 1,
             nestedinmuebles: 1,
             nestedescaleras: 1,
-            DPV: 1
+            DPV: 1,
+
         };
 
         // Count the total number of matching documents˘
@@ -139,6 +141,32 @@ export default async function handler(req, res) {
             .limit(limit)
             .toArray();
 
+        const calculateDataUpdateTime = (result) => {
+            let dataUpdateTime = 'gray'; // Default value
+
+            // Check if tipoagrupacion is 1 and there are comments
+            if (result.tipoagrupacion === 1 && Array.isArray(result.comentarios) && result.comentarios.length > 0) {
+                // Find the most recent comment
+                const mostRecentComment = result.comentarios.reduce((latest, comment) => {
+                    return new Date(comment.date_time) > new Date(latest.date_time) ? comment : latest;
+                });
+
+                const mostRecentDate = new Date(mostRecentComment.date_time);
+                const currentDate = new Date();
+                const daysPassed = Math.floor((currentDate - mostRecentDate) / (1000 * 60 * 60 * 24)); // Calculate days passed
+
+                // Set dataUpdateTime based on days passed
+                if (daysPassed > 90) {
+                    dataUpdateTime = 'red';
+                } else if (daysPassed > 30) {
+                    dataUpdateTime = 'yellow';
+                } else {
+                    dataUpdateTime = 'green';
+                }
+            }
+
+            return dataUpdateTime; // Return the calculated dataUpdateTime
+        };
 
 
         const finalResults = results.map(result => {
@@ -305,6 +333,8 @@ export default async function handler(req, res) {
                     && applyAireAcondicionadoFilter(inmueble) && applyAscensorFilter(inmueble) && applyGarajeFilter(inmueble) && applyTrasteroFilter(inmueble) && applyTerrazaFilter(inmueble) && applyJardinFilter(inmueble) && applyTipoAgrupacionFilter(inmueble) && applyDPVFilter(inmueble);
             };
 
+            const dataUpdateTime = calculateDataUpdateTime(result);
+
             if (result.tipoagrupacion === 2 && new RegExp(pattern, 'i').test(result.direccion)) {
                 return {
                     ...result,
@@ -340,6 +370,7 @@ export default async function handler(req, res) {
 
             return {
                 ...result,
+                dataUpdateTime: dataUpdateTime, // Set calculated dataUpdateTime
                 nestedinmuebles: Array.isArray(result.nestedinmuebles) ? result.nestedinmuebles.filter(applyFilters) : result.nestedinmuebles,
                 nestedescaleras: Array.isArray(result.nestedescaleras) ? result.nestedescaleras.map(escalera => ({
                     ...escalera,
@@ -1942,7 +1973,6 @@ export default async function handler(req, res) {
         const finalResultAnalytics = combineResults(newresults);
 
         console.log('\nFINAL RESULTS', finalResultAnalytics);
-
 
 
 
