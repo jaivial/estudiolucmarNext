@@ -24,6 +24,7 @@ import SmallLoadingScreen from '../LoadingScreen/SmallLoadingScreen';
 
 const ItemDetails = ({ id, onClose, showModal, setShowModal, fetchData, currentPage, searchTerm, admin, screenWidth }) => {
     const [data, setData] = useState(null);
+    const [inmuebleId, setInmuebleId] = useState(null);
     const [images, setImages] = useState([]);
     const [loading, setLoading] = useState(true);
     const [loaded, setLoaded] = useState(false);
@@ -49,6 +50,7 @@ const ItemDetails = ({ id, onClose, showModal, setShowModal, fetchData, currentP
     const [DPVInfo, setDPVInfo] = useState(null);
     const [loadingThing, setLoadingThing] = useState(true);
     const [fetchClientPhoneNumberRefreshKey, setFetchClientPhoneNumberRefreshKey] = useState(1);
+    const [localizadoRefreshKey, setLocalizadoRefreshKey] = useState(1);
 
 
 
@@ -134,6 +136,8 @@ const ItemDetails = ({ id, onClose, showModal, setShowModal, fetchData, currentP
             .then((response) => {
                 console.log('response.data inmuebleMoreInfo', response.data);
                 setData(response.data);
+                setInmuebleId(response.data.inmueble.id);
+
                 let dpv = response.data.inmueble.DPV;
                 if (dpv) {
                     setDPVboolean(dpv);
@@ -148,7 +152,6 @@ const ItemDetails = ({ id, onClose, showModal, setShowModal, fetchData, currentP
                 console.error('Error fetching data:', error);
             });
     }, [id, onAddNoticiaRefreshKey, onAddEncargoRefreshKey, onAddEdtMoreInfoRefreshKey, onAddDeleteDPVRefreshKey, localizado]);
-
 
 
     useEffect(() => {
@@ -230,6 +233,8 @@ const ItemDetails = ({ id, onClose, showModal, setShowModal, fetchData, currentP
                         setInmueblesAsociadosPropietario={setInmueblesAsociadosPropietario}
                         inmuebles_asociados_informador={inmuebles_asociados_informador}
                         setInmueblesAsociadosInformador={setInmueblesAsociadosInformador}
+                        localizadoRefreshKey={localizadoRefreshKey}
+                        setLocalizadoRefreshKey={setLocalizadoRefreshKey}
                     />
 
                     <div className="py-4 h-[300px] w-full rounded-lg">
@@ -274,11 +279,15 @@ const ItemDetails = ({ id, onClose, showModal, setShowModal, fetchData, currentP
                                                     </a>
 
                                                 </div>
-                                                {((inmuebles_asociados_inquilino && inmuebles_asociados_inquilino.some(inquilino => inquilino.id === data.inmueble.id)) || (inmuebles_asociados_propietario && inmuebles_asociados_propietario.some(propietario => propietario.id === data.inmueble.id)) || (inmuebles_asociados_informador && inmuebles_asociados_informador.some(informador => informador.id === data.inmueble.id))) ? (
+                                                {(
+                                                    (inmuebles_asociados_inquilino?.some(inquilino => inquilino.id === inmuebleId)) ||
+                                                    (inmuebles_asociados_propietario?.some(propietario => propietario.id === inmuebleId)) ||
+                                                    (inmuebles_asociados_informador?.some(informador => informador.id === inmuebleId))
+                                                ) ? (
                                                     <div className="flex flex-row gap-2 items-center">
                                                         <p>Tipo de Cliente:</p>
                                                         <div>
-                                                            {inmuebles_asociados_inquilino.some(inquilino => inquilino.id === data.inmueble.id) && (
+                                                            {inmuebles_asociados_inquilino?.some(inquilino => parseInt(inquilino.id) === parseInt(inmuebleId)) && (
                                                                 <Tag
                                                                     color="orange"
                                                                     style={{ marginBottom: '5px', marginRight: '5px' }}
@@ -286,7 +295,7 @@ const ItemDetails = ({ id, onClose, showModal, setShowModal, fetchData, currentP
                                                                     Inquilino
                                                                 </Tag>
                                                             )}
-                                                            {inmuebles_asociados_propietario.some(propietario => propietario.id === data.inmueble.id) && (
+                                                            {inmuebles_asociados_propietario?.some(propietario => propietario.id === inmuebleId) && (
                                                                 <Tag
                                                                     color="green"
                                                                     style={{ marginBottom: '5px', marginRight: '5px' }}
@@ -294,7 +303,7 @@ const ItemDetails = ({ id, onClose, showModal, setShowModal, fetchData, currentP
                                                                     Propietario
                                                                 </Tag>
                                                             )}
-                                                            {inmuebles_asociados_informador && inmuebles_asociados_informador.some(informador => informador.id === data.inmueble.id) && (
+                                                            {inmuebles_asociados_informador?.some(informador => informador.id === inmuebleId) && (
                                                                 <Tag
                                                                     style={{ marginBottom: '0px', marginRight: '5px', backgroundColor: '#dbeafe', borderRadius: '8px', border: '2px solid #60a5fa', color: '#2563eb' }}
                                                                 >
@@ -305,16 +314,17 @@ const ItemDetails = ({ id, onClose, showModal, setShowModal, fetchData, currentP
                                                     </div>
                                                 ) : (
                                                     <div className="flex flex-row gap-2">
-                                                        <p>Tipo de Cliente:  Sin Asignar</p>
+                                                        <p>Tipo de Cliente: Sin Asignar</p>
                                                     </div>
                                                 )}
+
                                             </div>
                                         </div>
                                     </div>
                                 </div>
                             )}
                             <DetailsInfoTwo data={data} descripcion={descripcion} setDescripcion={setDescripcion} newDescripcion={newDescripcion} setNewDescripcion={setNewDescripcion} />
-                            <ClientesAsociados inmuebleId={data.inmueble.id} inmuebleDireccion={data.inmueble.direccion} screenWidth={screenWidth} setFetchClientPhoneNumberRefreshKey={setFetchClientPhoneNumberRefreshKey} fetchClientPhoneNumberRefreshKey={fetchClientPhoneNumberRefreshKey} />
+                            <ClientesAsociados inmuebleId={data.inmueble.id} inmuebleDireccion={data.inmueble.direccion} screenWidth={screenWidth} setFetchClientPhoneNumberRefreshKey={setFetchClientPhoneNumberRefreshKey} fetchClientPhoneNumberRefreshKey={fetchClientPhoneNumberRefreshKey} localizadoRefreshKey={localizadoRefreshKey} setLocalizadoRefreshKey={setLocalizadoRefreshKey} />
                             {data.inmueble.DPV && <DPVInfoComponent DPVInfo={DPVInfo} />}
                         </>
                     )}

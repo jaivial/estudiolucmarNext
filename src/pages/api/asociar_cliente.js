@@ -73,7 +73,7 @@ export default async function handler(req, res) {
                 tipo_de_cliente_toAdd.push('inquilino');
             }
 
-            if (!propietario && !inquilino) {
+            if (clientsToAssociateInformador === true) {
                 inmuebles_asociados_informador_toAdd = {
                     id: inmuebleId,
                     direccion: inmuebleDireccion,
@@ -111,7 +111,7 @@ export default async function handler(req, res) {
                 );
             }
 
-            if (!inmuebles_asociados_inquilino_toAdd.id && !inmuebles_asociados_propietario_toAdd.id) {
+            if (inmuebles_asociados_informador_toAdd.id) {
                 await db.collection('clientes').updateOne(
                     {
                         _id: new ObjectId(clientsToAssociate),

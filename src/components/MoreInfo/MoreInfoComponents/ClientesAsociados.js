@@ -11,10 +11,8 @@ import { Icon } from '@iconify/react';
 import './clientesasociados.css';
 const { Column, HeaderCell, Cell } = Table;
 import SearchIcon from '@rsuite/icons/Search';
-import MemberIcon from '@rsuite/icons/Member';
-import { set } from 'date-fns';
 
-const ClientesAsociados = ({ inmuebleId, inmuebleDireccion, screenWidth, setFetchClientPhoneNumberRefreshKey, fetchClientesPhoneNumberRefreshKey }) => {
+const ClientesAsociados = ({ inmuebleId, inmuebleDireccion, screenWidth, setFetchClientPhoneNumberRefreshKey, fetchClientesPhoneNumberRefreshKey, localizadoRefreshKey, setLocalizadoRefreshKey }) => {
     const [clientesAsociados, setClientesAsociados] = useState([]);
     const [clientesAsociadosInmueble, setClientesAsociadosInmueble] = useState([]);
     const [open, setOpen] = useState(false);
@@ -31,6 +29,7 @@ const ClientesAsociados = ({ inmuebleId, inmuebleDireccion, screenWidth, setFetc
     const [editClienteAsociadoModalOpen, setEditClienteAsociadoModalOpen] = useState(false);
     const [viewMoreClienteAsociado, setViewMoreClienteAsociado] = useState(false);
     const [viewMoreClienteAsociadoModalOpen, setViewMoreClienteAsociadoModalOpen] = useState(false);
+
     const [newCliente, setNewCliente] = useState({
         nombre: '',
         apellido: '',
@@ -59,7 +58,7 @@ const ClientesAsociados = ({ inmuebleId, inmuebleDireccion, screenWidth, setFetc
         pedido: false,
         email: '',
         interes: '',  // Default value
-        rango_precios: [0, 1000000]  // Default price range as array
+        rango_precios: [0, 1000000]
     });
 
 
@@ -391,13 +390,17 @@ const ClientesAsociados = ({ inmuebleId, inmuebleDireccion, screenWidth, setFetc
             return;
         }
         try {
-            const response = await axios.put('/api/updateClienteAsociado', editCliente);
+            const response = await axios.put('/api/updateClienteAsociado', editCliente, {
+                params: { inmuebleId, inmuebleDireccion }
+            });
+
             if (response.data.status === 'success') {
                 showToast('Cliente actualizado con éxito', 'linear-gradient(to right bottom, #00603c, #006f39, #007d31, #008b24, #069903)');
                 fetchClientesAsociados();
                 setEditClienteAsociado(null);
                 setFetchClientPhoneNumberRefreshKey(setFetchClientPhoneNumberRefreshKey + 1);
                 setEditClienteAsociadoModalOpen(false);
+                setLocalizadoRefreshKey(localizadoRefreshKey + 1);
             } else {
                 showToast('Error al actualizar el cliente', 'linear-gradient(to right bottom, #c62828, #b92125, #ac1a22, #a0131f, #930b1c)');
             }
