@@ -1396,15 +1396,8 @@ const Table = ({ parentsEdificioProps, admin, screenWidth, loadingLoader }) => {
                                     </p>
                                 </div>
 
-                                <div className="w-full flex flex-row-reverse gap-3 mt-5">
-                                    <div className="xl:w-[40%]">
-                                        {screenWidth >= 1280 && (
-                                            <>
-                                                <Analytics analyticsData={analyticsData} />
-                                            </>
-                                        )}
-                                    </div>
-                                    <div className="flex flex-col gap-2 w-full xl:w-[60%] bg-slate-100 rounded-xl p-4 shadow-lg h-min pt-5 items-center">
+                                <div className="w-full flex flex-row gap-3 mt-5">
+                                    <div className={`flex flex-col gap-2 w-full ${showAnalytics ? 'xl:w-[60%]' : 'xl:w-[100%]'} bg-slate-100 rounded-xl p-4 shadow-lg h-min pt-5 items-center transition-all duration-[1000ms] ease-in-out`}>
                                         <div className="tableheader relative px-2 py-1 mt-2 rounded-md shadow-lg flex items-center justify-center flex-row bg-blue-950 w-full mb-1">
                                             <div className="true flex flex-row justify-between w-full">
                                                 <div className="flex flex-row justify-center items-center gap-1 w-[100%] py-2 text-white">
@@ -1610,6 +1603,13 @@ const Table = ({ parentsEdificioProps, admin, screenWidth, loadingLoader }) => {
                                             </div>
                                         )}
 
+                                    </div>
+                                    <div className={`${showAnalytics ? 'xl:w-[40%]' : 'xl:w-[0%]'} transition-all duration-[1000ms] ease-in-out`}>
+                                        {screenWidth >= 1280 && showAnalytics && (
+                                            <>
+                                                <Analytics analyticsData={analyticsData} />
+                                            </>
+                                        )}
                                     </div>
                                 </div>
                             </>
