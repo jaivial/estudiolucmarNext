@@ -83,6 +83,24 @@ const Table = ({ parentsEdificioProps, admin, screenWidth, loadingLoader }) => {
     const [resetFiltersKey, setResetFiltersKey] = useState(0);
     const [totalItems, setTotalItems] = useState(0);
     const [showAnalytics, setShowAnalytics] = useState(false);
+    useEffect(() => {
+        // Check if window is defined
+        if (typeof window !== 'undefined') {
+            // Set showAnalytics based on window.innerWidth
+            setShowAnalytics(window.innerWidth >= 1280);
+        }
+
+        // Function to update showAnalytics on window resize
+        const handleResize = () => {
+            setShowAnalytics(window.innerWidth >= 1280);
+        };
+
+        // Add event listener for window resize
+        window.addEventListener('resize', handleResize);
+
+        // Clean up the event listener on component unmount
+        return () => window.removeEventListener('resize', handleResize);
+    }, []); // Run only once on mount
     const [analyticsData, setAnalyticsData] = useState([]);
     const [selectedType, setSelectedType] = useState();
     const [options, setOptions] = useState([]);
@@ -94,13 +112,7 @@ const Table = ({ parentsEdificioProps, admin, screenWidth, loadingLoader }) => {
     const [loadingPage, setLoadingPage] = useState(true);
     const [paginaBuscador, setPaginaBuscador] = useState('Todos'); // Initial tab state
 
-    useEffect(() => {
-        if (screenWidth >= 1280) {
-            setShowAnalytics(true);
-        } else {
-            setShowAnalytics(false);
-        }
-    }, []);
+
     const fetchData = async (currentPage, searchTerm) => {
         setLoadingPage(true);
         // Function to determine the value for each filter

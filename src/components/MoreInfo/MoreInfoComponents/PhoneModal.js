@@ -56,8 +56,8 @@ const PhoneModal = ({ isOpen, setPhoneModalOpen, localizado, setLocalizado, inmu
             }
 
         } catch (error) {
-            console.error('Error al obtener el teléfono localizado:', error);
-            showToast('Error al obtener el teléfono localizado.', 'linear-gradient(to right, #ff416c, #ff4b2b)');
+            console.error('Error al obtener el teléfono localizado hello:', error);
+            showToast('Error al obtener el teléfono localizado. hello', 'linear-gradient(to right, #ff416c, #ff4b2b)');
         }
     };
 

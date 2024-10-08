@@ -64,6 +64,7 @@ export async function getServerSideProps(context) {
         console.error('Error fetching data:', error);
     }
 
+
     return {
         props: { admin, data, userData } // Pass fetched data as props
     };
@@ -73,6 +74,12 @@ export default function Buscador({ admin, data, userData }) {
     const [loading, setLoading] = useState(false);
 
     const [screenWidth, setScreenWidth] = useState(0);
+
+    useEffect(() => { // Empty dependency array means this effect runs once on mount and cleanup on unmount
+        console.log('screenWidth', screenWidth);
+    }, []);
+
+
 
     useEffect(() => {
         if (typeof window !== 'undefined') {
