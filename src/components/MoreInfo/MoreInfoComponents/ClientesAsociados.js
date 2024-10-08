@@ -262,6 +262,7 @@ const ClientesAsociados = ({ inmuebleId, inmuebleDireccion, screenWidth, setFetc
                 fetchClientesAsociados();
                 showToast('Clientes asociados correctamente.', 'linear-gradient(to right bottom, #00603c, #006f39, #007d31, #008b24, #069903)');
                 setFetchClientPhoneNumberRefreshKey(setFetchClientPhoneNumberRefreshKey + 1);
+                setLocalizadoRefreshKey(localizadoRefreshKey + 1);
                 setOpen(false);
                 handleClose();
             } else {
@@ -318,6 +319,7 @@ const ClientesAsociados = ({ inmuebleId, inmuebleDireccion, screenWidth, setFetc
                 setFetchClientPhoneNumberRefreshKey(setFetchClientPhoneNumberRefreshKey + 1);
                 setClientesAsociadosInmueble(clientesAsociadosInmueble.filter(cliente => cliente._id !== clienteId));
                 setFilteredClientes(clientesAsociadosInmueble.filter(cliente => cliente._id !== clienteId));
+                setLocalizadoRefreshKey(localizadoRefreshKey + 1);
             } else {
                 showToast('Error al eliminar cliente', 'linear-gradient(to right bottom, #c62828, #b92125, #ac1a22, #a0131f, #930b1c)');
             }

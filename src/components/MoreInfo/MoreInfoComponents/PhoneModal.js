@@ -48,10 +48,10 @@ const PhoneModal = ({ isOpen, setPhoneModalOpen, localizado, setLocalizado, inmu
             if (inmueblesAsociadosInformadorToAdd) {
                 setInmueblesAsociadosInformador(inmueblesAsociadosInformadorToAdd);
             }
-            if (inmueblesAsociadosInquilinoToAdd.length > 0) {
+            if (inmueblesAsociadosInquilinoToAdd) {
                 setInmueblesAsociadosInquilino(inmueblesAsociadosInquilinoToAdd);
             }
-            if (inmueblesAsociadosPropietarioToAdd.length > 0) {
+            if (inmueblesAsociadosPropietarioToAdd) {
                 setInmueblesAsociadosPropietario(inmueblesAsociadosPropietarioToAdd);
             }
 

@@ -4,8 +4,8 @@ import { ObjectId } from 'mongodb';
 
 export default async function handler(req, res) {
 
-  // Run CORS middleware
-  await runMiddleware(req, res, cors);
+    // Run CORS middleware
+    await runMiddleware(req, res, cors);
 
 
     const { inmuebleId, clienteId } = req.body;
@@ -26,7 +26,8 @@ export default async function handler(req, res) {
             {
                 $pull: {
                     inmuebles_asociados_propietario: { id: parseInt(inmuebleId) },
-                    inmuebles_asociados_inquilino: { id: parseInt(inmuebleId) }
+                    inmuebles_asociados_inquilino: { id: parseInt(inmuebleId) },
+                    inmuebles_asociados_informador: { id: parseInt(inmuebleId) }
                 }
             }
         );
