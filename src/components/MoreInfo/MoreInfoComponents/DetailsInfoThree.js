@@ -6,7 +6,7 @@ import { TbTargetArrow } from 'react-icons/tb'; // Import TbTargetArrow icon
 import { FaUserTie } from 'react-icons/fa';
 import { PiMapPinSimpleAreaBold } from 'react-icons/pi';
 
-const DetailsInfoThree = ({ data, isVisible }) => {
+const DetailsInfoThree = ({ data, isVisible, screenWidth }) => {
     const { tipo, uso, superficie, ano_construccion, habitaciones, garaje, ascensor, baños, trastero, jardin, terraza, aireAcondicionado, aireacondicionado, categoria, potencialAdquisicion, noticiastate, encargostate, responsable, zona } = data.inmueble;
 
     // Function to render a list item if the value is valid
@@ -128,7 +128,7 @@ const DetailsInfoThree = ({ data, isVisible }) => {
     };
 
     return (
-        <div className="p-4">
+        <div className={`${screenWidth >= 640 ? 'pl-4 pr-0 h-auto' : 'p-4'}`}>
             <div className="flex flex-col gap-4 md:grid md:grid-cols-2 md:gap-4">
                 {/* Left Column: Basic Characteristics */}
                 <div className="bg-white p-4 px-6 border border-gray-300 rounded-md">

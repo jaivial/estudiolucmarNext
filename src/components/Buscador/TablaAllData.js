@@ -1499,7 +1499,7 @@ const Table = ({ parentsEdificioProps, admin, screenWidth, loadingLoader }) => {
                                                     item.tipoagrupacion === 1 ? (
                                                         <div
                                                             key={item.id}
-                                                            className={`relative px-2 py-4 border border-zinc-400 gap-1 rounded-md h-[4.5rem] flex items-center flex-row w-full ${item.tipoagrupacion === '1' ? 'bg-slate-100' : item.dataUpdateTime === 'red' ? 'bg-red-100' : item.dataUpdateTime === 'yellow' ? 'bg-yellow-200' : item.dataUpdateTime === 'gray' ? 'bg-white hover:bg-gray-200 ' : 'bg-white hover:bg-slate-300'}`}
+                                                            className={`relative px-2 py-4 border border-zinc-400 gap-1 rounded-md h-[4.5rem] flex items-center flex-row w-full ${item.tipoagrupacion === '1' ? 'bg-slate-100' : item.dataUpdateTime === 'red' ? 'bg-red-100' : item.dataUpdateTime === 'yellow' ? 'bg-yellow-200' : item.dataUpdateTime === 'gray' ? 'bg-white hover:bg-gray-200 ' : 'bg-white hover:bg-slate-300 hover:cursor-pointer'}`}
                                                             onClick={() => handleItemClick(item.id)}>
                                                             <div className="flex flex-row justify-between w-full">
                                                                 {showExtraButtons && <input type="checkbox" checked={selectedItems.has(item.id)} onChange={() => handleCheckboxChange(item.id)} className="mr-4 w-[25px]" />}

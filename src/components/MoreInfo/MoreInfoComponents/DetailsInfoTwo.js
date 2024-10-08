@@ -21,7 +21,7 @@ const showToast = (message, backgroundColor) => {
     }).showToast();
 };
 
-const DetailsInfoTwo = ({ data, descripcion, setDescripcion, newDescripcion, setNewDescripcion }) => {
+const DetailsInfoTwo = ({ data, descripcion, setDescripcion, newDescripcion, setNewDescripcion, screenWidth }) => {
     const [isEditing, setIsEditing] = useState(false);
 
 
@@ -77,7 +77,7 @@ const DetailsInfoTwo = ({ data, descripcion, setDescripcion, newDescripcion, set
     };
 
     return (
-        <div className="p-4">
+        <div className={`${screenWidth >= 640 ? 'pl-4 pr-0' : 'p-4'}`}>
             {descripcion !== '' && descripcion !== null ? (
                 <div className="relative px-2">
                     <div className="font-bold text-lg pb-2">
