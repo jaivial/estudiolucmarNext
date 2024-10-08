@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, use } from 'react';
 import Select from 'react-select';
 import axios from 'axios';
 import Slider from 'react-slider';
@@ -13,7 +13,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import Skeleton from 'react-loading-skeleton';
 import 'react-loading-skeleton/dist/skeleton.css';
 
-const FilterMenu = ({ setFilters, currentPage, filters, data, setData, setCurrentPage, setTotalPages, setLoading, resetFiltersKey, screenWidth }) => {
+const FilterMenu = ({ setFilters, currentPage, filters, data, setData, setCurrentPage, setTotalPages, setLoading, resetFiltersKey, screenWidth, paginaBuscador }) => {
     const [filterLocalizado, setFilterLocalizado] = useState(null);
     const [selectedZone, setSelectedZone] = useState(null);
     const [selectedResponsable, setSelectedResponsable] = useState(null);
@@ -139,6 +139,15 @@ const FilterMenu = ({ setFilters, currentPage, filters, data, setData, setCurren
         setFilterNoticia(selectedOption ? selectedOption.value : null);
     };
 
+    useEffect(() => {
+        if (paginaBuscador === 'Noticias') {
+            setFilterNoticia(null);
+        }
+        if (paginaBuscador === 'Encargos') {
+            setFilterEncargo(null);
+        }
+    }, [paginaBuscador]);
+
     // Handler for Filter Encargo Change
     const handleFilterEncargoChange = (selectedOption) => {
         setFilterEncargo(selectedOption ? selectedOption.value : null);
@@ -251,44 +260,47 @@ const FilterMenu = ({ setFilters, currentPage, filters, data, setData, setCurren
 
                 <div className={`flex flex-row gap-2 ${screenWidth >= 1280 ? 'w-[100%]' : 'w-full'} items-center justify-center z-[970]`}>
                     {/* Filter Noticia Select */}
-                    <Select
-                        options={filterOptionsNoticia}
-                        onChange={handleFilterNoticiaChange}
-                        isClearable={true}
-                        value={filterOptionsNoticia.find((option) => option.value === filterNoticia) || null}
-                        placeholder={
-                            <span className="flex flex-row justify-start items-center gap-3 text-black">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="1.75em" height="1.75em" viewBox="0 0 24 24">
-                                    <path
-                                        fill="currentColor"
-                                        d="M10 7h4V5.615q0-.269-.173-.442T13.385 5h-2.77q-.269 0-.442.173T10 5.615zm8 15q-1.671 0-2.835-1.164Q14 19.67 14 18t1.165-2.835T18 14t2.836 1.165T22 18t-1.164 2.836T18 22M4.615 20q-.69 0-1.153-.462T3 18.384V8.616q0-.691.463-1.153T4.615 7H9V5.615q0-.69.463-1.153T10.616 4h2.769q.69 0 1.153.462T15 5.615V7h4.385q.69 0 1.152.463T21 8.616v4.198q-.683-.414-1.448-.614T18 12q-2.496 0-4.248 1.752T12 18q0 .506.086 1.009t.262.991zM18 20.423q.2 0 .33-.13t.132-.331t-.131-.331T18 19.5t-.33.13t-.132.332t.131.33t.331.131m-.385-1.846h.77v-3h-.77z"
-                                    />
-                                </svg>
-                                Noticia
-                            </span>
-                        }
-                        className="leftanimation2 w-full"
-                    />
-
+                    {paginaBuscador !== 'Noticias' && (
+                        <Select
+                            options={filterOptionsNoticia}
+                            onChange={handleFilterNoticiaChange}
+                            isClearable={true}
+                            value={filterOptionsNoticia.find((option) => option.value === filterNoticia) || null}
+                            placeholder={
+                                <span className="flex flex-row justify-start items-center gap-3 text-black">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="1.75em" height="1.75em" viewBox="0 0 24 24">
+                                        <path
+                                            fill="currentColor"
+                                            d="M10 7h4V5.615q0-.269-.173-.442T13.385 5h-2.77q-.269 0-.442.173T10 5.615zm8 15q-1.671 0-2.835-1.164Q14 19.67 14 18t1.165-2.835T18 14t2.836 1.165T22 18t-1.164 2.836T18 22M4.615 20q-.69 0-1.153-.462T3 18.384V8.616q0-.691.463-1.153T4.615 7H9V5.615q0-.69.463-1.153T10.616 4h2.769q.69 0 1.153.462T15 5.615V7h4.385q.69 0 1.152.463T21 8.616v4.198q-.683-.414-1.448-.614T18 12q-2.496 0-4.248 1.752T12 18q0 .506.086 1.009t.262.991zM18 20.423q.2 0 .33-.13t.132-.331t-.131-.331T18 19.5t-.33.13t-.132.332t.131.33t.331.131m-.385-1.846h.77v-3h-.77z"
+                                        />
+                                    </svg>
+                                    Noticia
+                                </span>
+                            }
+                            className="leftanimation2 w-full"
+                        />
+                    )}
                     {/* Filter Encargo Select */}
-                    <Select
-                        options={filterOptionsEncargo}
-                        onChange={handleFilterEncargoChange}
-                        isClearable={true}
-                        value={filterOptionsEncargo.find((option) => option.value === filterEncargo) || null}
-                        placeholder={
-                            <span className="flex flex-row justify-start items-center gap-3 text-black">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="1.75em" height="1.75em" viewBox="0 0 20 20">
-                                    <path
-                                        fill="currentColor"
-                                        d="M2 3a1 1 0 0 1 2 0h13a1 1 0 1 1 0 2H4v12.5a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5zm3 3.5a.5.5 0 0 1 .5-.5h11a.5.5 0 0 1 .5.5v7a2.5 2.5 0 0 1-2.5 2.5h-7A2.5 2.5 0 0 1 5 13.5zm3 7a.5.5 0 0 0 .5.5h1a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 0 .5.5h1a.5.5 0 0 0 .5-.5v-2.55a1 1 0 0 0-.336-.748L11.332 8.13a.5.5 0 0 0-.664 0L8.336 10.2a1 1 0 0 0-.336.75z"
-                                    />
-                                </svg>
-                                Encargo
-                            </span>
-                        }
-                        className="rightanimation2 w-full"
-                    />
+                    {paginaBuscador !== 'Encargos' && (
+                        <Select
+                            options={filterOptionsEncargo}
+                            onChange={handleFilterEncargoChange}
+                            isClearable={true}
+                            value={filterOptionsEncargo.find((option) => option.value === filterEncargo) || null}
+                            placeholder={
+                                <span className="flex flex-row justify-start items-center gap-3 text-black">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="1.75em" height="1.75em" viewBox="0 0 20 20">
+                                        <path
+                                            fill="currentColor"
+                                            d="M2 3a1 1 0 0 1 2 0h13a1 1 0 1 1 0 2H4v12.5a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5zm3 3.5a.5.5 0 0 1 .5-.5h11a.5.5 0 0 1 .5.5v7a2.5 2.5 0 0 1-2.5 2.5h-7A2.5 2.5 0 0 1 5 13.5zm3 7a.5.5 0 0 0 .5.5h1a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 0 .5.5h1a.5.5 0 0 0 .5-.5v-2.55a1 1 0 0 0-.336-.748L11.332 8.13a.5.5 0 0 0-.664 0L8.336 10.2a1 1 0 0 0-.336.75z"
+                                        />
+                                    </svg>
+                                    Encargo
+                                </span>
+                            }
+                            className="rightanimation2 w-full"
+                        />
+                    )}
                 </div>
                 <Select
                     options={filterOptionsDPV}

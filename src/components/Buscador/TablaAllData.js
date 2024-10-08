@@ -16,8 +16,8 @@ import 'react-loading-skeleton/dist/skeleton.css';
 import { Icon } from '@iconify/react';
 import MoreInfo from '../MoreInfo/MoreInfo.js';
 import { AiOutlineLoading } from "react-icons/ai";
-
-
+import BuscadorTabs from './TabsBuscador.js';
+import { set } from 'date-fns';
 
 
 const Table = ({ parentsEdificioProps, admin, screenWidth, loadingLoader }) => {
@@ -92,7 +92,15 @@ const Table = ({ parentsEdificioProps, admin, screenWidth, loadingLoader }) => {
     const [showMoreInfo, setShowMoreInfo] = useState(false); // New state for MoreInfo visibility
     const [showModal, setShowModal] = useState(false); // Controls the modal visibility
     const [loadingPage, setLoadingPage] = useState(true);
+    const [paginaBuscador, setPaginaBuscador] = useState('Todos'); // Initial tab state
 
+    useEffect(() => {
+        if (screenWidth >= 1280) {
+            setShowAnalytics(true);
+        } else {
+            setShowAnalytics(false);
+        }
+    }, []);
     const fetchData = async (currentPage, searchTerm) => {
         setLoadingPage(true);
         // Function to determine the value for each filter
@@ -130,7 +138,6 @@ const Table = ({ parentsEdificioProps, admin, screenWidth, loadingLoader }) => {
         console.log('habitacionesValue', habitacionesValue);
         console.log('typeof habitacionesValue', typeof habitacionesValue);
 
-        console.log('filters passed', filters.DPV);
 
         try {
             setLoadingTotalItems(true);
@@ -142,8 +149,8 @@ const Table = ({ parentsEdificioProps, admin, screenWidth, loadingLoader }) => {
                 selectedZone: filters.selectedZone,
                 selectedCategoria: filters.selectedCategoria,
                 selectedResponsable: filters.selectedResponsable,
-                filterNoticia: filters.filterNoticia,
-                filterEncargo: filters.filterEncargo,
+                filterNoticia: paginaBuscador === 'Noticias' ? true : filters.filterNoticia,
+                filterEncargo: paginaBuscador === 'Encargos' ? true : filters.filterEncargo,
                 superficieMin: filters.superficieMin,
                 superficieMax: filters.superficieMax,
                 yearMin: filters.yearMin,
@@ -290,6 +297,7 @@ const Table = ({ parentsEdificioProps, admin, screenWidth, loadingLoader }) => {
         filters.terraza,             // Added terraza filter
         filters.trastero,             // Added trastero filter
         filters.DPV,                 // Added DPV filter
+        paginaBuscador,
     ]);
 
 
@@ -1257,6 +1265,12 @@ const Table = ({ parentsEdificioProps, admin, screenWidth, loadingLoader }) => {
                             </div>
                         ) : (
                             <>
+                                <div className='flex flex-row gap-2 items-center justify-center mt-4 pb-4 w-full'>
+                                    <BuscadorTabs
+                                        paginaBuscador={paginaBuscador}
+                                        setPaginaBuscador={setPaginaBuscador}
+                                    />
+                                </div>
                                 <div className="tablesettingscontainer flex flex-row gap-4 pt-2 pb-2 w-full justify-center items-center">
                                     {showFilters && (
                                         <div className="filtercontainer flex flex-row gap-4 pt-2 pb-2 w-fit justify-between">
@@ -1304,7 +1318,7 @@ const Table = ({ parentsEdificioProps, admin, screenWidth, loadingLoader }) => {
                                     </div>
                                 </div>
                                 {showAnalytics && screenWidth <= 1280 && <Analytics analyticsData={analyticsData} />}
-                                {showFilters && <FilterMenu setFilters={setFilters} currentPage={currentPage} data={data} setData={setData} filters={filters} setCurrentPage={setCurrentPage} setTotalPages={setTotalPages} setLoading={setLoading} resetFiltersKey={resetFiltersKey} screenWidth={screenWidth} />}
+                                {showFilters && <FilterMenu setFilters={setFilters} currentPage={currentPage} data={data} setData={setData} filters={filters} setCurrentPage={setCurrentPage} setTotalPages={setTotalPages} setLoading={setLoading} resetFiltersKey={resetFiltersKey} screenWidth={screenWidth} paginaBuscador={paginaBuscador} />}
                                 {showEditTable && (
                                     <div className={`flex flex-row gap-4 pt-2 pb-2 w-full ${admin === 'true' ? 'justify-center' : 'justify-center'} iconscontainertrue`}>
                                         <div className="flex flex-row gap-4">
@@ -1387,6 +1401,7 @@ const Table = ({ parentsEdificioProps, admin, screenWidth, loadingLoader }) => {
                                         </button>
                                     </div>
                                 )}
+
                                 <div>
                                     <p className="text-center font-sans text-lg text-slate-800 font-bold">
                                         Total de inmuebles: <br />
