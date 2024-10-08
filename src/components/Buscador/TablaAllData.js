@@ -16,8 +16,8 @@ import 'react-loading-skeleton/dist/skeleton.css';
 import { Icon } from '@iconify/react';
 import MoreInfo from '../MoreInfo/MoreInfo.js';
 import { AiOutlineLoading } from "react-icons/ai";
-
-
+import BuscadorTabs from './TabsBuscador.js';
+import { set } from 'date-fns';
 
 
 const Table = ({ parentsEdificioProps, admin, screenWidth, loadingLoader }) => {
@@ -83,6 +83,24 @@ const Table = ({ parentsEdificioProps, admin, screenWidth, loadingLoader }) => {
     const [resetFiltersKey, setResetFiltersKey] = useState(0);
     const [totalItems, setTotalItems] = useState(0);
     const [showAnalytics, setShowAnalytics] = useState(false);
+    useEffect(() => {
+        // Check if window is defined
+        if (typeof window !== 'undefined') {
+            // Set showAnalytics based on window.innerWidth
+            setShowAnalytics(window.innerWidth >= 1280);
+        }
+
+        // Function to update showAnalytics on window resize
+        const handleResize = () => {
+            setShowAnalytics(window.innerWidth >= 1280);
+        };
+
+        // Add event listener for window resize
+        window.addEventListener('resize', handleResize);
+
+        // Clean up the event listener on component unmount
+        return () => window.removeEventListener('resize', handleResize);
+    }, []); // Run only once on mount
     const [analyticsData, setAnalyticsData] = useState([]);
     const [selectedType, setSelectedType] = useState();
     const [options, setOptions] = useState([]);
@@ -92,6 +110,8 @@ const Table = ({ parentsEdificioProps, admin, screenWidth, loadingLoader }) => {
     const [showMoreInfo, setShowMoreInfo] = useState(false); // New state for MoreInfo visibility
     const [showModal, setShowModal] = useState(false); // Controls the modal visibility
     const [loadingPage, setLoadingPage] = useState(true);
+    const [paginaBuscador, setPaginaBuscador] = useState('Todos'); // Initial tab state
+
 
     const fetchData = async (currentPage, searchTerm) => {
         setLoadingPage(true);
@@ -130,7 +150,6 @@ const Table = ({ parentsEdificioProps, admin, screenWidth, loadingLoader }) => {
         console.log('habitacionesValue', habitacionesValue);
         console.log('typeof habitacionesValue', typeof habitacionesValue);
 
-        console.log('filters passed', filters.DPV);
 
         try {
             setLoadingTotalItems(true);
@@ -142,8 +161,8 @@ const Table = ({ parentsEdificioProps, admin, screenWidth, loadingLoader }) => {
                 selectedZone: filters.selectedZone,
                 selectedCategoria: filters.selectedCategoria,
                 selectedResponsable: filters.selectedResponsable,
-                filterNoticia: filters.filterNoticia,
-                filterEncargo: filters.filterEncargo,
+                filterNoticia: paginaBuscador === 'Noticias' ? true : filters.filterNoticia,
+                filterEncargo: paginaBuscador === 'Encargos' ? true : filters.filterEncargo,
                 superficieMin: filters.superficieMin,
                 superficieMax: filters.superficieMax,
                 yearMin: filters.yearMin,
@@ -290,6 +309,7 @@ const Table = ({ parentsEdificioProps, admin, screenWidth, loadingLoader }) => {
         filters.terraza,             // Added terraza filter
         filters.trastero,             // Added trastero filter
         filters.DPV,                 // Added DPV filter
+        paginaBuscador,
     ]);
 
 
@@ -1004,19 +1024,25 @@ const Table = ({ parentsEdificioProps, admin, screenWidth, loadingLoader }) => {
     const handleEditTable = () => {
         setShowEditTable(!showEditTable); // Toggle the state
         if (showFilters) setShowFilters(false);
-        if (showAnalytics) setShowAnalytics(false);
+        if (screenWidth <= 1280) {
+            if (showAnalytics) setShowAnalytics(false);
+        }
     };
     // Handle toggling the filters
     const handleShowFilters = () => {
         setShowFilters(!showFilters); // Toggle the <state></state>
         if (showEditTable) setShowEditTable(false);
-        if (showAnalytics) setShowAnalytics(false);
+        if (screenWidth <= 1280) {
+            if (showAnalytics) setShowAnalytics(false);
+        }
     };
 
     const handleShowAnalytics = () => {
         setShowAnalytics(!showAnalytics);
-        if (showFilters) setShowFilters(false);
-        if (showEditTable) setShowEditTable(false);
+        if (screenWidth <= 1280) {
+            if (showFilters) setShowFilters(false);
+            if (showEditTable) setShowEditTable(false);
+        }
     };
     const handleResetFilters = () => {
         setResetFiltersKey(resetFiltersKey + 1);
@@ -1251,6 +1277,12 @@ const Table = ({ parentsEdificioProps, admin, screenWidth, loadingLoader }) => {
                             </div>
                         ) : (
                             <>
+                                <div className='flex flex-row gap-2 items-center justify-center mt-4 pb-4 w-full'>
+                                    <BuscadorTabs
+                                        paginaBuscador={paginaBuscador}
+                                        setPaginaBuscador={setPaginaBuscador}
+                                    />
+                                </div>
                                 <div className="tablesettingscontainer flex flex-row gap-4 pt-2 pb-2 w-full justify-center items-center">
                                     {showFilters && (
                                         <div className="filtercontainer flex flex-row gap-4 pt-2 pb-2 w-fit justify-between">
@@ -1298,9 +1330,9 @@ const Table = ({ parentsEdificioProps, admin, screenWidth, loadingLoader }) => {
                                     </div>
                                 </div>
                                 {showAnalytics && screenWidth <= 1280 && <Analytics analyticsData={analyticsData} />}
-                                {showFilters && <FilterMenu setFilters={setFilters} currentPage={currentPage} data={data} setData={setData} filters={filters} setCurrentPage={setCurrentPage} setTotalPages={setTotalPages} setLoading={setLoading} resetFiltersKey={resetFiltersKey} />}
+                                {showFilters && <FilterMenu setFilters={setFilters} currentPage={currentPage} data={data} setData={setData} filters={filters} setCurrentPage={setCurrentPage} setTotalPages={setTotalPages} setLoading={setLoading} resetFiltersKey={resetFiltersKey} screenWidth={screenWidth} paginaBuscador={paginaBuscador} />}
                                 {showEditTable && (
-                                    <div className={`flex flex-row gap-4 pt-2 pb-2 w-full ${admin === 'true' ? 'justify-between' : 'justify-center'} iconscontainertrue`}>
+                                    <div className={`flex flex-row gap-4 pt-2 pb-2 w-full ${admin === 'true' ? 'justify-center' : 'justify-center'} iconscontainertrue`}>
                                         <div className="flex flex-row gap-4">
                                             <button type="button" onClick={handleIconClick} className={`flex items-center justify-center p-2 rounded shadow-lg hover:bg-blue-950 hover:text-white w-fit ${showExtraButtons ? 'bg-blue-950 text-white' : 'bg-blue-300 text-black'}`}>
                                                 <svg xmlns="http://www.w3.org/2000/svg" width="2em" height="2em" viewBox="0 0 24 24">
@@ -1381,6 +1413,7 @@ const Table = ({ parentsEdificioProps, admin, screenWidth, loadingLoader }) => {
                                         </button>
                                     </div>
                                 )}
+
                                 <div>
                                     <p className="text-center font-sans text-lg text-slate-800 font-bold">
                                         Total de inmuebles: <br />
@@ -1396,15 +1429,8 @@ const Table = ({ parentsEdificioProps, admin, screenWidth, loadingLoader }) => {
                                     </p>
                                 </div>
 
-                                <div className="w-full flex flex-row-reverse gap-3 mt-5">
-                                    <div className="xl:w-[40%]">
-                                        {screenWidth >= 1280 && (
-                                            <>
-                                                <Analytics analyticsData={analyticsData} />
-                                            </>
-                                        )}
-                                    </div>
-                                    <div className="flex flex-col gap-2 w-full xl:w-[60%] bg-slate-100 rounded-xl p-4 shadow-lg h-min pt-5 items-center">
+                                <div className="w-full flex flex-row gap-3 mt-5">
+                                    <div className={`flex flex-col gap-2 w-full ${showAnalytics ? 'xl:w-[60%]' : 'xl:w-[100%]'} bg-slate-100 rounded-xl p-4 shadow-lg h-min pt-5 items-center transition-all duration-[1000ms] ease-in-out`}>
                                         <div className="tableheader relative px-2 py-1 mt-2 rounded-md shadow-lg flex items-center justify-center flex-row bg-blue-950 w-full mb-1">
                                             <div className="true flex flex-row justify-between w-full">
                                                 <div className="flex flex-row justify-center items-center gap-1 w-[100%] py-2 text-white">
@@ -1413,7 +1439,7 @@ const Table = ({ parentsEdificioProps, admin, screenWidth, loadingLoader }) => {
                                                     </p>
                                                     {screenWidth > 1024 && (
                                                         <p className="text-center w-[10%] xl:w-[10%] m-0">
-                                                            <strong>Local</strong>
+                                                            <strong>Localizado</strong>
                                                         </p>
                                                     )}
                                                     {screenWidth > 768 && (
@@ -1473,7 +1499,8 @@ const Table = ({ parentsEdificioProps, admin, screenWidth, loadingLoader }) => {
                                                     item.tipoagrupacion === 1 ? (
                                                         <div
                                                             key={item.id}
-                                                            className={`relative px-2 py-4 border border-zinc-400 gap-1 rounded-md h-[3.5rem] flex items-center flex-row w-full ${item.tipoagrupacion === '1' ? 'bg-slate-100' : item.dataUpdateTime === 'red' ? 'bg-red-100' : item.dataUpdateTime === 'yellow' ? 'bg-yellow-200' : item.dataUpdateTime === 'gray' ? 'bg-white hover:bg-gray-200 ' : 'bg-white hover:bg-slate-300'}`}>
+                                                            className={`relative px-2 py-4 border border-zinc-400 gap-1 rounded-md h-[4.5rem] flex items-center flex-row w-full ${item.tipoagrupacion === '1' ? 'bg-slate-100' : item.dataUpdateTime === 'red' ? 'bg-red-100' : item.dataUpdateTime === 'yellow' ? 'bg-yellow-200' : item.dataUpdateTime === 'gray' ? 'bg-white hover:bg-gray-200 ' : 'bg-white hover:bg-slate-300 hover:cursor-pointer'}`}
+                                                            onClick={() => handleItemClick(item.id)}>
                                                             <div className="flex flex-row justify-between w-full">
                                                                 {showExtraButtons && <input type="checkbox" checked={selectedItems.has(item.id)} onChange={() => handleCheckboxChange(item.id)} className="mr-4 w-[25px]" />}
                                                                 {showDeleteInmuebleButtons && <input type="checkbox" checked={selectedItems.has(item.id)} onChange={() => handleCheckboxChange(item.id)} className="mr-4 w-[25px]" />}
@@ -1482,52 +1509,67 @@ const Table = ({ parentsEdificioProps, admin, screenWidth, loadingLoader }) => {
                                                                         {item.direccion}
                                                                     </p>
                                                                     {screenWidth > 1024 && (
-                                                                        <p className={`w-[10%] xl:w-[10%] text-center truncate`}>
-                                                                            {item.localizado === false ? 'Sí' : 'No'}
+                                                                        <p className={`w-[10%] xl:w-[10%] text-center truncate mt-0`}>
+                                                                            {item.localizado === false ? (
+                                                                                <></>
+                                                                            ) : (
+                                                                                <div className='flex flex-row justify-center items-center'>
+                                                                                    <p className='text-center text-green-900 bg-green-100 border border-green-900 rounded-md w-min px-2 mx-auto my-auto text-xs'>Sí</p>
+                                                                                </div>
+                                                                            )}
                                                                         </p>
                                                                     )}
                                                                     {screenWidth > 768 && (
-                                                                        <p className={`w-[10%] lg:w-[10%] 2xl:w-[7.5%] text-center truncate`}>
+                                                                        <p className={`w-[10%] lg:w-[10%] 2xl:w-[7.5%] text-center truncate mt-0`}>
                                                                             {item.superficie} m²
                                                                         </p>
                                                                     )}
                                                                     {screenWidth > 1280 && (
-                                                                        <p className={`w-[7.5%] text-center truncate`}>
+                                                                        <p className={`w-[7.5%] text-center truncate mt-0`}>
                                                                             {item.ano_construccion}
                                                                         </p>
                                                                     )}
                                                                     {screenWidth > 640 && (
-                                                                        <p className={`w-[20%] lg:w-[17.5%] xl:w-[17.5%] 2xl:w-[15%] text-center truncate`}>
+                                                                        <p className={`w-[20%] lg:w-[17.5%] xl:w-[17.5%] 2xl:w-[15%] text-center truncate mt-0`}>
                                                                             {item.zona}
                                                                         </p>
                                                                     )}
                                                                     {screenWidth > 1024 && (
-                                                                        <p className={`w-[7.5%] text-center truncate`}>
-                                                                            {item.DPV === false ? 'Sí' : 'No'}
+                                                                        <p className={`w-[7.5%] text-center truncate mt-0`}>
+                                                                            {item.DPV === false ? (
+                                                                                <></>
+                                                                            ) : (
+                                                                                <div className='flex flex-row justify-center items-center'>
+                                                                                    <p className='text-center text-green-900 bg-green-100 border border-green-900 rounded-md w-min px-2 mx-auto my-auto text-xs'>Sí</p>
+                                                                                </div>
+                                                                            )}
                                                                         </p>
                                                                     )}
                                                                     {screenWidth > 1536 && (
-                                                                        <p className={`w-[10%] text-center truncate`}>
+                                                                        <p className={`w-[10%] text-center truncate mt-0`}>
                                                                             {item.categoria}
                                                                         </p>
                                                                     )}
                                                                     {screenWidth > 450 && (
-                                                                        <div className="flex flex-row gap-2 w-[22.5%] sm:w-[20%] lg:w-[20%] xl:w-[17.5%] 2xl:w-[15%] h-auto justify-center items-center">
+                                                                        <div className="flex flex-col gap-2 py-6 w-[22.5%] sm:w-[20%] lg:w-[20%] xl:w-[17.5%] 2xl:w-[15%] h-fit justify-center items-center">
                                                                             {item.noticiastate === true && (
-                                                                                <svg xmlns="http://www.w3.org/2000/svg" width="2.1em" height="2.1em" viewBox="0 0 24 24">
-                                                                                    <path
-                                                                                        fill="currentColor"
-                                                                                        d="M10 7h4V5.615q0-.269-.173-.442T13.385 5h-2.77q-.269 0-.442.173T10 5.615zm8 15q-1.671 0-2.835-1.164Q14 19.67 14 18t1.165-2.835T18 14t2.836 1.165T22 18t-1.164 2.836T18 22M4.615 20q-.69 0-1.153-.462T3 18.384V8.616q0-.691.463-1.153T4.615 7H9V5.615q0-.69.463-1.153T10.616 4h2.769q.69 0 1.153.462T15 5.615V7h4.385q.69 0 1.152.463T21 8.616v4.198q-.683-.414-1.448-.614T18 12q-2.496 0-4.248 1.752T12 18q0 .506.086 1.009t.262.991zM18 20.423q.2 0 .33-.13t.132-.331t-.131-.331T18 19.5t-.33.13t-.132.332t.131.33t.331.131m-.385-1.846h.77v-3h-.77z"
-                                                                                    />
-                                                                                </svg>
+                                                                                // <svg xmlns="http://www.w3.org/2000/svg" width="2.1em" height="2.1em" viewBox="0 0 24 24">
+                                                                                //     <path
+                                                                                //         fill="currentColor"
+                                                                                //         d="M10 7h4V5.615q0-.269-.173-.442T13.385 5h-2.77q-.269 0-.442.173T10 5.615zm8 15q-1.671 0-2.835-1.164Q14 19.67 14 18t1.165-2.835T18 14t2.836 1.165T22 18t-1.164 2.836T18 22M4.615 20q-.69 0-1.153-.462T3 18.384V8.616q0-.691.463-1.153T4.615 7H9V5.615q0-.69.463-1.153T10.616 4h2.769q.69 0 1.153.462T15 5.615V7h4.385q.69 0 1.152.463T21 8.616v4.198q-.683-.414-1.448-.614T18 12q-2.496 0-4.248 1.752T12 18q0 .506.086 1.009t.262.991zM18 20.423q.2 0 .33-.13t.132-.331t-.131-.331T18 19.5t-.33.13t-.132.332t.131.33t.331.131m-.385-1.846h.77v-3h-.77z"
+                                                                                //     />
+                                                                                // </svg>
+                                                                                <p className='bg-blue-100 text-center text-blue-900 rounded-md border border-blue-900 w-min px-2 mx-auto my-auto text-sm'>Noticia</p>
                                                                             )}
                                                                             {item.encargostate === true && (
-                                                                                <svg xmlns="http://www.w3.org/2000/svg" width="2em" height="2em" viewBox="0 0 20 20">
-                                                                                    <path
-                                                                                        fill="currentColor"
-                                                                                        d="M2 3a1 1 0 0 1 2 0h13a1 1 0 1 1 0 2H4v12.5a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5zm3 3.5a.5.5 0 0 1 .5-.5h11a.5.5 0 0 1 .5.5v7a2.5 2.5 0 0 1-2.5 2.5h-7A2.5 2.5 0 0 1 5 13.5zm3 7a.5.5 0 0 0 .5.5h1a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 0 .5.5h1a.5.5 0 0 0 .5-.5v-2.55a1 1 0 0 0-.336-.748L11.332 8.13a.5.5 0 0 0-.664 0L8.336 10.2a1 1 0 0 0-.336.75z"
-                                                                                    />
-                                                                                </svg>
+                                                                                // <svg xmlns="http://www.w3.org/2000/svg" width="2em" height="2em" viewBox="0 0 20 20">
+                                                                                //     <path
+                                                                                //         fill="currentColor"
+                                                                                //         d="M2 3a1 1 0 0 1 2 0h13a1 1 0 1 1 0 2H4v12.5a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5zm3 3.5a.5.5 0 0 1 .5-.5h11a.5.5 0 0 1 .5.5v7a2.5 2.5 0 0 1-2.5 2.5h-7A2.5 2.5 0 0 1 5 13.5zm3 7a.5.5 0 0 0 .5.5h1a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 0 .5.5h1a.5.5 0 0 0 .5-.5v-2.55a1 1 0 0 0-.336-.748L11.332 8.13a.5.5 0 0 0-.664 0L8.336 10.2a1 1 0 0 0-.336.75z"
+                                                                                //     />
+                                                                                // </svg>
+                                                                                <p className='bg-orange-100 text-center text-orange-900 rounded-md border border-orange-900 w-min px-2 mx-auto my-auto text-sm'>Encargo</p>
+
                                                                             )}
                                                                         </div>
                                                                     )}
@@ -1610,6 +1652,13 @@ const Table = ({ parentsEdificioProps, admin, screenWidth, loadingLoader }) => {
                                             </div>
                                         )}
 
+                                    </div>
+                                    <div className={`${showAnalytics ? 'xl:w-[40%]' : 'xl:w-[0%]'} transition-all duration-[1000ms] ease-in-out`}>
+                                        {screenWidth >= 1280 && showAnalytics && (
+                                            <>
+                                                <Analytics analyticsData={analyticsData} />
+                                            </>
+                                        )}
                                     </div>
                                 </div>
                             </>

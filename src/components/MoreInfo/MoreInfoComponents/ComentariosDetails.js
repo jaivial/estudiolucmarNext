@@ -51,7 +51,7 @@ const commentTypes = {
     Cita: 'bg-yellow-500',
 };
 
-const ComentariosDetails = ({ data, fetchClientPhoneNumberRefreshKey }) => {
+const ComentariosDetails = ({ data, fetchClientPhoneNumberRefreshKey, screenWidth }) => {
     const [isOpen, setIsOpen] = useState(false);
     const [newComment, setNewComment] = useState('');
     const [comentarios, setComentarios] = useState([]);
@@ -262,7 +262,7 @@ const ComentariosDetails = ({ data, fetchClientPhoneNumberRefreshKey }) => {
 
     return (
         <CustomProvider locale={esES}>
-            <Accordion defaultActiveKey={1} bordered style={{ margin: '0px 16px' }}>
+            <Accordion defaultActiveKey={1} bordered style={{ margin: '30px 16px' }}>
                 <Accordion.Panel style={{ backgroundColor: '#f4f4f5', padding: '0px' }} header={'Comentarios'} eventKey={1}>
                     {programados.length > 0 && (
                         <div>
@@ -417,16 +417,16 @@ const ComentariosDetails = ({ data, fetchClientPhoneNumberRefreshKey }) => {
                         </div>
                     )}
 
-                    <div className="mt-4 flex flex-col justify-center items-center gap-2 -mx-3">
-                        <div className="w-full flex flex-row items-start gap-2">
+                    <div className={`mt-4 flex flex-col justify-center items-center gap-2 -mx-3`}>
+                        <div className={`w-full flex ${screenWidth >= 640 ? 'flex-col' : 'flex-row items-start'}  gap-2`}>
                             <textarea
                                 value={newComment}
                                 onChange={(e) => setNewComment(e.target.value)}
                                 rows="6"
-                                className="w-1/2 border border-gray-300 p-2 rounded-md"
+                                className={`${screenWidth >= 640 ? 'w-full' : 'w-1/2'} border border-gray-300 p-2 rounded-md`}
                                 placeholder="Escribe tu comentario aquí..."
                             />
-                            <div className="w-1/2">
+                            <div className={`${screenWidth >= 640 ? 'w-full' : 'w-1/2'}`}>
                                 <Select
                                     value={{ label: commentType, value: commentType }}
                                     onChange={(option) => {
@@ -470,7 +470,7 @@ const ComentariosDetails = ({ data, fetchClientPhoneNumberRefreshKey }) => {
                                         <Toggle
                                             checked={comentarioProgramado}
                                             onChange={(checked) => setComentarioProgramado(checked)}
-                                            className="mt-2"
+                                            className={`${screenWidth >= 640 ? 'mt-2 w-full text-center' : 'mt-2'}`}
                                         >
                                             {comentarioProgramado ? 'Programado' : 'Realizado'}
                                         </Toggle>

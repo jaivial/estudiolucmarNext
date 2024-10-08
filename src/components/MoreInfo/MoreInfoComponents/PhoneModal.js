@@ -55,9 +55,9 @@ const PhoneModal = ({ isOpen, setPhoneModalOpen, localizado, setLocalizado, inmu
                 setInmueblesAsociadosPropietario(inmueblesAsociadosPropietarioToAdd);
             }
 
+
         } catch (error) {
             console.error('Error al obtener el teléfono localizado:', error);
-            showToast('Error al obtener el teléfono localizado.', 'linear-gradient(to right, #ff416c, #ff4b2b)');
         }
     };
 
