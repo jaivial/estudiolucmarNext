@@ -1,7 +1,7 @@
 import React, { use, useState, useEffect } from 'react';
 import Select from 'react-select';
 
-const MoreFilters = ({ filters, setFilters, resetFiltersKey }) => {
+const MoreFilters = ({ filters, setFilters, resetFiltersKey, screenWidth }) => {
     // Define options for the number of habitaciones and baños
     const numberOptions = Array.from({ length: 21 }, (_, i) => ({ value: i, label: `${i}` }));
 
@@ -50,7 +50,7 @@ const MoreFilters = ({ filters, setFilters, resetFiltersKey }) => {
 
             {/* Checkboxes for features */}
             <div className='flex flex-row gap-2'>
-                <div className="grid grid-cols-1 gap-4 mb-4 w-1/2 z-[9999]">
+                <div className={`grid ${screenWidth >= 780 ? 'grid-cols-2 gap-y-3 py-2 w-[50%]' : 'grid-cols-1 gap-2 mb-4'} w-1/2 z-[9999]`}>
                     {['garaje', 'ascensor', 'trastero', 'jardin', 'terraza', 'aireacondicionado'].map((feature) => {
                         // Mapping of feature keys to more readable labels
                         const featureLabels = {
@@ -69,7 +69,7 @@ const MoreFilters = ({ filters, setFilters, resetFiltersKey }) => {
                                     name={feature}
                                     checked={filters[feature] || false}
                                     onChange={handleCheckboxChange}
-                                    className="mr-2"
+                                    className="mr-4"
                                 />
                                 {featureLabels[feature]}
                             </label>
@@ -78,8 +78,8 @@ const MoreFilters = ({ filters, setFilters, resetFiltersKey }) => {
                 </div>
 
                 {/* Select for Habitaciones */}
-                <div className='flex flex-col justify-start gap-4 w-1/2 z-[9999]'>
-                    <div className="mb-4">
+                <div className={`flex  gap-4 ${screenWidth >= 1280 ? 'w-[50%] flex-row justify-center items-center' : 'w-[50%] flex-col justify-start'} z-[9999]`}>
+                    <div className="mb-4 flex-grow flex-1">
                         <Select
                             options={numberOptions}
                             value={filters.habitaciones ? numberOptions.find(option => option.value === filters.habitaciones) : null}
@@ -91,7 +91,7 @@ const MoreFilters = ({ filters, setFilters, resetFiltersKey }) => {
                     </div>
 
                     {/* Select for Baños */}
-                    <div className="mb-4">
+                    <div className="mb-4 flex-grow flex-1">
                         <Select
                             options={numberOptions}
                             value={filters.banos ? numberOptions.find(option => option.value === filters.banos) : null}
@@ -101,7 +101,7 @@ const MoreFilters = ({ filters, setFilters, resetFiltersKey }) => {
                             isClearable
                         />
                     </div>
-                    <div className="mb-4">
+                    <div className="mb-4 flex-grow flex-1">
                         <Select
                             options={tipoOptions}
                             value={filters.tipo ? tipoOptions.find(option => option.value === filters.tipo) : null}

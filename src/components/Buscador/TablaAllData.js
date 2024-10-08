@@ -1304,7 +1304,7 @@ const Table = ({ parentsEdificioProps, admin, screenWidth, loadingLoader }) => {
                                     </div>
                                 </div>
                                 {showAnalytics && screenWidth <= 1280 && <Analytics analyticsData={analyticsData} />}
-                                {showFilters && <FilterMenu setFilters={setFilters} currentPage={currentPage} data={data} setData={setData} filters={filters} setCurrentPage={setCurrentPage} setTotalPages={setTotalPages} setLoading={setLoading} resetFiltersKey={resetFiltersKey} />}
+                                {showFilters && <FilterMenu setFilters={setFilters} currentPage={currentPage} data={data} setData={setData} filters={filters} setCurrentPage={setCurrentPage} setTotalPages={setTotalPages} setLoading={setLoading} resetFiltersKey={resetFiltersKey} screenWidth={screenWidth} />}
                                 {showEditTable && (
                                     <div className={`flex flex-row gap-4 pt-2 pb-2 w-full ${admin === 'true' ? 'justify-center' : 'justify-center'} iconscontainertrue`}>
                                         <div className="flex flex-row gap-4">
