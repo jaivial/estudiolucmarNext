@@ -137,7 +137,7 @@ const Table = ({ parentsEdificioProps, admin, screenWidth, loadingLoader }) => {
             setLoading(true);
             const params = new URLSearchParams({
                 pattern: searchTerm,
-                itemsPerPage: 30,
+                itemsPerPage: 20,
                 currentPage: currentPage,
                 selectedZone: filters.selectedZone,
                 selectedCategoria: filters.selectedCategoria,
@@ -1382,20 +1382,26 @@ const Table = ({ parentsEdificioProps, admin, screenWidth, loadingLoader }) => {
                                     </div>
                                 )}
                                 <div>
-                                    <p className="text-center font-sans text-lg text-slate-800 font-bold">Total de inmuebles: <br />
+                                    <p className="text-center font-sans text-lg text-slate-800 font-bold">
+                                        Total de inmuebles: <br />
                                         {loadingTotalItems ? (
-                                            <Skeleton width={120} height={30}>
-                                                Analizando...
-                                            </Skeleton>
+                                            <div>
+                                                <Skeleton width={120} height={30}>
+                                                    Analizando...
+                                                </Skeleton>
+                                            </div>
                                         ) : (
-                                            <span><p>{totalItems}</p></span>
+                                            <span>{totalItems}</span>
                                         )}
                                     </p>
                                 </div>
+
                                 <div className="w-full flex flex-row-reverse gap-3 mt-5">
                                     <div className="xl:w-[40%]">
                                         {screenWidth >= 1280 && (
-                                            <Analytics analyticsData={analyticsData} />
+                                            <>
+                                                <Analytics analyticsData={analyticsData} />
+                                            </>
                                         )}
                                     </div>
                                     <div className="flex flex-col gap-2 w-full xl:w-[60%] bg-slate-100 rounded-xl p-4 shadow-lg h-min pt-5 items-center">
@@ -1448,11 +1454,17 @@ const Table = ({ parentsEdificioProps, admin, screenWidth, loadingLoader }) => {
 
                                         {loadingPage ? (
                                             <div className="skeleton flex flex-col gap-6 w-full pt-1 pb-4">
-                                                <Skeleton count={1} height={85} className='shadow-lg' style={{ borderRadius: '15px' }} />
-                                                <Skeleton count={1} height={85} className='shadow-lg' style={{ borderRadius: '15px' }} />
-                                                <Skeleton count={1} height={85} className='shadow-lg' style={{ borderRadius: '15px' }} />
-                                                <Skeleton count={1} height={85} className='shadow-lg' style={{ borderRadius: '15px' }} />
+                                                {Array.from({ length: 20 }).map((_, index) => (
+                                                    <Skeleton
+                                                        key={index} // Always provide a unique key when rendering a list
+                                                        count={1}
+                                                        height={56}
+                                                        className="shadow-lg"
+                                                        style={{ borderRadius: '6px' }}
+                                                    />
+                                                ))}
                                             </div>
+
                                         ) : (
 
 
@@ -1575,99 +1587,180 @@ const Table = ({ parentsEdificioProps, admin, screenWidth, loadingLoader }) => {
                                             )
 
                                         )}
+
                                         {data.length > 0 && (
 
                                             <div className="flex mt-4 pb-4 w-full xl:w-[60%] flex-row items-center justify-center">
                                                 <div className="flex flex-row justify-center items-center gap-3">
-                                                    {/* Previous Button */}
+
                                                     <button type="button" onClick={handlePrevious} disabled={currentPage === 1 || loadingPage} className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded w-[100px]">
                                                         Anterior
                                                     </button>
 
-                                                    {/* Page Count Display */}
+
                                                     <div className="text-gray-700 font-semibold">
                                                         Página {currentPage} de {totalPages}
                                                     </div>
 
-                                                    {/* Next Button */}
+
                                                     <button type="button" onClick={handleNext} disabled={currentPage === totalPages || loadingPage} className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded w-[100px]">
                                                         Siguiente
                                                     </button>
                                                 </div>
                                             </div>
                                         )}
+
                                     </div>
                                 </div>
                             </>
                         )}
                     </div>
-                )}
+                )
+                }
 
-                {showPopup && (
-                    <div className="popup-container fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-75 z-50">
-                        <div className="popup-content bg-white p-4 shadow-lg flex flex-col justify-center items-center gap-4 rounded-lg w-4/6">
-                            {!showFormType && (
-                                <>
-                                    <h2 className="text-lg font-bold w-[80%] text-center flex justify-center">Agrupar Inmueble</h2>
-                                    <div className="flex flex-col gap-4 w-full justify-center items-center text-center mt-4">
-                                        <button onClick={() => setShowFormType('new')} className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mb-4">
-                                            Crear nuevo grupo
-                                        </button>
-                                        <button onClick={() => setShowFormType('existing')} className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mb-4">
-                                            Asignar a grupo existente
-                                        </button>
-                                        <button type="button" onClick={handlePopupToggle} className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded">
-                                            Cerrar
-                                        </button>
-                                    </div>
-                                </>
-                            )}
-                            {showFormType === 'new' && (
-                                <div className="relative pt-0 flex flex-col justify-center items-center w-[80%]">
-                                    <div
-                                        className="absolute top-0 -left-7 text-gray-700"
-                                        onClick={() => {
-                                            setShowFormType('');
-                                            setFormData({ tipo: '', nombre: '', existingGroup: '' });
-                                        }}
-                                    >
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="2.3em" height="2.3em" viewBox="0 0 20 20">
-                                            <path fill="currentColor" fill-rule="evenodd" d="M9.707 16.707a1 1 0 0 1-1.414 0l-6-6a1 1 0 0 1 0-1.414l6-6a1 1 0 0 1 1.414 1.414L5.414 9H17a1 1 0 1 1 0 2H5.414l4.293 4.293a1 1 0 0 1 0 1.414" clip-rule="evenodd" />
-                                        </svg>
-                                    </div>
-                                    <h2 className="text-lg font-bold w-[80%] text-center flex justify-center">Crear nuevo grupo</h2>
-                                    <form onSubmit={handleSubmitForm} className="flex flex-col gap-4 mt-4">
-                                        <div className="flex flex-col gap-3 justify-center items-center mb-2">
-                                            <label className="block">Tipo:</label>
-                                            <div className="flex gap-4">
-                                                <label className="flex flex-row gap-2">
-                                                    <input type="radio" name="tipo" value="Edificio" checked={formData.tipo === 'Edificio'} onChange={handleFormChange} />
-                                                    Edificio
-                                                </label>
-                                                <label className="flex flex-row gap-2">
-                                                    <input type="radio" name="tipo" value="Escalera" checked={formData.tipo === 'Escalera'} onChange={handleFormChange} />
-                                                    Escalera
-                                                </label>
-                                            </div>
+                {
+                    showPopup && (
+                        <div className="popup-container fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-75 z-50">
+                            <div className="popup-content bg-white p-4 shadow-lg flex flex-col justify-center items-center gap-4 rounded-lg w-4/6">
+                                {!showFormType && (
+                                    <>
+                                        <h2 className="text-lg font-bold w-[80%] text-center flex justify-center">Agrupar Inmueble</h2>
+                                        <div className="flex flex-col gap-4 w-full justify-center items-center text-center mt-4">
+                                            <button onClick={() => setShowFormType('new')} className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mb-4">
+                                                Crear nuevo grupo
+                                            </button>
+                                            <button onClick={() => setShowFormType('existing')} className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mb-4">
+                                                Asignar a grupo existente
+                                            </button>
+                                            <button type="button" onClick={handlePopupToggle} className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded">
+                                                Cerrar
+                                            </button>
                                         </div>
-                                        {formData.tipo === 'Edificio' ? (
-                                            <div>
+                                    </>
+                                )}
+                                {showFormType === 'new' && (
+                                    <div className="relative pt-0 flex flex-col justify-center items-center w-[80%]">
+                                        <div
+                                            className="absolute top-0 -left-7 text-gray-700"
+                                            onClick={() => {
+                                                setShowFormType('');
+                                                setFormData({ tipo: '', nombre: '', existingGroup: '' });
+                                            }}
+                                        >
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="2.3em" height="2.3em" viewBox="0 0 20 20">
+                                                <path fill="currentColor" fill-rule="evenodd" d="M9.707 16.707a1 1 0 0 1-1.414 0l-6-6a1 1 0 0 1 0-1.414l6-6a1 1 0 0 1 1.414 1.414L5.414 9H17a1 1 0 1 1 0 2H5.414l4.293 4.293a1 1 0 0 1 0 1.414" clip-rule="evenodd" />
+                                            </svg>
+                                        </div>
+                                        <h2 className="text-lg font-bold w-[80%] text-center flex justify-center">Crear nuevo grupo</h2>
+                                        <form onSubmit={handleSubmitForm} className="flex flex-col gap-4 mt-4">
+                                            <div className="flex flex-col gap-3 justify-center items-center mb-2">
+                                                <label className="block">Tipo:</label>
+                                                <div className="flex gap-4">
+                                                    <label className="flex flex-row gap-2">
+                                                        <input type="radio" name="tipo" value="Edificio" checked={formData.tipo === 'Edificio'} onChange={handleFormChange} />
+                                                        Edificio
+                                                    </label>
+                                                    <label className="flex flex-row gap-2">
+                                                        <input type="radio" name="tipo" value="Escalera" checked={formData.tipo === 'Escalera'} onChange={handleFormChange} />
+                                                        Escalera
+                                                    </label>
+                                                </div>
+                                            </div>
+                                            {formData.tipo === 'Edificio' ? (
+                                                <div>
+                                                    <div>
+                                                        <label className="block mb-2">Nombre:</label>
+                                                        <input type="text" name="nombre" value={formData.nombre} onChange={handleFormChange} className="border p-2 rounded w-full" placeholder="Dirección del edificio" />
+                                                    </div>
+                                                </div>
+                                            ) : formData.tipo === 'Escalera' ? (
+                                                <div className="flex flex-col gap-3 w-full">
+                                                    <div>
+                                                        <label className="block">Nombre:</label>
+                                                        <input type="text" name="nombre" value={formData.nombre} onChange={handleFormChange} className="border p-2 rounded w-full" placeholder="Dirección de la escalera" />{' '}
+                                                    </div>
+                                                    <label className="block">Grupo:</label>
+                                                    <Select
+                                                        name="grupo"
+                                                        value={optionsNuevoGrupoEscalera.find(option => option.value === formData.grupo) || null} onChange={handleChange}
+                                                        options={optionsNuevoGrupoEscalera}
+                                                        className="w-full"
+                                                        classNamePrefix="react-select"
+                                                        placeholder="Seleccione un grupo"
+                                                        isClearable
+                                                        isSearchable
+                                                    />
+                                                </div>
+                                            ) : (
                                                 <div>
                                                     <label className="block mb-2">Nombre:</label>
                                                     <input type="text" name="nombre" value={formData.nombre} onChange={handleFormChange} className="border p-2 rounded w-full" placeholder="Dirección del edificio" />
                                                 </div>
+                                            )}
+                                            <div className="flex gap-4 mt-4 flex-row justify-center items-center">
+                                                <button type="submit" className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                                                    Crear
+                                                </button>
+                                                <button type="button" onClick={handlePopupToggle} className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded">
+                                                    Cerrar
+                                                </button>
                                             </div>
-                                        ) : formData.tipo === 'Escalera' ? (
-                                            <div className="flex flex-col gap-3 w-full">
-                                                <div>
-                                                    <label className="block">Nombre:</label>
-                                                    <input type="text" name="nombre" value={formData.nombre} onChange={handleFormChange} className="border p-2 rounded w-full" placeholder="Dirección de la escalera" />{' '}
+                                        </form>
+                                    </div>
+                                )}
+                                {showFormType === 'existing' && (
+                                    <div className="relative pt-0 flex flex-col justify-center items-center w-[80%]">
+                                        <div
+                                            className="absolute top-0 -left-7 text-gray-700"
+                                            onClick={() => {
+                                                setShowFormType('');
+                                                setFormData({ tipo: '', nombre: '', existingGroup: '' });
+                                            }}
+                                        >
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="2.3em" height="2.3em" viewBox="0 0 20 20">
+                                                <path fill="currentColor" fill-rule="evenodd" d="M9.707 16.707a1 1 0 0 1-1.414 0l-6-6a1 1 0 0 1 0-1.414l6-6a1 1 0 0 1 1.414 1.414L5.414 9H17a1 1 0 1 1 0 2H5.414l4.293 4.293a1 1 0 0 1 0 1.414" clip-rule="evenodd" />
+                                            </svg>
+                                        </div>
+                                        <h2 className="text-lg font-bold mb-4 w-[70%] text-center flex justify-center">Asignar a grupo existente</h2>
+                                        <form onSubmit={handleSubmitForm} className="flex flex-col gap-4">
+                                            <div className="flex flex-col gap-3 justify-center items-center mb-2">
+                                                <label className="block">Tipo:</label>
+                                                <div className="flex gap-4">
+                                                    <label className="flex flex-row gap-2">
+                                                        <input
+                                                            type="radio"
+                                                            name="tipo"
+                                                            value="Edificio"
+                                                            checked={selectedType === 'Edificio'}
+                                                            onChange={(e) => {
+                                                                setSelectedType('Edificio');
+                                                                handleFormChange(e);
+                                                            }}
+                                                        />
+                                                        Edificio
+                                                    </label>
+                                                    <label className="flex flex-row gap-2">
+                                                        <input
+                                                            type="radio"
+                                                            name="tipo"
+                                                            value="Escalera"
+                                                            checked={selectedType === 'Escalera'}
+                                                            onChange={(e) => {
+                                                                setSelectedType('Escalera');
+                                                                handleFormChange(e);
+                                                            }}
+                                                        />
+                                                        Escalera
+                                                    </label>
                                                 </div>
-                                                <label className="block">Grupo:</label>
+                                            </div>
+                                            <div>
+                                                <label className="block mb-2">Elige un grupo:</label>
                                                 <Select
-                                                    name="grupo"
-                                                    value={optionsNuevoGrupoEscalera.find(option => option.value === formData.grupo) || null} onChange={handleChange}
-                                                    options={optionsNuevoGrupoEscalera}
+                                                    name="existingGroup"
+                                                    value={options.find(option => option.value === formData.existingGroup) || null}
+                                                    onChange={handleChangeExistingGroup}
+                                                    options={options}
                                                     className="w-full"
                                                     classNamePrefix="react-select"
                                                     placeholder="Seleccione un grupo"
@@ -1675,127 +1768,53 @@ const Table = ({ parentsEdificioProps, admin, screenWidth, loadingLoader }) => {
                                                     isSearchable
                                                 />
                                             </div>
-                                        ) : (
-                                            <div>
-                                                <label className="block mb-2">Nombre:</label>
-                                                <input type="text" name="nombre" value={formData.nombre} onChange={handleFormChange} className="border p-2 rounded w-full" placeholder="Dirección del edificio" />
+                                            <div className="flex gap-4 mt-4 flex-row justify-center items-center">
+                                                <button type="button" onClick={handlePopupToggle} className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded">
+                                                    Cerrar
+                                                </button>
+                                                <button type="submit" className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                                                    Asignar
+                                                </button>
                                             </div>
-                                        )}
-                                        <div className="flex gap-4 mt-4 flex-row justify-center items-center">
-                                            <button type="submit" className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
-                                                Crear
-                                            </button>
-                                            <button type="button" onClick={handlePopupToggle} className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded">
-                                                Cerrar
-                                            </button>
-                                        </div>
-                                    </form>
-                                </div>
-                            )}
-                            {showFormType === 'existing' && (
-                                <div className="relative pt-0 flex flex-col justify-center items-center w-[80%]">
-                                    <div
-                                        className="absolute top-0 -left-7 text-gray-700"
-                                        onClick={() => {
-                                            setShowFormType('');
-                                            setFormData({ tipo: '', nombre: '', existingGroup: '' });
-                                        }}
-                                    >
+                                        </form>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    )
+                }
+
+                {
+                    showPopupUngroup && (
+                        <div className="popup-container fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-75 z-50">
+                            <div className="popup-content bg-white p-4 shadow-lg flex flex-col justify-center items-center gap-4 rounded-lg w-4/6">
+                                <div className="relative pt-0 flex flex-col justify-center items-center">
+                                    <div className="absolute top-0 -left-1 text-gray-700" onClick={handlePopupToggleUngroup}>
                                         <svg xmlns="http://www.w3.org/2000/svg" width="2.3em" height="2.3em" viewBox="0 0 20 20">
                                             <path fill="currentColor" fill-rule="evenodd" d="M9.707 16.707a1 1 0 0 1-1.414 0l-6-6a1 1 0 0 1 0-1.414l6-6a1 1 0 0 1 1.414 1.414L5.414 9H17a1 1 0 1 1 0 2H5.414l4.293 4.293a1 1 0 0 1 0 1.414" clip-rule="evenodd" />
                                         </svg>
                                     </div>
-                                    <h2 className="text-lg font-bold mb-4 w-[70%] text-center flex justify-center">Asignar a grupo existente</h2>
-                                    <form onSubmit={handleSubmitForm} className="flex flex-col gap-4">
-                                        <div className="flex flex-col gap-3 justify-center items-center mb-2">
-                                            <label className="block">Tipo:</label>
-                                            <div className="flex gap-4">
-                                                <label className="flex flex-row gap-2">
-                                                    <input
-                                                        type="radio"
-                                                        name="tipo"
-                                                        value="Edificio"
-                                                        checked={selectedType === 'Edificio'}
-                                                        onChange={(e) => {
-                                                            setSelectedType('Edificio');
-                                                            handleFormChange(e);
-                                                        }}
-                                                    />
-                                                    Edificio
-                                                </label>
-                                                <label className="flex flex-row gap-2">
-                                                    <input
-                                                        type="radio"
-                                                        name="tipo"
-                                                        value="Escalera"
-                                                        checked={selectedType === 'Escalera'}
-                                                        onChange={(e) => {
-                                                            setSelectedType('Escalera');
-                                                            handleFormChange(e);
-                                                        }}
-                                                    />
-                                                    Escalera
-                                                </label>
+                                    <h2 className="text-lg font-bold mb-4 w-[60%] text-center flex justify-center">Desagrupar</h2>
+                                    <form onSubmit={handleSubmitFormUngroup} className="flex flex-col justify-center items-center gap-4">
+                                        <div className="flex flex-col justify-center items-center gap-4 w-[75%]">
+                                            <h2 className="text-center">Se van a desagrupar los elementos seleccionados.</h2>
+                                            <h2>¿Está seguro?</h2>
+                                            <div className="flex flex-row justify-center items-center gap-4">
+                                                <button type="submit" className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded text-center w-[120px]">
+                                                    Desagrupar
+                                                </button>
+                                                <button type="button" onClick={handlePopupToggleUngroup} className="bg-red-500 hover:bg-red-700 text-white font-bold text-center py-2 px-4 rounded w-[120px]">
+                                                    Cancelar
+                                                </button>
                                             </div>
-                                        </div>
-                                        <div>
-                                            <label className="block mb-2">Elige un grupo:</label>
-                                            <Select
-                                                name="existingGroup"
-                                                value={options.find(option => option.value === formData.existingGroup) || null}
-                                                onChange={handleChangeExistingGroup}
-                                                options={options}
-                                                className="w-full"
-                                                classNamePrefix="react-select"
-                                                placeholder="Seleccione un grupo"
-                                                isClearable
-                                                isSearchable
-                                            />
-                                        </div>
-                                        <div className="flex gap-4 mt-4 flex-row justify-center items-center">
-                                            <button type="button" onClick={handlePopupToggle} className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded">
-                                                Cerrar
-                                            </button>
-                                            <button type="submit" className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
-                                                Asignar
-                                            </button>
                                         </div>
                                     </form>
                                 </div>
-                            )}
-                        </div>
-                    </div>
-                )}
-
-                {showPopupUngroup && (
-                    <div className="popup-container fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-75 z-50">
-                        <div className="popup-content bg-white p-4 shadow-lg flex flex-col justify-center items-center gap-4 rounded-lg w-4/6">
-                            <div className="relative pt-0 flex flex-col justify-center items-center">
-                                <div className="absolute top-0 -left-1 text-gray-700" onClick={handlePopupToggleUngroup}>
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="2.3em" height="2.3em" viewBox="0 0 20 20">
-                                        <path fill="currentColor" fill-rule="evenodd" d="M9.707 16.707a1 1 0 0 1-1.414 0l-6-6a1 1 0 0 1 0-1.414l6-6a1 1 0 0 1 1.414 1.414L5.414 9H17a1 1 0 1 1 0 2H5.414l4.293 4.293a1 1 0 0 1 0 1.414" clip-rule="evenodd" />
-                                    </svg>
-                                </div>
-                                <h2 className="text-lg font-bold mb-4 w-[60%] text-center flex justify-center">Desagrupar</h2>
-                                <form onSubmit={handleSubmitFormUngroup} className="flex flex-col justify-center items-center gap-4">
-                                    <div className="flex flex-col justify-center items-center gap-4 w-[75%]">
-                                        <h2 className="text-center">Se van a desagrupar los elementos seleccionados.</h2>
-                                        <h2>¿Está seguro?</h2>
-                                        <div className="flex flex-row justify-center items-center gap-4">
-                                            <button type="submit" className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded text-center w-[120px]">
-                                                Desagrupar
-                                            </button>
-                                            <button type="button" onClick={handlePopupToggleUngroup} className="bg-red-500 hover:bg-red-700 text-white font-bold text-center py-2 px-4 rounded w-[120px]">
-                                                Cancelar
-                                            </button>
-                                        </div>
-                                    </div>
-                                </form>
                             </div>
                         </div>
-                    </div>
-                )}
-            </div>
+                    )
+                }
+            </div >
 
             {
                 showAskForDeleteOrphan && (

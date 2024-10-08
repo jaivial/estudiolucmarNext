@@ -98,10 +98,14 @@ export default function Buscador({ admin, data, userData }) {
     }, [data]);
 
 
+
+
     return (
         <GeneralLayout title="Buscador" description="Buscador" userData={userData}>
             <div className="h-full">
+
                 <TablaAllData parentsEdificioProps={data} admin={admin} screenWidth={screenWidth} loadingLoader={loading} />
+
             </div>
         </GeneralLayout>
     );
