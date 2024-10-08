@@ -28,7 +28,7 @@ export default async function handler(req, res) {
                 clientData,
             });
         } else {
-            res.status(404).json({ message: 'Cliente no encontrado' });
+            res.status(200).json({ message: 'Cliente no encontrado' });
         }
     } catch (error) {
         console.error('Error al obtener el teléfono localizado heloo:', error);
