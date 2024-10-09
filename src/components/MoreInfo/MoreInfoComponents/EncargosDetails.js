@@ -532,7 +532,7 @@ const EncargosDetails = ({ data, setOnAddEncargoRefreshKey, onAddEncargoRefreshK
                                     <Tabs.Tab eventKey="1" title="Información">
                                         <div className="p-4">
                                             <div className="py-1 px-2 relative">
-                                                <div className="py-2 my-3 flex flex-col items-center gap-2 md:grid md:grid-cols-2 md:gap-4">
+                                                <div className="py-2 my-3 flex flex-col items-center gap-2">
                                                     <div className="flex items-center gap-2 flex-col w-full">
                                                         <IoCalendarNumber className="text-gray-900 text-3xl" />
                                                         <p className="text-base text-gray-950 py-1 text-center">{formatDate(encargos[0].encargo_fecha)}</p>
@@ -623,13 +623,29 @@ const EncargosDetails = ({ data, setOnAddEncargoRefreshKey, onAddEncargoRefreshK
                                                             <TbPigMoney className="text-gray-900 text-3xl" />
                                                             <p className="text-base text-gray-950 py-1 text-center">Comisión total:</p>
                                                             <p className="text-base text-gray-950 py-1 text-center m-0">
-                                                                {encargos[0].precio_2 && encargos[0].precio_2 > 0 ? (
-                                                                    <span>{toThousands(((encargos[0].precio_2 * encargos[0].comision_encargo) / 100) + ((encargos[0].precio_2 * encargos[0].comisionCompradorValue) / 100))} €</span>
-                                                                ) : (
-                                                                    <span>{toThousands(((encargos[0].precio_1 * encargos[0].comision_encargo) / 100) + ((encargos[0].precio_1 * encargos[0].comisionCompradorValue) / 100))} €</span>
-                                                                )}
+                                                                {(() => {
+                                                                    const price = encargos[0].precio_2 && encargos[0].precio_2 > 0 ? encargos[0].precio_2 : encargos[0].precio_1;
+
+                                                                    // Calculate comisionComprador
+                                                                    const comisionCompradorValue = encargos[0].comisionComprador === 'Porcentaje'
+                                                                        ? (price * encargos[0].comisionCompradorValue) / 100
+                                                                        : encargos[0].comisionCompradorValue;
+
+                                                                    // Calculate comision_encargo
+                                                                    const comisionEncargoValue = encargos[0].tipo_comision_encargo === 'Porcentaje'
+                                                                        ? (price * encargos[0].comision_encargo) / 100
+                                                                        : encargos[0].comision_encargo;
+
+                                                                    // Calculate total commission
+                                                                    const totalComision = comisionCompradorValue + comisionEncargoValue;
+
+                                                                    return (
+                                                                        <span>{toThousands(totalComision)} €</span>
+                                                                    );
+                                                                })()}
                                                             </p>
                                                         </div>
+
                                                         <div className="border-b border-gray-300 w-4/6 mt-1 mx-auto"></div>
                                                     </div>
                                                     <div className="flex items-center gap-2 flex-col w-full">
