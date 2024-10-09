@@ -417,7 +417,7 @@ const ClientesAsociados = ({ inmuebleId, inmuebleDireccion, screenWidth, setFetc
     }, [newCliente]);
 
     return (
-        <Accordion defaultActiveKey={0} className={`w-auto ml-[16px] mr-[16px] ${screenWidth >= 640 ? 'mt-0' : 'mt-[20px]'} border-1 border-gray-300 bg-gray-100 rounded-lg shadow-lg`}>
+        <Accordion defaultActiveKey={0} className={`w-full ml-[16px] mr-[16px] ${screenWidth >= 640 ? 'mt-0' : 'mt-[20px]'} border-1 border-gray-300 bg-gray-100 rounded-lg shadow-lg`}>
             <Accordion.Panel header="Clientes Asociados" eventKey={0} defaultExpanded={true} style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                 <Modal open={open} onClose={handleClose} style={{ backgroundColor: 'rgba(0,0,0,0.15)', borderRadius: '10px', padding: '0px' }} backdrop="static">
                     <Modal.Header>
@@ -728,16 +728,16 @@ const ClientesAsociados = ({ inmuebleId, inmuebleDireccion, screenWidth, setFetc
                             })
                             .map((cliente) => (
                                 <>
-                                    <li key={cliente._id} className="flex flex-row justify-between items-center">
-                                        <div className="flex flex-row justify-center items-center w-full gap-1">
+                                    <li key={cliente._id} className="flex flex-row justify-stretch items-center">
+                                        <div className="flex flex-row justify-evenly items-center w-full gap-1">
                                             <div className='flex flex-row pr-1 justify-center items-center gap-1'>
                                                 <Icon icon="mdi:information" style={{ fontSize: '2rem' }} className={cliente.informador ? 'text-blue-500' : 'text-transparent'} />
                                             </div>
                                             <div className='w-36  text-center'>
                                                 <p className="text-base sm:text-lg font-semibold w-full">{cliente.nombre} {cliente.apellido}</p>
                                             </div>
-                                            <div className='w-20 px-2 text-center display-flex flex-row justify-center items-center'>
-                                                <div className='flex flex-col justify-center items-center mx-0 sm:flex-row gap-2'>
+                                            <div className='w-20 px-2 text-center display-flex flex-col justify-center items-center'>
+                                                <div className='flex flex-col justify-center items-center mx-0 sm:flex-row md:flex-col md:min-w-fit gap-2'>
                                                     {cliente.inmuebles_asociados_propietario?.some(propietario => propietario.id === inmuebleId) && (
                                                         <Tag color="green" style={{ margin: '0 auto' }}>Propietario</Tag>
                                                     )}

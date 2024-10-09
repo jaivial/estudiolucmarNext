@@ -314,14 +314,18 @@ const ItemDetails = ({ id, onClose, showModal, setShowModal, fetchData, currentP
                                             </div>
                                         </div>
                                     )}
-                                    <DetailsInfoTwo data={data} descripcion={descripcion} setDescripcion={setDescripcion} newDescripcion={newDescripcion} setNewDescripcion={setNewDescripcion} screenWidth={screenWidth} />
-                                    <ClientesAsociados inmuebleId={data.inmueble.id} inmuebleDireccion={data.inmueble.direccion} screenWidth={screenWidth} setFetchClientPhoneNumberRefreshKey={setFetchClientPhoneNumberRefreshKey} fetchClientPhoneNumberRefreshKey={fetchClientPhoneNumberRefreshKey} localizadoRefreshKey={localizadoRefreshKey} setLocalizadoRefreshKey={setLocalizadoRefreshKey} />
+                                    <div className={`${screenWidth >= 1024 ? 'flex flex-row w-full transition-all duration-[1000ms] ease-in-out' : ''}`}>
+                                        <DetailsInfoTwo data={data} descripcion={descripcion} setDescripcion={setDescripcion} newDescripcion={newDescripcion} setNewDescripcion={setNewDescripcion} screenWidth={screenWidth} />
+                                        <ClientesAsociados inmuebleId={data.inmueble.id} inmuebleDireccion={data.inmueble.direccion} screenWidth={screenWidth} setFetchClientPhoneNumberRefreshKey={setFetchClientPhoneNumberRefreshKey} fetchClientPhoneNumberRefreshKey={fetchClientPhoneNumberRefreshKey} localizadoRefreshKey={localizadoRefreshKey} setLocalizadoRefreshKey={setLocalizadoRefreshKey} />
+                                    </div>
                                     {data.inmueble.DPV && <DPVInfoComponent DPVInfo={DPVInfo} />}
                                 </div>
                                 <div className="flex flex-col gap-4 w-full">
-                                    <DetailsInfoThree data={data} isVisible={isVisible} screenWidth={screenWidth} />
+                                    <div className={`${screenWidth >= 1024 ? 'flex flex-row w-full transition-all duration-[1000ms] ease-in-out' : ''}`}>
+                                        <DetailsInfoThree data={data} isVisible={isVisible} screenWidth={screenWidth} />
 
-                                    <ComentariosDetails data={data} fetchClientPhoneNumberRefreshKey={fetchClientPhoneNumberRefreshKey} screenWidth={screenWidth} />
+                                        <ComentariosDetails data={data} fetchClientPhoneNumberRefreshKey={fetchClientPhoneNumberRefreshKey} screenWidth={screenWidth} />
+                                    </div>
                                     <div className={`${screenWidth >= 780 ? 'flex flex-row w-full' : ''}`}>
                                         <NoticiasDetails data={data} setOnAddNoticiaRefreshKey={setOnAddNoticiaRefreshKey} onAddNoticiaRefreshKey={onAddNoticiaRefreshKey} fetchData={fetchData} currentPage={currentPage} searchTerm={searchTerm} screenWidth={screenWidth} />
                                         <EncargosDetails data={data} setOnAddEncargoRefreshKey={setOnAddEncargoRefreshKey} onAddEncargoRefreshKey={onAddEncargoRefreshKey} fetchData={fetchData} currentPage={currentPage} searchTerm={searchTerm} screenWidth={screenWidth} />

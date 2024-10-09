@@ -129,9 +129,9 @@ const DetailsInfoThree = ({ data, isVisible, screenWidth }) => {
     };
 
     return (
-        <div className={`flex ${screenWidth >= 780 ? 'flex-row justify-center' : 'flex-col'} gap-4 bg-blue-200 px-4`}>
+        <div className={`flex ${screenWidth >= 1280 ? 'flex-row items-start' : screenWidth >= 780 ? 'flex-row justify-center' : 'flex-col'} gap-4 px-4 w-full`}>
             {/* Left Column: Basic Characteristics */}
-            <div className="bg-white p-4 px-6 border border-gray-300 rounded-md h-full w-full">
+            <div className={`bg-white p-4 px-6 border border-gray-300 rounded-md ${screenWidth >= 1280 ? 'w-full flex-1' : 'w-full'}`}>
                 <div>
                     <h2 className="font-bold text-xl pb-2">Características básicas</h2>
                     <ul className="list-none pl-2">
@@ -156,7 +156,7 @@ const DetailsInfoThree = ({ data, isVisible, screenWidth }) => {
                 )}
             </div>
             {!isVisible && (
-                <div className="bg-white p-4 px-6 border border-gray-300 rounded-md h-full w-full">
+                <div className="bg-white p-4 px-6 border border-gray-300 rounded-md flex-1 w-full">
                     <div className="flex flex-col gap-4">
                         {/* Bottom Column: Commercial Information */}
                         <div>
