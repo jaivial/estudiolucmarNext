@@ -263,7 +263,7 @@ const PhoneModal = ({ isOpen, setPhoneModalOpen, localizado, setLocalizado, inmu
                                         Información del localizado
                                     </div>
                                     <div class="col-span-3">
-                                        {clientData.nombre && (
+                                        {clientData?.nombre && (
                                             <div className='gap-4 flex flex-col justify-center'>
                                                 <p>Cliente: {clientData.nombre} {clientData.apellido}</p>
                                                 <div class="flex flex-row gap-2 items-center">

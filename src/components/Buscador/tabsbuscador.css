@@ -1,9 +1,8 @@
 /* Active state with bg-blue-700 */
-.rs-nav-item-active {
+.tabsTablaAllData.rs-nav-item-active {
     background-color: #1D4ED8 !important; /* Tailwind's bg-blue-700 equivalent */
     color: white !important; /* Optional: set text color to white for contrast */
     font-size: 1.2rem !important; /* Keep font-size and padding */
     padding: 0.4rem 1.5rem !important;
     border-radius: 8px !important; /* Optional: give rounded corners */
 }
-  

@@ -14,6 +14,7 @@ import DPVComponent from './DPVComponent';
 import PhoneModal from './PhoneModal'; // Import PhoneModal component
 import Skeleton from 'react-loading-skeleton'
 import 'react-loading-skeleton/dist/skeleton.css'
+import '../moreinfoglobal.css'
 
 
 const ItemDetailsHeader = ({ inmuebleId, onClose, address, setImages, setIsSliderLoading, isVisible, setIsVisible, data, onAddEdtMoreInfoRefreshKey, setOnAddEdtMoreInfoRefreshKey, DPVboolean, setDPVboolean, admin, onAddDeleteDPVRefreshKey, setOnAddDeleteDPVRefreshKey, localizado, setLocalizado, direccion, nombre, setNombre, apellido, setApellido, inmuebles_asociados_inquilino, setInmueblesAsociadosInquilino, inmuebles_asociados_propietario, setInmueblesAsociadosPropietario, inmuebles_asociados_informador, setInmueblesAsociadosInformador, localizadoRefreshKey, setLocalizadoRefreshKey }) => {

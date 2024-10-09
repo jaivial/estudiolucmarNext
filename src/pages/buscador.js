@@ -4,7 +4,6 @@ import TablaAllData from "../components/Buscador/TablaAllData";
 import SmallLoadingScreen from '../components/LoadingScreen/SmallLoadingScreen'; // Corrected component import name
 import { checkLogin } from "../lib/mongodb/login/checkLogin.js";
 
-
 export async function getServerSideProps(context) {
     const { req } = context;
     let user = null;

@@ -5,6 +5,7 @@ import { PiEmptyBold } from 'react-icons/pi'; // Import PiEmptyBold icon
 import { TbTargetArrow } from 'react-icons/tb'; // Import TbTargetArrow icon
 import { FaUserTie } from 'react-icons/fa';
 import { PiMapPinSimpleAreaBold } from 'react-icons/pi';
+import '../moreinfoglobal.css';
 
 const DetailsInfoThree = ({ data, isVisible, screenWidth }) => {
     const { tipo, uso, superficie, ano_construccion, habitaciones, garaje, ascensor, baños, trastero, jardin, terraza, aireAcondicionado, aireacondicionado, categoria, potencialAdquisicion, noticiastate, encargostate, responsable, zona } = data.inmueble;
@@ -128,58 +129,52 @@ const DetailsInfoThree = ({ data, isVisible, screenWidth }) => {
     };
 
     return (
-        <div className={`${screenWidth >= 640 ? 'pl-4 pr-0 h-auto' : 'p-4'}`}>
-            <div className="flex flex-col gap-4 md:grid md:grid-cols-2 md:gap-4">
-                {/* Left Column: Basic Characteristics */}
-                <div className="bg-white p-4 px-6 border border-gray-300 rounded-md">
-                    <div>
-                        <h2 className="font-bold text-xl pb-2">Características básicas</h2>
-                        <ul className="list-none pl-2">
-                            {renderListItem(tipo)}
-                            {renderListItem(uso)}
-                            {renderListItem(superficie ? `${superficie} m²` : null)}
-                            {renderListItem(ano_construccion ? `Construido en ${ano_construccion}` : null)}
-                            {renderListItem(habitaciones ? `${habitaciones} habitaciones` : null)}
-                            {renderListItem(garaje ? `Con garaje` : null)}
-                            {renderListItem(ascensor ? 'Con ascensor' : null)}
-                            {renderListItem(baños ? `${baños} baños` : null)}
-                            {renderListItem(trastero ? 'Trastero' : null)}
-                            {renderListItem(jardin ? 'Jardín' : null)}
-                            {renderListItem(terraza ? 'Con terraza y balcón' : null)}
-                        </ul>
-                    </div>
-                    {aireAcondicionado || aireacondicionado && (
-                        <div>
-                            <h2 className="font-bold text-xl pb-2 mt-6">Equipamiento</h2>
-                            <ul className="list-none pl-2">{renderListItem(aireAcondicionado || aireacondicionado ? 'Aire acondicionado' : null)}</ul>
-                        </div>
-                    )}
+        <div className={`flex ${screenWidth >= 1280 ? 'flex-row items-start' : screenWidth >= 780 ? 'flex-row justify-center' : 'flex-col'} gap-4 px-4 w-full`}>
+            {/* Left Column: Basic Characteristics */}
+            <div className={`bg-white p-4 px-6 border border-gray-300 rounded-md ${screenWidth >= 1280 ? 'w-full flex-1' : 'w-full'}`}>
+                <div>
+                    <h2 className="font-bold text-xl pb-2">Características básicas</h2>
+                    <ul className="list-none pl-2">
+                        {renderListItem(tipo)}
+                        {renderListItem(uso)}
+                        {renderListItem(superficie ? `${superficie} m²` : null)}
+                        {renderListItem(ano_construccion ? `Construido en ${ano_construccion} ` : null)}
+                        {renderListItem(habitaciones ? `${habitaciones} habitaciones` : null)}
+                        {renderListItem(garaje ? `Con garaje` : null)}
+                        {renderListItem(ascensor ? 'Con ascensor' : null)}
+                        {renderListItem(baños ? `${baños} baños` : null)}
+                        {renderListItem(trastero ? 'Trastero' : null)}
+                        {renderListItem(jardin ? 'Jardín' : null)}
+                        {renderListItem(terraza ? 'Con terraza y balcón' : null)}
+                    </ul>
                 </div>
-                {!isVisible && (
-                    <>
-                        {/* Right Column: Equipment and Commercial Information */}
-                        <div className="bg-white p-4 px-6 border border-gray-300 rounded-md">
-                            <div className="flex flex-col gap-4">
-                                {/* Top Column: Equipment */}
-
-                                {/* Bottom Column: Commercial Information */}
-                                <div>
-                                    <h2 className="font-bold text-xl pb-2">Información Comercial</h2>
-                                    <ul className="list-none pl-2 py-1">
-                                        {renderCategoria(categoria)}
-                                        {renderPotencialAdquisicion(potencialAdquisicion)}
-                                        {renderNoticiaState(noticiastate)}
-                                        {renderEncargoState(encargostate)}
-                                        {renderAsesorState(responsable)}
-                                        {renderZoneState(zona)}
-                                    </ul>
-                                </div>
-                            </div>
-                        </div>
-                    </>
+                {aireAcondicionado || aireacondicionado && (
+                    <div>
+                        <h2 className="font-bold text-xl pb-2 mt-6">Equipamiento</h2>
+                        <ul className="list-none pl-2">{renderListItem(aireAcondicionado || aireacondicionado ? 'Aire acondicionado' : null)}</ul>
+                    </div>
                 )}
             </div>
-        </div >
+            {!isVisible && (
+                <div className="bg-white p-4 px-6 border border-gray-300 rounded-md flex-1 w-full">
+                    <div className="flex flex-col gap-4">
+                        {/* Bottom Column: Commercial Information */}
+                        <div>
+                            <h2 className="font-bold text-xl pb-2">Información Comercial</h2>
+                            <ul className="list-none pl-2 py-1">
+                                {renderCategoria(categoria)}
+                                {renderPotencialAdquisicion(potencialAdquisicion)}
+                                {renderNoticiaState(noticiastate)}
+                                {renderEncargoState(encargostate)}
+                                {renderAsesorState(responsable)}
+                                {renderZoneState(zona)}
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            )}
+        </div>
+
     );
 };
 

@@ -12,11 +12,9 @@ const BuscadorTabs = ({ paginaBuscador, setPaginaBuscador }) => {
             activeKey={paginaBuscador} // Setting the active tab based on the current paginaBuscador
             onSelect={handleSelect} // Handle tab change
         >
-            <Nav.Item eventKey="Todos" style={{ fontSize: '1.1rem', padding: '0.4rem 1.5rem' }}>
-                Todos
-            </Nav.Item>
-            <Nav.Item eventKey="Noticias" style={{ fontSize: '1.1rem', padding: '0.4rem 1.5rem' }}>Noticias</Nav.Item>
-            <Nav.Item eventKey="Encargos" style={{ fontSize: '1.1rem', padding: '0.4rem 1.5rem' }}>Encargos</Nav.Item>
+            <Nav.Item className='tabsTablaAllData' eventKey="Todos" style={{ fontSize: '1.1rem', padding: '0.4rem 1.5rem', backgroundColor: '#1D4ED8 !important' }}>Todos</Nav.Item>
+            <Nav.Item className='tabsTablaAllData' eventKey="Noticias" style={{ fontSize: '1.1rem', padding: '0.4rem 1.5rem' }}>Noticias</Nav.Item>
+            <Nav.Item className='tabsTablaAllData' eventKey="Encargos" style={{ fontSize: '1.1rem', padding: '0.4rem 1.5rem' }}>Encargos</Nav.Item>
         </Nav>
     );
 };

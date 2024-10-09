@@ -519,380 +519,402 @@ const EncargosDetails = ({ data, setOnAddEncargoRefreshKey, onAddEncargoRefreshK
     return (
         data.inmueble.noticiastate === true && (
             <CustomProvider locale={esES}>
-                <Accordion defaultActiveKey={1} bordered style={{ margin: '0px 16px', marginTop: '20px' }}>
+                <Accordion defaultActiveKey={1} bordered style={{ margin: '0px 16px 0 8px', marginTop: '0px', width: '100%' }}>
                     <Accordion.Panel style={{ backgroundColor: '#f4f4f5', padding: '0px' }} header={'Encargos'} eventKey={1}>
-                        {encargoState === true && encargos.length > 0 ? (
-                            <Tabs defaultActiveKey="1" appearance="pills" style={{ alignItems: 'center', width: '100%' }} onSelect={(eventKey) => {
-                                if (eventKey === '2') {
-                                    fetchMatchingEncargos();
-                                }
-                            }}>
-                                <Tabs.Tab eventKey="1" title="Información">
-                                    <div className="p-4">
-                                        <div className="py-1 px-2 relative">
-                                            <div className="py-2 my-3 flex flex-col items-center gap-2 md:grid md:grid-cols-2 md:gap-4">
-                                                <div className="flex items-center gap-2 flex-col w-full">
-                                                    <IoCalendarNumber className="text-gray-900 text-3xl" />
-                                                    <p className="text-base text-gray-950 py-1 text-center">{formatDate(encargos[0].encargo_fecha)}</p>
-                                                    <div className="border-b border-gray-300 w-4/6 -mt-1"></div>
-                                                </div>
-                                                <div className="flex items-center gap-2 flex-col w-full">
-                                                    <GiSandsOfTime className="text-gray-900 text-4xl" />
-                                                    <p className="text-base text-gray-950 py-0 text-center">Tiempo de exclusiva: <br></br> {formatDate(encargos[0].tiempo_exclusiva)}</p>
-                                                    <div className='flex flex-col gap-2 items-center bg-slate-200 rounded-md p-4 w-full'>
-                                                        <p className='text-center text-gray-950 font-semibold'>Tiempo restante:</p>
-                                                        <p className="text-base text-gray-950 py-1 text-center font-semibold w-[100%]">{tiempoExclusivaCounter}</p>
-                                                    </div>
-                                                    <div className="border-b border-gray-300 w-4/6 -mt-1"></div>
-                                                </div>
-                                                <div className="flex items-center gap-2 flex-col w-full">
-                                                    <BiSolidPurchaseTag className="text-gray-900 text-3xl" />
-                                                    <p className="text-base text-gray-950 py-1 text-center">{encargos[0].tipo_encargo}</p>
-                                                    <div className="border-b border-gray-300 w-4/6 -mt-1"></div>
-                                                </div>
-                                                <div className="flex items-center gap-2 flex-col w-full">
-                                                    <FaUserTag className="text-gray-900 text-3xl" />
-                                                    <p className="text-base text-gray-950 py-1 text-center">Cliente: {nombreCliente}</p>
-                                                    <div className="border-b border-gray-300 w-4/6 -mt-1"></div>
-                                                </div>
-                                                <div className="flex items-center gap-2 flex-col w-full">
-                                                    <MdAttachMoney className="text-gray-900 text-3xl" />
-                                                    <p className="text-base text-gray-950 py-1 text-center">Precio: {encargos[0].precio_1.toLocaleString('es-ES', { minimumFractionDigits: 0 })} €</p>
 
-                                                    {encargos[0].precio_2 ? null : <div className="border-b border-gray-300 w-4/6 -mt-1"></div>}
-                                                </div>
-                                                {encargos[0].precio_2 && encargos[0].precio_2 > 0 && (
-                                                    <div className="flex items-center gap-2 flex-col w-full mt-2">
-                                                        <div className='flex flex-row items-center justify-center gap-3 mb-3'>
-                                                            <FaArrowTrendDown className='text-red-600 text-3xl' />
-                                                            <p className="text-base text-red-600 py-1 text-center">{Math.floor(encargos[0].precio_2 - encargos[0].precio_1).toLocaleString('es-ES', { minimumFractionDigits: 0 })} €</p>
-                                                        </div>
-                                                        <div className='flex flex-row items-center justify-center text-gray-900 text-3xl' onClick={() => setIsBajadaModalOpen(true)}>
-                                                            <MdAttachMoney className="text-3xl cursor-pointer" />
-                                                            <MdKeyboardDoubleArrowDown className="text-3xl cursor-pointer  -ml-2" />
-                                                        </div>
-                                                        <p className="text-base text-gray-900 py-1 text-center">Precio reducido: {encargos[0].precio_2} €</p>
+                        {encargoState === true && encargos.length > 0 ? (
+                            <>
+                                <Tabs defaultActiveKey="1" appearance="pills" style={{ alignItems: 'center', width: '100%' }} onSelect={(eventKey) => {
+                                    if (eventKey === '2') {
+                                        fetchMatchingEncargos();
+                                    }
+                                }}>
+                                    <Tabs.Tab eventKey="1" title="Información">
+                                        <div className="p-4">
+                                            <div className="py-1 px-2 relative">
+                                                <div className="py-2 my-3 flex flex-col items-center gap-2">
+                                                    <div className="flex items-center gap-2 flex-col w-full">
+                                                        <IoCalendarNumber className="text-gray-900 text-3xl" />
+                                                        <p className="text-base text-gray-950 py-1 text-center">{formatDate(encargos[0].encargo_fecha)}</p>
                                                         <div className="border-b border-gray-300 w-4/6 -mt-1"></div>
                                                     </div>
-                                                )}
-                                                <div className="flex flex-col gap-2 w-full">
-
-                                                    <div className="flex items-center gap-2 flex-col w-full bg-orange-100 rounded-xl p-4 ">
-                                                        <TbPigMoney className="text-gray-900 text-3xl" />
-                                                        <p className="text-base text-gray-950 py-1 text-center">Comisión Vendedor</p>
-                                                        {encargos[0].tipo_comision_encargo === 'Porcentaje' ? (
-                                                            <div className="flex flex-row items-center gap-2 justify-center">
-                                                                <p className="text-base text-gray-950 py-1 text-center">{encargos[0].comision_encargo}%</p>
-                                                                <p className='-my-2'>|</p>
-                                                                {encargos[0].precio_2 && encargos[0].precio_2 > 0 ? (
-                                                                    <p className="text-base text-gray-950 py-1 text-center m-0">{toThousands(((encargos[0].precio_2 * encargos[0].comision_encargo) / 100))} €</p>
-                                                                ) : (
-                                                                    <p className="text-base text-gray-950 py-1 text-center m-0">{toThousands(((encargos[0].precio_1 * encargos[0].comision_encargo) / 100))} €</p>
-                                                                )}
-                                                            </div>
-                                                        ) : (
-                                                            <p className="text-base text-gray-950 py-1 text-center">{(encargos[0].comision_encargo.toLocaleString('es-ES', { minimumFractionDigits: 0 }))} €</p>
-                                                        )}
+                                                    <div className="flex items-center gap-2 flex-col w-full">
+                                                        <GiSandsOfTime className="text-gray-900 text-4xl" />
+                                                        <p className="text-base text-gray-950 py-0 text-center">Tiempo de exclusiva: <br></br> {formatDate(encargos[0].tiempo_exclusiva)}</p>
+                                                        <div className='flex flex-col gap-2 items-center bg-slate-200 rounded-md p-4 w-full'>
+                                                            <p className='text-center text-gray-950 font-semibold'>Tiempo restante:</p>
+                                                            <p className="text-base text-gray-950 py-1 text-center font-semibold w-[100%]">{tiempoExclusivaCounter}</p>
+                                                        </div>
+                                                        <div className="border-b border-gray-300 w-4/6 -mt-1"></div>
                                                     </div>
-                                                    <div className="flex items-center gap-2 flex-col w-full bg-blue-100 rounded-xl p-4 ">
-                                                        <TbPigMoney className="text-gray-900 text-3xl" />
-                                                        <p className="text-base text-gray-950 py-1 text-center">Comisión Pedido</p>
-                                                        {encargos[0].comisionComprador === 'Porcentaje' ? (
-                                                            <div className="flex flex-row items-center gap-2 justify-center">
-                                                                <p className="text-base text-gray-950 py-1 text-center">{encargos[0].comisionCompradorValue}%</p>
-                                                                <p className='-my-2'>|</p>
-                                                                {encargos[0].precio_2 && encargos[0].precio_2 > 0 ? (
-                                                                    <p className="text-base text-gray-950 py-1 text-center m-0">{toThousands(((encargos[0].precio_2 * encargos[0].comisionCompradorValue) / 100))} €</p>
-                                                                ) : (
-                                                                    <p className="text-base text-gray-950 py-1 text-center m-0">{toThousands(((encargos[0].precio_1 * encargos[0].comisionCompradorValue) / 100))} €</p>
-                                                                )}
-                                                            </div>
-                                                        ) : (
-
-                                                            encargos[0].comisionCompradorValue ? (
-                                                                <p className="text-base text-gray-950 py-1 text-center">{encargos[0].comisionCompradorValue.toLocaleString('es-ES')} €</p>
-                                                            ) : (
-                                                                <p className="text-base text-gray-950 py-1 text-center">N/A</p>
-                                                            )
-
-                                                        )}
+                                                    <div className="flex items-center gap-2 flex-col w-full">
+                                                        <BiSolidPurchaseTag className="text-gray-900 text-3xl" />
+                                                        <p className="text-base text-gray-950 py-1 text-center">{encargos[0].tipo_encargo}</p>
+                                                        <div className="border-b border-gray-300 w-4/6 -mt-1"></div>
                                                     </div>
-                                                    <div className="flex items-center gap-2 flex-col w-full mt-2 bg-zinc-200 rounded-xl p-3 border-4 border-gray-400">
-                                                        <TbPigMoney className="text-gray-900 text-3xl" />
-                                                        <p className="text-base text-gray-950 py-1 text-center">Comisión total:</p>
-                                                        <p className="text-base text-gray-950 py-1 text-center m-0">
-                                                            {encargos[0].precio_2 && encargos[0].precio_2 > 0 ? (
-                                                                <span>{toThousands(((encargos[0].precio_2 * encargos[0].comision_encargo) / 100) + ((encargos[0].precio_2 * encargos[0].comisionCompradorValue) / 100))} €</span>
+                                                    <div className="flex items-center gap-2 flex-col w-full">
+                                                        <FaUserTag className="text-gray-900 text-3xl" />
+                                                        <p className="text-base text-gray-950 py-1 text-center">Cliente: {nombreCliente}</p>
+                                                        <div className="border-b border-gray-300 w-4/6 -mt-1"></div>
+                                                    </div>
+                                                    <div className="flex items-center gap-2 flex-col w-full">
+                                                        <MdAttachMoney className="text-gray-900 text-3xl" />
+                                                        <p className="text-base text-gray-950 py-1 text-center">Precio: {encargos[0].precio_1.toLocaleString('es-ES', { minimumFractionDigits: 0 })} €</p>
+
+                                                        {encargos[0].precio_2 ? null : <div className="border-b border-gray-300 w-4/6 -mt-1"></div>}
+                                                    </div>
+                                                    {encargos[0].precio_2 && encargos[0].precio_2 > 0 && (
+                                                        <div className="flex items-center gap-2 flex-col w-full mt-2">
+                                                            <div className='flex flex-row items-center justify-center gap-3 mb-3'>
+                                                                <FaArrowTrendDown className='text-red-600 text-3xl' />
+                                                                <p className="text-base text-red-600 py-1 text-center">{Math.floor(encargos[0].precio_2 - encargos[0].precio_1).toLocaleString('es-ES', { minimumFractionDigits: 0 })} €</p>
+                                                            </div>
+                                                            <div className='flex flex-row items-center justify-center text-gray-900 text-3xl' onClick={() => setIsBajadaModalOpen(true)}>
+                                                                <MdAttachMoney className="text-3xl cursor-pointer" />
+                                                                <MdKeyboardDoubleArrowDown className="text-3xl cursor-pointer  -ml-2" />
+                                                            </div>
+                                                            <p className="text-base text-gray-900 py-1 text-center">Precio reducido: {encargos[0].precio_2} €</p>
+                                                            <div className="border-b border-gray-300 w-4/6 -mt-1"></div>
+                                                        </div>
+                                                    )}
+                                                    <div className="flex flex-col gap-2 w-full">
+
+                                                        <div className="flex items-center gap-2 flex-col w-full bg-orange-100 rounded-xl p-4 ">
+                                                            <TbPigMoney className="text-gray-900 text-3xl" />
+                                                            <p className="text-base text-gray-950 py-1 text-center">Comisión Vendedor</p>
+                                                            {encargos[0].tipo_comision_encargo === 'Porcentaje' ? (
+                                                                <div className="flex flex-row items-center gap-2 justify-center">
+                                                                    <p className="text-base text-gray-950 py-1 text-center">{encargos[0].comision_encargo}%</p>
+                                                                    <p className='-my-2'>|</p>
+                                                                    {encargos[0].precio_2 && encargos[0].precio_2 > 0 ? (
+                                                                        <p className="text-base text-gray-950 py-1 text-center m-0">{toThousands(((encargos[0].precio_2 * encargos[0].comision_encargo) / 100))} €</p>
+                                                                    ) : (
+                                                                        <p className="text-base text-gray-950 py-1 text-center m-0">{toThousands(((encargos[0].precio_1 * encargos[0].comision_encargo) / 100))} €</p>
+                                                                    )}
+                                                                </div>
                                                             ) : (
-                                                                <span>{toThousands(((encargos[0].precio_1 * encargos[0].comision_encargo) / 100) + ((encargos[0].precio_1 * encargos[0].comisionCompradorValue) / 100))} €</span>
+                                                                <p className="text-base text-gray-950 py-1 text-center">{(encargos[0].comision_encargo.toLocaleString('es-ES', { minimumFractionDigits: 0 }))} €</p>
                                                             )}
-                                                        </p>
-                                                    </div>
-                                                    <div className="border-b border-gray-300 w-4/6 mt-1 mx-auto"></div>
-                                                </div>
-                                                <div className="flex items-center gap-2 flex-col w-full">
+                                                        </div>
+                                                        <div className="flex items-center gap-2 flex-col w-full bg-blue-100 rounded-xl p-4 ">
+                                                            <TbPigMoney className="text-gray-900 text-3xl" />
+                                                            <p className="text-base text-gray-950 py-1 text-center">Comisión Pedido</p>
+                                                            {encargos[0].comisionComprador === 'Porcentaje' ? (
+                                                                <div className="flex flex-row items-center gap-2 justify-center">
+                                                                    <p className="text-base text-gray-950 py-1 text-center">{encargos[0].comisionCompradorValue}%</p>
+                                                                    <p className='-my-2'>|</p>
+                                                                    {encargos[0].precio_2 && encargos[0].precio_2 > 0 ? (
+                                                                        <p className="text-base text-gray-950 py-1 text-center m-0">{toThousands(((encargos[0].precio_2 * encargos[0].comisionCompradorValue) / 100))} €</p>
+                                                                    ) : (
+                                                                        <p className="text-base text-gray-950 py-1 text-center m-0">{toThousands(((encargos[0].precio_1 * encargos[0].comisionCompradorValue) / 100))} €</p>
+                                                                    )}
+                                                                </div>
+                                                            ) : (
 
-                                                    <FaUserTie className="text-gray-900 text-3xl" />
-                                                    <p className="text-base text-gray-950 py-1 text-center">Asesor: {encargos[0].comercial_encargo}</p>
-                                                </div>
-                                                <div className="absolute top-0 right-0 flex flex-col gap-6">
-                                                    <div className='flex flex-col items-center gap-4'>
-                                                        <FiEdit className="text-2xl cursor-pointer text-blue-500" onClick={() => handleEditEncargo(encargos, asesorOptions, clienteOptions)} />
-                                                        <div className='flex flex-row items-center justify-center text-red-600 text-3xl' onClick={() => setIsBajadaModalOpen(true)}>
-                                                            <MdAttachMoney className="text-3xl cursor-pointer" />
-                                                            <MdKeyboardDoubleArrowDown className="text-3xl cursor-pointer  -ml-2" />
+                                                                encargos[0].comisionCompradorValue ? (
+                                                                    <p className="text-base text-gray-950 py-1 text-center">{encargos[0].comisionCompradorValue.toLocaleString('es-ES')} €</p>
+                                                                ) : (
+                                                                    <p className="text-base text-gray-950 py-1 text-center">N/A</p>
+                                                                )
+
+                                                            )}
+                                                        </div>
+                                                        <div className="flex items-center gap-2 flex-col w-full mt-2 bg-zinc-200 rounded-xl p-3 border-4 border-gray-400">
+                                                            <TbPigMoney className="text-gray-900 text-3xl" />
+                                                            <p className="text-base text-gray-950 py-1 text-center">Comisión total:</p>
+                                                            <p className="text-base text-gray-950 py-1 text-center m-0">
+                                                                {(() => {
+                                                                    const price = encargos[0].precio_2 && encargos[0].precio_2 > 0 ? encargos[0].precio_2 : encargos[0].precio_1;
+
+                                                                    // Calculate comisionComprador
+                                                                    const comisionCompradorValue = encargos[0].comisionComprador === 'Porcentaje'
+                                                                        ? (price * encargos[0].comisionCompradorValue) / 100
+                                                                        : encargos[0].comisionCompradorValue;
+
+                                                                    // Calculate comision_encargo
+                                                                    const comisionEncargoValue = encargos[0].tipo_comision_encargo === 'Porcentaje'
+                                                                        ? (price * encargos[0].comision_encargo) / 100
+                                                                        : encargos[0].comision_encargo;
+
+                                                                    // Calculate total commission
+                                                                    const totalComision = comisionCompradorValue + comisionEncargoValue;
+
+                                                                    return (
+                                                                        <span>{toThousands(totalComision)} €</span>
+                                                                    );
+                                                                })()}
+                                                            </p>
+                                                        </div>
+
+                                                        <div className="border-b border-gray-300 w-4/6 mt-1 mx-auto"></div>
+                                                    </div>
+                                                    <div className="flex items-center gap-2 flex-col w-full">
+
+                                                        <FaUserTie className="text-gray-900 text-3xl" />
+                                                        <p className="text-base text-gray-950 py-1 text-center">Asesor: {encargos[0].comercial_encargo}</p>
+                                                    </div>
+                                                    <div className="absolute top-0 right-0 flex flex-col gap-6">
+                                                        <div className='flex flex-col items-center gap-4'>
+                                                            <FiEdit className="text-2xl cursor-pointer text-blue-500" onClick={() => handleEditEncargo(encargos, asesorOptions, clienteOptions)} />
+                                                            <div className='flex flex-row items-center justify-center text-red-600 text-3xl' onClick={() => setIsBajadaModalOpen(true)}>
+                                                                <MdAttachMoney className="text-3xl cursor-pointer" />
+                                                                <MdKeyboardDoubleArrowDown className="text-3xl cursor-pointer  -ml-2" />
+                                                            </div>
                                                         </div>
                                                     </div>
                                                 </div>
                                             </div>
-                                        </div>
 
-                                        {encargoState === true && (
-                                            <Modal open={isBajadaModalOpen} onClose={() => setIsBajadaModalOpen(false)} size="xs">
-                                                <Modal.Header style={{ display: 'flex', flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: '10px', width: '100%', marginTop: '10px' }}>
-                                                    <Modal.Title style={{ fontSize: '1.5rem', textAlign: 'center' }}>Bajada de precio</Modal.Title>
-                                                </Modal.Header>
-                                                <Modal.Body style={{ padding: '20px' }}>
-                                                    <div className='flex flex-col gap-4 items-center px-10'>
-                                                        <div className='flex flex-col gap-2 items-center bg-slate-200 rounded-md p-4 w-full'>
-                                                            <p>{encargos[0].precio_2 ? 'Precio Original' : 'Precio Actual'}:</p>
-                                                            <p className='text-lg font-semibold'>{encargos[0].precio_1.toLocaleString('es-ES', { minimumFractionDigits: 0 })} €</p>
+                                            {encargoState === true && (
+                                                <Modal open={isBajadaModalOpen} onClose={() => setIsBajadaModalOpen(false)} size="xs">
+                                                    <Modal.Header style={{ display: 'flex', flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: '10px', width: '100%', marginTop: '10px' }}>
+                                                        <Modal.Title style={{ fontSize: '1.5rem', textAlign: 'center' }}>Bajada de precio</Modal.Title>
+                                                    </Modal.Header>
+                                                    <Modal.Body style={{ padding: '20px' }}>
+                                                        <div className='flex flex-col gap-4 items-center px-10'>
+                                                            <div className='flex flex-col gap-2 items-center bg-slate-200 rounded-md p-4 w-full'>
+                                                                <p>{encargos[0].precio_2 ? 'Precio Original' : 'Precio Actual'}:</p>
+                                                                <p className='text-lg font-semibold'>{encargos[0].precio_1.toLocaleString('es-ES', { minimumFractionDigits: 0 })} €</p>
+                                                            </div>
+                                                            {encargos[0].precio_2 ? (
+                                                                <div className='flex flex-col gap-3 items-center bg-slate-200 rounded-md p-4 w-full'>
+                                                                    <p>Precio rebajado:</p>
+                                                                    <p className='text-lg font-semibold'>{encargos[0].precio_2.toLocaleString('es-ES', { minimumFractionDigits: 0 })} €</p>
+                                                                </div>
+                                                            ) : (
+                                                                <div className='flex flex-col gap-3 items-center bg-slate-200 rounded-md p-4 w-full'>
+                                                                    <p>Nuevo precio:</p>
+                                                                    <InputNumber
+                                                                        min={0}
+                                                                        max={precio_1} // Ensure new price cannot exceed current price
+                                                                        value={newPrecio}
+                                                                        onChange={setNewPrecio}
+                                                                        placeholder="Introduce el nuevo precio"
+                                                                        className="w-full"
+                                                                    />
+                                                                </div>
+                                                            )}
                                                         </div>
+                                                    </Modal.Body>
+                                                    <Modal.Footer style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', gap: '10px', marginTop: '10px' }}>
                                                         {encargos[0].precio_2 ? (
-                                                            <div className='flex flex-col gap-3 items-center bg-slate-200 rounded-md p-4 w-full'>
-                                                                <p>Precio rebajado:</p>
-                                                                <p className='text-lg font-semibold'>{encargos[0].precio_2.toLocaleString('es-ES', { minimumFractionDigits: 0 })} €</p>
-                                                            </div>
+                                                            <Button onClick={() => handleDeleteBajadaPrecio(encargos[0].encargo_id)} appearance="primary" style={{ backgroundColor: 'red' }}>Eliminar rebajada de precio</Button>
                                                         ) : (
-                                                            <div className='flex flex-col gap-3 items-center bg-slate-200 rounded-md p-4 w-full'>
-                                                                <p>Nuevo precio:</p>
-                                                                <InputNumber
-                                                                    min={0}
-                                                                    max={precio_1} // Ensure new price cannot exceed current price
-                                                                    value={newPrecio}
-                                                                    onChange={setNewPrecio}
-                                                                    placeholder="Introduce el nuevo precio"
-                                                                    className="w-full"
-                                                                />
+                                                            <Button onClick={handleBajadaPrecio} appearance="primary">Aceptar</Button>
+                                                        )}
+                                                        <Button onClick={() => setIsBajadaModalOpen(false)} appearance="subtle" style={{ margin: '0px' }}>Cancelar</Button>
+                                                    </Modal.Footer>
+                                                </Modal>
+                                            )}
+
+
+                                        </div>
+                                    </Tabs.Tab>
+                                    <Tabs.Tab eventKey="2" title="Pedidos">
+
+                                        <div className='w-full'>
+                                            <Table height={300} data={matchingClientesEncargos}>
+                                                <Table.Column align="center" flexGrow={1} >
+                                                    <Table.HeaderCell>Nombre</Table.HeaderCell>
+                                                    <Table.Cell>
+                                                        {(rowData) => `${rowData.nombre} ${rowData.apellido}`}
+                                                    </Table.Cell>
+                                                </Table.Column>
+                                                {screenWidth >= 640 && (
+                                                    <>
+                                                        <Table.Column flexGrow={1} align='center' className='column-telefono'>
+                                                            <Table.HeaderCell>Teléfono</Table.HeaderCell>
+                                                            <Table.Cell dataKey="telefono" />
+                                                        </Table.Column>
+
+                                                    </>
+                                                )}
+                                                {screenWidth >= 768 && (
+                                                    <>
+                                                        <Table.Column flexGrow={1} align='center' className='column-email'>
+                                                            <Table.HeaderCell>Email</Table.HeaderCell>
+                                                            <Table.Cell dataKey="email" />
+                                                        </Table.Column>
+                                                    </>
+                                                )}
+                                                <Table.Column flexGrow={1} align='center'>
+                                                    <Table.HeaderCell>Acciones</Table.HeaderCell>
+                                                    <Table.Cell>
+                                                        {rowData => (
+                                                            <div className="flex flex-row gap-4">
+                                                                <Whisper placement="top" trigger="hover" speaker={<Tooltip>Ver más</Tooltip>}>
+                                                                    <Icon icon="mdi:eye-outline" style={{ cursor: 'pointer', fontSize: '1.5rem' }} onClick={() => handleOpen(rowData._id)} />
+                                                                </Whisper>
                                                             </div>
                                                         )}
-                                                    </div>
-                                                </Modal.Body>
-                                                <Modal.Footer style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', gap: '10px', marginTop: '10px' }}>
-                                                    {encargos[0].precio_2 ? (
-                                                        <Button onClick={() => handleDeleteBajadaPrecio(encargos[0].encargo_id)} appearance="primary" style={{ backgroundColor: 'red' }}>Eliminar rebajada de precio</Button>
-                                                    ) : (
-                                                        <Button onClick={handleBajadaPrecio} appearance="primary">Aceptar</Button>
-                                                    )}
-                                                    <Button onClick={() => setIsBajadaModalOpen(false)} appearance="subtle" style={{ margin: '0px' }}>Cancelar</Button>
-                                                </Modal.Footer>
-                                            </Modal>
-                                        )}
+                                                    </Table.Cell>
+                                                </Table.Column>
+                                            </Table>
 
+                                        </div>
+                                        <Modal open={verMásClienteEncargo} onClose={() => setVerMásClienteEncargo(false)} size="md" overflow={false} backdrop={true} style={{ backgroundColor: 'rgba(0,0,0,0.15)', padding: '0px 2px', marginBottom: '70px' }}>
+                                            <Modal.Header>
+                                                <Modal.Title style={{ fontSize: '1.5rem', fontWeight: 'semibold', textAlign: 'center' }}>Detalles del Cliente</Modal.Title>
+                                            </Modal.Header>
+                                            <Modal.Body style={{ padding: '0px 25px' }}>
+                                                {lodingMoreInfoClienteMatchingEncargo ? (
+                                                    <Skeleton count={10} height={30} />
+                                                ) : infoClienteMathingEncargo ? (
+                                                    <div className='flex flex-col gap-2'>
+                                                        <div className='flex flex-col gap-2 px-6 py-6 bg-slate-200 rounded-md shadow-lg mb-4'>
+                                                            <p><strong>Nombre:</strong> {infoClienteMathingEncargo.nombre}</p>
+                                                            <p><strong>Apellido:</strong> {infoClienteMathingEncargo.apellido}</p>
+                                                            <p><strong>DNI:</strong> {infoClienteMathingEncargo.dni}</p>
+                                                            <p><strong>Teléfono:</strong> {infoClienteMathingEncargo.telefono}</p>
+                                                            <p><strong>Email:</strong> {infoClienteMathingEncargo.email}</p>
+                                                            {infoClienteMathingEncargo.interes && (
+                                                                <p><strong>Interés:</strong> {infoClienteMathingEncargo.interes.charAt(0).toUpperCase() + infoClienteMathingEncargo.interes.slice(1)}</p>
+                                                            )}
 
-                                    </div>
-                                </Tabs.Tab>
-                                <Tabs.Tab eventKey="2" title="Pedidos">
-
-                                    <div className='w-full'>
-                                        <Table height={300} data={matchingClientesEncargos}>
-                                            <Table.Column align="center" flexGrow={1} >
-                                                <Table.HeaderCell>Nombre</Table.HeaderCell>
-                                                <Table.Cell>
-                                                    {(rowData) => `${rowData.nombre} ${rowData.apellido}`}
-                                                </Table.Cell>
-                                            </Table.Column>
-                                            {screenWidth >= 640 && (
-                                                <>
-                                                    <Table.Column flexGrow={1} align='center' className='column-telefono'>
-                                                        <Table.HeaderCell>Teléfono</Table.HeaderCell>
-                                                        <Table.Cell dataKey="telefono" />
-                                                    </Table.Column>
-
-                                                </>
-                                            )}
-                                            {screenWidth >= 768 && (
-                                                <>
-                                                    <Table.Column flexGrow={1} align='center' className='column-email'>
-                                                        <Table.HeaderCell>Email</Table.HeaderCell>
-                                                        <Table.Cell dataKey="email" />
-                                                    </Table.Column>
-                                                </>
-                                            )}
-                                            <Table.Column flexGrow={1} align='center'>
-                                                <Table.HeaderCell>Acciones</Table.HeaderCell>
-                                                <Table.Cell>
-                                                    {rowData => (
-                                                        <div className="flex flex-row gap-4">
-                                                            <Whisper placement="top" trigger="hover" speaker={<Tooltip>Ver más</Tooltip>}>
-                                                                <Icon icon="mdi:eye-outline" style={{ cursor: 'pointer', fontSize: '1.5rem' }} onClick={() => handleOpen(rowData._id)} />
-                                                            </Whisper>
-                                                        </div>
-                                                    )}
-                                                </Table.Cell>
-                                            </Table.Column>
-                                        </Table>
-
-                                    </div>
-                                    <Modal open={verMásClienteEncargo} onClose={() => setVerMásClienteEncargo(false)} size="md" overflow={false} backdrop={true} style={{ backgroundColor: 'rgba(0,0,0,0.15)', padding: '0px 2px', marginBottom: '70px' }}>
-                                        <Modal.Header>
-                                            <Modal.Title style={{ fontSize: '1.5rem', fontWeight: 'semibold', textAlign: 'center' }}>Detalles del Cliente</Modal.Title>
-                                        </Modal.Header>
-                                        <Modal.Body style={{ padding: '0px 25px' }}>
-                                            {lodingMoreInfoClienteMatchingEncargo ? (
-                                                <Skeleton count={10} height={30} />
-                                            ) : infoClienteMathingEncargo ? (
-                                                <div className='flex flex-col gap-2'>
-                                                    <div className='flex flex-col gap-2 px-6 py-6 bg-slate-200 rounded-md shadow-lg mb-4'>
-                                                        <p><strong>Nombre:</strong> {infoClienteMathingEncargo.nombre}</p>
-                                                        <p><strong>Apellido:</strong> {infoClienteMathingEncargo.apellido}</p>
-                                                        <p><strong>DNI:</strong> {infoClienteMathingEncargo.dni}</p>
-                                                        <p><strong>Teléfono:</strong> {infoClienteMathingEncargo.telefono}</p>
-                                                        <p><strong>Email:</strong> {infoClienteMathingEncargo.email}</p>
-                                                        {infoClienteMathingEncargo.interes && (
-                                                            <p><strong>Interés:</strong> {infoClienteMathingEncargo.interes.charAt(0).toUpperCase() + infoClienteMathingEncargo.interes.slice(1)}</p>
-                                                        )}
-
-                                                        <div className="flex flex-row gap-2 mt-[20px]">
-                                                            <p><strong>Tipo de Cliente:</strong></p>
-                                                            <div>
-                                                                {infoClienteMathingEncargo.inmuebles_asociados_propietario && infoClienteMathingEncargo.inmuebles_asociados_propietario.length > 0 && (
-                                                                    <Tag
-                                                                        key="propietario"
-                                                                        color="green"
-                                                                        style={{ marginBottom: '5px', marginRight: '5px' }}
-                                                                    >
-                                                                        Propietario
-                                                                    </Tag>
-                                                                )}
-                                                                {infoClienteMathingEncargo.inmuebles_asociados_inquilino && infoClienteMathingEncargo.inmuebles_asociados_inquilino.length > 0 && (
-                                                                    <Tag
-                                                                        key="inquilino"
-                                                                        color="red"
-                                                                        style={{ marginBottom: '5px', marginRight: '5px' }}
-                                                                    >
-                                                                        Inquilino
-                                                                    </Tag>
-                                                                )}
+                                                            <div className="flex flex-row gap-2 mt-[20px]">
+                                                                <p><strong>Tipo de Cliente:</strong></p>
+                                                                <div>
+                                                                    {infoClienteMathingEncargo.inmuebles_asociados_propietario && infoClienteMathingEncargo.inmuebles_asociados_propietario.length > 0 && (
+                                                                        <Tag
+                                                                            key="propietario"
+                                                                            color="green"
+                                                                            style={{ marginBottom: '5px', marginRight: '5px' }}
+                                                                        >
+                                                                            Propietario
+                                                                        </Tag>
+                                                                    )}
+                                                                    {infoClienteMathingEncargo.inmuebles_asociados_inquilino && infoClienteMathingEncargo.inmuebles_asociados_inquilino.length > 0 && (
+                                                                        <Tag
+                                                                            key="inquilino"
+                                                                            color="red"
+                                                                            style={{ marginBottom: '5px', marginRight: '5px' }}
+                                                                        >
+                                                                            Inquilino
+                                                                        </Tag>
+                                                                    )}
+                                                                </div>
                                                             </div>
-                                                        </div>
 
-                                                        {infoClienteMathingEncargo.informador && (
+                                                            {infoClienteMathingEncargo.informador && (
+                                                                <div className="flex flex-row gap-2 mt-[10px]">
+                                                                    <p><strong>Informador:</strong></p>
+                                                                    <Tag color="cyan" style={{ marginBottom: '5px', marginRight: '5px' }}>
+                                                                        Informador
+                                                                    </Tag>
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                        {infoClienteMathingEncargo.pedido && (
                                                             <div className="flex flex-row gap-2 mt-[10px]">
-                                                                <p><strong>Informador:</strong></p>
-                                                                <Tag color="cyan" style={{ marginBottom: '5px', marginRight: '5px' }}>
-                                                                    Informador
+                                                                <Tag color="orange" style={{
+                                                                    borderRadius: '10px',
+                                                                    padding: '8px 0px',
+                                                                    color: '#fff',
+                                                                    textAlign: 'center',
+                                                                    marginBottom: '10px',
+                                                                    width: '100px',
+                                                                    marginRight: 'auto',
+                                                                    marginLeft: 'auto',
+                                                                    fontSize: '14px',
+                                                                }}>
+                                                                    Pedido
                                                                 </Tag>
                                                             </div>
                                                         )}
-                                                    </div>
-                                                    {infoClienteMathingEncargo.pedido && (
-                                                        <div className="flex flex-row gap-2 mt-[10px]">
-                                                            <Tag color="orange" style={{
-                                                                borderRadius: '10px',
-                                                                padding: '8px 0px',
-                                                                color: '#fff',
-                                                                textAlign: 'center',
-                                                                marginBottom: '10px',
-                                                                width: '100px',
-                                                                marginRight: 'auto',
-                                                                marginLeft: 'auto',
-                                                                fontSize: '14px',
-                                                            }}>
-                                                                Pedido
-                                                            </Tag>
-                                                        </div>
-                                                    )}
-                                                    {infoClienteMathingEncargo.pedido && (
-                                                        <div style={{ display: 'grid', placeItems: 'center' }} className='flex flex-col gap-2 px-4 py-2 pb-8 bg-slate-200 rounded-md shadow-lg mb-4'>
-                                                            <h4 className='text-base my-2'>Información del pedido</h4>
-                                                            <p className='text-sm'><strong>Interés:</strong> {infoClienteMathingEncargo.interes.charAt(0).toUpperCase() + infoClienteMathingEncargo.interes.slice(1)}</p>
-                                                            <p className='text-sm'><strong>Rango de Precios:</strong> {infoClienteMathingEncargo.rango_precios.join(' - ')} €</p>
-                                                        </div>
-                                                    )}
-                                                    {['propietario', 'inquilino'].map(tipo => (
-                                                        infoClienteMathingEncargo[`inmuebles_asociados_${tipo}`] && infoClienteMathingEncargo[`inmuebles_asociados_${tipo}`].length > 0 && (
-                                                            <div key={tipo} className='mb-14 mt-8'>
-                                                                <div
-                                                                    style={{
-                                                                        backgroundColor: tipo === 'propietario' ? '#28a745' :
-                                                                            tipo === 'inquilino' ? '#ef4444' : '#ef4444',
-                                                                        borderRadius: '10px',
-                                                                        padding: '8px 0px',
-                                                                        color: '#fff',
-                                                                        textAlign: 'center',
-                                                                        marginBottom: '10px',
-                                                                        width: '100px',
-                                                                        marginRight: 'auto',
-                                                                        marginLeft: 'auto',
-                                                                    }}
-
-                                                                >
-                                                                    {tipo.charAt(0).toUpperCase() + tipo.slice(1)}
-                                                                </div>
-
-                                                                <Table data={infoClienteMathingEncargo.inmueblesDetalle.filter(inmueble =>
-                                                                    infoClienteMathingEncargo[`inmuebles_asociados_${tipo}`].some(assoc => assoc.id === inmueble.id)
-                                                                )} autoHeight={true}>
-                                                                    <Column width={320} align="center">
-                                                                        <HeaderCell>Dirección</HeaderCell>
-                                                                        <Cell dataKey="direccion" />
-                                                                    </Column>
-                                                                    <Column width={200} align="center">
-                                                                        <HeaderCell>Zona</HeaderCell>
-                                                                        <Cell dataKey="zona" />
-                                                                    </Column>
-                                                                    <Column width={80} align="center">
-                                                                        <HeaderCell>Noticias</HeaderCell>
-                                                                        <Cell>
-                                                                            {rowData => rowData.noticiastate ? 'Sí' : 'No'}
-                                                                        </Cell>
-                                                                    </Column>
-                                                                    <Column width={80} align="center">
-                                                                        <HeaderCell>Encargos</HeaderCell>
-                                                                        <Cell>
-                                                                            {rowData => rowData.encargostate ? 'Sí' : 'No'}
-                                                                        </Cell>
-                                                                    </Column>
-                                                                    <Column width={100} align="center">
-                                                                        <HeaderCell>Superficie</HeaderCell>
-                                                                        <Cell>
-                                                                            {rowData => (
-                                                                                <span>{rowData.superficie} m²</span>
-                                                                            )}
-                                                                        </Cell>
-                                                                    </Column>
-                                                                </Table>
+                                                        {infoClienteMathingEncargo.pedido && (
+                                                            <div style={{ display: 'grid', placeItems: 'center' }} className='flex flex-col gap-2 px-4 py-2 pb-8 bg-slate-200 rounded-md shadow-lg mb-4'>
+                                                                <h4 className='text-base my-2'>Información del pedido</h4>
+                                                                <p className='text-sm'><strong>Interés:</strong> {infoClienteMathingEncargo.interes.charAt(0).toUpperCase() + infoClienteMathingEncargo.interes.slice(1)}</p>
+                                                                <p className='text-sm'><strong>Rango de Precios:</strong> {infoClienteMathingEncargo.rango_precios.join(' - ')} €</p>
                                                             </div>
-                                                        )
-                                                    ))}
+                                                        )}
+                                                        {['propietario', 'inquilino'].map(tipo => (
+                                                            infoClienteMathingEncargo[`inmuebles_asociados_${tipo}`] && infoClienteMathingEncargo[`inmuebles_asociados_${tipo}`].length > 0 && (
+                                                                <div key={tipo} className='mb-14 mt-8'>
+                                                                    <div
+                                                                        style={{
+                                                                            backgroundColor: tipo === 'propietario' ? '#28a745' :
+                                                                                tipo === 'inquilino' ? '#ef4444' : '#ef4444',
+                                                                            borderRadius: '10px',
+                                                                            padding: '8px 0px',
+                                                                            color: '#fff',
+                                                                            textAlign: 'center',
+                                                                            marginBottom: '10px',
+                                                                            width: '100px',
+                                                                            marginRight: 'auto',
+                                                                            marginLeft: 'auto',
+                                                                        }}
+
+                                                                    >
+                                                                        {tipo.charAt(0).toUpperCase() + tipo.slice(1)}
+                                                                    </div>
+
+                                                                    <Table data={infoClienteMathingEncargo.inmueblesDetalle.filter(inmueble =>
+                                                                        infoClienteMathingEncargo[`inmuebles_asociados_${tipo}`].some(assoc => assoc.id === inmueble.id)
+                                                                    )} autoHeight={true}>
+                                                                        <Column width={320} align="center">
+                                                                            <HeaderCell>Dirección</HeaderCell>
+                                                                            <Cell dataKey="direccion" />
+                                                                        </Column>
+                                                                        <Column width={200} align="center">
+                                                                            <HeaderCell>Zona</HeaderCell>
+                                                                            <Cell dataKey="zona" />
+                                                                        </Column>
+                                                                        <Column width={80} align="center">
+                                                                            <HeaderCell>Noticias</HeaderCell>
+                                                                            <Cell>
+                                                                                {rowData => rowData.noticiastate ? 'Sí' : 'No'}
+                                                                            </Cell>
+                                                                        </Column>
+                                                                        <Column width={80} align="center">
+                                                                            <HeaderCell>Encargos</HeaderCell>
+                                                                            <Cell>
+                                                                                {rowData => rowData.encargostate ? 'Sí' : 'No'}
+                                                                            </Cell>
+                                                                        </Column>
+                                                                        <Column width={100} align="center">
+                                                                            <HeaderCell>Superficie</HeaderCell>
+                                                                            <Cell>
+                                                                                {rowData => (
+                                                                                    <span>{rowData.superficie} m²</span>
+                                                                                )}
+                                                                            </Cell>
+                                                                        </Column>
+                                                                    </Table>
+                                                                </div>
+                                                            )
+                                                        ))}
 
 
-                                                </div>
-                                            ) : (
-                                                <p>No hay información disponible del cliente.</p>
-                                            )}
-                                            <Modal.Footer style={{ display: 'flex', justifyContent: 'center', marginTop: '20px' }}>
-                                                <Button onClick={() => setVerMásClienteEncargo(false)} appearance="subtle">
-                                                    Cerrar
-                                                </Button>
-                                            </Modal.Footer>
-                                        </Modal.Body>
-                                    </Modal>
-                                </Tabs.Tab>
-                            </Tabs>
+                                                    </div>
+                                                ) : (
+                                                    <p>No hay información disponible del cliente.</p>
+                                                )}
+                                                <Modal.Footer style={{ display: 'flex', justifyContent: 'center', marginTop: '20px' }}>
+                                                    <Button onClick={() => setVerMásClienteEncargo(false)} appearance="subtle">
+                                                        Cerrar
+                                                    </Button>
+                                                </Modal.Footer>
+                                            </Modal.Body>
+                                        </Modal>
+
+                                    </Tabs.Tab>
+
+                                </Tabs>
+
+                            </>
                         ) : (
                             <div className="flex justify-center items-center py-3">
                                 <AiOutlinePlus className="text-4xl cursor-pointer text-blue-500" onClick={() => setIsPopupOpen(true)} />
                             </div>
                         )}
-                        <Modal open={isPopupOpen} onClose={handlePopupClose} size="md" overflow={false} backdrop={true} style={{ backgroundColor: 'rgba(0,0,0,0.15)', padding: '0px 2px', marginBottom: '70px' }}>
+                        <Modal open={isPopupOpen} onClose={handlePopupClose} size='xs' overflow={false} backdrop={true} style={{ backgroundColor: 'rgba(0,0,0,0.15)', padding: '0px 2px', marginBottom: '70px' }}>
                             <Modal.Header style={{ display: 'flex', flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: '10px', width: '100%', marginTop: '10px' }}>
                                 <Modal.Title style={{ fontSize: '1.5rem', fontWeight: 'bold', textAlign: 'center' }}>{isEditing ? 'Editar Encargo' : 'Añadir Encargo'}</Modal.Title>
                             </Modal.Header>
                             <Modal.Body style={{ padding: '10px 25px', fontSize: '1rem', lineHeight: '1.5', display: 'flex', flexDirection: 'column', gap: '10px', alignItems: 'center', width: '100%' }}>
                                 <div className="flex flex-col gap-4 w-full">
-                                    <div className="mb-4">
+                                    <div className="mb-4 w-full">
                                         <label className="block text-sm font-medium mb-2" htmlFor="tipoEncargo">
                                             Tipo de Encargo
                                         </label>
@@ -1040,6 +1062,7 @@ const EncargosDetails = ({ data, setOnAddEncargoRefreshKey, onAddEncargoRefreshK
                                             }}
                                             placeholder="Fecha de exclusiva"
                                             oneTap
+                                            placement='topStart'
                                             style={{ width: '100%' }}
                                             disabledDate={disablePastDates} // This will disable past dates
                                         />
