@@ -267,25 +267,24 @@ const ItemDetails = ({ id, onClose, showModal, setShowModal, fetchData, currentP
                         </>
                     )}
 
-                    <div className={`${screenWidth >= 640 ? 'grid grid-cols-2 gap-x-1' : 'flex flex-col gap-4'} w-full h-full`}>
+                    <div
+                        className={`${screenWidth >= 640 ? 'flex flex-wrap gap-4' : 'flex flex-col gap-4'
+                            } w-full`}
+                    >
                         {!isVisible && (
                             <>
-                                {data.inmueble.localizado && (
-                                    <div className='w-full flex flex-col justify-center items-center'>
-                                        <div class="w-[90%] max-w-4xl bg-gradient-to-l from-slate-300 to-slate-100 text-slate-600 border border-slate-300 grid grid-cols-3 p-6 gap-x-4 gap-y-4 rounded-lg shadow-md">
-                                            <div class="col-span-3 text-lg font-bold capitalize">
-                                                Información del localizado
-                                            </div>
-                                            <div class="col-span-3">
-                                                <div className='gap-4 flex flex-col justify-center'>
+                                <div className="flex flex-col gap-4 w-full">
+                                    {data.inmueble.localizado && (
+                                        <div className="w-full flex flex-col justify-center items-center">
+                                            <div className="w-[90%] max-w-4xl bg-gradient-to-l from-slate-300 to-slate-100 text-slate-600 border border-slate-300 p-6 gap-4 rounded-lg shadow-md">
+                                                <div className="text-lg font-bold capitalize">Información del localizado</div>
+                                                <div className="flex flex-col gap-4">
                                                     <p>Cliente: {nombre} {apellido}</p>
-                                                    <div class="flex flex-row gap-2 items-center">
+                                                    <div className="flex flex-row gap-2 items-center">
                                                         <p>Teléfono: <a href={`tel:${data.inmueble.localizado_phone}`}>{data.inmueble.localizado_phone}</a></p>
-
-                                                        <a href={`tel:${data.inmueble.localizado_phone}`} class="rounded-md bg-slate-300 duration-300 p-2">
-                                                            <svg xmlns="http://www.w3.org/2000/svg" width="1.5em" height="1.5em" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path fill="currentColor" fill-opacity="0" stroke-dasharray="64" stroke-dashoffset="64" d="M8 3c0.5 0 2.5 4.5 2.5 5c0 1 -1.5 2 -2 3c-0.5 1 0.5 2 1.5 3c0.39 0.39 2 2 3 1.5c1 -0.5 2 -2 3 -2c0.5 0 5 2 5 2.5c0 2 -1.5 3.5 -3 4c-1.5 0.5 -2.5 0.5 -4.5 0c-2 -0.5 -3.5 -1 -6 -3.5c-2.5 -2.5 -3 -4 -3.5 -6c-0.5 -2 -0.5 -3 0 -4.5c0.5 -1.5 2 -3 4 -3Z"><animate fill="freeze" attributeName="fill-opacity" begin="0.6s" dur="0.15s" values="0;0.3" /><animate fill="freeze" attributeName="stroke-dashoffset" dur="0.6s" values="64;0" /><animateTransform id="lineMdPhoneCallTwotoneLoop0" fill="freeze" attributeName="transform" begin="0.6s;lineMdPhoneCallTwotoneLoop0.begin+2.7s" dur="0.5s" type="rotate" values="0 12 12;15 12 12;0 12 12;-12 12 12;0 12 12;12 12 12;0 12 12;-15 12 12;0 12 12" /></path><path stroke-dasharray="4" stroke-dashoffset="4" d="M15.76 8.28c-0.5 -0.51 -1.1 -0.93 -1.76 -1.24M15.76 8.28c0.49 0.49 0.9 1.08 1.2 1.72"><animate fill="freeze" attributeName="stroke-dashoffset" begin="lineMdPhoneCallTwotoneLoop0.begin+0s" dur="2.7s" keyTimes="0;0.111;0.259;0.37;1" values="4;0;0;4;4" /></path><path stroke-dasharray="6" stroke-dashoffset="6" d="M18.67 5.35c-1 -1 -2.26 -1.73 -3.67 -2.1M18.67 5.35c0.99 1 1.72 2.25 2.08 3.65"><animate fill="freeze" attributeName="stroke-dashoffset" begin="lineMdPhoneCallTwotoneLoop0.begin+0.2s" dur="2.7s" keyTimes="0;0.074;0.185;0.333;0.444;1" values="6;6;0;0;6;6" /></path></g></svg>
+                                                        <a href={`tel:${data.inmueble.localizado_phone}`} className="rounded-md bg-slate-300 duration-300 p-2">
+                                                            {/* SVG for phone icon */}
                                                         </a>
-
                                                     </div>
                                                     {(
                                                         (inmuebles_asociados_inquilino?.some(inquilino => inquilino.id === inmuebleId)) ||
@@ -296,27 +295,13 @@ const ItemDetails = ({ id, onClose, showModal, setShowModal, fetchData, currentP
                                                             <p>Tipo de Cliente:</p>
                                                             <div>
                                                                 {inmuebles_asociados_inquilino?.some(inquilino => parseInt(inquilino.id) === parseInt(inmuebleId)) && (
-                                                                    <Tag
-                                                                        color="orange"
-                                                                        style={{ marginBottom: '5px', marginRight: '5px' }}
-                                                                    >
-                                                                        Inquilino
-                                                                    </Tag>
+                                                                    <Tag color="orange" style={{ marginBottom: '5px', marginRight: '5px' }}>Inquilino</Tag>
                                                                 )}
                                                                 {inmuebles_asociados_propietario?.some(propietario => propietario.id === inmuebleId) && (
-                                                                    <Tag
-                                                                        color="green"
-                                                                        style={{ marginBottom: '5px', marginRight: '5px' }}
-                                                                    >
-                                                                        Propietario
-                                                                    </Tag>
+                                                                    <Tag color="green" style={{ marginBottom: '5px', marginRight: '5px' }}>Propietario</Tag>
                                                                 )}
                                                                 {inmuebles_asociados_informador?.some(informador => informador.id === inmuebleId) && (
-                                                                    <Tag
-                                                                        style={{ marginBottom: '0px', marginRight: '5px', backgroundColor: '#dbeafe', borderRadius: '8px', border: '2px solid #60a5fa', color: '#2563eb' }}
-                                                                    >
-                                                                        Informador
-                                                                    </Tag>
+                                                                    <Tag style={{ marginBottom: '0px', marginRight: '5px', backgroundColor: '#dbeafe', borderRadius: '8px', border: '2px solid #60a5fa', color: '#2563eb' }}>Informador</Tag>
                                                                 )}
                                                             </div>
                                                         </div>
@@ -325,29 +310,31 @@ const ItemDetails = ({ id, onClose, showModal, setShowModal, fetchData, currentP
                                                             <p>Tipo de Cliente: Sin Asignar</p>
                                                         </div>
                                                     )}
-
                                                 </div>
                                             </div>
                                         </div>
+                                    )}
+                                    <DetailsInfoTwo data={data} descripcion={descripcion} setDescripcion={setDescripcion} newDescripcion={newDescripcion} setNewDescripcion={setNewDescripcion} screenWidth={screenWidth} />
+                                    <ClientesAsociados inmuebleId={data.inmueble.id} inmuebleDireccion={data.inmueble.direccion} screenWidth={screenWidth} setFetchClientPhoneNumberRefreshKey={setFetchClientPhoneNumberRefreshKey} fetchClientPhoneNumberRefreshKey={fetchClientPhoneNumberRefreshKey} localizadoRefreshKey={localizadoRefreshKey} setLocalizadoRefreshKey={setLocalizadoRefreshKey} />
+                                    {data.inmueble.DPV && <DPVInfoComponent DPVInfo={DPVInfo} />}
+                                </div>
+                                <div className="flex flex-col gap-4 w-full">
+                                    <DetailsInfoThree data={data} isVisible={isVisible} screenWidth={screenWidth} />
+
+                                    <ComentariosDetails data={data} fetchClientPhoneNumberRefreshKey={fetchClientPhoneNumberRefreshKey} screenWidth={screenWidth} />
+                                    <div className={`${screenWidth >= 780 ? 'flex flex-row w-full' : ''}`}>
+                                        <NoticiasDetails data={data} setOnAddNoticiaRefreshKey={setOnAddNoticiaRefreshKey} onAddNoticiaRefreshKey={onAddNoticiaRefreshKey} fetchData={fetchData} currentPage={currentPage} searchTerm={searchTerm} screenWidth={screenWidth} />
+                                        <EncargosDetails data={data} setOnAddEncargoRefreshKey={setOnAddEncargoRefreshKey} onAddEncargoRefreshKey={onAddEncargoRefreshKey} fetchData={fetchData} currentPage={currentPage} searchTerm={searchTerm} screenWidth={screenWidth} />
                                     </div>
-                                )}
-                                <DetailsInfoTwo data={data} descripcion={descripcion} setDescripcion={setDescripcion} newDescripcion={newDescripcion} setNewDescripcion={setNewDescripcion} screenWidth={screenWidth} />
-                                <ClientesAsociados inmuebleId={data.inmueble.id} inmuebleDireccion={data.inmueble.direccion} screenWidth={screenWidth} setFetchClientPhoneNumberRefreshKey={setFetchClientPhoneNumberRefreshKey} fetchClientPhoneNumberRefreshKey={fetchClientPhoneNumberRefreshKey} localizadoRefreshKey={localizadoRefreshKey} setLocalizadoRefreshKey={setLocalizadoRefreshKey} />
-                                {data.inmueble.DPV && <DPVInfoComponent DPVInfo={DPVInfo} />}
-                            </>
-                        )}
-                        <DetailsInfoThree data={data} isVisible={isVisible} screenWidth={screenWidth} />
-                        {!isVisible && (
-                            <>
-                                <ComentariosDetails data={data} fetchClientPhoneNumberRefreshKey={fetchClientPhoneNumberRefreshKey} screenWidth={screenWidth} />
-                                <NoticiasDetails data={data} setOnAddNoticiaRefreshKey={setOnAddNoticiaRefreshKey} onAddNoticiaRefreshKey={onAddNoticiaRefreshKey} fetchData={fetchData} currentPage={currentPage} searchTerm={searchTerm} screenWidth={screenWidth} />
-                                <EncargosDetails data={data} setOnAddEncargoRefreshKey={setOnAddEncargoRefreshKey} onAddEncargoRefreshKey={onAddEncargoRefreshKey} fetchData={fetchData} currentPage={currentPage} searchTerm={searchTerm} screenWidth={screenWidth} />
+                                </div>
                             </>
                         )}
                     </div>
-                    <div className={`${screenWidth >= 640 ? 'flex justify-center w-full mt-10 pb-[30px] z-[10]' : 'flex justify-center gap-4 mt-4 pb-[50px] z-[10]'}`} >
+                    <div className={`${screenWidth >= 640 ? 'flex justify-center w-full mt-10 pb-[30px] z-[10]' : 'flex justify-center gap-4 mt-4 pb-[50px] z-[10]'}`}>
                         <Button onClick={onClose} appearance="default" style={{ fontSize: '1rem', padding: '10px 20px' }}>Cerrar</Button>
                     </div>
+
+
                 </div>
             )
             }

@@ -262,7 +262,7 @@ const ComentariosDetails = ({ data, fetchClientPhoneNumberRefreshKey, screenWidt
 
     return (
         <CustomProvider locale={esES}>
-            <Accordion defaultActiveKey={1} bordered style={{ margin: '30px 16px' }}>
+            <Accordion defaultActiveKey={1} bordered style={{ margin: '0px 16px 0px 16px' }}>
                 <Accordion.Panel style={{ backgroundColor: '#f4f4f5', padding: '0px' }} header={'Comentarios'} eventKey={1}>
                     {programados.length > 0 && (
                         <div>
