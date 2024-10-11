@@ -24,7 +24,7 @@ import SmallLoadingScreen from '../LoadingScreen/SmallLoadingScreen';
 
 const ItemDetails = ({ id, onClose, showModal, setShowModal, fetchData, currentPage, searchTerm, admin, screenWidth }) => {
     const [data, setData] = useState(null);
-    const [inmuebleId, setInmuebleId] = useState(null);
+    const [inmuebleId, setInmuebleId] = useState(id);
     const [images, setImages] = useState([]);
     const [loading, setLoading] = useState(true);
     const [loaded, setLoaded] = useState(false);
@@ -136,7 +136,7 @@ const ItemDetails = ({ id, onClose, showModal, setShowModal, fetchData, currentP
             .then((response) => {
                 console.log('response.data inmuebleMoreInfo', response.data);
                 setData(response.data);
-                setInmuebleId(response.data.inmueble.id);
+
 
                 let dpv = response.data.inmueble.DPV;
                 if (dpv) {
@@ -153,6 +153,11 @@ const ItemDetails = ({ id, onClose, showModal, setShowModal, fetchData, currentP
             });
     }, [id, onAddNoticiaRefreshKey, onAddEncargoRefreshKey, onAddEdtMoreInfoRefreshKey, onAddDeleteDPVRefreshKey, localizado]);
 
+
+    useEffect(() => {
+        console.log('id', id);
+        console.log('inmuebleId', inmuebleId);
+    }), [id, inmuebleId];
 
     useEffect(() => {
         const fetchEncargoData = async () => {
@@ -324,7 +329,7 @@ const ItemDetails = ({ id, onClose, showModal, setShowModal, fetchData, currentP
                                     <div className={`${screenWidth >= 1024 ? 'flex flex-row w-full transition-all duration-[1000ms] ease-in-out' : ''}`}>
                                         <DetailsInfoThree data={data} isVisible={isVisible} screenWidth={screenWidth} />
 
-                                        <ComentariosDetails data={data} fetchClientPhoneNumberRefreshKey={fetchClientPhoneNumberRefreshKey} screenWidth={screenWidth} />
+                                        <ComentariosDetails data={data} inmuebleId={id} fetchClientPhoneNumberRefreshKey={fetchClientPhoneNumberRefreshKey} screenWidth={screenWidth} />
                                     </div>
                                     <div className={`${screenWidth >= 780 ? 'flex flex-row w-full' : ''}`}>
                                         <NoticiasDetails data={data} setOnAddNoticiaRefreshKey={setOnAddNoticiaRefreshKey} onAddNoticiaRefreshKey={onAddNoticiaRefreshKey} fetchData={fetchData} currentPage={currentPage} searchTerm={searchTerm} screenWidth={screenWidth} />

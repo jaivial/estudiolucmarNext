@@ -51,7 +51,7 @@ const commentTypes = {
     Cita: 'bg-yellow-500',
 };
 
-const ComentariosDetails = ({ data, fetchClientPhoneNumberRefreshKey, screenWidth }) => {
+const ComentariosDetails = ({ data, fetchClientPhoneNumberRefreshKey, screenWidth, inmuebleId }) => {
     const [isOpen, setIsOpen] = useState(false);
     const [newComment, setNewComment] = useState('');
     const [comentarios, setComentarios] = useState([]);
@@ -70,7 +70,7 @@ const ComentariosDetails = ({ data, fetchClientPhoneNumberRefreshKey, screenWidt
 
     const getPhoneNumbers = async () => {
         try {
-            const response = await axios.get('/api/fetchClientPhoneNumber', { params: { inmuebleId: data.inmueble.id } });
+            const response = await axios.get('/api/fetchClientPhoneNumber', { params: { inmuebleId: inmuebleId } });
             console.log('data phone options', response.data);
             setPhoneOptions(response.data);
         } catch (error) {
@@ -94,7 +94,6 @@ const ComentariosDetails = ({ data, fetchClientPhoneNumberRefreshKey, screenWidt
     };
 
     const fetchComments = async () => {
-        const inmuebleId = data.inmueble.id;
         try {
             const response = await axios.get('/api/getComentarios', {
                 params: {
@@ -114,9 +113,9 @@ const ComentariosDetails = ({ data, fetchClientPhoneNumberRefreshKey, screenWidt
 
     useEffect(() => {
         fetchComments();
-    }, [data.inmueble.id]);
+    }, [inmuebleId]);
 
-    const toggleOpen = () => setIsOpen(!isOpen);
+
 
     const handleAddComment = async () => {
         if (newComment.trim() === '') {
@@ -153,13 +152,16 @@ const ComentariosDetails = ({ data, fetchClientPhoneNumberRefreshKey, screenWidt
         const userId = Cookies.get('user_id');
 
         try {
+            // If selectedDate is undefined, set it to the current date
+            const currentDate = new Date().toISOString().split('T')[0]; // Format as 'YYYY-MM-DD'
+            const dateToUse = selectedDate ? selectedDate : currentDate;
             const response = await axios.get('/api/insertarComentario', {
                 params: {
-                    id: data.inmueble.id,
+                    id: inmuebleId,
                     comentario: newComment,
                     tipo: commentType,
                     telefono: phoneNumber,
-                    fecha: selectedDate, // Pass the selected date
+                    fecha: dateToUse, // Pass the selected date
                     hora: selectedTime, // Pass the selected time
                     user_id: userId, // Pass the user_id
                     comentarioProgramado: comentarioProgramado,
