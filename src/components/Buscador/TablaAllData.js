@@ -25,18 +25,32 @@ import { Accordion, Panel } from 'rsuite';
 
 const Table = ({ parentsEdificioProps, admin, screenWidth, loadingLoader }) => {
     const [expanded, setExpanded] = useState(false);
+    const [expandedEscalera, setExpandedEscalera] = useState(false);
     const contentRef = useRef(null);
     const [contentHeight, setContentHeight] = useState(0);
 
     const handleToggle = () => {
         setExpanded(!expanded);
     };
+    const handleToggleEscalera = () => {
+        setExpandedEscalera(!expandedEscalera);
+    };
 
     useEffect(() => {
         if (contentRef.current) {
-            setContentHeight(contentRef.current.scrollHeight);
+            let totalHeight = contentRef.current.scrollHeight;
+
+            // If the escalera is expanded, add its height
+            if (expandedEscalera) {
+                const escaleraContent = contentRef.current.querySelector('.escalera-content');
+                if (escaleraContent) {
+                    totalHeight += escaleraContent.scrollHeight;
+                }
+            }
+
+            setContentHeight(totalHeight);
         }
-    }, [expanded]);
+    }, [expanded, expandedEscalera]);
 
 
 
@@ -1408,9 +1422,9 @@ const Table = ({ parentsEdificioProps, admin, screenWidth, loadingLoader }) => {
                     item.nestedescaleras.map((child) => (
                         <div
                             key={child.id}
-                            className={`relative border py-2 mb-6 rounded-xl shadow-xl flex items-center flex-col w-full border-zinc-400 bg-zinc-100`}
+                            className={`relative border border-gray-400 mb-0 p-0 rounded-md shadow-xl flex items-center flex-col w-full bg-gray-100 transition-all duration-300 ease-in-out`}
                         >
-                            <div className="flex flex-row justify-start items-center gap-2 w-full cursor-pointer" onClick={() => handleToggle(child.id)}>
+                            <div className="flex flex-row justify-stretch items-stretch gap-2 w-full cursor-pointer" onClick={handleToggleEscalera}>
                                 {showDeleteInmuebleButtons && (
                                     <input
                                         type="checkbox"
@@ -1419,32 +1433,36 @@ const Table = ({ parentsEdificioProps, admin, screenWidth, loadingLoader }) => {
                                         className="mr-4 ml-4 w-[25px] h-[25px]"
                                     />
                                 )}
-                                <div className="flex flex-row justify-start items-center w-[80%] py-2">
-                                    <span className="flex flex-row justify-start items-center w-[100%] pl-5">
+                                <div className="flex flex-row justify-evenly items-center w-full py-2 px-4 h-[4.5rem]">
+                                    <span className="flex flex-row justify-start items-center w-[50%] pl-1">
                                         <svg xmlns="http://www.w3.org/2000/svg" width="3em" height="3em" viewBox="0 0 24 24">
-                                            <path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M22 5h-5v5h-5v5H7v5H2" />
+                                            <path fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M22 5h-5v5h-5v5H7v5H2" />
                                         </svg>
-                                        <p className="w-[100%] text-center">{child.direccion}</p>
+                                        <p className="w-[60%] text-center">{child.direccion}</p>
                                     </span>
-                                </div>
-                                <div className="cursor-pointer flex flex-row justify-center w-[30%]">
-                                    {!expandedItems[child.id] && (
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="2.5em" height="2.5em" viewBox="0 0 24 24">
-                                            <path fill="currentColor" fillRule="evenodd" d="M7 9a1 1 0 0 0-.707 1.707l5 5a1 1 0 0 0 1.414 0l5-5A1 1 0 0 0 17 9z" clipRule="evenodd" />
-                                        </svg>
-                                    )}
-                                    {expandedItems[child.id] && (
+                                    <p className="text-start w-[30%]">{child.zona === 'NULL' ? 'N/A' : child.zona}</p>
+                                    <div
+                                        className={`cursor-pointer flex flex-row justify-center w-[20%] transition-transform duration-[1000ms] ${expandedEscalera ? 'rotate-180' : 'rotate-0'}`}
+                                    >
                                         <svg xmlns="http://www.w3.org/2000/svg" width="2.5em" height="2.5em" viewBox="0 0 24 24">
                                             <path fill="currentColor" d="M18.2 13.3L12 7l-6.2 6.3c-.2.2-.3.5-.3.7s.1.5.3.7c.2.2.4.3.7.3h11c.3 0 .5-.1.7-.3c.2-.2.3-.5.3-.7s-.1-.5-.3-.7" />
                                         </svg>
-                                    )}
+                                    </div>
                                 </div>
                             </div>
-                            {expandedItems[child.id] && (
-                                console.log('child.nestedInmuebles', child.nestedinmuebles)
-                            )}
-                            {expandedItems[child.id] && <div className="w-full flex flex-col justify-center items-center px-2">{escalerasChildren(child.nestedinmuebles)}</div>}
+                            <div
+                                style={{
+                                    maxHeight: expandedEscalera ? '1000px' : '0px',
+                                    width: '100%',
+                                }}
+                                className={`overflow-hidden transition-max-height duration-[1000ms] ease-in-out`}
+                            >
+                                <div className="p-2 escalera-content w-full">
+                                    {expandedEscalera && <div className="w-full flex flex-col justify-center items-center px-2">{escalerasChildren(child.nestedinmuebles)}</div>}
+                                </div>
+                            </div>
                         </div>
+
 
                     ))}
             </div>
