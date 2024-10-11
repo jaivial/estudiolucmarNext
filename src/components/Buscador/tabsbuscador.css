@@ -6,3 +6,29 @@
     padding: 0.4rem 1.5rem !important;
     border-radius: 8px !important; /* Optional: give rounded corners */
 }
+
+
+.edificioagrupacion h2.rs-panel-header.rs-heading {
+    width: -webkit-fill-available;
+    padding: 0px;
+}
+
+.edificioagrupacion h2 button {
+    width: -webkit-fill-available; 
+    height: 4.5rem;
+    padding: 0px 10px 0px 10px;
+}
+
+.edificioagrupacion .rs-anim-collapse.rs-anim-in.rs-panel-body-collapse {
+    width: 100%;
+}
+
+
+.rs-anim-collapse.rs-panel-body-collapse {
+    width: 100%;
+    padding: 0px;
+    margin: 0px;
+}
+
+
+@import "../../../node_modules/rsuite/dist/rsuite.css";
