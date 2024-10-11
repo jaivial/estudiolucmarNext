@@ -122,7 +122,7 @@ export default async function handler(req, res) {
             nestedinmuebles: 1,
             nestedescaleras: 1,
             DPV: 1,
-
+            lastCommentDate: 1,
         };
 
         // Count the total number of matching documents˘
@@ -140,9 +140,74 @@ export default async function handler(req, res) {
             .skip(skip)
             .limit(limit)
             .toArray();
-
+        const currentDate = new Date();
 
         const finalResults = results.map(result => {
+            const setDataUpdateTime = (dateStr) => {
+                if (!dateStr) {
+                    return 'gray';
+                }
+
+                console.log('dateStr', dateStr);
+
+                const lastCommentDate = new Date(dateStr);
+                const diffInDays = (currentDate - lastCommentDate) / (1000 * 60 * 60 * 24); // Difference in days
+
+                if (diffInDays < 30) {
+                    return 'green';
+                } else if (diffInDays >= 30 && diffInDays <= 60) {
+                    return 'yellow';
+                } else if (diffInDays > 90) {
+                    return 'red';
+                } else {
+                    return 'gray'; // Catch-all case
+                }
+            };
+
+            // Check if the result is tipoagrupacion === 2
+            if (result.tipoagrupacion === 2) {
+                // Do not set dataUpdateTime for the main document
+                // Instead, analyze nestedinmuebles and nestedescaleras.nestedinmuebles
+
+                if (result.nestedinmuebles) {
+                    result.nestedinmuebles = result.nestedinmuebles.map(nested => ({
+                        ...nested,
+                        dataUpdateTime: setDataUpdateTime(nested.lastCommentDate),
+                    }));
+                }
+
+                if (result.nestedescaleras) {
+                    result.nestedescaleras = result.nestedescaleras.map(escalera => ({
+                        ...escalera,
+                        nestedinmuebles: escalera.nestedinmuebles.map(nested => ({
+                            ...nested,
+                            dataUpdateTime: setDataUpdateTime(nested.lastCommentDate),
+                        })),
+                    }));
+                }
+            } else {
+                // For other cases, set dataUpdateTime for the main document
+                result.dataUpdateTime = setDataUpdateTime(result.lastCommentDate);
+
+                // Also check nested arrays for consistency
+                if (result.nestedinmuebles) {
+                    result.nestedinmuebles = result.nestedinmuebles.map(nested => ({
+                        ...nested,
+                        dataUpdateTime: setDataUpdateTime(nested.lastCommentDate),
+                    }));
+                }
+
+                if (result.nestedescaleras) {
+                    result.nestedescaleras = result.nestedescaleras.map(escalera => ({
+                        ...escalera,
+                        nestedinmuebles: escalera.nestedinmuebles.map(nested => ({
+                            ...nested,
+                            dataUpdateTime: setDataUpdateTime(nested.lastCommentDate),
+                        })),
+                    }));
+                }
+            }
+
             const applyDPVFilter = (inmueble) => {
                 if (DPVValueResults !== null) {
                     return inmueble.DPV === DPVValueResults;
