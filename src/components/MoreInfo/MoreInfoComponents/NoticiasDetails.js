@@ -265,8 +265,8 @@ const NoticiasDetails = ({ data, setOnAddNoticiaRefreshKey, onAddNoticiaRefreshK
 
     return (
         <CustomProvider locale={esES}>
-            <Accordion defaultActiveKey={1} bordered style={{ margin: '0px 8px 0px 16px', marginTop: '0px', width: '100%' }}>
-                <Accordion.Panel style={{ backgroundColor: '#f4f4f5', padding: '0px' }} header={'Noticias'} eventKey={1}>
+            <Accordion defaultActiveKey={1} bordered style={{ margin: '0px', marginTop: '0px', width: '100%' }}>
+                <Accordion.Panel style={{ backgroundColor: 'rgb(248 250 252)', padding: '0px' }} header={'Noticias'} eventKey={1}>
                     <div className="p-4">
                         <div className="py-1 px-2 relative">
                             {data.inmueble.noticiastate === true ? (

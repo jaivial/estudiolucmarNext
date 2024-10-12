@@ -519,8 +519,8 @@ const EncargosDetails = ({ data, setOnAddEncargoRefreshKey, onAddEncargoRefreshK
     return (
         data.inmueble.noticiastate === true && (
             <CustomProvider locale={esES}>
-                <Accordion defaultActiveKey={1} bordered style={{ margin: '0px 16px 0 8px', marginTop: '0px', width: '100%' }}>
-                    <Accordion.Panel style={{ backgroundColor: '#f4f4f5', padding: '0px' }} header={'Encargos'} eventKey={1}>
+                <Accordion defaultActiveKey={1} bordered style={{ margin: '0px', marginTop: '0px', width: '100%' }}>
+                    <Accordion.Panel style={{ backgroundColor: 'rgb(248 250 252)', padding: '0px' }} header={'Encargos'} eventKey={1}>
 
                         {encargoState === true && encargos.length > 0 ? (
                             <>
