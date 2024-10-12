@@ -60,7 +60,7 @@ const DesktopSliderComponent = ({ data, encargoData, images }) => {
     return (
         <>
             {images.length > 0 ? (
-                <div ref={sliderRef} className="keen-slider h-[600px] rounded-lg shadow-lg w-[60%] flex relative">
+                <div ref={sliderRef} className="keen-slider h-[800px] rounded-lg shadow-lg w-[60%] flex relative">
                     <div className='bg-white absolute top-5 right-5 flex flex-row gap-2 items-center justify-center px-3 py-2 rounded-3xl hover:bg-slate-900 cursor-pointer group z-[99]' onClick={toggleMap}>
                         <Icon icon="solar:map-outline" className='text-slate-900 text-2xl font-bold group-hover:text-white' />
                         <p className='font-sans text-slate-900 font-bold text-sm group-hover:text-white'>Abrir Mapa</p>
@@ -80,7 +80,7 @@ const DesktopSliderComponent = ({ data, encargoData, images }) => {
                     )}
                 </div>
             ) : (
-                <div className='h-[600px] rounded-lg w-[90%] shadow-lg flex'>
+                <div className='h-[800px] rounded-lg w-[90%] shadow-lg flex'>
                     <div className="keen-slider__slide h-full flex flex-col gap-2 justify-center items-center w-full bg-slate-100 rounded-lg">
                         <div className='min-w-[770.234px] h-full flex flex-col gap-2 justify-center items-center'>
                             <Icon icon="fluent:camera-off-16-regular" className='text-4xl' />

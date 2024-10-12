@@ -77,7 +77,7 @@ const DetailsInfoTwo = ({ data, descripcion, setDescripcion, newDescripcion, set
     };
 
     return (
-        <div className={`${screenWidth >= 640 ? 'pl-4 pr-0' : 'p-4'} w-full`}>
+        <div className={`${screenWidth >= 640 ? 'pl-0 pr-0' : 'p-4'} w-full`}>
             {descripcion !== '' && descripcion !== null ? (
                 <div className="relative px-2">
                     <div className="font-bold text-lg pb-2">
@@ -105,7 +105,7 @@ const DetailsInfoTwo = ({ data, descripcion, setDescripcion, newDescripcion, set
                     )}
                 </div>
             ) : (
-                <div className="bg-gray-100 p-2 border border-gray-300 rounded-md">
+                <div className="bg-slate-50 p-2 border border-gray-300 rounded-md">
                     <textarea value={newDescripcion} onChange={handleInputChange} maxLength="900" className="w-full p-2 border border-gray-300 rounded-md" rows="8" placeholder="Escribe una descripción para el inmueble..." />
                     <div className="flex justify-center gap-2 mt-2">
                         <button onClick={handleSaveClick} className="bg-blue-500 text-white px-4 py-2 rounded-md">

@@ -259,13 +259,13 @@ const ItemDetails = ({ id, onClose, showModal, setShowModal, fetchData, currentP
                                     <DesktopAdditionalInfo data={data} encargoData={encargoData} isVisible={isVisible} setIsVisible={setIsVisible} screenWidth={screenWidth} inmuebles_asociados_informador={inmuebles_asociados_informador} inmuebles_asociados_inquilino={inmuebles_asociados_inquilino} inmuebles_asociados_propietario={inmuebles_asociados_propietario} nombre={nombre} apellido={apellido} inmuebleId={data.inmueble.id} />
                                 </div>
                             </div>
-                            <div className='w-full h-full flex flex-row gap-6 bg-gray-300 rounded-lg p-6'>
-                                <div className='flex flex-col w-1/2 h-full bg-slate-400 rounded-lg gap-6'>
-                                    <div className='flex flex-row h-[400px] bg-gray-200 rounded-lg'>
-                                        Descripción
+                            <div className='w-full h-full flex flex-row gap-6 rounded-lg p-6'>
+                                <div className='flex flex-col w-1/2 h-full rounded-lg gap-6'>
+                                    <div className='flex flex-row h-auto rounded-lg shadow-lg'>
+                                        <DetailsInfoTwo data={data} descripcion={descripcion} setDescripcion={setDescripcion} newDescripcion={newDescripcion} setNewDescripcion={setNewDescripcion} screenWidth={screenWidth} />
                                     </div>
-                                    <div className='flex flex-row h-[400px] bg-gray-200 rounded-lg'>
-                                        Clientes Asociados
+                                    <div className='flex flex-row h-auto rounded-lg'>
+                                        <ClientesAsociados inmuebleId={data.inmueble.id} inmuebleDireccion={data.inmueble.direccion} screenWidth={screenWidth} setFetchClientPhoneNumberRefreshKey={setFetchClientPhoneNumberRefreshKey} fetchClientPhoneNumberRefreshKey={fetchClientPhoneNumberRefreshKey} localizadoRefreshKey={localizadoRefreshKey} setLocalizadoRefreshKey={setLocalizadoRefreshKey} />
                                     </div>
                                     <div className='flex flex-row items-start gap-6 h-auto bg-gray-200 rounded-lg'>
                                         <div className='w-1/2 bg-blue-200 h-[200px] rounded-lg'></div>
