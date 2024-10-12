@@ -10,7 +10,7 @@ const icon = L.icon({ iconUrl: "https://cdn.jsdelivr.net/npm/leaflet@1.7.1/dist/
 // some other code
 
 
-const DetailsInfoOne = ({ data, encargoData, isVisible, setIsVisible }) => {
+const DetailsInfoOne = ({ data, encargoData, isVisible, setIsVisible, screenWidth }) => {
     const [showMap, setShowMap] = useState(false);
 
     // Parse coordinates from stringified array
@@ -31,9 +31,9 @@ const DetailsInfoOne = ({ data, encargoData, isVisible, setIsVisible }) => {
     const toggleMap = () => setShowMap(!showMap);
 
     return (
-        <div className="w-full p-4">
-            <div className="flex flex-col justify-between items-start px-2">
-                {isVisible && (
+        <div className={`w-full ${screenWidth >= 700 ? 'p-0' : 'p-4'}`}>
+            <div className={`flex flex-col justify-between items-start ${screenWidth >= 700 ? 'px-0' : 'px-2'}`}>
+                {!isVisible && screenWidth <= 700 && (
                     <div className="flex items-center">
                         <p className="text-lg font-semibold mr-2">{location}</p>
                         <button onClick={toggleMap} className="flex items-center text-blue-500">
