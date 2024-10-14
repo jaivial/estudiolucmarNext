@@ -226,11 +226,11 @@ const FinalizarEncargo = ({ cliente, asesorID, asesorNombre, precio, encargos, t
 
                     {/* Mensaje de éxito */}
                     <div className="text-center text-white animate-fade-in">
-                        <h2 className="text-4xl font-bold mb-6">¡Enhorabuena! ¡Has completado una venta!</h2>
+                        <h2 className="text-4xl font-bold mb-6">¡Enhorabuena! <br /> ¡Has completado una venta!</h2>
 
                         {/* Contador animado para la comisión total */}
                         <h3 className="text-2xl mb-6">
-                            Comisión Total:
+                            Comisión Total: <br />
                             <CountUp
                                 end={comisionTotal}
                                 duration={8}
@@ -244,7 +244,7 @@ const FinalizarEncargo = ({ cliente, asesorID, asesorNombre, precio, encargos, t
                         </h3>
 
                         {/* Gráfico de progreso con subidas y bajadas */}
-                        <div className="w-1/2 mx-auto mb-6" style={{ height: '400px' }}> {/* Taller height */}
+                        <div className="w-1/2 mx-auto mb-6" style={{ height: '400px', width: '500px' }}> {/* Taller height */}
                             <Line data={data} options={options} />
                         </div>
 
