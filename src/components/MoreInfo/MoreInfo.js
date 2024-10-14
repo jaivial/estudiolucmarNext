@@ -238,6 +238,7 @@ const ItemDetails = ({ id, onClose, showModal, setShowModal, fetchData, currentP
                 <>
                     {screenWidth >= 700 ? (
                         <>
+
                             <ItemDetailsHeader
                                 onClose={onClose}
                                 address={data.inmueble.direccion}
@@ -273,7 +274,7 @@ const ItemDetails = ({ id, onClose, showModal, setShowModal, fetchData, currentP
                                 screenWidth={screenWidth}
                             />
                             <div className='w-full h-auto flex flex-row gap-4'>
-                                <div ref={divRef} className={`rounded-xl ${data.inmueble.noticiastate ? 'w-1/4' : 'w-2/4'} h-auto flex flex-col gap-4`}>
+                                <div ref={divRef} className={`rounded-xl ${data.inmueble.noticiastate ? 'w-1/4' : 'w-2/4'} h-full flex flex-col gap-4`}>
                                     {/* Slider Component */}
                                     <DesktopSliderComponent data={data} encargoData={encargoData} images={images} />
                                     {/* </div> */}
@@ -288,7 +289,7 @@ const ItemDetails = ({ id, onClose, showModal, setShowModal, fetchData, currentP
                                     </div>
                                 </div>
                                 <div className={`w-full flex flex-row gap-6 rounded-2xl ${data.inmueble.noticiastate ? 'w-3/4' : 'w-2/4'} overflow-hidden`} style={{ maxHeight: `${divHeight}px` }}>
-                                    <div className={`flex flex-col h-full rounded-lg gap-6 ${!data.inmueble.noticiastate ? 'w-1/2' : 'w-1/3'} overflow-y-scroll`} >
+                                    <div className={`flex flex-col h-full rounded-lg gap-6 ${!data.inmueble.noticiastate ? 'w-1/2' : 'w-1/3'} overflow-y-scroll`} style={{ maxHeight: `${divHeight}px` }}>
                                         <div className='flex flex-row h-auto rounded-2xl shadow-lg'>
                                             <ClientesAsociados inmuebleId={data.inmueble.id} inmuebleDireccion={data.inmueble.direccion} screenWidth={screenWidth} setFetchClientPhoneNumberRefreshKey={setFetchClientPhoneNumberRefreshKey} fetchClientPhoneNumberRefreshKey={fetchClientPhoneNumberRefreshKey} localizadoRefreshKey={localizadoRefreshKey} setLocalizadoRefreshKey={setLocalizadoRefreshKey} />
                                         </div>
@@ -298,7 +299,7 @@ const ItemDetails = ({ id, onClose, showModal, setShowModal, fetchData, currentP
                                         </div>
                                     </div>
                                     {data.inmueble.noticiastate && (
-                                        <div className='flex flex-col w-1/3 h-full rounded-2xl gap-6 transition-all duration-[800ms] ease-in-out overflow-y-scroll'>
+                                        <div className='flex flex-col w-1/3 h-full rounded-2xl gap-6 transition-all duration-[800ms] ease-in-out overflow-y-scroll' style={{ maxHeight: `${divHeight}px` }}>
                                             {data.inmueble.DPV && !data.inmueble.encargostate && (
                                                 <div className='flex flex-row h-auto rounded-2xl shadow-lg'>
                                                     <NoticiasDetails data={data} setOnAddNoticiaRefreshKey={setOnAddNoticiaRefreshKey} onAddNoticiaRefreshKey={onAddNoticiaRefreshKey} fetchData={fetchData} currentPage={currentPage} searchTerm={searchTerm} screenWidth={screenWidth} />
@@ -314,7 +315,7 @@ const ItemDetails = ({ id, onClose, showModal, setShowModal, fetchData, currentP
                                             </div>
                                         </div>
                                     )}
-                                    <div className={`flex flex-col h-full rounded-2xl gap-6 ${!data.inmueble.noticiastate ? 'w-1/2' : 'w-1/3'} overflow-y-scroll`}>
+                                    <div className={`flex flex-col h-full rounded-2xl gap-6 ${!data.inmueble.noticiastate ? 'w-1/2' : 'w-1/3'} overflow-y-scroll comentariosdivcontainer`} style={{ maxHeight: `${divHeight}px` }}>
                                         <div className='flex flex-row h-auto rounded-2xl shadow-lg'>
                                             <ComentariosDetails data={data} inmuebleId={id} fetchClientPhoneNumberRefreshKey={fetchClientPhoneNumberRefreshKey} screenWidth={screenWidth} />
                                         </div>

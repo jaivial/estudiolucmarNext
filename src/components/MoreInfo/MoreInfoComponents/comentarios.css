@@ -6,3 +6,19 @@
     border: 1px solid #ddd;
     overflow: auto; /* Ensure scrolling if needed */
 }
+
+.selectcommentoptions .css-13cymwt-control {
+    border-radius: 1rem !important;
+    border-color: black !important;
+    border-width: 1px !important;
+}
+
+.selectcommentoptions .rs-picker-input-group.rs-input-group.rs-input-group-inside {
+    border-radius: 1rem !important;
+    border-color: black !important;
+    border-width: 1px !important;
+}
+
+.selectcommentoptions .rs-input {
+    border-radius: 1rem !important;
+}

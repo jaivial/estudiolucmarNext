@@ -279,15 +279,15 @@ const ComentariosDetails = ({ data, fetchClientPhoneNumberRefreshKey, screenWidt
             <Accordion defaultActiveKey={1} bordered style={{ margin: '0px', width: '100%', borderRadius: '1rem' }}>
                 <Accordion.Panel style={{ backgroundColor: 'rgb(248 250 252)', padding: '0px', width: '100%', borderRadius: '1rem' }} header={'Comentarios'} eventKey={1}>
                     <div className={`mt-4 flex flex-col justify-center items-center gap-2 -mx-3`}>
-                        <div className={`w-full flex ${screenWidth >= 640 ? 'flex-col' : 'flex-row items-start'}  gap-2`}>
+                        <div className={`w-full flex ${screenWidth >= 640 ? 'flex-col' : 'flex-row items-start'}  gap-2 p-2`}>
                             <textarea
                                 value={newComment}
                                 onChange={(e) => setNewComment(e.target.value)}
                                 rows="6"
-                                className={`${screenWidth >= 640 ? 'w-full' : 'w-1/2'} border border-gray-300 p-2 rounded-md`}
+                                className={`${screenWidth >= 640 ? 'w-full' : 'w-1/2'} border border-black p-3 rounded-2xl`}
                                 placeholder="Escribe tu comentario aquí..."
                             />
-                            <div className={`${screenWidth >= 640 ? 'w-full' : 'w-1/2'}`}>
+                            <div className={`${screenWidth >= 640 ? 'w-full' : 'w-1/2'} rounded-2xl`}>
                                 <Select
                                     value={{ label: commentType, value: commentType }}
                                     onChange={(option) => {
@@ -305,7 +305,7 @@ const ComentariosDetails = ({ data, fetchClientPhoneNumberRefreshKey, screenWidt
                                         { label: 'Llamada', value: 'Llamada' },
                                         { label: 'Cita', value: 'Cita' }
                                     ]}
-                                    className="border border-gray-300 rounded bg-white w-full"
+                                    className="rounded-2xl bg-white w-full selectcommentoptions"
                                 />
 
                                 {commentType === 'Contacto Directo' && (
@@ -313,7 +313,7 @@ const ComentariosDetails = ({ data, fetchClientPhoneNumberRefreshKey, screenWidt
                                         <DatePicker
                                             value={selectedDate ? selectedDate : new Date()}
                                             onChange={handleDateChange}
-                                            className="w-full border border-gray-300 mt-2 mb-1 rounded"
+                                            className="w-full selectcommentoptions mt-2 mb-1 rounded-2xl"
                                             placeholder="Fecha"
                                             oneTap
                                             format="dd.MM.yyyy"
@@ -323,7 +323,7 @@ const ComentariosDetails = ({ data, fetchClientPhoneNumberRefreshKey, screenWidt
                                         <DatePicker
                                             value={selectedDate ? selectedDate : new Date()}
                                             onChange={handleTimeChange}
-                                            className="w-full border border-gray-300 my-1 rounded"
+                                            className="w-full selectcommentoptions my-1 rounded-2xl"
                                             placeholder="Hora"
                                             format="HH:mm"
                                             caretAs={FaClock}
