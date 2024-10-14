@@ -296,9 +296,9 @@ const ItemDetails = ({ id, onClose, showModal, setShowModal, fetchData, currentP
                                     </div>
                                 </div>
 
-                                <div className={`w-full flex flex-row gap-6 rounded-2xl ${data.inmueble.noticiastate ? 'w-3/4' : 'w-2/4'} overflow-hidden`} style={{ maxHeight: `${divHeight}px` }}>
+                                <div className={`w-full flex flex-row gap-6 rounded-2xl ${data.inmueble.noticiastate ? 'w-3/4' : 'w-2/4'} overflow-hidden max-h-[1600px]`}>
 
-                                    <div className={`flex flex-col h-full rounded-lg gap-6 ${!data.inmueble.noticiastate ? 'w-1/2' : 'w-1/3'} overflow-y-scroll`} style={{ maxHeight: `${divHeight}px` }}>
+                                    <div className={`flex flex-col h-full rounded-lg gap-6 ${!data.inmueble.noticiastate ? 'w-1/2' : 'w-1/3'} overflow-y-scroll`}>
                                         <div className='flex flex-row h-auto rounded-2xl shadow-lg'>
                                             <ClientesAsociados inmuebleId={data.inmueble.id} inmuebleDireccion={data.inmueble.direccion} screenWidth={screenWidth} setFetchClientPhoneNumberRefreshKey={setFetchClientPhoneNumberRefreshKey} fetchClientPhoneNumberRefreshKey={fetchClientPhoneNumberRefreshKey} localizadoRefreshKey={localizadoRefreshKey} setLocalizadoRefreshKey={setLocalizadoRefreshKey} />
                                         </div>
@@ -309,7 +309,7 @@ const ItemDetails = ({ id, onClose, showModal, setShowModal, fetchData, currentP
                                     </div>
 
                                     {data.inmueble.noticiastate && (
-                                        <div className='flex flex-col w-1/3 h-full rounded-2xl gap-6 transition-all duration-[800ms] ease-in-out overflow-y-scroll' style={{ maxHeight: `${divHeight}px` }}>
+                                        <div className='flex flex-col w-1/3 h-full rounded-2xl gap-6 transition-all duration-[800ms] ease-in-out overflow-y-scroll'>
                                             {data.inmueble.DPV && !data.inmueble.encargostate && (
                                                 <div className='flex flex-row h-auto rounded-2xl shadow-lg'>
                                                     <NoticiasDetails data={data} setOnAddNoticiaRefreshKey={setOnAddNoticiaRefreshKey} onAddNoticiaRefreshKey={onAddNoticiaRefreshKey} fetchData={fetchData} currentPage={currentPage} searchTerm={searchTerm} screenWidth={screenWidth} />
@@ -326,7 +326,7 @@ const ItemDetails = ({ id, onClose, showModal, setShowModal, fetchData, currentP
                                         </div>
                                     )}
 
-                                    <div className={`flex flex-col h-full rounded-2xl gap-6 ${!data.inmueble.noticiastate ? 'w-1/2' : 'w-1/3'} overflow-y-scroll comentariosdivcontainer`} style={{ maxHeight: `${divHeight}px` }}>
+                                    <div className={`flex flex-col h-full rounded-2xl gap-6 ${!data.inmueble.noticiastate ? 'w-1/2' : 'w-1/3'} overflow-y-scroll comentariosdivcontainer`}>
                                         <div className='flex flex-row h-auto rounded-2xl shadow-lg'>
                                             <ComentariosDetails data={data} inmuebleId={id} fetchClientPhoneNumberRefreshKey={fetchClientPhoneNumberRefreshKey} screenWidth={screenWidth} />
                                         </div>
@@ -335,7 +335,7 @@ const ItemDetails = ({ id, onClose, showModal, setShowModal, fetchData, currentP
                                 </div>
                             </div>
                         </>
-                    ) : screenWidth <= 1660 ? (
+                    ) : (
                         <>
                             <ItemDetailsHeader
                                 onClose={onClose}
@@ -543,142 +543,6 @@ const ItemDetails = ({ id, onClose, showModal, setShowModal, fetchData, currentP
                                 </div>
 
 
-                            </div>
-                        </>
-                    ) : (
-                        <>
-                            <ItemDetailsHeader
-                                onClose={onClose}
-                                address={data.inmueble.direccion}
-                                inmuebleId={data.inmueble.id}
-                                setImages={setImages}
-                                setIsSliderLoading={setIsSliderLoading}
-                                isVisible={isVisible}
-                                setIsVisible={setIsVisible}
-                                data={data}
-                                onAddEdtMoreInfoRefreshKey={onAddEdtMoreInfoRefreshKey}
-                                setOnAddEdtMoreInfoRefreshKey={setOnAddEdtMoreInfoRefreshKey}
-                                DPVboolean={DPVboolean} setDPVboolean={setDPVboolean}
-                                admin={admin}
-                                onAddDeleteDPVRefreshKey={onAddDeleteDPVRefreshKey}
-                                setOnAddDeleteDPVRefreshKey={setOnAddDeleteDPVRefreshKey}
-                                localizado={localizado}
-                                setLocalizado={setLocalizado}
-                                direccion={direccion}
-                                nombre={nombre}
-                                setNombre={setNombre}
-                                apellido={apellido}
-                                setApellido={setApellido}
-                                passedDPVinfo={passedDPVinfo}
-                                setPassedDPVinfo={setPassedDPVinfo}
-                                inmuebles_asociados_inquilino={inmuebles_asociados_inquilino}
-                                setInmueblesAsociadosInquilino={setInmueblesAsociadosInquilino}
-                                inmuebles_asociados_propietario={inmuebles_asociados_propietario}
-                                setInmueblesAsociadosPropietario={setInmueblesAsociadosPropietario}
-                                inmuebles_asociados_informador={inmuebles_asociados_informador}
-                                setInmueblesAsociadosInformador={setInmueblesAsociadosInformador}
-                                localizadoRefreshKey={localizadoRefreshKey}
-                                setLocalizadoRefreshKey={setLocalizadoRefreshKey}
-                                screenWidth={screenWidth}
-                            />
-
-                            <div className="py-4 h-[300px] w-full rounded-lg">
-                                {/* Slider Component */}
-                                {images.length > 0 && (
-                                    <div ref={sliderRef} className="keen-slider h-full relative">
-                                        {images.map((image, index) => (
-                                            <div key={index} className="keen-slider__slide h-full flex justify-center items-center">
-                                                <img src={`data:${image.type};base64,${image.data}`} alt={`Slide ${index}`} className="w-auto h-full object-contain" />
-                                            </div>
-                                        ))}
-                                        {loaded && slider.current && (
-                                            <>
-                                                <Arrow left onClick={(e) => e.stopPropagation() || slider.current?.prev()} disabled={currentSlide === 0} />
-
-                                                <Arrow onClick={(e) => e.stopPropagation() || slider.current?.next()} disabled={currentSlide === slider.current.track.details.slides.length - 1} />
-                                            </>
-                                        )}
-                                    </div>
-                                )}
-                                {images.length === 0 && <p className="text-center h-full flex flex-row justify-center items-center">No hay fotos disponibles</p>}
-                            </div>
-
-                            {!isVisible && (
-                                <>
-                                    <h1 className="text-xl font-semibold text-start w-full leading-7 px-6">{data.inmueble.direccion}</h1>
-                                    <DetailsInfoOne data={data} encargoData={encargoData} isVisible={isVisible} setIsVisible={setIsVisible} screenWidth={screenWidth} />
-                                </>
-                            )}
-
-                            <div
-                                className={`${screenWidth >= 640 ? 'flex flex-wrap gap-4' : 'flex flex-col gap-4'
-                                    } w-full`}
-                            >
-                                {!isVisible && (
-                                    <>
-                                        <div className="flex flex-col gap-4 w-full">
-                                            {data.inmueble.localizado && (
-                                                <div className="w-full flex flex-col justify-center items-center">
-                                                    <div className="w-[90%] max-w-4xl bg-gradient-to-l from-slate-300 to-slate-100 text-slate-600 border border-slate-300 p-6 gap-4 rounded-lg shadow-md">
-                                                        <div className="text-lg font-bold capitalize">Información del localizado</div>
-                                                        <div className="flex flex-col gap-4">
-                                                            <p>Cliente: {nombre} {apellido}</p>
-                                                            <div className="flex flex-row gap-2 items-center">
-                                                                <p>Teléfono: <a href={`tel:${data.inmueble.localizado_phone}`}>{data.inmueble.localizado_phone}</a></p>
-                                                                <a href={`tel:${data.inmueble.localizado_phone}`} className="rounded-md bg-slate-300 duration-300 p-2">
-                                                                    {/* SVG for phone icon */}
-                                                                </a>
-                                                            </div>
-                                                            {(
-                                                                (inmuebles_asociados_inquilino?.some(inquilino => inquilino.id === inmuebleId)) ||
-                                                                (inmuebles_asociados_propietario?.some(propietario => propietario.id === inmuebleId)) ||
-                                                                (inmuebles_asociados_informador?.some(informador => informador.id === inmuebleId))
-                                                            ) ? (
-                                                                <div className="flex flex-row gap-2 items-center">
-                                                                    <p>Tipo de Cliente:</p>
-                                                                    <div>
-                                                                        {inmuebles_asociados_inquilino?.some(inquilino => parseInt(inquilino.id) === parseInt(inmuebleId)) && (
-                                                                            <Tag color="orange" style={{ marginBottom: '5px', marginRight: '5px' }}>Inquilino</Tag>
-                                                                        )}
-                                                                        {inmuebles_asociados_propietario?.some(propietario => propietario.id === inmuebleId) && (
-                                                                            <Tag color="green" style={{ marginBottom: '5px', marginRight: '5px' }}>Propietario</Tag>
-                                                                        )}
-                                                                        {inmuebles_asociados_informador?.some(informador => informador.id === inmuebleId) && (
-                                                                            <Tag style={{ marginBottom: '0px', marginRight: '5px', backgroundColor: '#dbeafe', borderRadius: '8px', border: '2px solid #60a5fa', color: '#2563eb' }}>Informador</Tag>
-                                                                        )}
-                                                                    </div>
-                                                                </div>
-                                                            ) : (
-                                                                <div className="flex flex-row gap-2">
-                                                                    <p>Tipo de Cliente: Sin Asignar</p>
-                                                                </div>
-                                                            )}
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            )}
-                                            <div className={`${screenWidth >= 1024 ? 'flex flex-row w-full transition-all duration-[1000ms] ease-in-out' : ''}`}>
-                                                <DetailsInfoTwo data={data} descripcion={descripcion} setDescripcion={setDescripcion} newDescripcion={newDescripcion} setNewDescripcion={setNewDescripcion} screenWidth={screenWidth} />
-                                                <ClientesAsociados inmuebleId={data.inmueble.id} inmuebleDireccion={data.inmueble.direccion} screenWidth={screenWidth} setFetchClientPhoneNumberRefreshKey={setFetchClientPhoneNumberRefreshKey} fetchClientPhoneNumberRefreshKey={fetchClientPhoneNumberRefreshKey} localizadoRefreshKey={localizadoRefreshKey} setLocalizadoRefreshKey={setLocalizadoRefreshKey} />
-                                            </div>
-                                            {data.inmueble.DPV && <DPVInfoComponent DPVInfo={DPVInfo} />}
-                                        </div>
-                                        <div className="flex flex-col gap-4 w-full">
-                                            <div className={`${screenWidth >= 1024 ? 'flex flex-row w-full transition-all duration-[1000ms] ease-in-out' : ''}`}>
-                                                <DetailsInfoThree data={data} isVisible={isVisible} screenWidth={screenWidth} />
-
-                                                <ComentariosDetails data={data} inmuebleId={id} fetchClientPhoneNumberRefreshKey={fetchClientPhoneNumberRefreshKey} screenWidth={screenWidth} />
-                                            </div>
-                                            <div className={`${screenWidth >= 780 ? 'flex flex-row w-full' : ''}`}>
-                                                <NoticiasDetails data={data} setOnAddNoticiaRefreshKey={setOnAddNoticiaRefreshKey} onAddNoticiaRefreshKey={onAddNoticiaRefreshKey} fetchData={fetchData} currentPage={currentPage} searchTerm={searchTerm} screenWidth={screenWidth} />
-                                                <EncargosDetails data={data} setOnAddEncargoRefreshKey={setOnAddEncargoRefreshKey} onAddEncargoRefreshKey={onAddEncargoRefreshKey} fetchData={fetchData} currentPage={currentPage} searchTerm={searchTerm} screenWidth={screenWidth} />
-                                            </div>
-                                        </div>
-                                    </>
-                                )}
-                            </div>
-                            <div className={`${screenWidth >= 640 ? 'flex justify-center w-full mt-10 pb-[30px] z-[10]' : 'flex justify-center gap-4 mt-4 pb-[50px] z-[10]'}`}>
-                                <Button onClick={onClose} appearance="default" style={{ fontSize: '1rem', padding: '10px 20px' }}>Cerrar</Button>
                             </div>
                         </>
                     )}

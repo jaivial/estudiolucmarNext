@@ -244,6 +244,11 @@ const ClientesAsociados = ({ inmuebleId, inmuebleDireccion, screenWidth, setFetc
     };
 
     const handleAsociarCliente = async () => {
+        if (!inquilino && !propietario && !clientsToAssociateInformador) {
+            showToast('Elije si es informador, propietario o inquilino', 'linear-gradient(to right bottom, #c62828, #b92125, #ac1a22, #a0131f, #930b1c)');
+            return;
+        }
+
         console.log(inmuebleId, inmuebleDireccion, pedido, clientsToAssociate._id, clientsToAssociateInformador, clientsToAssociateInteres, clientsToAssociateRangoPrecios, propietario, inquilino);
         try {
             const response = await axios.post('/api/asociar_cliente', {
