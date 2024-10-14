@@ -21,7 +21,7 @@ const desktopAdditionalInfo = ({ data, encargoData, isVisible, setIsVisible, scr
 
     return (
         <>
-            <div className='h-auto w-full -mb-8'>
+            <div className='h-auto w-full'>
                 {data.inmueble.encargostate && data.inmueble.encargostate === true ? (
                     <>
                         {

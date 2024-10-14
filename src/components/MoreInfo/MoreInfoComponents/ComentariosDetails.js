@@ -51,6 +51,8 @@ const commentTypes = {
     Cita: 'bg-yellow-500',
 };
 
+
+
 const ComentariosDetails = ({ data, fetchClientPhoneNumberRefreshKey, screenWidth, inmuebleId }) => {
     const [isOpen, setIsOpen] = useState(false);
     const [newComment, setNewComment] = useState('');
@@ -59,7 +61,7 @@ const ComentariosDetails = ({ data, fetchClientPhoneNumberRefreshKey, screenWidt
     const [commentType, setCommentType] = useState('Contacto Directo');
     const [phoneNumber, setPhoneNumber] = useState('');
     const [selectedDate, setSelectedDate] = useState(new Date());
-    const [selectedTime, setSelectedTime] = useState(null);
+    const [selectedTime, setSelectedTime] = useState(new Date());
     const [phoneOptions, setPhoneOptions] = useState([]);
 
     // Estado de edición
@@ -67,6 +69,16 @@ const ComentariosDetails = ({ data, fetchClientPhoneNumberRefreshKey, screenWidt
     const [editingCommentId, setEditingCommentId] = useState(null);
     const [editCommentText, setEditCommentText] = useState('');
     const [comentarioProgramado, setComentarioProgramado] = useState(false);
+
+    useEffect(() => {
+        if (selectedDate === null) {
+            setSelectedDate(new Date());
+        }
+        if (selectedTime === null) {
+            setSelectedTime(new Date());
+        }
+        console.log('selectedDate', selectedDate);
+    }, [selectedDate, selectedTime])
 
     const getPhoneNumbers = async () => {
         try {
@@ -162,7 +174,7 @@ const ComentariosDetails = ({ data, fetchClientPhoneNumberRefreshKey, screenWidt
                     tipo: commentType,
                     telefono: phoneNumber,
                     fecha: dateToUse, // Pass the selected date
-                    hora: selectedTime, // Pass the selected time
+                    hora: selectedTime ? selectedTime : new Date(), // Pass the selected time
                     user_id: userId, // Pass the user_id
                     comentarioProgramado: comentarioProgramado,
                 },
@@ -299,16 +311,17 @@ const ComentariosDetails = ({ data, fetchClientPhoneNumberRefreshKey, screenWidt
                                 {commentType === 'Contacto Directo' && (
                                     <>
                                         <DatePicker
-                                            value={selectedDate || new Date()}
+                                            value={selectedDate ? selectedDate : new Date()}
                                             onChange={handleDateChange}
                                             className="w-full border border-gray-300 mt-2 mb-1 rounded"
                                             placeholder="Fecha"
+                                            oneTap
                                             format="dd.MM.yyyy"
                                             placement='topEnd'
                                             isoWeek
                                         />
                                         <DatePicker
-                                            value={selectedTime || new Date()}
+                                            value={selectedDate ? selectedDate : new Date()}
                                             onChange={handleTimeChange}
                                             className="w-full border border-gray-300 my-1 rounded"
                                             placeholder="Hora"
@@ -337,7 +350,7 @@ const ComentariosDetails = ({ data, fetchClientPhoneNumberRefreshKey, screenWidt
                                         />
 
                                         <DatePicker
-                                            value={selectedDate || new Date()}
+                                            value={selectedDate ? selectedDate : new Date()}
                                             onChange={handleDateChange}
                                             className="w-full border border-gray-300 mt-2 mb-1 rounded"
                                             placeholder="Fecha"
@@ -346,7 +359,7 @@ const ComentariosDetails = ({ data, fetchClientPhoneNumberRefreshKey, screenWidt
                                             isoWeek
                                         />
                                         <DatePicker
-                                            value={selectedDate || new Date()}
+                                            value={selectedDate ? selectedDate : new Date()}
                                             onChange={handleTimeChange}
                                             className="w-full border border-gray-300 my-1 rounded"
                                             placeholder="Hora"
@@ -367,7 +380,7 @@ const ComentariosDetails = ({ data, fetchClientPhoneNumberRefreshKey, screenWidt
                                 {commentType === 'Cita' && (
                                     <>
                                         <DatePicker
-                                            value={selectedDate || new Date()}
+                                            value={selectedDate ? selectedDate : new Date()}
                                             onChange={handleDateChange}
                                             className="w-full border border-gray-300 mt-2 mb-1 rounded"
                                             placeholder="Fecha"
@@ -376,7 +389,7 @@ const ComentariosDetails = ({ data, fetchClientPhoneNumberRefreshKey, screenWidt
                                             isoWeek
                                         />
                                         <DatePicker
-                                            value={selectedDate || new Date()}
+                                            value={selectedDate ? selectedDate : new Date()}
                                             onChange={handleTimeChange}
                                             className="w-full border border-gray-300 my-1 rounded"
                                             placeholder="Hora"

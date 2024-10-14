@@ -736,7 +736,7 @@ const ClientesAsociados = ({ inmuebleId, inmuebleDireccion, screenWidth, setFetc
                                             <div className='w-36  text-center'>
                                                 <p className="text-base sm:text-lg font-semibold w-full">{cliente.nombre} {cliente.apellido}</p>
                                             </div>
-                                            <div className='w-20 px-2 text-center display-flex flex-col justify-center items-center'>
+                                            <div className='min-width-20 px-2 text-center display-flex flex-col justify-center items-center'>
                                                 <div className='flex flex-col justify-center items-center mx-0 sm:flex-row md:flex-col md:min-w-fit gap-2'>
                                                     {cliente.inmuebles_asociados_propietario?.some(propietario => propietario.id === inmuebleId) && (
                                                         <Tag color="green" style={{ margin: '0 auto' }}>Propietario</Tag>
@@ -746,11 +746,6 @@ const ClientesAsociados = ({ inmuebleId, inmuebleDireccion, screenWidth, setFetc
                                                     )}
                                                 </div>
                                             </div>
-                                            {cliente.telefono && window.innerWidth >= 640 && (
-                                                <div className='flex-2 display-flex flex-row justify-center items-center'>
-                                                    <p>{cliente.telefono}</p>
-                                                </div>
-                                            )}
                                             <div className='w-[100px] text-center flex flex-row justify-center items-center gap-2 pl-2'>
                                                 <button className='rounded-md text-xl' onClick={() => handleViewCliente(cliente)}>
                                                     <FaEye />
