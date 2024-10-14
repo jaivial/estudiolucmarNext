@@ -21,7 +21,7 @@ const desktopAdditionalInfo = ({ data, encargoData, isVisible, setIsVisible, scr
 
     return (
         <>
-            <div className='h-auto w-full'>
+            <div className='h-auto w-full -mb-8'>
                 {data.inmueble.encargostate && data.inmueble.encargostate === true ? (
                     <>
                         {
@@ -95,11 +95,8 @@ const desktopAdditionalInfo = ({ data, encargoData, isVisible, setIsVisible, scr
                 )}
             </div>
             <div className='h-auto w-full flex flex-col'>
-                <h1 className="text-base font-semibold text-start w-full">{data.inmueble.direccion}</h1>
+                <h1 className="text-base font-semibold text-start w-full -mb-2">{data.inmueble.direccion}</h1>
                 <DetailsInfoOne data={data} encargoData={encargoData} isVisible={isVisible} setIsVisible={setIsVisible} screenWidth={screenWidth} className='p-0' />
-            </div>
-            <div className='h-auto w-full'>
-                <LocalizadoCard data={data} inmuebles_asociados_informador={inmuebles_asociados_informador} inmuebles_asociados_inquilino={inmuebles_asociados_inquilino} inmuebles_asociados_propietario={inmuebles_asociados_propietario} nombre={nombre} apellido={apellido} inmuebleId={inmuebleId} />
             </div>
             <div className='h-auto w-full'>
                 <LocalizadoCard data={data} inmuebles_asociados_informador={inmuebles_asociados_informador} inmuebles_asociados_inquilino={inmuebles_asociados_inquilino} inmuebles_asociados_propietario={inmuebles_asociados_propietario} nombre={nombre} apellido={apellido} inmuebleId={inmuebleId} />

@@ -11,7 +11,7 @@ const LocalizadoCard = ({ data, inmuebles_asociados_informador, inmuebles_asocia
         <>
             {data.inmueble.localizado ? (
                 <div className="w-full flex flex-col justify-center items-center">
-                    <div className="w-full bg-white border-blue-400 border-2 p-6 gap-4 rounded-lg shadow-md flex flex-col">
+                    <div className="w-full bg-white border-blue-400 border-2 p-6 gap-4 rounded-2xl shadow-md flex flex-col">
                         <div className="text-lg font-bold capitalize">Información del localizado</div>
                         <div className="flex flex-col gap-4">
                             <div className='flex flex-row gap-2 items-center'>

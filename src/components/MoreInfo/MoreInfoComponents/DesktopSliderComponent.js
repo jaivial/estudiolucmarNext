@@ -5,6 +5,7 @@ import 'keen-slider/keen-slider.min.css';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import { AiOutlineClose, AiOutlinePlus } from 'react-icons/ai';
+import './moreinfoslider.css';
 
 const icon = L.icon({ iconUrl: "https://cdn.jsdelivr.net/npm/leaflet@1.7.1/dist/images/marker-icon.png", iconSize: [25, 41], iconAnchor: [12, 41] });
 
@@ -60,14 +61,14 @@ const DesktopSliderComponent = ({ data, encargoData, images }) => {
     return (
         <>
             {images.length > 0 ? (
-                <div ref={sliderRef} className="keen-slider h-[800px] rounded-lg shadow-lg w-[60%] flex relative">
+                <div ref={sliderRef} className="keen-slider h-[400px] rounded-2xl shadow-lg w-full flex relative">
                     <div className='bg-white absolute top-5 right-5 flex flex-row gap-2 items-center justify-center px-3 py-2 rounded-3xl hover:bg-slate-900 cursor-pointer group z-[99]' onClick={toggleMap}>
                         <Icon icon="solar:map-outline" className='text-slate-900 text-2xl font-bold group-hover:text-white' />
                         <p className='font-sans text-slate-900 font-bold text-sm group-hover:text-white'>Abrir Mapa</p>
                     </div>
 
                     {images.map((image, index) => (
-                        <div key={index} className="keen-slider__slide h-full flex justify-center items-center">
+                        <div key={index} className="keen-slider__slide moreinfoslider h-full w-full flex justify-center items-center">
                             <img src={`data:${image.type};base64,${image.data}`} alt={`Slide ${index}`} className="w-full h-full object-center object-cover" />
                         </div>
                     ))}

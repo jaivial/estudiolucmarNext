@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import ItemDetailsHeader from './MoreInfoComponents/ItemDetailsHeader'; // Adjust the import path as needed
 import { useKeenSlider } from 'keen-slider/react';
@@ -57,6 +57,28 @@ const ItemDetails = ({ id, onClose, showModal, setShowModal, fetchData, currentP
     const [loadingThing, setLoadingThing] = useState(true);
     const [fetchClientPhoneNumberRefreshKey, setFetchClientPhoneNumberRefreshKey] = useState(1);
     const [localizadoRefreshKey, setLocalizadoRefreshKey] = useState(1);
+    const divRef = useRef(null);
+    const [divHeight, setDivHeight] = useState(null);
+
+    useEffect(() => {
+        const observer = new ResizeObserver(entries => {
+            if (entries[0]) {
+                const height = entries[0].contentRect.height; // Get the dynamic height of the content
+                setDivHeight(height); // Set the height dynamically
+            }
+        });
+
+        if (divRef.current) {
+            observer.observe(divRef.current);
+        }
+
+        return () => {
+            if (divRef.current) {
+                observer.unobserve(divRef.current);
+            }
+        };
+    }, [divRef]);
+
 
 
 
@@ -250,46 +272,55 @@ const ItemDetails = ({ id, onClose, showModal, setShowModal, fetchData, currentP
                                 setLocalizadoRefreshKey={setLocalizadoRefreshKey}
                                 screenWidth={screenWidth}
                             />
-                            <div className={`rounded-xl p-4  w-full h-auto flex flex-row gap-4`}>
-                                {/* <div className='flex w-[60%] h-[300px] rounded-lg bg-slate-400 text-gray-50'> */}
-                                {/* Slider Component */}
-                                <DesktopSliderComponent data={data} encargoData={encargoData} images={images} />
-                                {/* </div> */}
-                                <div className='flex flex-col gap-6 w-[40%] h-auto rounded-lg shadow-lg bg-slate-50 p-8'>
-                                    <DesktopAdditionalInfo data={data} encargoData={encargoData} isVisible={isVisible} setIsVisible={setIsVisible} screenWidth={screenWidth} inmuebles_asociados_informador={inmuebles_asociados_informador} inmuebles_asociados_inquilino={inmuebles_asociados_inquilino} inmuebles_asociados_propietario={inmuebles_asociados_propietario} nombre={nombre} apellido={apellido} inmuebleId={data.inmueble.id} />
-                                </div>
-                            </div>
-                            <div className='w-full h-full flex flex-row gap-6 rounded-lg p-4'>
-                                <div className='flex flex-col w-1/2 h-full rounded-lg gap-6'>
-                                    <div className='flex flex-row h-auto rounded-lg shadow-lg'>
-                                        <DetailsInfoTwo data={data} descripcion={descripcion} setDescripcion={setDescripcion} newDescripcion={newDescripcion} setNewDescripcion={setNewDescripcion} screenWidth={screenWidth} />
-                                    </div>
-                                    <div className='flex flex-row h-auto rounded-lg shadow-lg'>
-                                        <ClientesAsociados inmuebleId={data.inmueble.id} inmuebleDireccion={data.inmueble.direccion} screenWidth={screenWidth} setFetchClientPhoneNumberRefreshKey={setFetchClientPhoneNumberRefreshKey} fetchClientPhoneNumberRefreshKey={fetchClientPhoneNumberRefreshKey} localizadoRefreshKey={localizadoRefreshKey} setLocalizadoRefreshKey={setLocalizadoRefreshKey} />
-                                    </div>
-                                    <div className='flex flex-row h-auto rounded-lg shadow-lg'>
-                                        {data.inmueble.DPV && <DPVInfoComponent DPVInfo={DPVInfo} />}                                    </div>
-                                    <div className='flex flex-row items-start gap-6 h-auto bg-gray-200 rounded-lg'>
-                                        <DetailsInfoThree data={data} isVisible={isVisible} screenWidth={screenWidth} />
-                                    </div>
-
-
-                                </div>
-                                <div className='flex flex-col w-1/2 h-full rounded-lg gap-6'>
-                                    <div className='flex flex-row h-auto rounded-lg shadow-lg'>
-                                        <NoticiasDetails data={data} setOnAddNoticiaRefreshKey={setOnAddNoticiaRefreshKey} onAddNoticiaRefreshKey={onAddNoticiaRefreshKey} fetchData={fetchData} currentPage={currentPage} searchTerm={searchTerm} screenWidth={screenWidth} />
-
-                                    </div>
-                                    <div className='flex flex-row h-auto rounded-lg shadow-lg'>
-                                        <EncargosDetails data={data} setOnAddEncargoRefreshKey={setOnAddEncargoRefreshKey} onAddEncargoRefreshKey={onAddEncargoRefreshKey} fetchData={fetchData} currentPage={currentPage} searchTerm={searchTerm} screenWidth={screenWidth} />
+                            <div className='w-full h-auto flex flex-row gap-4'>
+                                <div ref={divRef} className={`rounded-xl ${data.inmueble.noticiastate ? 'w-1/4' : 'w-2/4'} h-auto flex flex-col gap-4`}>
+                                    {/* Slider Component */}
+                                    <DesktopSliderComponent data={data} encargoData={encargoData} images={images} />
+                                    {/* </div> */}
+                                    <div className='flex flex-col gap-6 w-full h-auto rounded-2xl shadow-lg bg-slate-50 p-8'>
+                                        <DesktopAdditionalInfo data={data} encargoData={encargoData} isVisible={isVisible} setIsVisible={setIsVisible} screenWidth={screenWidth} inmuebles_asociados_informador={inmuebles_asociados_informador} inmuebles_asociados_inquilino={inmuebles_asociados_inquilino} inmuebles_asociados_propietario={inmuebles_asociados_propietario} nombre={nombre} apellido={apellido} inmuebleId={data.inmueble.id} />
+                                        <div className='w-full bg-white border-blue-400 border-2 p-6 gap-4 rounded-2xl shadow-md flex flex-col'>
+                                            <DetailsInfoTwo data={data} descripcion={descripcion} setDescripcion={setDescripcion} newDescripcion={newDescripcion} setNewDescripcion={setNewDescripcion} screenWidth={screenWidth} />
+                                        </div>
+                                        <div className='flex flex-row items-start gap-6 w-full h-auto rounded-2xl'>
+                                            <DetailsInfoThree data={data} isVisible={isVisible} screenWidth={screenWidth} />
+                                        </div>
                                     </div>
                                 </div>
-                                <div className='flex flex-col w-1/2 h-full rounded-lg gap-6'>
-                                    <div className='flex flex-row h-auto rounded-lg shadow-lg'>
-                                        <ComentariosDetails data={data} inmuebleId={id} fetchClientPhoneNumberRefreshKey={fetchClientPhoneNumberRefreshKey} screenWidth={screenWidth} />
+                                <div className={`w-full flex flex-row gap-6 rounded-2xl ${data.inmueble.noticiastate ? 'w-3/4' : 'w-2/4'} overflow-hidden`} style={{ maxHeight: `${divHeight}px` }}>
+                                    <div className={`flex flex-col h-full rounded-lg gap-6 ${!data.inmueble.noticiastate ? 'w-1/2' : 'w-1/3'} overflow-y-scroll`} >
+                                        <div className='flex flex-row h-auto rounded-2xl shadow-lg'>
+                                            <ClientesAsociados inmuebleId={data.inmueble.id} inmuebleDireccion={data.inmueble.direccion} screenWidth={screenWidth} setFetchClientPhoneNumberRefreshKey={setFetchClientPhoneNumberRefreshKey} fetchClientPhoneNumberRefreshKey={fetchClientPhoneNumberRefreshKey} localizadoRefreshKey={localizadoRefreshKey} setLocalizadoRefreshKey={setLocalizadoRefreshKey} />
+                                        </div>
+                                        <div className='flex flex-row h-auto rounded-2xl shadow-lg'>
+                                            {data.inmueble.DPV ? <DPVInfoComponent DPVInfo={DPVInfo} /> : data.inmueble.encargostate && <NoticiasDetails data={data} setOnAddNoticiaRefreshKey={setOnAddNoticiaRefreshKey} onAddNoticiaRefreshKey={onAddNoticiaRefreshKey} fetchData={fetchData} currentPage={currentPage} searchTerm={searchTerm} screenWidth={screenWidth} />
+                                            }
+                                        </div>
                                     </div>
-                                </div>
+                                    {data.inmueble.noticiastate && (
+                                        <div className='flex flex-col w-1/3 h-full rounded-2xl gap-6 transition-all duration-[800ms] ease-in-out overflow-y-scroll'>
+                                            {data.inmueble.DPV && !data.inmueble.encargostate && (
+                                                <div className='flex flex-row h-auto rounded-2xl shadow-lg'>
+                                                    <NoticiasDetails data={data} setOnAddNoticiaRefreshKey={setOnAddNoticiaRefreshKey} onAddNoticiaRefreshKey={onAddNoticiaRefreshKey} fetchData={fetchData} currentPage={currentPage} searchTerm={searchTerm} screenWidth={screenWidth} />
+                                                </div>
+                                            )}
+                                            {data.inmueble.DPV && data.inmueble.encargostate && (
+                                                <div className='flex flex-row h-auto rounded-2xl shadow-lg'>
+                                                    <NoticiasDetails data={data} setOnAddNoticiaRefreshKey={setOnAddNoticiaRefreshKey} onAddNoticiaRefreshKey={onAddNoticiaRefreshKey} fetchData={fetchData} currentPage={currentPage} searchTerm={searchTerm} screenWidth={screenWidth} />
+                                                </div>
+                                            )}
+                                            <div className='flex flex-row h-auto rounded-2xl shadow-lg'>
+                                                <EncargosDetails data={data} setOnAddEncargoRefreshKey={setOnAddEncargoRefreshKey} onAddEncargoRefreshKey={onAddEncargoRefreshKey} fetchData={fetchData} currentPage={currentPage} searchTerm={searchTerm} screenWidth={screenWidth} />
+                                            </div>
+                                        </div>
+                                    )}
+                                    <div className={`flex flex-col h-full rounded-2xl gap-6 ${!data.inmueble.noticiastate ? 'w-1/2' : 'w-1/3'} overflow-y-scroll`}>
+                                        <div className='flex flex-row h-auto rounded-2xl shadow-lg'>
+                                            <ComentariosDetails data={data} inmuebleId={id} fetchClientPhoneNumberRefreshKey={fetchClientPhoneNumberRefreshKey} screenWidth={screenWidth} />
+                                        </div>
+                                    </div>
 
+                                </div>
                             </div>
                         </>
                     ) : (

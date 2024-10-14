@@ -417,7 +417,7 @@ const ClientesAsociados = ({ inmuebleId, inmuebleDireccion, screenWidth, setFetc
     }, [newCliente]);
 
     return (
-        <Accordion defaultActiveKey={0} className={`w-full  ${screenWidth >= 640 ? 'm-0' : 'mt-[20px] ml-[16px] mr-[16px]'} border-1 border-gray-300 bg-slate-50 rounded-lg shadow-lg`}>
+        <Accordion defaultActiveKey={0} className={`w-full  ${screenWidth >= 640 ? 'm-0' : 'mt-[20px] ml-[16px] mr-[16px]'} border-1 border-gray-300 bg-slate-50 rounded-2xl shadow-lg`} style={{ borderRadius: '1rem' }}>
             <Accordion.Panel header="Clientes Asociados" eventKey={0} defaultExpanded={true} style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                 <Modal open={open} onClose={handleClose} style={{ backgroundColor: 'rgba(0,0,0,0.15)', borderRadius: '10px', padding: '0px' }} backdrop="static">
                     <Modal.Header>

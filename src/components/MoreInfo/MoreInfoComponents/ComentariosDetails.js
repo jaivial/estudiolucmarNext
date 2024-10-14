@@ -264,8 +264,8 @@ const ComentariosDetails = ({ data, fetchClientPhoneNumberRefreshKey, screenWidt
 
     return (
         <CustomProvider locale={esES}>
-            <Accordion defaultActiveKey={1} bordered style={{ margin: '0px', width: '100%' }}>
-                <Accordion.Panel style={{ backgroundColor: 'rgb(248 250 252)', padding: '0px', width: '100%' }} header={'Comentarios'} eventKey={1}>
+            <Accordion defaultActiveKey={1} bordered style={{ margin: '0px', width: '100%', borderRadius: '1rem' }}>
+                <Accordion.Panel style={{ backgroundColor: 'rgb(248 250 252)', padding: '0px', width: '100%', borderRadius: '1rem' }} header={'Comentarios'} eventKey={1}>
                     <div className={`mt-4 flex flex-col justify-center items-center gap-2 -mx-3`}>
                         <div className={`w-full flex ${screenWidth >= 640 ? 'flex-col' : 'flex-row items-start'}  gap-2`}>
                             <textarea

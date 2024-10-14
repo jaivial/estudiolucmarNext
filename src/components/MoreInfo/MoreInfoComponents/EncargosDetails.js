@@ -262,9 +262,11 @@ const EncargosDetails = ({ data, setOnAddEncargoRefreshKey, onAddEncargoRefreshK
             return '';
         }
 
-        const matchingOption = clienteOptions.find((option) => option.id === encargos.encargo_id);
-        setMatchingCliente(matchingOption);
-        return matchingOption ? matchingOption.label : '';
+        if (encargos.encargo_id) {
+            const matchingOption = clienteOptions.find((option) => option.id === encargos.encargo_id);
+            setMatchingCliente(matchingOption);
+            return matchingOption ? matchingOption.label : '';
+        }
     };
 
     useEffect(() => {
@@ -519,7 +521,7 @@ const EncargosDetails = ({ data, setOnAddEncargoRefreshKey, onAddEncargoRefreshK
     return (
         data.inmueble.noticiastate === true && (
             <CustomProvider locale={esES}>
-                <Accordion defaultActiveKey={1} bordered style={{ margin: '0px', marginTop: '0px', width: '100%' }}>
+                <Accordion defaultActiveKey={1} bordered style={{ margin: '0px', marginTop: '0px', width: '100%', borderRadius: '1rem' }}>
                     <Accordion.Panel style={{ backgroundColor: 'rgb(248 250 252)', padding: '0px' }} header={'Encargos'} eventKey={1}>
 
                         {encargoState === true && encargos.length > 0 ? (
