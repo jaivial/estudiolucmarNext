@@ -134,7 +134,7 @@ const DetailsInfoThree = ({ data, isVisible, screenWidth }) => {
     };
 
     return (
-        <div className={`flex flex-col gap-6 w-full`}>
+        <div className={`flex gap-6 w-full ${screenWidth < 650 ? 'flex-col' : screenWidth < 780 ? 'flex-row' : screenWidth <= 1000 ? 'flex-col' : screenWidth < 1280 ? 'flex-row' : 'flex-col'}`}>
             {/* Left Column: Basic Characteristics */}
             <div className="w-full bg-white border-blue-400 border-2 p-6 gap-4 rounded-2xl shadow-md flex flex-col">
                 <div>

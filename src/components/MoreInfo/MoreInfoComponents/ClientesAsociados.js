@@ -417,7 +417,7 @@ const ClientesAsociados = ({ inmuebleId, inmuebleDireccion, screenWidth, setFetc
     }, [newCliente]);
 
     return (
-        <Accordion defaultActiveKey={0} className={`w-full  ${screenWidth >= 640 ? 'm-0' : 'mt-[20px] ml-[16px] mr-[16px]'} border-1 border-gray-300 bg-slate-50 rounded-2xl shadow-lg`} style={{ borderRadius: '1rem' }}>
+        <Accordion defaultActiveKey={0} className={`w-full  ${screenWidth >= 640 ? 'm-0' : ''} border-1 border-gray-300 bg-slate-50 rounded-2xl shadow-lg`} style={{ borderRadius: '1rem' }}>
             <Accordion.Panel header="Clientes Asociados" eventKey={0} defaultExpanded={true} style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                 <Modal open={open} onClose={handleClose} style={{ backgroundColor: 'rgba(0,0,0,0.15)', borderRadius: '10px', padding: '0px' }} backdrop="static">
                     <Modal.Header>
@@ -708,7 +708,7 @@ const ClientesAsociados = ({ inmuebleId, inmuebleDireccion, screenWidth, setFetc
                         </Modal.Footer>
                     </Modal.Body>
                 </Modal>
-                <InputGroup style={{ width: '300px', margin: '0 auto 40px auto' }}>
+                <InputGroup style={{ width: '300px', margin: '0 auto 40px auto' }} className='searchclientesasociados'>
                     <AutoComplete
                         placeholder="Buscar clientes asociados.."
                         data={clientesAsociadosInmueble.map(cliente => `${cliente.nombre} ${cliente.apellido}`)}
@@ -746,7 +746,7 @@ const ClientesAsociados = ({ inmuebleId, inmuebleDireccion, screenWidth, setFetc
                                                     )}
                                                 </div>
                                             </div>
-                                            <div className='w-[100px] text-center flex flex-row justify-center items-center gap-2 pl-2'>
+                                            <div className='w-[50px] text-center flex flex-col justify-center items-center gap-2 pl-2'>
                                                 <button className='rounded-md text-xl' onClick={() => handleViewCliente(cliente)}>
                                                     <FaEye />
                                                 </button>

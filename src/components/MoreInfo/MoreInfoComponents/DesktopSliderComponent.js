@@ -10,7 +10,7 @@ import './moreinfoslider.css';
 const icon = L.icon({ iconUrl: "https://cdn.jsdelivr.net/npm/leaflet@1.7.1/dist/images/marker-icon.png", iconSize: [25, 41], iconAnchor: [12, 41] });
 
 
-const DesktopSliderComponent = ({ data, encargoData, images }) => {
+const DesktopSliderComponent = ({ data, encargoData, images, screenWidth }) => {
     const [loaded, setLoaded] = useState(false);
     const [currentSlide, setCurrentSlide] = useState(0);
     const [sliderRef, slider] = useKeenSlider({
@@ -61,7 +61,7 @@ const DesktopSliderComponent = ({ data, encargoData, images }) => {
     return (
         <>
             {images.length > 0 ? (
-                <div ref={sliderRef} className="keen-slider h-[400px] rounded-2xl shadow-lg w-full flex relative">
+                <div ref={sliderRef} className={`keen-slider rounded-2xl shadow-lg w-full flex relative ${screenWidth <= 1280 ? 'h-[500px]' : 'h-[400px]'}`}>
                     <div className='bg-white absolute top-5 right-5 flex flex-row gap-2 items-center justify-center px-3 py-2 rounded-3xl hover:bg-slate-900 cursor-pointer group z-[99]' onClick={toggleMap}>
                         <Icon icon="solar:map-outline" className='text-slate-900 text-2xl font-bold group-hover:text-white' />
                         <p className='font-sans text-slate-900 font-bold text-sm group-hover:text-white'>Abrir Mapa</p>

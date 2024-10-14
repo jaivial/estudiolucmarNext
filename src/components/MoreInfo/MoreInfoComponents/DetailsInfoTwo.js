@@ -81,7 +81,7 @@ const DetailsInfoTwo = ({ data, descripcion, setDescripcion, newDescripcion, set
             {descripcion !== '' && descripcion !== null ? (
                 <div className="relative px-2">
                     <div className="font-bold text-lg pb-2">
-                        <h1 className='text-start text-2xl'>Descripción del inmueble</h1>
+                        <h1 className='text-start text-xl mr-2'>Descripción del inmueble</h1>
                     </div>
                     {isEditing ? (
                         <>
@@ -98,7 +98,7 @@ const DetailsInfoTwo = ({ data, descripcion, setDescripcion, newDescripcion, set
                     ) : (
                         <>
                             <p className="text-justify py-2">{formatDescription(descripcion)}</p>
-                            <button onClick={handleEditClick} className="absolute top-1 right-3 text-blue-500 hover:text-blue-700">
+                            <button onClick={handleEditClick} className="absolute top-0 right-0 text-blue-500 hover:text-blue-700">
                                 <AiOutlineEdit className="text-2xl" />
                             </button>
                         </>

@@ -31,7 +31,7 @@ const DetailsInfoOne = ({ data, encargoData, isVisible, setIsVisible, screenWidt
     const toggleMap = () => setShowMap(!showMap);
 
     return (
-        <div className={`w-full ${screenWidth >= 700 ? 'p-0' : 'p-4'}`}>
+        <div className={`w-full ${screenWidth >= 700 ? 'p-0' : 'px-0 py-2'}`}>
             <div className={`flex flex-col justify-between items-start ${screenWidth >= 700 ? 'px-0' : 'px-2'}`}>
                 {!isVisible && screenWidth <= 700 && (
                     <div className="flex items-center">
