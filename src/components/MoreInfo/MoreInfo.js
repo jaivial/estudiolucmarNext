@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import axios from 'axios';
 import ItemDetailsHeader from './MoreInfoComponents/ItemDetailsHeader'; // Adjust the import path as needed
 import { useKeenSlider } from 'keen-slider/react';
@@ -157,7 +157,9 @@ const ItemDetails = ({ id, onClose, showModal, setShowModal, fetchData, currentP
         }
     }, [slider, images]);
 
-    useEffect(() => {
+
+    // Memoized function for fetching data
+    const fetchInmuebleMoreInfo = useCallback(() => {
         axios
             .get(`/api/inmuebleMoreInfo`, {
                 params: { id: id },
@@ -166,21 +168,26 @@ const ItemDetails = ({ id, onClose, showModal, setShowModal, fetchData, currentP
                 console.log('response.data inmuebleMoreInfo', response.data);
                 setData(response.data);
 
-
                 let dpv = response.data.inmueble.DPV;
                 if (dpv) {
                     setDPVboolean(dpv);
-                    fetchDataDPV(response.data.inmueble.id);
+                    fetchDataDPV(response.data.inmueble.id); // Ensure fetchDataDPV is available in the scope
                 }
+
                 let localizado = response.data.inmueble.localizado;
                 setLocalizado(localizado);
+
                 let direccion = response.data.inmueble.direccion;
                 setDireccion(direccion);
             })
             .catch((error) => {
                 console.error('Error fetching data:', error);
             });
-    }, [id, onAddNoticiaRefreshKey, onAddEncargoRefreshKey, onAddEdtMoreInfoRefreshKey, onAddDeleteDPVRefreshKey, localizado]);
+    }, [id]); // Memoize the function based on the `id`
+
+    useEffect(() => {
+        fetchInmuebleMoreInfo();
+    }, [onAddNoticiaRefreshKey, onAddEdtMoreInfoRefreshKey, onAddDeleteDPVRefreshKey, localizado]);
 
 
     useEffect(() => {
@@ -311,7 +318,7 @@ const ItemDetails = ({ id, onClose, showModal, setShowModal, fetchData, currentP
                                                 </div>
                                             )}
                                             <div className='flex flex-row h-auto rounded-2xl shadow-lg'>
-                                                <EncargosDetails data={data} setOnAddEncargoRefreshKey={setOnAddEncargoRefreshKey} onAddEncargoRefreshKey={onAddEncargoRefreshKey} fetchData={fetchData} currentPage={currentPage} searchTerm={searchTerm} screenWidth={screenWidth} />
+                                                <EncargosDetails data={data} fetchInmuebleMoreInfo={fetchInmuebleMoreInfo} fetchData={fetchData} currentPage={currentPage} searchTerm={searchTerm} screenWidth={screenWidth} />
                                             </div>
                                         </div>
                                     )}
@@ -389,7 +396,7 @@ const ItemDetails = ({ id, onClose, showModal, setShowModal, fetchData, currentP
                                             </div>
                                             {data.inmueble.noticiastate && (
                                                 <div className='flex flex-row h-fit bg-red-300 rounded-2xl shadow-lg'>
-                                                    <EncargosDetails data={data} setOnAddEncargoRefreshKey={setOnAddEncargoRefreshKey} onAddEncargoRefreshKey={onAddEncargoRefreshKey} fetchData={fetchData} currentPage={currentPage} searchTerm={searchTerm} screenWidth={screenWidth} />
+                                                    <EncargosDetails data={data} fetchInmuebleMoreInfo={fetchInmuebleMoreInfo} fetchData={fetchData} currentPage={currentPage} searchTerm={searchTerm} screenWidth={screenWidth} />
                                                 </div>
                                             )}
                                         </div>

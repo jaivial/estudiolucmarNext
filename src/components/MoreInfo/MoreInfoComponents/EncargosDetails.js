@@ -50,7 +50,7 @@ const showToast = (message, backgroundColor) => {
     }).showToast();
 };
 
-const EncargosDetails = ({ data, setOnAddEncargoRefreshKey, onAddEncargoRefreshKey, fetchData, currentPage, searchTerm, screenWidth }) => {
+const EncargosDetails = ({ data, fetchInmuebleMoreInfo, fetchData, currentPage, searchTerm, screenWidth }) => {
     const [isOpen, setIsOpen] = useState(false);
     const [isPopupOpen, setIsPopupOpen] = useState(false);
     const [encargos, setEncargos] = useState([]);
@@ -167,9 +167,7 @@ const EncargosDetails = ({ data, setOnAddEncargoRefreshKey, onAddEncargoRefreshK
             console.error('Error updating price:', error);
         }
     };
-    useEffect(() => {
-        console.log('encargos', encargos);
-    }), [encargos];
+
 
     const fetchEncargos = async () => {
         if (data.inmueble.encargostate === false) {
@@ -205,9 +203,6 @@ const EncargosDetails = ({ data, setOnAddEncargoRefreshKey, onAddEncargoRefreshK
         }
     };
 
-    useEffect(() => {
-        console.log('selectedClienteEncargo', selectedClienteEncargo);
-    }, [selectedClienteEncargo]);
 
     const fetchAsesores = async () => {
         try {
@@ -235,11 +230,7 @@ const EncargosDetails = ({ data, setOnAddEncargoRefreshKey, onAddEncargoRefreshK
         setSelectedClienteEncargo(selectedOption);
     };
 
-    useEffect(() => {
-        console.log('clienteOptions', clienteOptions);
-        console.log('selectedCliente', selectedCliente);
-        console.log('selectedClienteEncargo', selectedClienteEncargo)
-    }), [];
+
 
     const fetchClientes = async () => {
         const inmuebleId = data.inmueble.id;
@@ -280,7 +271,9 @@ const EncargosDetails = ({ data, setOnAddEncargoRefreshKey, onAddEncargoRefreshK
         setDraggableValue(0);
         setSelectedCliente(null);
         setIsPopupOpen(false);
-        setSelectedClienteEncargo(encargos[0].fullCliente.value);
+        if (isEditing) {
+            setSelectedClienteEncargo(encargos[0].fullCliente.value);
+        }
 
     };
 
@@ -346,7 +339,7 @@ const EncargosDetails = ({ data, setOnAddEncargoRefreshKey, onAddEncargoRefreshK
                 showToast(isEditing ? 'Encargo actualizado' : 'Encargo añadido', 'linear-gradient(to right bottom, #00603c, #006f39, #007d31, #008b24, #069903)');
                 handlePopupClose();
                 await fetchEncargos();
-                setOnAddEncargoRefreshKey(onAddEncargoRefreshKey + 1);
+                fetchInmuebleMoreInfo();
                 fetchData(currentPage, searchTerm);
             } else {
                 alert(response.data.message);
@@ -375,13 +368,7 @@ const EncargosDetails = ({ data, setOnAddEncargoRefreshKey, onAddEncargoRefreshK
         setTiempoExclusiva(encargo[0].tiempo_exclusiva);
         setSelectedCliente(clienteOptions.find(option => option.value === encargo[0].cliente_id)?.value || '');
     };
-    useEffect(() => {
-        console.log('selectedAsesror', selectedAsesor);
-        console.log('selectedCliente', selectedCliente);
 
-
-
-    }, [selectedAsesor, selectedCliente]);
     const handleDeleteEncargo = async () => {
 
         try {
@@ -405,7 +392,7 @@ const EncargosDetails = ({ data, setOnAddEncargoRefreshKey, onAddEncargoRefreshK
                 setEncargoState(false);
                 handlePopupClose();
                 setIsEditing(false);
-                setOnAddEncargoRefreshKey(onAddEncargoRefreshKey + 1);
+                fetchInmuebleMoreInfo();
                 fetchData(currentPage, searchTerm);
             } else {
                 alert('Error al eliminar el encargo.');
