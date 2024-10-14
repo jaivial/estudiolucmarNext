@@ -167,6 +167,9 @@ const EncargosDetails = ({ data, setOnAddEncargoRefreshKey, onAddEncargoRefreshK
             console.error('Error updating price:', error);
         }
     };
+    useEffect(() => {
+        console.log('encargos', encargos);
+    }), [encargos];
 
     const fetchEncargos = async () => {
         if (data.inmueble.encargostate === false) {
@@ -180,7 +183,7 @@ const EncargosDetails = ({ data, setOnAddEncargoRefreshKey, onAddEncargoRefreshK
                 if (response.data !== null) {
                     const encargo = response.data;
                     console.log('encargo', encargo);
-                    setSelectedClienteEncargo(encargo.cliente_id);
+                    setSelectedClienteEncargo(encargo.fullCliente.value);
                     setPrecio_1(encargo.precio_1);
                     setPrecio_2(encargo.precio_2);
                     setTipo_encargo(encargo.tipo_encargo);
@@ -229,6 +232,12 @@ const EncargosDetails = ({ data, setOnAddEncargoRefreshKey, onAddEncargoRefreshK
         setSelectedClienteEncargo(selectedOption);
     };
 
+    useEffect(() => {
+        console.log('clienteOptions', clienteOptions);
+        console.log('selectedCliente', selectedCliente);
+        console.log('selectedClienteEncargo', selectedClienteEncargo)
+    }), [];
+
     const fetchClientes = async () => {
         const inmuebleId = data.inmueble.id;
         try {
@@ -253,6 +262,7 @@ const EncargosDetails = ({ data, setOnAddEncargoRefreshKey, onAddEncargoRefreshK
         fetchEncargos();
         fetchAsesores();
         fetchClientes();
+        console.log('aqui');
     }, [data]);
 
     // Function to find the matching clienteOption
@@ -284,6 +294,8 @@ const EncargosDetails = ({ data, setOnAddEncargoRefreshKey, onAddEncargoRefreshK
         setDraggableValue(0);
         setSelectedCliente(null);
         setIsPopupOpen(false);
+        setSelectedClienteEncargo(encargos[0].fullCliente.value);
+
     };
 
     const handleAddEncargo = async () => {
@@ -556,7 +568,7 @@ const EncargosDetails = ({ data, setOnAddEncargoRefreshKey, onAddEncargoRefreshK
                                                     </div>
                                                     <div className="flex items-center gap-2 flex-col w-full">
                                                         <FaUserTag className="text-gray-900 text-3xl" />
-                                                        <p className="text-base text-gray-950 py-1 text-center">Cliente: {nombreCliente}</p>
+                                                        <p className="text-base text-gray-950 py-1 text-center">Cliente: {encargos[0].fullCliente.label}</p>
                                                         <div className="border-b border-gray-300 w-4/6 -mt-1"></div>
                                                     </div>
                                                     <div className="flex items-center gap-2 flex-col w-full">
@@ -952,13 +964,14 @@ const EncargosDetails = ({ data, setOnAddEncargoRefreshKey, onAddEncargoRefreshK
                                         <SelectPicker
                                             id="cliente"
                                             data={clienteOptions}
-                                            value={clienteOptions.find(option => option.value === selectedClienteEncargo)?.value} // Inline matching
-                                            onChange={handleSelectCliente}
+                                            value={selectedClienteEncargo} // Pass the selected value
+                                            onChange={handleSelectCliente} // This should handle setting the selected value
                                             placeholder="Cliente"
                                             className="basic-single z-[800]"
                                             searchable={true}
                                             style={{ width: '100%' }}
                                         />
+
                                     </div>
                                     <div className="mb-4">
                                         <label className="block text-sm font-medium mb-2" htmlFor="precio">
