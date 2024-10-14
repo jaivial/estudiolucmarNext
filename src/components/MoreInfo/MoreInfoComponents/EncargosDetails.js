@@ -28,9 +28,7 @@ import { Icon } from '@iconify/react';
 import './encargosdetails.css';
 import { MdKeyboardDoubleArrowDown } from "react-icons/md";
 import { GiSandsOfTime } from "react-icons/gi";
-
-
-
+import FinalizarEncargo from './FinalizarEncargo';
 
 const { Column, HeaderCell, Cell } = Table;
 
@@ -88,9 +86,8 @@ const EncargosDetails = ({ data, fetchInmuebleMoreInfo, fetchData, currentPage, 
     const [encargoState, setEncargoState] = useState(null);
 
 
-    useEffect(() => {
-        console.log('DATA LUCAS', data);
-    }, [data]);
+
+
 
     function toThousands(value) {
         return value ? `${value}`.replace(/\d{1,3}(?=(\d{3})+(\.\d*)?$)/g, '$&.') : value;
@@ -189,6 +186,7 @@ const EncargosDetails = ({ data, fetchInmuebleMoreInfo, fetchData, currentPage, 
                     setTipo_encargo(encargo.tipo_encargo);
                     if (encargo) {
                         setEncargos([encargo]);
+
                     } else {
                         console.error('No encargo data available');
                         setEncargos([]);
@@ -211,7 +209,7 @@ const EncargosDetails = ({ data, fetchInmuebleMoreInfo, fetchData, currentPage, 
             if (Array.isArray(asesores)) {
                 setAsesorOptions(
                     asesores.map((user) => ({
-                        value: `${user.nombre} ${user.apellido}`,
+                        value: `${parseInt(user.user_id, 10)}`,
                         label: `${user.nombre} ${user.apellido}`,
                     })),
                 );
@@ -224,10 +222,13 @@ const EncargosDetails = ({ data, fetchInmuebleMoreInfo, fetchData, currentPage, 
     };
 
     const handleSelectCliente = (value) => {
-        console.log('value', value);
         const selectedOption = clienteOptions.find(option => option.value === value);
         setSelectedCliente(selectedOption || null);
         setSelectedClienteEncargo(selectedOption);
+    };
+    const handleSelectAsesor = (value) => {
+        const selectedOption = asesorOptions.find(option => option.value === value);
+        setSelectedAsesor(selectedOption || null);
     };
 
 
@@ -236,7 +237,6 @@ const EncargosDetails = ({ data, fetchInmuebleMoreInfo, fetchData, currentPage, 
         const inmuebleId = data.inmueble.id;
         try {
             const response = await axios.get('/api/seleccionaClienteEncargos', { params: { inmuebleId } });
-            console.log('response clientes encargos', response.data);
             if (Array.isArray(response.data)) {
                 setClienteOptions(
                     response.data.map((cliente) => ({
@@ -256,7 +256,6 @@ const EncargosDetails = ({ data, fetchInmuebleMoreInfo, fetchData, currentPage, 
         fetchEncargos();
         fetchAsesores();
         fetchClientes();
-        console.log('aqui');
     }, [data]);
 
 
@@ -350,12 +349,10 @@ const EncargosDetails = ({ data, fetchInmuebleMoreInfo, fetchData, currentPage, 
     };
 
     const handleEditEncargo = (encargo, asesorOptions, clienteOptions) => {
-        console.log('encargo', encargo);
-        console.log('asesorOptions', asesorOptions);
-        console.log('clienteOptions', clienteOptions);
+
         // Assuming encargo is the object with the details of the encargo you want to edit
         setTipoEncargo(encargo[0].tipo_encargo);
-        setSelectedAsesor({ label: encargo[0].comercial_encargo, value: encargo[0].comercial_encargo });
+
         setPrecio(toThousands(encargo[0].precio_1) || '');
         setTipoComision(encargo[0].tipo_comision_encargo || '');
         setComision(encargo[0].comision_encargo || '');
@@ -366,7 +363,9 @@ const EncargosDetails = ({ data, fetchInmuebleMoreInfo, fetchData, currentPage, 
         setComisionComprador(encargo[0].comisionComprador);
         setComisionCompradorValue(encargo[0].comisionCompradorValue);
         setTiempoExclusiva(encargo[0].tiempo_exclusiva);
-        setSelectedCliente(clienteOptions.find(option => option.value === encargo[0].cliente_id)?.value || '');
+        setSelectedCliente(encargos[0].fullCliente);
+        setSelectedClienteEncargo(encargos[0].fullCliente);
+        setSelectedAsesor(encargos[0].comercial_encargo);
     };
 
     const handleDeleteEncargo = async () => {
@@ -421,7 +420,6 @@ const EncargosDetails = ({ data, fetchInmuebleMoreInfo, fetchData, currentPage, 
             });
             if (response.data) {
                 // Handle the response data
-                console.log(response.data);
                 setMatchingClientesEncargos(response.data);
                 setTimeout(() => {
                     setLoading(false);
@@ -437,7 +435,6 @@ const EncargosDetails = ({ data, fetchInmuebleMoreInfo, fetchData, currentPage, 
         setLodingMoreInfoClienteMatchingEncargo(true);
         setVerMásClienteEncargo(true);
 
-        console.log('handleOpen', _id);
         try {
             const response = await axios.get('/api/fetchInfoPedido', {
                 params: { _id },
@@ -446,12 +443,10 @@ const EncargosDetails = ({ data, fetchInmuebleMoreInfo, fetchData, currentPage, 
             if (response.data) {
                 setInfoClienteMathingEncargo(response.data);
                 let cliente = response.data;
-                console.log('cliente', cliente);
                 const allInmuebleIds = [
                     ...cliente.inmuebles_asociados_propietario,
                     ...cliente.inmuebles_asociados_inquilino
                 ].map(inmueble => inmueble.id);
-                console.log('allInmuebleIds', allInmuebleIds);
                 if (allInmuebleIds.length > 0) {
                     try {
                         const response = await axios.post('/api/fetch_cliente_inmuebles', {
@@ -459,7 +454,6 @@ const EncargosDetails = ({ data, fetchInmuebleMoreInfo, fetchData, currentPage, 
                         });
 
                         if (response.status === 200) {
-                            console.log('response.data', response.data);
                             setInfoClienteMathingEncargo(prevState => ({
                                 ...prevState,
                                 inmueblesDetalle: response.data
@@ -478,9 +472,6 @@ const EncargosDetails = ({ data, fetchInmuebleMoreInfo, fetchData, currentPage, 
         }
     };
 
-    useEffect(() => {
-        console.log('precio', precio);
-    }, [precio]);
 
     const handlePrecioChange = (value) => {
         // Remove non-numeric characters to get a clean number
@@ -493,7 +484,6 @@ const EncargosDetails = ({ data, fetchInmuebleMoreInfo, fetchData, currentPage, 
             // Format the number with thousands separator (.)
             const formattedValue = number.toLocaleString('es-ES', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
 
-            console.log('formattedValue', formattedValue);
             setPrecio(formattedValue);
         } else {
             // If there's no numeric value, set the price to 0 or handle it as needed
@@ -638,7 +628,10 @@ const EncargosDetails = ({ data, fetchInmuebleMoreInfo, fetchData, currentPage, 
                                                     <div className="flex items-center gap-2 flex-col w-full">
 
                                                         <FaUserTie className="text-gray-900 text-3xl" />
-                                                        <p className="text-base text-gray-950 py-1 text-center">Asesor: {encargos[0].comercial_encargo}</p>
+                                                        <p className="text-base text-gray-950 py-1 text-center">Asesor: {encargos[0].comercial_encargo.label}</p>
+                                                    </div>
+                                                    <div>
+                                                        <FinalizarEncargo cliente={encargos[0].fullCliente.label} asesorID={encargos[0].comercial_encargo.value} asesorNombre={encargos[0].comercial_encargo.label} encargos={encargos} tipoEncargo={encargos[0].tipo_encargo} precio={encargos[0].precio_1 || encargos[0].precio_2} />
                                                     </div>
                                                     <div className="absolute top-0 right-0 flex flex-col gap-6">
                                                         <div className='flex flex-col items-center gap-4'>
@@ -923,8 +916,8 @@ const EncargosDetails = ({ data, fetchInmuebleMoreInfo, fetchData, currentPage, 
                                         </label>
                                         <SelectPicker
                                             data={asesorOptions}
-                                            value={selectedAsesor ? selectedAsesor.value : undefined}
-                                            onChange={(value, item) => setSelectedAsesor(value)}
+                                            value={isEditing ? selectedAsesor?.value : selectedAsesor?.value}
+                                            onChange={handleSelectAsesor}
                                             placeholder="Asesor"
                                             className="basic-single z-[900]"
                                             style={{ width: '100%' }}
@@ -937,7 +930,7 @@ const EncargosDetails = ({ data, fetchInmuebleMoreInfo, fetchData, currentPage, 
                                         <SelectPicker
                                             id="cliente"
                                             data={clienteOptions}
-                                            value={isEditing ? selectedClienteEncargo : selectedClienteEncargo?.value} // Pass the selected value
+                                            value={isEditing ? selectedClienteEncargo?.value : selectedClienteEncargo?.value} // Pass the selected value
                                             onChange={handleSelectCliente} // This should handle setting the selected value
                                             placeholder="Cliente"
                                             className="basic-single z-[800]"
