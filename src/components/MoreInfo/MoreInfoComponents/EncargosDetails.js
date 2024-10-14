@@ -183,7 +183,9 @@ const EncargosDetails = ({ data, setOnAddEncargoRefreshKey, onAddEncargoRefreshK
                 if (response.data !== null) {
                     const encargo = response.data;
                     console.log('encargo', encargo);
-                    setSelectedClienteEncargo(encargo.fullCliente.value);
+                    if (encargo.fullCliente) {
+                        setSelectedClienteEncargo(encargo.fullCliente.value);
+                    }
                     setPrecio_1(encargo.precio_1);
                     setPrecio_2(encargo.precio_2);
                     setTipo_encargo(encargo.tipo_encargo);
@@ -227,6 +229,7 @@ const EncargosDetails = ({ data, setOnAddEncargoRefreshKey, onAddEncargoRefreshK
     };
 
     const handleSelectCliente = (value) => {
+        console.log('value', value);
         const selectedOption = clienteOptions.find(option => option.value === value);
         setSelectedCliente(selectedOption || null);
         setSelectedClienteEncargo(selectedOption);
@@ -265,24 +268,7 @@ const EncargosDetails = ({ data, setOnAddEncargoRefreshKey, onAddEncargoRefreshK
         console.log('aqui');
     }, [data]);
 
-    // Function to find the matching clienteOption
-    const findNombreCliente = () => {
-        if (!clienteOptions || !Array.isArray(clienteOptions)) {
-            console.error('Invalid inputs');
-            return '';
-        }
 
-        if (encargos.encargo_id) {
-            const matchingOption = clienteOptions.find((option) => option.id === encargos.encargo_id);
-            setMatchingCliente(matchingOption);
-            return matchingOption ? matchingOption.label : '';
-        }
-    };
-
-    useEffect(() => {
-        const nombre = findNombreCliente();
-        setNombreCliente(nombre);
-    }, [encargos, clienteOptions]);
 
     const handlePopupClose = () => {
         setTipoEncargo('');
@@ -337,7 +323,7 @@ const EncargosDetails = ({ data, setOnAddEncargoRefreshKey, onAddEncargoRefreshK
             encargo_id: isEditing ? encargos[0].encargo_id : data.inmueble.id,
             tipoEncargo: tipoEncargo,
             comercial: selectedAsesor,
-            cliente: selectedCliente.value || '',
+            cliente: selectedCliente || '',
             fullCliente: selectedCliente || '',
             precio: precio.replace(/\D/g, ''),
             tipoComision: tipoComision,
@@ -568,7 +554,7 @@ const EncargosDetails = ({ data, setOnAddEncargoRefreshKey, onAddEncargoRefreshK
                                                     </div>
                                                     <div className="flex items-center gap-2 flex-col w-full">
                                                         <FaUserTag className="text-gray-900 text-3xl" />
-                                                        <p className="text-base text-gray-950 py-1 text-center">Cliente: {encargos[0].fullCliente.label}</p>
+                                                        <p className="text-base text-gray-950 py-1 text-center">Cliente: <br /> {encargos[0].fullCliente.label}</p>
                                                         <div className="border-b border-gray-300 w-4/6 -mt-1"></div>
                                                     </div>
                                                     <div className="flex items-center gap-2 flex-col w-full">
@@ -964,7 +950,7 @@ const EncargosDetails = ({ data, setOnAddEncargoRefreshKey, onAddEncargoRefreshK
                                         <SelectPicker
                                             id="cliente"
                                             data={clienteOptions}
-                                            value={selectedClienteEncargo} // Pass the selected value
+                                            value={isEditing ? selectedClienteEncargo : selectedClienteEncargo?.value} // Pass the selected value
                                             onChange={handleSelectCliente} // This should handle setting the selected value
                                             placeholder="Cliente"
                                             className="basic-single z-[800]"
