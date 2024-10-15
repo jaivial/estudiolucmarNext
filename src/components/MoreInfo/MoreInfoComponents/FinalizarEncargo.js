@@ -8,7 +8,7 @@ import CountUp from 'react-countup';
 import { Checkbox, AutoComplete } from 'rsuite';
 
 
-const FinalizarEncargo = ({ clienteID, direccionInmueble, inmuebleID, fetchMatchingEncargos, matchingClientesEncargos, cliente, asesorID, asesorNombre, precio, encargos, tipoEncargo, encargoID, fetchData, currentPage, searchTerm, fetchInmuebleMoreInfo }) => {
+const FinalizarEncargo = ({ fetchClientesAsociados, clienteID, direccionInmueble, inmuebleID, fetchMatchingEncargos, matchingClientesEncargos, cliente, asesorID, asesorNombre, precio, encargos, tipoEncargo, encargoID, fetchData, currentPage, searchTerm, fetchInmuebleMoreInfo }) => {
 
     // Lógica para calcular la comisión del vendedor
     const calcularComisionVendedor = () => {
@@ -178,6 +178,7 @@ const FinalizarEncargo = ({ clienteID, direccionInmueble, inmuebleID, fetchMatch
     const handleCloseConfetti = () => {
         setShowConfetti(false); // Cerrar la animación de confetti
         fetchData(currentPage, searchTerm);
+        fetchClientesAsociados();
         fetchInmuebleMoreInfo();
     };
 

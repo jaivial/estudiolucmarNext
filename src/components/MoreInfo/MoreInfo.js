@@ -59,6 +59,9 @@ const ItemDetails = ({ id, onClose, showModal, setShowModal, fetchData, currentP
     const [localizadoRefreshKey, setLocalizadoRefreshKey] = useState(1);
     const divRef = useRef(null);
     const [divHeight, setDivHeight] = useState(null);
+    const [clientesAsociados, setClientesAsociados] = useState([]);
+    const [clientesAsociadosInmueble, setClientesAsociadosInmueble] = useState([]);
+    const [filteredClientes, setFilteredClientes] = useState(null);
 
     useEffect(() => {
         const observer = new ResizeObserver(entries => {
@@ -215,7 +218,22 @@ const ItemDetails = ({ id, onClose, showModal, setShowModal, fetchData, currentP
         fetchDescripcion();
     }, [id, onAddNoticiaRefreshKey, onAddEncargoRefreshKey]);
 
-
+    const fetchClientesAsociados = useCallback(async () => {
+        try {
+            const response = await axios.get('/api/fetchClientesAsociados', {
+                params: {
+                    inmuebleId: id,
+                },
+            });
+            console.log('response.data.clientesTotales', response.data.clientesTotales);
+            console.log('response.data.clientesTarget', response.data.clientesTarget);
+            setClientesAsociados(response.data.clientesTotales);
+            setClientesAsociadosInmueble(response.data.clientesTarget);
+            setFilteredClientes(response.data.clientesTarget);
+        } catch (error) {
+            console.error('Error fetching clientes asociados del inmueble:', error);
+        }
+    });
 
     function Arrow(props) {
         const disabled = props.disabled ? ' arrow--disabled' : '';
@@ -300,7 +318,7 @@ const ItemDetails = ({ id, onClose, showModal, setShowModal, fetchData, currentP
 
                                     <div className={`flex flex-col h-full rounded-lg gap-6 ${!data.inmueble.noticiastate ? 'w-1/2' : 'w-1/3'} overflow-y-scroll`}>
                                         <div className='flex flex-row h-auto rounded-2xl shadow-lg'>
-                                            <ClientesAsociados inmuebleId={data.inmueble.id} inmuebleDireccion={data.inmueble.direccion} screenWidth={screenWidth} setFetchClientPhoneNumberRefreshKey={setFetchClientPhoneNumberRefreshKey} fetchClientPhoneNumberRefreshKey={fetchClientPhoneNumberRefreshKey} localizadoRefreshKey={localizadoRefreshKey} setLocalizadoRefreshKey={setLocalizadoRefreshKey} />
+                                            <ClientesAsociados fetchClientesAsociados={fetchClientesAsociados} clientesAsociados={clientesAsociados} clientesAsociadosInmueble={clientesAsociadosInmueble} filteredClientes={filteredClientes} inmuebleId={data.inmueble.id} inmuebleDireccion={data.inmueble.direccion} screenWidth={screenWidth} setFetchClientPhoneNumberRefreshKey={setFetchClientPhoneNumberRefreshKey} fetchClientPhoneNumberRefreshKey={fetchClientPhoneNumberRefreshKey} localizadoRefreshKey={localizadoRefreshKey} setLocalizadoRefreshKey={setLocalizadoRefreshKey} />
                                         </div>
                                         <div className='flex flex-row h-auto rounded-2xl shadow-lg'>
                                             {data.inmueble.DPV ? <DPVInfoComponent DPVInfo={DPVInfo} /> : data.inmueble.encargostate && <NoticiasDetails data={data} setOnAddNoticiaRefreshKey={setOnAddNoticiaRefreshKey} onAddNoticiaRefreshKey={onAddNoticiaRefreshKey} fetchData={fetchData} currentPage={currentPage} searchTerm={searchTerm} screenWidth={screenWidth} />
@@ -321,7 +339,7 @@ const ItemDetails = ({ id, onClose, showModal, setShowModal, fetchData, currentP
                                                 </div>
                                             )}
                                             <div className='flex flex-row h-auto rounded-2xl shadow-lg'>
-                                                <EncargosDetails data={data} fetchInmuebleMoreInfo={fetchInmuebleMoreInfo} fetchData={fetchData} currentPage={currentPage} searchTerm={searchTerm} screenWidth={screenWidth} />
+                                                <EncargosDetails fetchClientesAsociados={fetchClientesAsociados} data={data} fetchInmuebleMoreInfo={fetchInmuebleMoreInfo} fetchData={fetchData} currentPage={currentPage} searchTerm={searchTerm} screenWidth={screenWidth} />
                                             </div>
                                         </div>
                                     )}
@@ -432,7 +450,7 @@ const ItemDetails = ({ id, onClose, showModal, setShowModal, fetchData, currentP
                                 <div className={`flex flex-row gap-6 rounded-2xl w-2/3 overflow-y-hidden ${screenWidth <= 1280 && 'hidden'}`} style={{ maxHeight: `${divHeight}px` }}>
                                     <div className={`flex flex-col justify-start rounded-lg gap-6 w-1/2 overflow-y-scroll`} style={{ maxHeight: `${divHeight}px` }}>
                                         <div className='flex flex-row h-auto rounded-2xl shadow-lg'>
-                                            <ClientesAsociados inmuebleId={data.inmueble.id} inmuebleDireccion={data.inmueble.direccion} screenWidth={screenWidth} setFetchClientPhoneNumberRefreshKey={setFetchClientPhoneNumberRefreshKey} fetchClientPhoneNumberRefreshKey={fetchClientPhoneNumberRefreshKey} localizadoRefreshKey={localizadoRefreshKey} setLocalizadoRefreshKey={setLocalizadoRefreshKey} />
+                                            <ClientesAsociados fetchClientesAsociados={fetchClientesAsociados} clientesAsociados={clientesAsociados} clientesAsociadosInmueble={clientesAsociadosInmueble} filteredClientes={filteredClientes} inmuebleId={data.inmueble.id} inmuebleDireccion={data.inmueble.direccion} screenWidth={screenWidth} setFetchClientPhoneNumberRefreshKey={setFetchClientPhoneNumberRefreshKey} fetchClientPhoneNumberRefreshKey={fetchClientPhoneNumberRefreshKey} localizadoRefreshKey={localizadoRefreshKey} setLocalizadoRefreshKey={setLocalizadoRefreshKey} />
                                         </div>
 
                                         <div className='flex flex-col w-full h-fit rounded-2xl gap-6 ease-in-out'>
@@ -441,7 +459,7 @@ const ItemDetails = ({ id, onClose, showModal, setShowModal, fetchData, currentP
                                             </div>
                                             {data.inmueble.noticiastate && (
                                                 <div className='flex flex-row h-fit rounded-2xl shadow-lg'>
-                                                    <EncargosDetails data={data} fetchInmuebleMoreInfo={fetchInmuebleMoreInfo} fetchData={fetchData} currentPage={currentPage} searchTerm={searchTerm} screenWidth={screenWidth} />
+                                                    <EncargosDetails fetchClientesAsociados={fetchClientesAsociados} data={data} fetchInmuebleMoreInfo={fetchInmuebleMoreInfo} fetchData={fetchData} currentPage={currentPage} searchTerm={searchTerm} screenWidth={screenWidth} />
                                                 </div>
                                             )}
                                         </div>
@@ -465,7 +483,7 @@ const ItemDetails = ({ id, onClose, showModal, setShowModal, fetchData, currentP
                                 <div className={`flex flex-row gap-6 rounded-2xl w-full overflow-y-hidden mt-2 ${(screenWidth > 1280 || screenWidth <= 1150) && 'hidden'}`}>
 
                                     <div className='flex flex-col gap-6 h-fit w-1/3 rounded-2xl overflow-y-scroll  max-h-[1250px]'>
-                                        <ClientesAsociados inmuebleId={data.inmueble.id} inmuebleDireccion={data.inmueble.direccion} screenWidth={screenWidth} setFetchClientPhoneNumberRefreshKey={setFetchClientPhoneNumberRefreshKey} fetchClientPhoneNumberRefreshKey={fetchClientPhoneNumberRefreshKey} localizadoRefreshKey={localizadoRefreshKey} setLocalizadoRefreshKey={setLocalizadoRefreshKey} />
+                                        <ClientesAsociados fetchClientesAsociados={fetchClientesAsociados} clientesAsociados={clientesAsociados} clientesAsociadosInmueble={clientesAsociadosInmueble} filteredClientes={filteredClientes} inmuebleId={data.inmueble.id} inmuebleDireccion={data.inmueble.direccion} screenWidth={screenWidth} setFetchClientPhoneNumberRefreshKey={setFetchClientPhoneNumberRefreshKey} fetchClientPhoneNumberRefreshKey={fetchClientPhoneNumberRefreshKey} localizadoRefreshKey={localizadoRefreshKey} setLocalizadoRefreshKey={setLocalizadoRefreshKey} />
                                         {data.inmueble.DPV && (
                                             <div className='flex flex-row h-fit rounded-2xl shadow-lg'>
                                                 <DPVInfoComponent DPVInfo={DPVInfo} />
@@ -479,7 +497,7 @@ const ItemDetails = ({ id, onClose, showModal, setShowModal, fetchData, currentP
                                         </div>
                                         {data.inmueble.noticiastate && (
                                             <div className='flex flex-row h-fit rounded-2xl shadow-lg'>
-                                                <EncargosDetails data={data} fetchInmuebleMoreInfo={fetchInmuebleMoreInfo} fetchData={fetchData} currentPage={currentPage} searchTerm={searchTerm} screenWidth={screenWidth} />
+                                                <EncargosDetails fetchClientesAsociados={fetchClientesAsociados} data={data} fetchInmuebleMoreInfo={fetchInmuebleMoreInfo} fetchData={fetchData} currentPage={currentPage} searchTerm={searchTerm} screenWidth={screenWidth} />
                                             </div>
                                         )}
                                     </div>
@@ -494,14 +512,14 @@ const ItemDetails = ({ id, onClose, showModal, setShowModal, fetchData, currentP
 
                                     <div className='flex flex-col gap-6 h-fit w-1/2 rounded-2xl overflow-y-scroll  max-h-full'>
                                         <div>
-                                            <ClientesAsociados inmuebleId={data.inmueble.id} inmuebleDireccion={data.inmueble.direccion} screenWidth={screenWidth} setFetchClientPhoneNumberRefreshKey={setFetchClientPhoneNumberRefreshKey} fetchClientPhoneNumberRefreshKey={fetchClientPhoneNumberRefreshKey} localizadoRefreshKey={localizadoRefreshKey} setLocalizadoRefreshKey={setLocalizadoRefreshKey} />
+                                            <ClientesAsociados fetchClientesAsociados={fetchClientesAsociados} clientesAsociados={clientesAsociados} clientesAsociadosInmueble={clientesAsociadosInmueble} filteredClientes={filteredClientes} inmuebleId={data.inmueble.id} inmuebleDireccion={data.inmueble.direccion} screenWidth={screenWidth} setFetchClientPhoneNumberRefreshKey={setFetchClientPhoneNumberRefreshKey} fetchClientPhoneNumberRefreshKey={fetchClientPhoneNumberRefreshKey} localizadoRefreshKey={localizadoRefreshKey} setLocalizadoRefreshKey={setLocalizadoRefreshKey} />
                                         </div>
                                         <div className='flex flex-row h-auto rounded-2xl shadow-lg'>
                                             <NoticiasDetails data={data} setOnAddNoticiaRefreshKey={setOnAddNoticiaRefreshKey} onAddNoticiaRefreshKey={onAddNoticiaRefreshKey} fetchData={fetchData} currentPage={currentPage} searchTerm={searchTerm} screenWidth={screenWidth} />
                                         </div>
                                         {data.inmueble.noticiastate && (
                                             <div className='flex flex-row h-fit rounded-2xl shadow-lg'>
-                                                <EncargosDetails data={data} fetchInmuebleMoreInfo={fetchInmuebleMoreInfo} fetchData={fetchData} currentPage={currentPage} searchTerm={searchTerm} screenWidth={screenWidth} />
+                                                <EncargosDetails fetchClientesAsociados={fetchClientesAsociados} data={data} fetchInmuebleMoreInfo={fetchInmuebleMoreInfo} fetchData={fetchData} currentPage={currentPage} searchTerm={searchTerm} screenWidth={screenWidth} />
                                             </div>
                                         )}
                                         {data.inmueble.DPV && (
@@ -520,14 +538,14 @@ const ItemDetails = ({ id, onClose, showModal, setShowModal, fetchData, currentP
                                 </div>
                                 <div className={`flex flex-col gap-6 rounded-2xl w-full overflow-y-hidden mt-2 ${screenWidth > 780 && 'hidden'}`}>
                                     <div>
-                                        <ClientesAsociados inmuebleId={data.inmueble.id} inmuebleDireccion={data.inmueble.direccion} screenWidth={screenWidth} setFetchClientPhoneNumberRefreshKey={setFetchClientPhoneNumberRefreshKey} fetchClientPhoneNumberRefreshKey={fetchClientPhoneNumberRefreshKey} localizadoRefreshKey={localizadoRefreshKey} setLocalizadoRefreshKey={setLocalizadoRefreshKey} />
+                                        <ClientesAsociados fetchClientesAsociados={fetchClientesAsociados} clientesAsociados={clientesAsociados} clientesAsociadosInmueble={clientesAsociadosInmueble} filteredClientes={filteredClientes} inmuebleId={data.inmueble.id} inmuebleDireccion={data.inmueble.direccion} screenWidth={screenWidth} setFetchClientPhoneNumberRefreshKey={setFetchClientPhoneNumberRefreshKey} fetchClientPhoneNumberRefreshKey={fetchClientPhoneNumberRefreshKey} localizadoRefreshKey={localizadoRefreshKey} setLocalizadoRefreshKey={setLocalizadoRefreshKey} />
                                     </div>
                                     <div className='flex flex-row h-auto rounded-2xl shadow-lg'>
                                         <NoticiasDetails data={data} setOnAddNoticiaRefreshKey={setOnAddNoticiaRefreshKey} onAddNoticiaRefreshKey={onAddNoticiaRefreshKey} fetchData={fetchData} currentPage={currentPage} searchTerm={searchTerm} screenWidth={screenWidth} />
                                     </div>
                                     {data.inmueble.noticiastate && (
                                         <div className='flex flex-row h-fit rounded-2xl shadow-lg'>
-                                            <EncargosDetails data={data} fetchInmuebleMoreInfo={fetchInmuebleMoreInfo} fetchData={fetchData} currentPage={currentPage} searchTerm={searchTerm} screenWidth={screenWidth} />
+                                            <EncargosDetails fetchClientesAsociados={fetchClientesAsociados} data={data} fetchInmuebleMoreInfo={fetchInmuebleMoreInfo} fetchData={fetchData} currentPage={currentPage} searchTerm={searchTerm} screenWidth={screenWidth} />
                                         </div>
                                     )}
                                     {data.inmueble.DPV && (

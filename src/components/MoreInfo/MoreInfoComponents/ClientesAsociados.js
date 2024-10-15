@@ -12,9 +12,7 @@ import './clientesasociados.css';
 const { Column, HeaderCell, Cell } = Table;
 import SearchIcon from '@rsuite/icons/Search';
 
-const ClientesAsociados = ({ inmuebleId, inmuebleDireccion, screenWidth, setFetchClientPhoneNumberRefreshKey, fetchClientesPhoneNumberRefreshKey, localizadoRefreshKey, setLocalizadoRefreshKey }) => {
-    const [clientesAsociados, setClientesAsociados] = useState([]);
-    const [clientesAsociadosInmueble, setClientesAsociadosInmueble] = useState([]);
+const ClientesAsociados = ({ fetchClientesAsociados, clientesAsociados, clientesAsociadosInmueble, filteredClientes, inmuebleId, inmuebleDireccion, screenWidth, setFetchClientPhoneNumberRefreshKey, fetchClientesPhoneNumberRefreshKey, localizadoRefreshKey, setLocalizadoRefreshKey }) => {
     const [open, setOpen] = useState(false);
     const [allClientes, setAllClientes] = useState([]);
     const [pedido, setPedido] = useState(false);
@@ -71,7 +69,6 @@ const ClientesAsociados = ({ inmuebleId, inmuebleDireccion, screenWidth, setFetc
         setFilteredClientes(filtered);
     };
 
-    const [filteredClientes, setFilteredClientes] = useState(clientesAsociadosInmueble);
 
     useEffect(() => {
         console.log('editCliente', editCliente);
@@ -194,25 +191,8 @@ const ClientesAsociados = ({ inmuebleId, inmuebleDireccion, screenWidth, setFetc
 
     };
 
-    const fetchClientesAsociados = async () => {
-        try {
-            const response = await axios.get('/api/fetchClientesAsociados', {
-                params: {
-                    inmuebleId: inmuebleId,
-                },
-            });
 
-            console.log('response.data.clientesTotales', response.data.clientesTotales);
-            console.log('response.data.clientesTarget', response.data.clientesTarget);
-            setClientesAsociados(response.data.clientesTotales);
-            setClientesAsociadosInmueble(response.data.clientesTarget);
-            setFilteredClientes(response.data.clientesTarget);
-        } catch (error) {
-            console.error('Error fetching clientes asociados del inmueble:', error);
-        }
-    };
     useEffect(() => {
-
         fetchClientesAsociados();
     }, [inmuebleId]);
 
@@ -723,7 +703,7 @@ const ClientesAsociados = ({ inmuebleId, inmuebleDireccion, screenWidth, setFetc
                         <SearchIcon />
                     </InputGroup.Button>
                 </InputGroup>
-                {filteredClientes.length > 0 ? (
+                {filteredClientes?.length > 0 ? (
                     <ul className='flex flex-col gap-3 mt-4 w-full'>
                         {filteredClientes
                             .sort((a, b) => {
