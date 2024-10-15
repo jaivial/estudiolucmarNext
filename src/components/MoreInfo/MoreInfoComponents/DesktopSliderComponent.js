@@ -62,7 +62,7 @@ const DesktopSliderComponent = ({ data, encargoData, images, screenWidth }) => {
         <>
             {images.length > 0 ? (
                 <div ref={sliderRef} className={`keen-slider rounded-2xl shadow-lg w-full flex relative ${screenWidth <= 1280 ? 'h-[500px]' : 'h-[400px]'}`}>
-                    <div className='bg-white absolute top-5 right-5 flex flex-row gap-2 items-center justify-center px-3 py-2 rounded-3xl hover:bg-slate-900 cursor-pointer group z-[99]' onClick={toggleMap}>
+                    <div className='bg-white absolute top-5 right-5 flex flex-row gap-2 items-center justify-center px-3 py-2 rounded-3xl hover:bg-slate-900 cursor-pointer group z-[9]' onClick={toggleMap}>
                         <Icon icon="solar:map-outline" className='text-slate-900 text-2xl font-bold group-hover:text-white' />
                         <p className='font-sans text-slate-900 font-bold text-sm group-hover:text-white'>Abrir Mapa</p>
                     </div>

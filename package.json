@@ -65,6 +65,8 @@
     "react-leaflet": "^4.2.1",
     "react-leaflet-draw": "^0.20.4",
     "react-loading-skeleton": "^3.4.0",
+    "react-lottie": "^1.2.4",
+    "react-lottie-player": "^2.1.0",
     "react-select": "^5.8.0",
     "react-slider": "^2.0.6",
     "recharts": "^2.12.7",

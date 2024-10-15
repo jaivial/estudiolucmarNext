@@ -1,14 +1,13 @@
 import React, { useEffect, useState } from 'react';
+import Lottie from 'react-lottie';
+import animationData from '/public/assets/gif/gifjson.json';
 import { Button, Modal, Input } from 'rsuite';
 import axios from 'axios';
 import Confetti from 'react-confetti';
 import CountUp from 'react-countup';
-import { Line } from 'react-chartjs-2';
-import { Chart as ChartJS, LineElement, CategoryScale, LinearScale, PointElement } from 'chart.js';
 
-ChartJS.register(LineElement, CategoryScale, LinearScale, PointElement);
 
-const FinalizarEncargo = ({ cliente, asesorID, asesorNombre, precio, encargos, tipoEncargo }) => {
+const FinalizarEncargo = ({ cliente, asesorID, asesorNombre, precio, encargos, tipoEncargo, encargoID, fetchData, currentPage, searchTerm, fetchInmuebleMoreInfo }) => {
     // Lógica para calcular la comisión del vendedor
     const calcularComisionVendedor = () => {
         let comisionVendedor = 0;
@@ -36,11 +35,10 @@ const FinalizarEncargo = ({ cliente, asesorID, asesorNombre, precio, encargos, t
         }
         return comisionPedido;
     };
-
     const comisionVendedor = calcularComisionVendedor();
     const comisionPedido = calcularComisionPedido();
-    const comisionTotal = comisionVendedor + comisionPedido;
 
+    const comisionTotal = comisionVendedor + comisionPedido;
     // Estados para manejar el modal y la información del encargo
     const [openModal, setOpenModal] = useState(false);
     const [showConfirm, setShowConfirm] = useState(false);
@@ -54,8 +52,21 @@ const FinalizarEncargo = ({ cliente, asesorID, asesorNombre, precio, encargos, t
         precio: parseInt(precio, 10),
         comisionVendedor: parseInt(comisionVendedor, 10),
         comisionPedido: parseInt(comisionPedido, 10),
-        comisionTotal: parseInt(comisionTotal, 10)
+        comisionTotal: parseInt(comisionTotal, 10),
+        encargoID: parseInt(encargoID, 10)
     });
+    const [ventasTotales, setVentasTotales] = useState(null);
+    const defaultOptions = {
+        loop: true,
+        autoplay: true,
+        animationData: animationData,
+        rendererSettings: {
+            preserveAspectRatio: 'xMidYMid slice'
+        }
+    };
+
+
+
 
     const handleOpen = () => setOpenModal(true);
     const handleClose = () => setOpenModal(false);
@@ -67,6 +78,31 @@ const FinalizarEncargo = ({ cliente, asesorID, asesorNombre, precio, encargos, t
         });
     };
 
+    // Function to fetch ventasTotales using axios
+    const fetchVentasTotales = async (userID) => {
+        try {
+            const response = await axios.get(`/api/fetchTotalVentasUser`, {
+                params: { userID }
+            });
+
+            if (response.data.status === 'success') {
+                setVentasTotales(response.data.ventasTotales); // Update state with ventasTotales
+            } else {
+                throw new Error(response.data.message || 'Error fetching ventasTotales');
+            }
+        } catch (error) {
+            console.error(error.message);
+        }
+    };
+
+    // useEffect to fetch the data on component mount
+    useEffect(() => {
+        if (asesorID) {
+            let parameterID = parseInt(asesorID)
+            fetchVentasTotales(parameterID); // Pass asesorID as userID
+        }
+    }, [asesorID]);
+
     const handleFinalizarEncargo = async () => {
         try {
             const response = await axios.post('/api/finalizarEncargo', encargoFinalizado);
@@ -74,6 +110,7 @@ const FinalizarEncargo = ({ cliente, asesorID, asesorNombre, precio, encargos, t
                 setShowConfetti(true); // Mostrar confetti al finalizar encargo
                 setOpenModal(false);   // Cerrar el modal
                 setShowConfirm(false); // Cerrar el modal de confirmación
+
             } else {
                 console.error('Error al finalizar el encargo', 5000);
             }
@@ -88,43 +125,14 @@ const FinalizarEncargo = ({ cliente, asesorID, asesorNombre, precio, encargos, t
 
     const handleCloseConfetti = () => {
         setShowConfetti(false); // Cerrar la animación de confetti
+        fetchData(currentPage, searchTerm);
+        fetchInmuebleMoreInfo();
     };
 
     const formatCurrency = (value) => {
         return value.toLocaleString('es-ES', { style: 'currency', currency: 'EUR', minimumFractionDigits: 0 });
     };
 
-    // Datos para el gráfico de línea con subidas y bajadas simuladas
-    const data = {
-        labels: ['0%', '25%', '50%', '75%', '100%'],
-        datasets: [
-            {
-                label: 'Progreso Comisión',
-                data: [0, 100000 * 0.35, 100000 * 0.25, 100000 * 0.65, 99900],
-                borderColor: '#4caf50',
-                backgroundColor: 'rgba(76, 175, 80, 0.2)',
-            }
-        ]
-    };
-
-    const options = {
-        animation: {
-            duration: 8000, // 8 seconds for the animation
-        },
-        scales: {
-            y: {
-                beginAtZero: true,
-                max: 100000, // The maximum value on the Y axis
-                ticks: {
-                    stepSize: 10000, // Steps of 10,000
-                    callback: function (value) {
-                        return value.toLocaleString('es-ES', { style: 'currency', currency: 'EUR' });
-                    }
-                }
-            }
-        },
-        maintainAspectRatio: false, // Disable default aspect ratio to control height
-    };
 
     return (
         <div>
@@ -228,26 +236,30 @@ const FinalizarEncargo = ({ cliente, asesorID, asesorNombre, precio, encargos, t
                     <div className="text-center text-white animate-fade-in">
                         <h2 className="text-4xl font-bold mb-6">¡Enhorabuena! <br /> ¡Has completado una venta!</h2>
 
+                        {/* Nueva h3 para comisionTotal */}
+                        <h3 className="text-3xl font-bold text-blue-500 mb-2 animate-bounce">
+                            + {comisionTotal}€
+                        </h3>
+
                         {/* Contador animado para la comisión total */}
-                        <h3 className="text-2xl mb-6">
+                        <h3 className="text-2xl mb-0">
                             Comisión Total: <br />
                             <CountUp
-                                end={comisionTotal}
+                                end={ventasTotales + comisionTotal}
                                 duration={8}
                                 separator="."
                                 decimal=","
-                                decimals={2}
-                                prefix="€"
+                                decimals={0}
                                 className="text-green-400 font-semibold"
                             />
+                            <span className="text-green-400 font-semibold"> €</span>  {/* Euro as suffix */}
                             <span className="text-white"> / 100K</span>
                         </h3>
 
-                        {/* Gráfico de progreso con subidas y bajadas */}
-                        <div className="w-1/2 mx-auto mb-6" style={{ height: '400px', width: '500px' }}> {/* Taller height */}
-                            <Line data={data} options={options} />
-                        </div>
 
+                        <div className='-mt-6'>
+                            <Lottie options={defaultOptions} height={500} width={500} />
+                        </div>
 
                         {/* Botón de cerrar */}
                         <Button appearance="primary" onClick={handleCloseConfetti}>
@@ -256,7 +268,8 @@ const FinalizarEncargo = ({ cliente, asesorID, asesorNombre, precio, encargos, t
                     </div>
                 </div>
             )}
-        </div>
+
+        </div >
     );
 };
 

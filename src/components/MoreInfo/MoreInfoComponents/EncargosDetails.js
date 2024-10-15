@@ -28,7 +28,10 @@ import { Icon } from '@iconify/react';
 import './encargosdetails.css';
 import { MdKeyboardDoubleArrowDown } from "react-icons/md";
 import { GiSandsOfTime } from "react-icons/gi";
-import FinalizarEncargo from './FinalizarEncargo';
+import dynamic from 'next/dynamic';
+const FinalizarEncargo = dynamic(() => import('./FinalizarEncargo'), { ssr: false });
+
+
 
 const { Column, HeaderCell, Cell } = Table;
 
@@ -631,7 +634,7 @@ const EncargosDetails = ({ data, fetchInmuebleMoreInfo, fetchData, currentPage, 
                                                         <p className="text-base text-gray-950 py-1 text-center">Asesor: {encargos[0].comercial_encargo.label}</p>
                                                     </div>
                                                     <div>
-                                                        <FinalizarEncargo cliente={encargos[0].fullCliente.label} asesorID={encargos[0].comercial_encargo.value} asesorNombre={encargos[0].comercial_encargo.label} encargos={encargos} tipoEncargo={encargos[0].tipo_encargo} precio={encargos[0].precio_1 || encargos[0].precio_2} />
+                                                        <FinalizarEncargo fetchInmuebleMoreInfo={fetchInmuebleMoreInfo} fetchData={fetchData} currentPage={currentPage} searchTerm={searchTerm} cliente={encargos[0].fullCliente.label} asesorID={encargos[0].comercial_encargo.value} asesorNombre={encargos[0].comercial_encargo.label} encargos={encargos} tipoEncargo={encargos[0].tipo_encargo} precio={encargos[0].precio_1 || encargos[0].precio_2} encargoID={encargos[0].encargo_id} />
                                                     </div>
                                                     <div className="absolute top-0 right-0 flex flex-col gap-6">
                                                         <div className='flex flex-col items-center gap-4'>
