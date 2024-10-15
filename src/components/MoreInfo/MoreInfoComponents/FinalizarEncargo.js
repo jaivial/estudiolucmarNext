@@ -5,9 +5,11 @@ import { Button, Modal, Input } from 'rsuite';
 import axios from 'axios';
 import Confetti from 'react-confetti';
 import CountUp from 'react-countup';
+import { Checkbox, AutoComplete } from 'rsuite';
 
 
-const FinalizarEncargo = ({ cliente, asesorID, asesorNombre, precio, encargos, tipoEncargo, encargoID, fetchData, currentPage, searchTerm, fetchInmuebleMoreInfo }) => {
+const FinalizarEncargo = ({ clienteID, direccionInmueble, inmuebleID, fetchMatchingEncargos, matchingClientesEncargos, cliente, asesorID, asesorNombre, precio, encargos, tipoEncargo, encargoID, fetchData, currentPage, searchTerm, fetchInmuebleMoreInfo }) => {
+
     // Lógica para calcular la comisión del vendedor
     const calcularComisionVendedor = () => {
         let comisionVendedor = 0;
@@ -43,17 +45,24 @@ const FinalizarEncargo = ({ cliente, asesorID, asesorNombre, precio, encargos, t
     const [openModal, setOpenModal] = useState(false);
     const [showConfirm, setShowConfirm] = useState(false);
     const [showConfetti, setShowConfetti] = useState(false);
+    const [selectedClientID, setSelectedClientID] = useState(null); // Store selected client ID
+    const [filteredClientes, setFilteredClientes] = useState(matchingClientesEncargos); // Filtered clients for autocomplete
+
     const [encargoFinalizado, setEncargoFinalizado] = useState({
         fechaFinalizacion: '',
         tipoEncargo: tipoEncargo,
         cliente: cliente,
+        clienteID: parseInt(clienteID, 10),
         asesorID: parseInt(asesorID, 10),
         asesorNombre: asesorNombre,
         precio: parseInt(precio, 10),
         comisionVendedor: parseInt(comisionVendedor, 10),
         comisionPedido: parseInt(comisionPedido, 10),
         comisionTotal: parseInt(comisionTotal, 10),
-        encargoID: parseInt(encargoID, 10)
+        encargoID: parseInt(encargoID, 10),
+        pedidoID: selectedClientID,
+        inmuebleID: inmuebleID,
+        direccionInmueble: direccionInmueble,
     });
     const [ventasTotales, setVentasTotales] = useState(null);
     const defaultOptions = {
@@ -62,6 +71,49 @@ const FinalizarEncargo = ({ cliente, asesorID, asesorNombre, precio, encargos, t
         animationData: animationData,
         rendererSettings: {
             preserveAspectRatio: 'xMidYMid slice'
+        }
+    };
+
+    useEffect(() => {
+        console.log('encargoFinalizado PARAMS', encargoFinalizado);
+    }, [encargoFinalizado]);
+
+    useEffect(() => {
+        fetchMatchingEncargos();
+    }, [])
+    // Reset the filtered clients when the modal is opened or matchingClientesEncargos changes
+    useEffect(() => {
+        if (openModal) {
+            setFilteredClientes(matchingClientesEncargos); // Set filteredClientes to the full list when the modal opens
+        }
+    }, [openModal, matchingClientesEncargos]);
+
+    // Handle selection or deselection of a row (checkbox click)
+    const handleSelectRow = (id) => {
+        if (selectedClientID === id) {
+            // If already selected, unselect it (toggle off)
+            setSelectedClientID(null);
+            handleInputChange(null, 'pedidoID'); // Clear pedidoID
+        } else {
+            // Select the row and store pedidoID
+            setSelectedClientID(id);
+            handleInputChange(id, 'pedidoID');
+        }
+    };
+
+    // Handle search in the AutoComplete input
+    const handleSearch = (value) => {
+        if (value) {
+            setFilteredClientes(
+                matchingClientesEncargos.filter(
+                    (cliente) =>
+                        cliente.nombre.toLowerCase().includes(value.toLowerCase()) ||  // Filter by nombre
+                        cliente.apellido.toLowerCase().includes(value.toLowerCase()) ||  // Filter by apellido
+                        `${cliente.nombre.toLowerCase()} ${cliente.apellido.toLowerCase()}`.includes(value.toLowerCase())  // Filter by combined nombre + apellido
+                )
+            );
+        } else {
+            setFilteredClientes(matchingClientesEncargos); // Reset if input is empty
         }
     };
 
@@ -170,6 +222,53 @@ const FinalizarEncargo = ({ cliente, asesorID, asesorNombre, precio, encargos, t
                             <div className="text-center text-lg font-semibold">Cliente</div>
                             <div className="mt-2 text-center text-gray-600">{encargoFinalizado.cliente}</div>
                         </div>
+
+                        {/* Pedidos Relacionados */}
+                        <div className="w-full max-w-md py-4">
+                            <h3 className="text-center text-lg font-semibold mb-2">Pedidos relacionados con el encargo</h3>
+                            <AutoComplete
+                                data={matchingClientesEncargos.map((cliente) => `${cliente.nombre} ${cliente.apellido}`)}
+                                placeholder="Buscar cliente..."
+                                onChange={handleSearch}
+                                className="mb-4"
+                            />
+
+                            {/* Table for displaying clientes */}
+                            <div className="max-h-48 overflow-y-scroll">
+                                <table className="w-full text-left table-auto border-collapse">
+                                    <thead>
+                                        <tr>
+                                            <th></th>
+                                            <th className="px-4 py-2">Nombre</th>
+                                            <th className="px-4 py-2">Teléfono</th>
+                                            <th className="px-4 py-2">Email</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {filteredClientes.map((cliente) => (
+                                            <tr
+                                                key={cliente._id}
+                                                onClick={() => handleSelectRow(cliente._id)}
+                                                className={`cursor-pointer hover:bg-gray-100 ${selectedClientID === cliente._id ? 'bg-gray-200' : ''}`}
+                                            >
+                                                <td className="px-4 py-2">
+                                                    <Checkbox
+                                                        checked={selectedClientID === cliente._id}
+                                                        onChange={() => handleSelectRow(cliente._id)}
+                                                    />
+                                                </td>
+                                                <td className="px-4 py-2">
+                                                    {cliente.nombre} {cliente.apellido}
+                                                </td>
+                                                <td className="px-4 py-2">{cliente.telefono}</td>
+                                                <td className="px-4 py-2">{cliente.email}</td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
 
                         {/* Asesor */}
                         <div className="w-full max-w-md border-b border-gray-300 py-4">

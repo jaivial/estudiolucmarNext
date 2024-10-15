@@ -1,4 +1,4 @@
-import React, { useState, useEffect, use } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import Slider from 'react-slider';
 import { AiOutlineDown, AiOutlineUp, AiOutlinePlus, AiOutlineClose } from 'react-icons/ai';
@@ -89,7 +89,9 @@ const EncargosDetails = ({ data, fetchInmuebleMoreInfo, fetchData, currentPage, 
     const [encargoState, setEncargoState] = useState(null);
 
 
-
+    useEffect(() => {
+        console.log('data', data);
+    }, [data]);
 
 
     function toThousands(value) {
@@ -414,7 +416,7 @@ const EncargosDetails = ({ data, fetchInmuebleMoreInfo, fetchData, currentPage, 
     };
 
     // Function to fetch matching encargos
-    const fetchMatchingEncargos = async () => {
+    const fetchMatchingEncargos = useCallback(async () => {
         setLoading(true);
 
         try {
@@ -424,6 +426,7 @@ const EncargosDetails = ({ data, fetchInmuebleMoreInfo, fetchData, currentPage, 
             if (response.data) {
                 // Handle the response data
                 setMatchingClientesEncargos(response.data);
+                console.log('matchingClientesEncargos', response.data);
                 setTimeout(() => {
                     setLoading(false);
                 }, 100);
@@ -431,7 +434,7 @@ const EncargosDetails = ({ data, fetchInmuebleMoreInfo, fetchData, currentPage, 
         } catch (error) {
             console.error('Error fetching matching encargos:', error);
         }
-    };
+    });
 
     // Function to handle opening client details
     const handleOpen = async (_id) => {
@@ -634,7 +637,7 @@ const EncargosDetails = ({ data, fetchInmuebleMoreInfo, fetchData, currentPage, 
                                                         <p className="text-base text-gray-950 py-1 text-center">Asesor: {encargos[0].comercial_encargo.label}</p>
                                                     </div>
                                                     <div>
-                                                        <FinalizarEncargo fetchInmuebleMoreInfo={fetchInmuebleMoreInfo} fetchData={fetchData} currentPage={currentPage} searchTerm={searchTerm} cliente={encargos[0].fullCliente.label} asesorID={encargos[0].comercial_encargo.value} asesorNombre={encargos[0].comercial_encargo.label} encargos={encargos} tipoEncargo={encargos[0].tipo_encargo} precio={encargos[0].precio_1 || encargos[0].precio_2} encargoID={encargos[0].encargo_id} />
+                                                        <FinalizarEncargo direccionInmueble={data.inmueble.direccion} inmuebleID={encargos[0].encargo_id} fetchMatchingEncargos={fetchMatchingEncargos} matchingClientesEncargos={matchingClientesEncargos} fetchInmuebleMoreInfo={fetchInmuebleMoreInfo} fetchData={fetchData} currentPage={currentPage} searchTerm={searchTerm} cliente={encargos[0].fullCliente.label} clienteID={encargos[0].fullCliente.value} asesorID={encargos[0].comercial_encargo.value} asesorNombre={encargos[0].comercial_encargo.label} encargos={encargos} tipoEncargo={encargos[0].tipo_encargo} precio={encargos[0].precio_1 || encargos[0].precio_2} encargoID={encargos[0].encargo_id} />
                                                     </div>
                                                     <div className="absolute top-0 right-0 flex flex-col gap-6">
                                                         <div className='flex flex-col items-center gap-4'>
