@@ -29,6 +29,8 @@ const ClientesAsociados = ({ refreshMatchingClientesEncargos, setRefreshMatching
     const [viewMoreClienteAsociadoModalOpen, setViewMoreClienteAsociadoModalOpen] = useState(false);
 
     const [newCliente, setNewCliente] = useState({
+        inmuebleId: inmuebleId,
+        inmuebleDireccion: inmuebleDireccion,
         nombre: '',
         apellido: '',
         dni: '',
