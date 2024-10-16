@@ -51,7 +51,7 @@ const showToast = (message, backgroundColor) => {
     }).showToast();
 };
 
-const EncargosDetails = ({ fetchClientesAsociados, data, fetchInmuebleMoreInfo, fetchData, currentPage, searchTerm, screenWidth }) => {
+const EncargosDetails = ({ refreshMatchingClientesEncargos, fetchClientesAsociados, data, fetchInmuebleMoreInfo, fetchData, currentPage, searchTerm, screenWidth }) => {
     const [isOpen, setIsOpen] = useState(false);
     const [isPopupOpen, setIsPopupOpen] = useState(false);
     const [encargos, setEncargos] = useState([]);
@@ -428,7 +428,7 @@ const EncargosDetails = ({ fetchClientesAsociados, data, fetchInmuebleMoreInfo, 
             if (response.data) {
                 // Handle the response data
                 setMatchingClientesEncargos(response.data);
-                console.log('matchingClientesEncargos', response.data);
+                console.log('matchingClientesEncargos hola', response.data);
                 setTimeout(() => {
                     setLoading(false);
                 }, 100);
@@ -436,7 +436,13 @@ const EncargosDetails = ({ fetchClientesAsociados, data, fetchInmuebleMoreInfo, 
         } catch (error) {
             console.error('Error fetching matching encargos:', error);
         }
-    });
+    },);
+
+    useEffect(() => {
+        console.log('refreshMatchingClientesEncargos', refreshMatchingClientesEncargos);
+        fetchMatchingEncargos();
+    }, [refreshMatchingClientesEncargos]);
+
 
     // Function to handle opening client details
     const handleOpen = async (_id) => {

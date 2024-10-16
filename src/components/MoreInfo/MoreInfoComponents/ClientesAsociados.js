@@ -12,7 +12,7 @@ import './clientesasociados.css';
 const { Column, HeaderCell, Cell } = Table;
 import SearchIcon from '@rsuite/icons/Search';
 
-const ClientesAsociados = ({ fetchClientesAsociados, clientesAsociados, clientesAsociadosInmueble, filteredClientes, inmuebleId, inmuebleDireccion, screenWidth, setFetchClientPhoneNumberRefreshKey, fetchClientesPhoneNumberRefreshKey, localizadoRefreshKey, setLocalizadoRefreshKey }) => {
+const ClientesAsociados = ({ refreshMatchingClientesEncargos, setRefreshMatchingClientesEncargos, fetchClientesAsociados, clientesAsociados, clientesAsociadosInmueble, filteredClientes, inmuebleId, inmuebleDireccion, screenWidth, setFetchClientPhoneNumberRefreshKey, fetchClientesPhoneNumberRefreshKey, localizadoRefreshKey, setLocalizadoRefreshKey }) => {
     const [open, setOpen] = useState(false);
     const [allClientes, setAllClientes] = useState([]);
     const [pedido, setPedido] = useState(false);
@@ -181,6 +181,7 @@ const ClientesAsociados = ({ fetchClientesAsociados, clientesAsociados, clientes
                 showToast('Cliente agregado.', 'linear-gradient(to right bottom, #00603c, #006f39, #007d31, #008b24, #069903)');
                 fetchClientes();
                 setFetchClientPhoneNumberRefreshKey(setFetchClientPhoneNumberRefreshKey + 1);
+                setRefreshMatchingClientesEncargos(refreshMatchingClientesEncargos + 1);
                 fetchClientesAsociados();
                 resetForm();
             }

@@ -189,7 +189,7 @@ const FinalizarEncargo = ({ fetchClientesAsociados, clienteID, direccionInmueble
 
     return (
         <div>
-            <Button appearance="primary" onClick={handleOpen}>
+            <Button appearance="primary" onClick={handleOpen} style={{ marginTop: '20px' }}>
                 Finalizar Encargo
             </Button>
 
