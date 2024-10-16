@@ -22,6 +22,7 @@ import 'rsuite/dist/rsuite.min.css';
 import DPVInfoComponent from './MoreInfoComponents/DPVInfoComponent';
 import SmallLoadingScreen from '../LoadingScreen/SmallLoadingScreen';
 import { FaArrowLeft } from "react-icons/fa6";
+import { IoClose } from "react-icons/io5";
 
 const DesktopSliderComponent = dynamic(() => import('./MoreInfoComponents/DesktopSliderComponent.js'), { ssr: false });
 const DesktopAdditionalInfo = dynamic(() => import('./desktopAdditionalinfo.js'), { ssr: false });
@@ -260,9 +261,16 @@ const ItemDetails = ({ id, onClose, showModal, setShowModal, fetchData, currentP
                 </div>
             ) : (
                 <>
-                    <Button onClick={onClose} appearance="secondary" className='m-auto' style={{ padding: '0.5rem 1rem', position: 'absolute', top: '2rem', left: '2rem' }}>
-                        <FaArrowLeft className='text-3xl' />
-                    </Button>
+                    {screenWidth > 560 && (
+                        <Button onClick={onClose} appearance="secondary" className='m-auto' style={{ padding: '0.5rem 1rem', position: 'absolute', top: '2rem', left: '2rem' }}>
+                            <FaArrowLeft className='text-3xl' />
+                        </Button>
+                    )}
+                    {screenWidth <= 560 && (
+                        <Button onClick={onClose} appearance="secondary" className='ml-auto' style={{ padding: '0.5rem 1rem', }}>
+                            <IoClose className='text-3xl' />
+                        </Button>
+                    )}
                     {screenWidth > 1660 ? (
                         <>
 
