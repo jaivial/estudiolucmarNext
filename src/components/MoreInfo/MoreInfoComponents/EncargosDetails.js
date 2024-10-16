@@ -90,8 +90,8 @@ const EncargosDetails = ({ fetchClientesAsociados, data, fetchInmuebleMoreInfo, 
 
 
     useEffect(() => {
-        console.log('data', data);
-    }, [data]);
+        console.log('selectedAsesor', selectedAsesor);
+    }, [selectedAsesor]);
 
 
     function toThousands(value) {
@@ -908,21 +908,40 @@ const EncargosDetails = ({ fetchClientesAsociados, data, fetchInmuebleMoreInfo, 
                             </Modal.Header>
                             <Modal.Body style={{ padding: '10px 25px', fontSize: '1rem', lineHeight: '1.5', display: 'flex', flexDirection: 'column', gap: '10px', alignItems: 'center', width: '100%' }}>
                                 <div className="flex flex-col gap-4 w-full">
-                                    <div className="mb-4 w-full">
-                                        <label className="block text-sm font-medium mb-2" htmlFor="tipoEncargo">
-                                            Tipo de Encargo
-                                        </label>
-                                        <Select
-                                            id="tipoEncargo"
-                                            options={[
-                                                { value: 'Venta', label: 'Venta' },
-                                                { value: 'Alquiler', label: 'Alquiler' }
-                                            ]}
-                                            value={tipoEncargo ? { value: tipoEncargo, label: tipoEncargo } : null}
-                                            onChange={(option) => setTipoEncargo(option?.value || '')}
-                                            placeholder="Selecciona el tipo de encargo"
-                                            className='z-[900]'
-                                        />
+                                    <div className={`flex ${screenWidth >= 600 ? 'flex-row' : 'flex-col'} gap-4 items-center w-full justify-center`}>
+                                        <div className="mb-4 w-full">
+                                            <label className="block text-sm font-medium mb-2" htmlFor="tipoEncargo">
+                                                Tipo de Encargo
+                                            </label>
+                                            <SelectPicker
+                                                id="tipoEncargo"
+                                                data={[
+                                                    { value: 'Venta', label: 'Venta' },
+                                                    { value: 'Alquiler', label: 'Alquiler' }
+                                                ]}
+                                                value={tipoEncargo}
+                                                onChange={(value) => setTipoEncargo(value || '')}
+                                                placeholder="Selecciona el tipo de encargo"
+                                                className='z-[900]'
+                                                style={{ width: '100%' }}  // Adjust width if needed
+                                                searchable={false}
+                                            />
+                                        </div>
+                                        <div className="mb-4 w-full">
+                                            <label className="block text-sm font-medium mb-2" htmlFor="precio">
+                                                Precio
+                                            </label>
+                                            <div className="flex items-center w-full">
+                                                <Input
+                                                    id="precio"
+                                                    min={0}
+                                                    value={precio + ' ' + '€'}
+                                                    onChange={handlePrecioChange}
+                                                    placeholder="Introduce el precio"
+                                                    className="w-full"
+                                                />
+                                            </div>
+                                        </div>
                                     </div>
                                     <div className={`flex ${screenWidth >= 600 ? 'flex-row' : 'flex-col'} gap-4 items-center w-full justify-center`}>
                                         <div className="mb-4 w-full">
@@ -954,21 +973,7 @@ const EncargosDetails = ({ fetchClientesAsociados, data, fetchInmuebleMoreInfo, 
                                             />
                                         </div>
                                     </div>
-                                    <div className="mb-4">
-                                        <label className="block text-sm font-medium mb-2" htmlFor="precio">
-                                            Precio
-                                        </label>
-                                        <div className="flex items-center w-full">
-                                            <Input
-                                                id="precio"
-                                                min={0}
-                                                value={precio + ' ' + '€'}
-                                                onChange={handlePrecioChange}
-                                                placeholder="Introduce el precio"
-                                                className="w-full"
-                                            />
-                                        </div>
-                                    </div>
+
                                     <div className={`flex ${screenWidth >= 600 ? 'flex-row mb-4' : 'flex-col'} gap-4 items-center`}>
                                         <div className='flex flex-col gap-3 items-center bg-orange-100 rounded-md p-4 w-full'>
                                             <p>Comisión del vendedor:</p>
@@ -976,15 +981,17 @@ const EncargosDetails = ({ fetchClientesAsociados, data, fetchInmuebleMoreInfo, 
                                                 <label className="block text-sm font-medium mb-2" htmlFor="tipoComision">
                                                     Tipo de Comisión
                                                 </label>
-                                                <Select
+                                                <SelectPicker
                                                     id="tipoComision"
-                                                    options={[
+                                                    data={[
                                                         { value: 'Porcentaje', label: 'Porcentaje' },
-                                                        { value: 'Fijo', label: 'Fijo' },
+                                                        { value: 'Fijo', label: 'Fijo' }
                                                     ]}
-                                                    value={tipoComision ? { value: tipoComision, label: tipoComision } : null}
-                                                    onChange={(option) => setTipoComision(option?.value || '')}
+                                                    value={tipoComision}
+                                                    onChange={(value) => setTipoComision(value || '')}
                                                     placeholder="Tipo de comisión"
+                                                    style={{ width: '100%' }}  // Adjust width if needed
+                                                    searchable={false}
                                                 />
                                             </div>
                                             <div className="mb-4 w-full">
@@ -1007,15 +1014,17 @@ const EncargosDetails = ({ fetchClientesAsociados, data, fetchInmuebleMoreInfo, 
                                                 <label className="block text-sm font-medium mb-2" htmlFor="comisionComprador">
                                                     Tipo de Comisión
                                                 </label>
-                                                <Select
+                                                <SelectPicker
                                                     id="comisionComprador"
-                                                    options={[
+                                                    data={[
                                                         { value: 'Porcentaje', label: 'Porcentaje' },
-                                                        { value: 'Fijo', label: 'Fijo' },
+                                                        { value: 'Fijo', label: 'Fijo' }
                                                     ]}
-                                                    value={comisionComprador ? { value: comisionComprador, label: comisionComprador } : null}
-                                                    onChange={(option) => setComisionComprador(option?.value || '')}
+                                                    value={comisionComprador}
+                                                    onChange={(value) => setComisionComprador(value || '')}
                                                     placeholder="Tipo de comisión"
+                                                    style={{ width: '100%' }}  // Adjust width if needed
+                                                    searchable={false}
                                                 />
                                             </div>
                                             <div className="mb-4 w-full">
