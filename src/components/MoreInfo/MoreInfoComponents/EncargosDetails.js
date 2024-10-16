@@ -902,7 +902,7 @@ const EncargosDetails = ({ fetchClientesAsociados, data, fetchInmuebleMoreInfo, 
                                 <AiOutlinePlus className="text-4xl cursor-pointer text-blue-500" onClick={() => setIsPopupOpen(true)} />
                             </div>
                         )}
-                        <Modal open={isPopupOpen} onClose={handlePopupClose} size='xs' overflow={false} backdrop={true} style={{ backgroundColor: 'rgba(0,0,0,0.15)', padding: '0px 2px', marginBottom: '70px' }}>
+                        <Modal open={isPopupOpen} onClose={handlePopupClose} size='md' overflow={false} backdrop={true} style={{ backgroundColor: 'rgba(0,0,0,0.15)', padding: '0px 2px', marginBottom: '70px' }}>
                             <Modal.Header style={{ display: 'flex', flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: '10px', width: '100%', marginTop: '10px' }}>
                                 <Modal.Title style={{ fontSize: '1.5rem', fontWeight: 'bold', textAlign: 'center' }}>{isEditing ? 'Editar Encargo' : 'Añadir Encargo'}</Modal.Title>
                             </Modal.Header>
@@ -924,34 +924,35 @@ const EncargosDetails = ({ fetchClientesAsociados, data, fetchInmuebleMoreInfo, 
                                             className='z-[900]'
                                         />
                                     </div>
-                                    <div className="mb-4">
-                                        <label className="block text-sm font-medium mb-2" htmlFor="asesor">
-                                            Asesor
-                                        </label>
-                                        <SelectPicker
-                                            data={asesorOptions}
-                                            value={isEditing ? selectedAsesor?.value : selectedAsesor?.value}
-                                            onChange={handleSelectAsesor}
-                                            placeholder="Asesor"
-                                            className="basic-single z-[900]"
-                                            style={{ width: '100%' }}
-                                        />
-                                    </div>
-                                    <div className="mb-4">
-                                        <label className="block text-sm font-medium mb-2" htmlFor="cliente">
-                                            Cliente
-                                        </label>
-                                        <SelectPicker
-                                            id="cliente"
-                                            data={clienteOptions}
-                                            value={isEditing ? selectedClienteEncargo?.value : selectedClienteEncargo?.value} // Pass the selected value
-                                            onChange={handleSelectCliente} // This should handle setting the selected value
-                                            placeholder="Cliente"
-                                            className="basic-single z-[800]"
-                                            searchable={true}
-                                            style={{ width: '100%' }}
-                                        />
-
+                                    <div className={`flex ${screenWidth >= 600 ? 'flex-row' : 'flex-col'} gap-4 items-center w-full justify-center`}>
+                                        <div className="mb-4 w-full">
+                                            <label className="block text-sm font-medium mb-2" htmlFor="asesor">
+                                                Asesor
+                                            </label>
+                                            <SelectPicker
+                                                data={asesorOptions}
+                                                value={isEditing ? selectedAsesor?.value : selectedAsesor?.value}
+                                                onChange={handleSelectAsesor}
+                                                placeholder="Asesor"
+                                                className="basic-single z-[900]"
+                                                style={{ width: '100%' }}
+                                            />
+                                        </div>
+                                        <div className="mb-4 w-full">
+                                            <label className="block text-sm font-medium mb-2" htmlFor="cliente">
+                                                Cliente
+                                            </label>
+                                            <SelectPicker
+                                                id="cliente"
+                                                data={clienteOptions}
+                                                value={isEditing ? selectedClienteEncargo?.value : selectedClienteEncargo?.value} // Pass the selected value
+                                                onChange={handleSelectCliente} // This should handle setting the selected value
+                                                placeholder="Cliente"
+                                                className="basic-single z-[800]"
+                                                searchable={true}
+                                                style={{ width: '100%' }}
+                                            />
+                                        </div>
                                     </div>
                                     <div className="mb-4">
                                         <label className="block text-sm font-medium mb-2" htmlFor="precio">
@@ -968,114 +969,118 @@ const EncargosDetails = ({ fetchClientesAsociados, data, fetchInmuebleMoreInfo, 
                                             />
                                         </div>
                                     </div>
-                                    <div className='flex flex-col gap-3 items-center bg-orange-100 rounded-md p-4 w-full'>
-                                        <p>Comisión del vendedor:</p>
-                                        <div className="mb-4 w-full">
-                                            <label className="block text-sm font-medium mb-2" htmlFor="tipoComision">
-                                                Tipo de Comisión
-                                            </label>
-                                            <Select
-                                                id="tipoComision"
-                                                options={[
-                                                    { value: 'Porcentaje', label: 'Porcentaje' },
-                                                    { value: 'Fijo', label: 'Fijo' },
-                                                ]}
-                                                value={tipoComision ? { value: tipoComision, label: tipoComision } : null}
-                                                onChange={(option) => setTipoComision(option?.value || '')}
-                                                placeholder="Tipo de comisión"
-                                            />
-                                        </div>
-                                        <div className="mb-4 w-full">
-                                            <label className="block text-sm font-medium mb-2" htmlFor="comision">
-                                                Comisión
-                                            </label>
-                                            <InputNumber
-                                                id="comision"
-                                                min={0}
-                                                value={comision}
-                                                onChange={setComision}
-                                                placeholder="Comisión"
-                                                className="w-full"
-                                            />
-                                        </div>
-                                    </div>
-                                    <div className='flex flex-col gap-3 items-center bg-blue-100 rounded-md p-4 w-full'>
-                                        <p>Comisión del pedido:</p>
-                                        <div className="mb-4 w-full">
-                                            <label className="block text-sm font-medium mb-2" htmlFor="comisionComprador">
-                                                Tipo de Comisión
-                                            </label>
-                                            <Select
-                                                id="comisionComprador"
-                                                options={[
-                                                    { value: 'Porcentaje', label: 'Porcentaje' },
-                                                    { value: 'Fijo', label: 'Fijo' },
-                                                ]}
-                                                value={comisionComprador ? { value: comisionComprador, label: comisionComprador } : null}
-                                                onChange={(option) => setComisionComprador(option?.value || '')}
-                                                placeholder="Tipo de comisión"
-                                            />
-                                        </div>
-                                        <div className="mb-4 w-full">
-                                            <label className="block text-sm font-medium mb-2" htmlFor="comision">
-                                                Comisión
-                                            </label>
-                                            <InputNumber
-                                                id="comision"
-                                                min={0}
-                                                value={comisionCompradorValue}
-                                                onChange={setComisionCompradorValue}
-                                                placeholder="Comisión"
-                                                className="w-full"
-                                            />
-                                        </div>
-                                    </div>
-                                    <div className="mb-4">
-                                        <label className="block text-sm font-medium mb-2" htmlFor="fecha">
-                                            Fecha
-                                        </label>
-                                        <DatePicker
-                                            id="fecha"
-                                            format="dd/MM/yyyy"
-                                            value={fecha ? new Date(fecha) : new Date()}
-                                            onChange={(value) => setFecha(formatDateTwo(value))}
-                                            placeholder="Fecha"
-                                            oneTap
-                                            style={{ width: '100%' }}
-                                        />
-                                    </div>
-                                    <div className="mb-4">
-                                        <label className="block text-sm font-medium mb-2" htmlFor="tiempoExclusiva">
-                                            Tiempo de Exclusiva
-                                        </label>
-                                        <DatePicker
-                                            id="tiempoExclusiva"
-                                            format="dd/MM/yyyy"
-                                            value={tiempoExclusiva ? new Date(tiempoExclusiva) : null}
-                                            onChange={(value) => {
-                                                setTiempoExclusiva(value);
-                                            }}
-                                            placeholder="Fecha de exclusiva"
-                                            oneTap
-                                            placement='topStart'
-                                            style={{ width: '100%' }}
-                                            disabledDate={disablePastDates} // This will disable past dates
-                                        />
-                                        {tiempoExclusiva && (
-                                            <div className='flex flex-col gap-2 items-center bg-slate-200 rounded-md p-4 w-full'>
-                                                <p>Tiempo restante:</p>
-                                                {!loadingTiempoExclusiva ? (
-                                                    <>
-                                                        <p className='text-center font-semibold w-[60%]'>{tiempoExclusivaCounter}</p>
-                                                    </>
-                                                ) : (
-                                                    <Skeleton width={220} height={70}>
-                                                    </Skeleton>
-                                                )}
-
+                                    <div className={`flex ${screenWidth >= 600 ? 'flex-row mb-4' : 'flex-col'} gap-4 items-center`}>
+                                        <div className='flex flex-col gap-3 items-center bg-orange-100 rounded-md p-4 w-full'>
+                                            <p>Comisión del vendedor:</p>
+                                            <div className="mb-4 w-full">
+                                                <label className="block text-sm font-medium mb-2" htmlFor="tipoComision">
+                                                    Tipo de Comisión
+                                                </label>
+                                                <Select
+                                                    id="tipoComision"
+                                                    options={[
+                                                        { value: 'Porcentaje', label: 'Porcentaje' },
+                                                        { value: 'Fijo', label: 'Fijo' },
+                                                    ]}
+                                                    value={tipoComision ? { value: tipoComision, label: tipoComision } : null}
+                                                    onChange={(option) => setTipoComision(option?.value || '')}
+                                                    placeholder="Tipo de comisión"
+                                                />
                                             </div>
-                                        )}
+                                            <div className="mb-4 w-full">
+                                                <label className="block text-sm font-medium mb-2" htmlFor="comision">
+                                                    Comisión
+                                                </label>
+                                                <InputNumber
+                                                    id="comision"
+                                                    min={0}
+                                                    value={comision}
+                                                    onChange={setComision}
+                                                    placeholder="Comisión"
+                                                    className="w-full"
+                                                />
+                                            </div>
+                                        </div>
+                                        <div className='flex flex-col gap-3 items-center bg-blue-100 rounded-md p-4 w-full'>
+                                            <p>Comisión del pedido:</p>
+                                            <div className="mb-4 w-full">
+                                                <label className="block text-sm font-medium mb-2" htmlFor="comisionComprador">
+                                                    Tipo de Comisión
+                                                </label>
+                                                <Select
+                                                    id="comisionComprador"
+                                                    options={[
+                                                        { value: 'Porcentaje', label: 'Porcentaje' },
+                                                        { value: 'Fijo', label: 'Fijo' },
+                                                    ]}
+                                                    value={comisionComprador ? { value: comisionComprador, label: comisionComprador } : null}
+                                                    onChange={(option) => setComisionComprador(option?.value || '')}
+                                                    placeholder="Tipo de comisión"
+                                                />
+                                            </div>
+                                            <div className="mb-4 w-full">
+                                                <label className="block text-sm font-medium mb-2" htmlFor="comision">
+                                                    Comisión
+                                                </label>
+                                                <InputNumber
+                                                    id="comision"
+                                                    min={0}
+                                                    value={comisionCompradorValue}
+                                                    onChange={setComisionCompradorValue}
+                                                    placeholder="Comisión"
+                                                    className="w-full"
+                                                />
+                                            </div>
+                                        </div>
                                     </div>
+                                    <div className={`flex ${screenWidth >= 600 ? 'flex-row' : 'flex-col'} gap-4 items-center w-full justify-center`}>
+                                        <div className="mb-4 w-full">
+                                            <label className="block text-sm font-medium mb-2" htmlFor="fecha">
+                                                Fecha
+                                            </label>
+                                            <DatePicker
+                                                id="fecha"
+                                                format="dd/MM/yyyy"
+                                                value={fecha ? new Date(fecha) : new Date()}
+                                                onChange={(value) => setFecha(formatDateTwo(value))}
+                                                placeholder="Fecha"
+                                                oneTap
+                                                style={{ width: '100%' }}
+                                            />
+                                        </div>
+                                        <div className="mb-4 w-full">
+                                            <label className="block text-sm font-medium mb-2" htmlFor="tiempoExclusiva">
+                                                Tiempo de Exclusiva
+                                            </label>
+                                            <DatePicker
+                                                id="tiempoExclusiva"
+                                                format="dd/MM/yyyy"
+                                                value={tiempoExclusiva ? new Date(tiempoExclusiva) : null}
+                                                onChange={(value) => {
+                                                    setTiempoExclusiva(value);
+                                                }}
+                                                placeholder="Fecha de exclusiva"
+                                                oneTap
+                                                placement='topStart'
+                                                style={{ width: '100%' }}
+                                                disabledDate={disablePastDates} // This will disable past dates
+                                            />
+                                        </div>
+                                    </div>
+                                    {tiempoExclusiva && (
+                                        <div className='flex flex-col gap-2 items-center bg-slate-200 rounded-md p-4 w-full'>
+                                            <p>Tiempo restante:</p>
+                                            {!loadingTiempoExclusiva ? (
+                                                <>
+                                                    <p className='text-center font-semibold w-[60%]'>{tiempoExclusivaCounter}</p>
+                                                </>
+                                            ) : (
+                                                <Skeleton width={220} height={70}>
+                                                </Skeleton>
+                                            )}
+
+                                        </div>
+                                    )}
 
                                 </div>
                             </Modal.Body>

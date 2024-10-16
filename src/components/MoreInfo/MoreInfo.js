@@ -311,7 +311,7 @@ const ItemDetails = ({ id, onClose, showModal, setShowModal, fetchData, currentP
                             <div className='w-full h-auto flex flex-row gap-6'>
                                 <div ref={divRef} className={`rounded-xl ${data.inmueble.noticiastate ? 'w-2/6' : 'w-2/4'} h-full flex flex-col gap-4`}>
                                     {/* Slider Component */}
-                                    <div className='w-full'>
+                                    <div className='w-full flex flex-col gap-6'>
                                         <DesktopSliderComponent data={data} encargoData={encargoData} images={images} screenWidth={screenWidth} />
                                         {/* </div> */}
                                         <div className='flex flex-col gap-6 w-full h-auto rounded-2xl shadow-lg bg-slate-50 p-8'>
