@@ -211,6 +211,7 @@ const EncargosDetails = ({ fetchClientesAsociados, data, fetchInmuebleMoreInfo, 
         try {
             const response = await axios.get('/api/fetchAsesores');
             const asesores = response.data.asesores;
+            console.log('asesores', asesores);
             if (Array.isArray(asesores)) {
                 setAsesorOptions(
                     asesores.map((user) => ({
@@ -242,6 +243,7 @@ const EncargosDetails = ({ fetchClientesAsociados, data, fetchInmuebleMoreInfo, 
         const inmuebleId = data.inmueble.id;
         try {
             const response = await axios.get('/api/seleccionaClienteEncargos', { params: { inmuebleId } });
+            console.log('response clientes', response.data);
             if (Array.isArray(response.data)) {
                 setClienteOptions(
                     response.data.map((cliente) => ({
@@ -498,6 +500,12 @@ const EncargosDetails = ({ fetchClientesAsociados, data, fetchInmuebleMoreInfo, 
     };
 
 
+    useEffect(() => {
+        console.log('encargos', selectedClienteEncargo);
+    }, [selectedClienteEncargo]);
+    useEffect(() => {
+        console.log('encargos', selectedAsesor);
+    }, [selectedAsesor]);
 
     return (
         data.inmueble.noticiastate === true && (

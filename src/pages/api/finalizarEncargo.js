@@ -112,6 +112,22 @@ export default async function handler(req, res) {
                 );
             }
 
+            // If tipoEncargo === 'Venta', remove the inmueble from inmuebles_asociados_propietario
+            if (encargoFinalizado.tipoEncargo === 'Venta' && encargoFinalizado.inmuebleID) {
+                // Remove the inmueble from inmuebles_asociados_propietario for the client
+                await db.collection('clientes').updateOne(
+                    { _id: new ObjectId(encargoFinalizado.clienteID) },  // Match by clienteID
+                    {
+                        $pull: {
+                            inmuebles_asociados_propietario: {
+                                id: encargoFinalizado.inmuebleID  // Remove the inmueble with this ID
+                            }
+                        }
+                    }
+                );
+            }
+
+
 
             res.status(200).json({ message: 'Encargo finalizado con éxito', ventaId: result.insertedId });
         } catch (error) {

@@ -52,7 +52,7 @@ const FinalizarEncargo = ({ fetchClientesAsociados, clienteID, direccionInmueble
         fechaFinalizacion: '',
         tipoEncargo: tipoEncargo,
         cliente: cliente,
-        clienteID: parseInt(clienteID, 10),
+        clienteID: clienteID,
         asesorID: parseInt(asesorID, 10),
         asesorNombre: asesorNombre,
         precio: parseInt(precio, 10),
