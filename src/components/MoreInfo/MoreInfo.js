@@ -7,7 +7,6 @@ import './MoreInfoComponents/ItemsDetailsHeader.css';
 import { AiOutlineCamera, AiOutlinePlus, AiOutlineLoading, AiOutlinePhone } from 'react-icons/ai';
 import { Icon } from '@iconify/react';
 import dynamic from 'next/dynamic'; // Import dynamic from next/dynamic
-
 // Dynamically import DetailsInfoOne with SSR disabled
 const DetailsInfoOne = dynamic(() => import('./MoreInfoComponents/DetailsInfoOne'), { ssr: false });
 import DetailsInfoTwo from './MoreInfoComponents/DetailsInfoTwo';
@@ -22,7 +21,7 @@ import { Modal, Button, Tag } from 'rsuite';
 import 'rsuite/dist/rsuite.min.css';
 import DPVInfoComponent from './MoreInfoComponents/DPVInfoComponent';
 import SmallLoadingScreen from '../LoadingScreen/SmallLoadingScreen';
-
+import { FaArrowLeft } from "react-icons/fa6";
 
 const DesktopSliderComponent = dynamic(() => import('./MoreInfoComponents/DesktopSliderComponent.js'), { ssr: false });
 const DesktopAdditionalInfo = dynamic(() => import('./desktopAdditionalinfo.js'), { ssr: false });
@@ -248,7 +247,7 @@ const ItemDetails = ({ id, onClose, showModal, setShowModal, fetchData, currentP
 
 
     return (
-        <div className='w-full pt-6 pb-6 px-6 overflow-y-scroll bg-slate-200 rounded-2xl shadow-2xl h-full flex flex-col gap-4'>
+        <div className='w-full pt-6 pb-6 px-6 overflow-y-scroll bg-slate-200 rounded-2xl shadow-2xl h-full flex flex-col gap-4 relative'>
             {!data && isSliderLoading ? (
 
                 <div
@@ -261,6 +260,9 @@ const ItemDetails = ({ id, onClose, showModal, setShowModal, fetchData, currentP
                 </div>
             ) : (
                 <>
+                    <Button onClick={onClose} appearance="secondary" className='m-auto' style={{ padding: '0.5rem 1rem', position: 'absolute', top: '2rem', left: '2rem' }}>
+                        <FaArrowLeft className='text-3xl' />
+                    </Button>
                     {screenWidth > 1660 ? (
                         <>
 
@@ -298,36 +300,44 @@ const ItemDetails = ({ id, onClose, showModal, setShowModal, fetchData, currentP
                                 setLocalizadoRefreshKey={setLocalizadoRefreshKey}
                                 screenWidth={screenWidth}
                             />
-                            <div className='w-full h-auto flex flex-row gap-4'>
-                                <div ref={divRef} className={`rounded-xl ${data.inmueble.noticiastate ? 'w-1/4' : 'w-2/4'} h-full flex flex-col gap-4`}>
+                            <div className='w-full h-auto flex flex-row gap-6'>
+                                <div ref={divRef} className={`rounded-xl ${data.inmueble.noticiastate ? 'w-2/6' : 'w-2/4'} h-full flex flex-col gap-4`}>
                                     {/* Slider Component */}
-                                    <DesktopSliderComponent data={data} encargoData={encargoData} images={images} screenWidth={screenWidth} />
-                                    {/* </div> */}
-                                    <div className='flex flex-col gap-6 w-full h-auto rounded-2xl shadow-lg bg-slate-50 p-8'>
-                                        <DesktopAdditionalInfo data={data} encargoData={encargoData} isVisible={isVisible} setIsVisible={setIsVisible} screenWidth={screenWidth} inmuebles_asociados_informador={inmuebles_asociados_informador} inmuebles_asociados_inquilino={inmuebles_asociados_inquilino} inmuebles_asociados_propietario={inmuebles_asociados_propietario} nombre={nombre} apellido={apellido} inmuebleId={data.inmueble.id} />
-                                        <div className='w-full bg-white border-blue-400 border-2 p-6 gap-4 rounded-2xl shadow-md flex flex-col'>
-                                            <DetailsInfoTwo data={data} descripcion={descripcion} setDescripcion={setDescripcion} newDescripcion={newDescripcion} setNewDescripcion={setNewDescripcion} screenWidth={screenWidth} />
-                                        </div>
-                                        <div className='flex flex-row items-start gap-6 w-full h-auto rounded-2xl'>
-                                            <DetailsInfoThree data={data} isVisible={isVisible} screenWidth={screenWidth} />
+                                    <div className='w-full'>
+                                        <DesktopSliderComponent data={data} encargoData={encargoData} images={images} screenWidth={screenWidth} />
+                                        {/* </div> */}
+                                        <div className='flex flex-col gap-6 w-full h-auto rounded-2xl shadow-lg bg-slate-50 p-8'>
+                                            <DesktopAdditionalInfo data={data} encargoData={encargoData} isVisible={isVisible} setIsVisible={setIsVisible} screenWidth={screenWidth} inmuebles_asociados_informador={inmuebles_asociados_informador} inmuebles_asociados_inquilino={inmuebles_asociados_inquilino} inmuebles_asociados_propietario={inmuebles_asociados_propietario} nombre={nombre} apellido={apellido} inmuebleId={data.inmueble.id} />
+                                            <div className='w-full bg-white border-blue-400 border-2 p-6 gap-4 rounded-2xl shadow-md flex flex-col'>
+                                                <DetailsInfoTwo data={data} descripcion={descripcion} setDescripcion={setDescripcion} newDescripcion={newDescripcion} setNewDescripcion={setNewDescripcion} screenWidth={screenWidth} />
+                                            </div>
+                                            <div className='flex flex-row items-start gap-6 w-full h-auto rounded-2xl'>
+                                                <DetailsInfoThree data={data} isVisible={isVisible} screenWidth={screenWidth} />
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
 
-                                <div className={`w-full flex flex-row gap-6 rounded-2xl ${data.inmueble.noticiastate ? 'w-3/4' : 'w-2/4'} overflow-hidden max-h-[1600px]`}>
+                                <div className={`w-full flex flex-row gap-6 rounded-2xl ${data.inmueble.noticiastate ? 'w-3/4' : 'w-1/3'} overflow-hidden max-h-[1600px]`}>
 
-                                    <div className={`flex flex-col h-full rounded-lg gap-6 ${!data.inmueble.noticiastate ? 'w-1/2' : 'w-1/3'} overflow-y-scroll`}>
+                                    <div className={`flex flex-col h-full rounded-lg gap-6 ${data.inmueble.noticiastate ? 'w-full' : 'w-1/2'} overflow-y-scroll`}>
                                         <div className='flex flex-row h-auto rounded-2xl shadow-lg'>
                                             <ClientesAsociados fetchClientesAsociados={fetchClientesAsociados} clientesAsociados={clientesAsociados} clientesAsociadosInmueble={clientesAsociadosInmueble} filteredClientes={filteredClientes} inmuebleId={data.inmueble.id} inmuebleDireccion={data.inmueble.direccion} screenWidth={screenWidth} setFetchClientPhoneNumberRefreshKey={setFetchClientPhoneNumberRefreshKey} fetchClientPhoneNumberRefreshKey={fetchClientPhoneNumberRefreshKey} localizadoRefreshKey={localizadoRefreshKey} setLocalizadoRefreshKey={setLocalizadoRefreshKey} />
                                         </div>
+                                        {!data.inmueble.noticiastate && (
+                                            <div className='flex flex-row h-auto rounded-2xl shadow-lg'>
+                                                <NoticiasDetails data={data} setOnAddNoticiaRefreshKey={setOnAddNoticiaRefreshKey} onAddNoticiaRefreshKey={onAddNoticiaRefreshKey} fetchData={fetchData} currentPage={currentPage} searchTerm={searchTerm} screenWidth={screenWidth} />
+                                            </div>
+                                        )}
                                         <div className='flex flex-row h-auto rounded-2xl shadow-lg'>
-                                            {data.inmueble.DPV ? <DPVInfoComponent DPVInfo={DPVInfo} /> : data.inmueble.encargostate && <NoticiasDetails data={data} setOnAddNoticiaRefreshKey={setOnAddNoticiaRefreshKey} onAddNoticiaRefreshKey={onAddNoticiaRefreshKey} fetchData={fetchData} currentPage={currentPage} searchTerm={searchTerm} screenWidth={screenWidth} />
+                                            {data.inmueble.DPV ? <DPVInfoComponent DPVInfo={DPVInfo} /> : !data.inmueble.encargostate && <NoticiasDetails data={data} setOnAddNoticiaRefreshKey={setOnAddNoticiaRefreshKey} onAddNoticiaRefreshKey={onAddNoticiaRefreshKey} fetchData={fetchData} currentPage={currentPage} searchTerm={searchTerm} screenWidth={screenWidth} />
                                             }
                                         </div>
+
                                     </div>
 
                                     {data.inmueble.noticiastate && (
-                                        <div className='flex flex-col w-1/3 h-full rounded-2xl gap-6 transition-all duration-[800ms] ease-in-out overflow-y-scroll'>
+                                        <div className='flex flex-col w-full h-full rounded-2xl gap-6 transition-all duration-[800ms] ease-in-out overflow-y-scroll'>
                                             {data.inmueble.DPV && !data.inmueble.encargostate && (
                                                 <div className='flex flex-row h-auto rounded-2xl shadow-lg'>
                                                     <NoticiasDetails data={data} setOnAddNoticiaRefreshKey={setOnAddNoticiaRefreshKey} onAddNoticiaRefreshKey={onAddNoticiaRefreshKey} fetchData={fetchData} currentPage={currentPage} searchTerm={searchTerm} screenWidth={screenWidth} />
@@ -344,14 +354,17 @@ const ItemDetails = ({ id, onClose, showModal, setShowModal, fetchData, currentP
                                         </div>
                                     )}
 
-                                    <div className={`flex flex-col h-full rounded-2xl gap-6 ${!data.inmueble.noticiastate ? 'w-1/2' : 'w-1/3'} overflow-y-scroll comentariosdivcontainer`}>
+                                    <div className={`flex flex-col h-full rounded-2xl gap-6 ${data.inmueble.noticiastate ? 'w-full' : 'w-1/2'} overflow-y-scroll comentariosdivcontainer`}>
                                         <div className='flex flex-row h-auto rounded-2xl shadow-lg'>
                                             <ComentariosDetails data={data} inmuebleId={id} fetchClientPhoneNumberRefreshKey={fetchClientPhoneNumberRefreshKey} screenWidth={screenWidth} />
                                         </div>
                                     </div>
-
                                 </div>
+
                             </div>
+                            <Button onClick={onClose} appearance="secondary" className='m-auto' style={{ padding: '0.5rem 1rem' }}>
+                                Cerrar
+                            </Button>
                         </>
                     ) : (
                         <>
@@ -563,6 +576,11 @@ const ItemDetails = ({ id, onClose, showModal, setShowModal, fetchData, currentP
 
                             </div>
                         </>
+                    )}
+                    {screenWidth <= 1660 && (
+                        <Button onClick={onClose} appearance="secondary" className='m-auto' style={{ padding: '0.5rem 1rem' }}>
+                            Cerrar
+                        </Button>
                     )}
                 </>
             )

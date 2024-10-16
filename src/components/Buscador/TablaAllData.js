@@ -1,4 +1,4 @@
-import React, { use, useEffect, useState, useRef } from 'react';
+import React, { use, useEffect, useState, useRef, useCallback } from 'react';
 // import ItemDetails from './itemDetails/ItemDetails.jsx';
 import dynamic from 'next/dynamic';
 const AddNewInmueble = dynamic(() => import('./AddNewInmueble'), { ssr: false });
@@ -1042,10 +1042,10 @@ const Table = ({ parentsEdificioProps, admin, screenWidth, loadingLoader }) => {
 
     };
 
-    const handleClose = () => {
+    const handleClose = useCallback(() => {
         setSelectedId(null);
         setShowMoreInfo(false); // Close MoreInfo
-    };
+    });
 
     // Handle toggling the edit table
     const handleEditTable = () => {
@@ -1477,7 +1477,7 @@ const Table = ({ parentsEdificioProps, admin, screenWidth, loadingLoader }) => {
 
     return (
         <div className="bg-slate-400 h-full w-full overflow-x-hidden">
-            <div className="md:w-[calc(100%-5rem)]  ml-auto p-4 pb-24">
+            <div className="md:w-[calc(100%-5rem)] ml-auto p-4 pb-24">
                 <form onSubmit={handleSearch} className="mb-4 flex flex-row gap-2 mt-0 w-full justify-center items-center bg-slate-200 rounded-2xl p-4 shadow-2xl">
                     <div className="relative w-[80%]">
                         <input type="text" value={searchTerm} onChange={(e) => { setSearchTerm(e.target.value); setShowMoreInfo(false); }} placeholder="Buscar una dirección..." className="border border-gray-300 px-3 py-2 w-[100%] rounded-3xl" />
