@@ -127,6 +127,50 @@ export default async function handler(req, res) {
                 );
             }
 
+            // Handle case when tipoEncargo === 'Alquiler'
+            if (encargoFinalizado.tipoEncargo === 'Alquiler' && encargoFinalizado.inmuebleID && encargoFinalizado.direccionInmueble) {
+
+                // 1. For the client with _id === encargoFinalizado.pedidoID (tenant):
+                await db.collection('clientes').updateOne(
+                    { _id: new ObjectId(encargoFinalizado.pedidoID) },  // Match by pedidoID
+                    {
+                        // Pull from inmuebles_asociados_propietario if the inmueble exists
+                        $pull: {
+                            inmuebles_asociados_propietario: {
+                                id: encargoFinalizado.inmuebleID  // Remove the inmueble from propietario array if it exists
+                            }
+                        }
+                    }
+                );
+
+                // Add the inmueble to inmuebles_asociados_inquilino (tenant's list)
+                await db.collection('clientes').updateOne(
+                    { _id: new ObjectId(encargoFinalizado.pedidoID) },  // Match by pedidoID
+                    {
+                        // Push the inmueble into the inmuebles_asociados_inquilino array
+                        $push: {
+                            inmuebles_asociados_inquilino: {
+                                id: encargoFinalizado.inmuebleID,           // Add inmuebleID
+                                direccion: encargoFinalizado.direccionInmueble // Add the address
+                            }
+                        }
+                    }
+                );
+
+                // 2. For the client with _id === encargoFinalizado.clienteID (owner):
+                await db.collection('clientes').updateOne(
+                    { _id: new ObjectId(encargoFinalizado.clienteID) },  // Match by clienteID (owner)
+                    {
+                        // Pull from inmuebles_asociados_inquilino if the inmueble exists
+                        $pull: {
+                            inmuebles_asociados_inquilino: {
+                                id: encargoFinalizado.inmuebleID  // Remove the inmueble from inquilino array if it exists
+                            }
+                        }
+                    }
+                );
+            }
+
 
 
             res.status(200).json({ message: 'Encargo finalizado con éxito', ventaId: result.insertedId });
