@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { Icon } from '@iconify/react';
 import dynamic from 'next/dynamic'; // Import dynamic from next/dynamic
 
@@ -8,16 +8,6 @@ import LocalizadoCard from './MoreInfoComponents/LocalizadoCard';
 
 
 const desktopAdditionalInfo = ({ data, encargoData, isVisible, setIsVisible, screenWidth, inmuebles_asociados_inquilino, inmuebles_asociados_propietario, inmuebles_asociados_informador, nombre, apellido, inmuebleId }) => {
-
-    useEffect(() => {
-        console.log('encargoData', encargoData);
-    }, [encargoData]);
-    useEffect(() => {
-        console.log('data', data);
-    }, [data]);
-
-
-
 
     return (
         <>
