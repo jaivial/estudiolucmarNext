@@ -77,11 +77,11 @@ const DetailsInfoTwo = ({ data, descripcion, setDescripcion, newDescripcion, set
     };
 
     return (
-        <div className={`${screenWidth >= 640 ? 'pl-4 pr-0' : 'p-4'} w-full`}>
+        <div className={`${screenWidth >= 640 ? 'pl-0 pr-0' : 'p-4'} w-full`}>
             {descripcion !== '' && descripcion !== null ? (
                 <div className="relative px-2">
                     <div className="font-bold text-lg pb-2">
-                        <h1 className='text-start text-2xl'>Descripción del inmueble</h1>
+                        <h1 className='text-start text-xl mr-2'>Descripción del inmueble</h1>
                     </div>
                     {isEditing ? (
                         <>
@@ -98,14 +98,14 @@ const DetailsInfoTwo = ({ data, descripcion, setDescripcion, newDescripcion, set
                     ) : (
                         <>
                             <p className="text-justify py-2">{formatDescription(descripcion)}</p>
-                            <button onClick={handleEditClick} className="absolute top-1 right-3 text-blue-500 hover:text-blue-700">
+                            <button onClick={handleEditClick} className="absolute top-0 right-0 text-blue-500 hover:text-blue-700">
                                 <AiOutlineEdit className="text-2xl" />
                             </button>
                         </>
                     )}
                 </div>
             ) : (
-                <div className="bg-gray-100 p-2 border border-gray-300 rounded-md">
+                <div className="bg-slate-50 p-2 border border-gray-300 rounded-md">
                     <textarea value={newDescripcion} onChange={handleInputChange} maxLength="900" className="w-full p-2 border border-gray-300 rounded-md" rows="8" placeholder="Escribe una descripción para el inmueble..." />
                     <div className="flex justify-center gap-2 mt-2">
                         <button onClick={handleSaveClick} className="bg-blue-500 text-white px-4 py-2 rounded-md">

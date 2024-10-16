@@ -31,13 +31,13 @@ export default async function handler(req, res) {
                     { inmuebles_asociados_propietario: { $elemMatch: { id: parseInt(inmuebleId) } } },
                     { inmuebles_asociados_inquilino: { $elemMatch: { id: parseInt(inmuebleId) } } }
                 ]
-            }, { projection: { _id: 0, nombre: 1, apellido: 1, client_id: 1 } })
+            }, { projection: { _id: 1, nombre: 1, apellido: 1, client_id: 1 } })
             .toArray();
 
         // Transform the data
         const result = clientes.map(cliente => ({
             nombrecompleto_cliente: `${cliente.nombre} ${cliente.apellido}`,
-            id: cliente.client_id
+            id: cliente._id
         }));
 
         // Return the fetched data

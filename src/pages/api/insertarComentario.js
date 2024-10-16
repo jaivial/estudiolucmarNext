@@ -1,6 +1,11 @@
 import cors, { runMiddleware } from '../../utils/cors';
 import clientPromise from '../../lib/mongodb';
 
+function generateRandomId() {
+    return Math.random().toString(36).substr(2, 9); // Generates a random string of length 9
+}
+
+
 export default async function handler(req, res) {
     await runMiddleware(req, res, cors);
 
@@ -17,7 +22,7 @@ export default async function handler(req, res) {
                 comentarioProgramado
             } = req.query;
 
-            console.log('fecha', fecha);
+            console.log('req.body', req.query);
 
             if (!id || !comentario || !tipo || !user_id) {
                 return res.status(400).json({ success: false, message: 'Required parameters not set.' });
@@ -50,6 +55,7 @@ export default async function handler(req, res) {
             console.log('insertResult', insertResult);
 
             if (insertResult && (tipo === 'Cita' || tipo === 'Llamada') && fecha && hora) {
+                console.log('insertando tarea');
                 const tasksCollection = db.collection('tasks');
                 const taskDescription = tipo === 'Cita' ? `Cita: ${comentario}` : `Llamada: ${comentario} ${telefono}`;
                 const formattedHora = hora ? new Date(hora).toISOString().substring(11, 16) : null;
@@ -60,7 +66,7 @@ export default async function handler(req, res) {
                     task: taskDescription,
                     completed: false,
                     user_id: parseInt(user_id, 10),
-                    id: generateRandomId(),
+                    id: insertResult.insertedId + 'comment' + generateRandomId(),
                 });
 
                 console.log('taskInsertResult', taskInsertResult);

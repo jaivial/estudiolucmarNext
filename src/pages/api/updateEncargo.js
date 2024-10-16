@@ -44,7 +44,7 @@ export default async function handler(req, res) {
             {
                 $set: {
                     encargo_fecha: fecha,
-                    comercial_encargo: comercial.value,
+                    comercial_encargo: comercial,
                     tipo_encargo: tipoEncargo,
                     comision_encargo: parseInt(comision, 10),
                     cliente_id: parseInt(cliente, 10),

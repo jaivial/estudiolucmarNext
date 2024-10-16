@@ -1,4 +1,4 @@
-import React, { useState, useEffect, use } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import Slider from 'react-slider';
 import { AiOutlineDown, AiOutlineUp, AiOutlinePlus, AiOutlineClose } from 'react-icons/ai';
@@ -28,7 +28,8 @@ import { Icon } from '@iconify/react';
 import './encargosdetails.css';
 import { MdKeyboardDoubleArrowDown } from "react-icons/md";
 import { GiSandsOfTime } from "react-icons/gi";
-
+import dynamic from 'next/dynamic';
+const FinalizarEncargo = dynamic(() => import('./FinalizarEncargo'), { ssr: false });
 
 
 
@@ -50,7 +51,7 @@ const showToast = (message, backgroundColor) => {
     }).showToast();
 };
 
-const EncargosDetails = ({ data, setOnAddEncargoRefreshKey, onAddEncargoRefreshKey, fetchData, currentPage, searchTerm, screenWidth }) => {
+const EncargosDetails = ({ refreshMatchingClientesEncargos, fetchClientesAsociados, data, fetchInmuebleMoreInfo, fetchData, currentPage, searchTerm, screenWidth }) => {
     const [isOpen, setIsOpen] = useState(false);
     const [isPopupOpen, setIsPopupOpen] = useState(false);
     const [encargos, setEncargos] = useState([]);
@@ -89,8 +90,9 @@ const EncargosDetails = ({ data, setOnAddEncargoRefreshKey, onAddEncargoRefreshK
 
 
     useEffect(() => {
-        console.log('DATA LUCAS', data);
-    }, [data]);
+        console.log('selectedAsesor', selectedAsesor);
+    }, [selectedAsesor]);
+
 
     function toThousands(value) {
         return value ? `${value}`.replace(/\d{1,3}(?=(\d{3})+(\.\d*)?$)/g, '$&.') : value;
@@ -168,6 +170,7 @@ const EncargosDetails = ({ data, setOnAddEncargoRefreshKey, onAddEncargoRefreshK
         }
     };
 
+
     const fetchEncargos = async () => {
         if (data.inmueble.encargostate === false) {
             return;
@@ -180,12 +183,15 @@ const EncargosDetails = ({ data, setOnAddEncargoRefreshKey, onAddEncargoRefreshK
                 if (response.data !== null) {
                     const encargo = response.data;
                     console.log('encargo', encargo);
-                    setSelectedClienteEncargo(encargo.cliente_id);
+                    if (encargo.fullCliente) {
+                        setSelectedClienteEncargo(encargo.fullCliente.value);
+                    }
                     setPrecio_1(encargo.precio_1);
                     setPrecio_2(encargo.precio_2);
                     setTipo_encargo(encargo.tipo_encargo);
                     if (encargo) {
                         setEncargos([encargo]);
+
                     } else {
                         console.error('No encargo data available');
                         setEncargos([]);
@@ -200,18 +206,16 @@ const EncargosDetails = ({ data, setOnAddEncargoRefreshKey, onAddEncargoRefreshK
         }
     };
 
-    useEffect(() => {
-        console.log('selectedClienteEncargo', selectedClienteEncargo);
-    }, [selectedClienteEncargo]);
 
     const fetchAsesores = async () => {
         try {
             const response = await axios.get('/api/fetchAsesores');
             const asesores = response.data.asesores;
+            console.log('asesores', asesores);
             if (Array.isArray(asesores)) {
                 setAsesorOptions(
                     asesores.map((user) => ({
-                        value: `${user.nombre} ${user.apellido}`,
+                        value: `${parseInt(user.user_id, 10)}`,
                         label: `${user.nombre} ${user.apellido}`,
                     })),
                 );
@@ -228,12 +232,18 @@ const EncargosDetails = ({ data, setOnAddEncargoRefreshKey, onAddEncargoRefreshK
         setSelectedCliente(selectedOption || null);
         setSelectedClienteEncargo(selectedOption);
     };
+    const handleSelectAsesor = (value) => {
+        const selectedOption = asesorOptions.find(option => option.value === value);
+        setSelectedAsesor(selectedOption || null);
+    };
+
+
 
     const fetchClientes = async () => {
         const inmuebleId = data.inmueble.id;
         try {
             const response = await axios.get('/api/seleccionaClienteEncargos', { params: { inmuebleId } });
-            console.log('response clientes encargos', response.data);
+            console.log('response clientes', response.data);
             if (Array.isArray(response.data)) {
                 setClienteOptions(
                     response.data.map((cliente) => ({
@@ -255,22 +265,7 @@ const EncargosDetails = ({ data, setOnAddEncargoRefreshKey, onAddEncargoRefreshK
         fetchClientes();
     }, [data]);
 
-    // Function to find the matching clienteOption
-    const findNombreCliente = () => {
-        if (!clienteOptions || !Array.isArray(clienteOptions)) {
-            console.error('Invalid inputs');
-            return '';
-        }
 
-        const matchingOption = clienteOptions.find((option) => option.id === encargos.encargo_id);
-        setMatchingCliente(matchingOption);
-        return matchingOption ? matchingOption.label : '';
-    };
-
-    useEffect(() => {
-        const nombre = findNombreCliente();
-        setNombreCliente(nombre);
-    }, [encargos, clienteOptions]);
 
     const handlePopupClose = () => {
         setTipoEncargo('');
@@ -282,6 +277,10 @@ const EncargosDetails = ({ data, setOnAddEncargoRefreshKey, onAddEncargoRefreshK
         setDraggableValue(0);
         setSelectedCliente(null);
         setIsPopupOpen(false);
+        if (isEditing) {
+            setSelectedClienteEncargo(encargos[0].fullCliente.value);
+        }
+
     };
 
     const handleAddEncargo = async () => {
@@ -323,7 +322,7 @@ const EncargosDetails = ({ data, setOnAddEncargoRefreshKey, onAddEncargoRefreshK
             encargo_id: isEditing ? encargos[0].encargo_id : data.inmueble.id,
             tipoEncargo: tipoEncargo,
             comercial: selectedAsesor,
-            cliente: selectedCliente.value || '',
+            cliente: selectedCliente || '',
             fullCliente: selectedCliente || '',
             precio: precio.replace(/\D/g, ''),
             tipoComision: tipoComision,
@@ -346,7 +345,7 @@ const EncargosDetails = ({ data, setOnAddEncargoRefreshKey, onAddEncargoRefreshK
                 showToast(isEditing ? 'Encargo actualizado' : 'Encargo añadido', 'linear-gradient(to right bottom, #00603c, #006f39, #007d31, #008b24, #069903)');
                 handlePopupClose();
                 await fetchEncargos();
-                setOnAddEncargoRefreshKey(onAddEncargoRefreshKey + 1);
+                fetchInmuebleMoreInfo();
                 fetchData(currentPage, searchTerm);
             } else {
                 alert(response.data.message);
@@ -357,12 +356,10 @@ const EncargosDetails = ({ data, setOnAddEncargoRefreshKey, onAddEncargoRefreshK
     };
 
     const handleEditEncargo = (encargo, asesorOptions, clienteOptions) => {
-        console.log('encargo', encargo);
-        console.log('asesorOptions', asesorOptions);
-        console.log('clienteOptions', clienteOptions);
+
         // Assuming encargo is the object with the details of the encargo you want to edit
         setTipoEncargo(encargo[0].tipo_encargo);
-        setSelectedAsesor({ label: encargo[0].comercial_encargo, value: encargo[0].comercial_encargo });
+
         setPrecio(toThousands(encargo[0].precio_1) || '');
         setTipoComision(encargo[0].tipo_comision_encargo || '');
         setComision(encargo[0].comision_encargo || '');
@@ -373,15 +370,11 @@ const EncargosDetails = ({ data, setOnAddEncargoRefreshKey, onAddEncargoRefreshK
         setComisionComprador(encargo[0].comisionComprador);
         setComisionCompradorValue(encargo[0].comisionCompradorValue);
         setTiempoExclusiva(encargo[0].tiempo_exclusiva);
-        setSelectedCliente(clienteOptions.find(option => option.value === encargo[0].cliente_id)?.value || '');
+        setSelectedCliente(encargos[0].fullCliente);
+        setSelectedClienteEncargo(encargos[0].fullCliente);
+        setSelectedAsesor(encargos[0].comercial_encargo);
     };
-    useEffect(() => {
-        console.log('selectedAsesror', selectedAsesor);
-        console.log('selectedCliente', selectedCliente);
 
-
-
-    }, [selectedAsesor, selectedCliente]);
     const handleDeleteEncargo = async () => {
 
         try {
@@ -405,7 +398,7 @@ const EncargosDetails = ({ data, setOnAddEncargoRefreshKey, onAddEncargoRefreshK
                 setEncargoState(false);
                 handlePopupClose();
                 setIsEditing(false);
-                setOnAddEncargoRefreshKey(onAddEncargoRefreshKey + 1);
+                fetchInmuebleMoreInfo();
                 fetchData(currentPage, searchTerm);
             } else {
                 alert('Error al eliminar el encargo.');
@@ -425,7 +418,7 @@ const EncargosDetails = ({ data, setOnAddEncargoRefreshKey, onAddEncargoRefreshK
     };
 
     // Function to fetch matching encargos
-    const fetchMatchingEncargos = async () => {
+    const fetchMatchingEncargos = useCallback(async () => {
         setLoading(true);
 
         try {
@@ -434,8 +427,8 @@ const EncargosDetails = ({ data, setOnAddEncargoRefreshKey, onAddEncargoRefreshK
             });
             if (response.data) {
                 // Handle the response data
-                console.log(response.data);
                 setMatchingClientesEncargos(response.data);
+                console.log('matchingClientesEncargos hola', response.data);
                 setTimeout(() => {
                     setLoading(false);
                 }, 100);
@@ -443,14 +436,19 @@ const EncargosDetails = ({ data, setOnAddEncargoRefreshKey, onAddEncargoRefreshK
         } catch (error) {
             console.error('Error fetching matching encargos:', error);
         }
-    };
+    },);
+
+    useEffect(() => {
+        console.log('refreshMatchingClientesEncargos', refreshMatchingClientesEncargos);
+        fetchMatchingEncargos();
+    }, [refreshMatchingClientesEncargos]);
+
 
     // Function to handle opening client details
     const handleOpen = async (_id) => {
         setLodingMoreInfoClienteMatchingEncargo(true);
         setVerMásClienteEncargo(true);
 
-        console.log('handleOpen', _id);
         try {
             const response = await axios.get('/api/fetchInfoPedido', {
                 params: { _id },
@@ -459,12 +457,10 @@ const EncargosDetails = ({ data, setOnAddEncargoRefreshKey, onAddEncargoRefreshK
             if (response.data) {
                 setInfoClienteMathingEncargo(response.data);
                 let cliente = response.data;
-                console.log('cliente', cliente);
                 const allInmuebleIds = [
                     ...cliente.inmuebles_asociados_propietario,
                     ...cliente.inmuebles_asociados_inquilino
                 ].map(inmueble => inmueble.id);
-                console.log('allInmuebleIds', allInmuebleIds);
                 if (allInmuebleIds.length > 0) {
                     try {
                         const response = await axios.post('/api/fetch_cliente_inmuebles', {
@@ -472,7 +468,6 @@ const EncargosDetails = ({ data, setOnAddEncargoRefreshKey, onAddEncargoRefreshK
                         });
 
                         if (response.status === 200) {
-                            console.log('response.data', response.data);
                             setInfoClienteMathingEncargo(prevState => ({
                                 ...prevState,
                                 inmueblesDetalle: response.data
@@ -491,9 +486,6 @@ const EncargosDetails = ({ data, setOnAddEncargoRefreshKey, onAddEncargoRefreshK
         }
     };
 
-    useEffect(() => {
-        console.log('precio', precio);
-    }, [precio]);
 
     const handlePrecioChange = (value) => {
         // Remove non-numeric characters to get a clean number
@@ -506,7 +498,6 @@ const EncargosDetails = ({ data, setOnAddEncargoRefreshKey, onAddEncargoRefreshK
             // Format the number with thousands separator (.)
             const formattedValue = number.toLocaleString('es-ES', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
 
-            console.log('formattedValue', formattedValue);
             setPrecio(formattedValue);
         } else {
             // If there's no numeric value, set the price to 0 or handle it as needed
@@ -515,12 +506,18 @@ const EncargosDetails = ({ data, setOnAddEncargoRefreshKey, onAddEncargoRefreshK
     };
 
 
+    useEffect(() => {
+        console.log('encargos', selectedClienteEncargo);
+    }, [selectedClienteEncargo]);
+    useEffect(() => {
+        console.log('encargos', selectedAsesor);
+    }, [selectedAsesor]);
 
     return (
         data.inmueble.noticiastate === true && (
             <CustomProvider locale={esES}>
-                <Accordion defaultActiveKey={1} bordered style={{ margin: '0px 16px 0 8px', marginTop: '0px', width: '100%' }}>
-                    <Accordion.Panel style={{ backgroundColor: '#f4f4f5', padding: '0px' }} header={'Encargos'} eventKey={1}>
+                <Accordion defaultActiveKey={1} bordered style={{ margin: '0px', marginTop: '0px', width: '100%', borderRadius: '1rem' }}>
+                    <Accordion.Panel style={{ backgroundColor: 'rgb(248 250 252)', padding: '0px' }} header={'Encargos'} eventKey={1}>
 
                         {encargoState === true && encargos.length > 0 ? (
                             <>
@@ -554,7 +551,7 @@ const EncargosDetails = ({ data, setOnAddEncargoRefreshKey, onAddEncargoRefreshK
                                                     </div>
                                                     <div className="flex items-center gap-2 flex-col w-full">
                                                         <FaUserTag className="text-gray-900 text-3xl" />
-                                                        <p className="text-base text-gray-950 py-1 text-center">Cliente: {nombreCliente}</p>
+                                                        <p className="text-base text-gray-950 py-1 text-center">Cliente: <br /> {encargos[0].fullCliente.label}</p>
                                                         <div className="border-b border-gray-300 w-4/6 -mt-1"></div>
                                                     </div>
                                                     <div className="flex items-center gap-2 flex-col w-full">
@@ -651,7 +648,10 @@ const EncargosDetails = ({ data, setOnAddEncargoRefreshKey, onAddEncargoRefreshK
                                                     <div className="flex items-center gap-2 flex-col w-full">
 
                                                         <FaUserTie className="text-gray-900 text-3xl" />
-                                                        <p className="text-base text-gray-950 py-1 text-center">Asesor: {encargos[0].comercial_encargo}</p>
+                                                        <p className="text-base text-gray-950 py-1 text-center">Asesor: {encargos[0].comercial_encargo.label}</p>
+                                                    </div>
+                                                    <div>
+                                                        <FinalizarEncargo fetchClientesAsociados={fetchClientesAsociados} direccionInmueble={data.inmueble.direccion} inmuebleID={encargos[0].encargo_id} fetchMatchingEncargos={fetchMatchingEncargos} matchingClientesEncargos={matchingClientesEncargos} fetchInmuebleMoreInfo={fetchInmuebleMoreInfo} fetchData={fetchData} currentPage={currentPage} searchTerm={searchTerm} cliente={encargos[0].fullCliente.label} clienteID={encargos[0].fullCliente.value} asesorID={encargos[0].comercial_encargo.value} asesorNombre={encargos[0].comercial_encargo.label} encargos={encargos} tipoEncargo={encargos[0].tipo_encargo} precio={encargos[0].precio_1 || encargos[0].precio_2} encargoID={encargos[0].encargo_id} />
                                                     </div>
                                                     <div className="absolute top-0 right-0 flex flex-col gap-6">
                                                         <div className='flex flex-col items-center gap-4'>
@@ -908,179 +908,194 @@ const EncargosDetails = ({ data, setOnAddEncargoRefreshKey, onAddEncargoRefreshK
                                 <AiOutlinePlus className="text-4xl cursor-pointer text-blue-500" onClick={() => setIsPopupOpen(true)} />
                             </div>
                         )}
-                        <Modal open={isPopupOpen} onClose={handlePopupClose} size='xs' overflow={false} backdrop={true} style={{ backgroundColor: 'rgba(0,0,0,0.15)', padding: '0px 2px', marginBottom: '70px' }}>
+                        <Modal open={isPopupOpen} onClose={handlePopupClose} size='md' overflow={false} backdrop={true} style={{ backgroundColor: 'rgba(0,0,0,0.15)', padding: '0px 2px', marginBottom: '70px' }}>
                             <Modal.Header style={{ display: 'flex', flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: '10px', width: '100%', marginTop: '10px' }}>
                                 <Modal.Title style={{ fontSize: '1.5rem', fontWeight: 'bold', textAlign: 'center' }}>{isEditing ? 'Editar Encargo' : 'Añadir Encargo'}</Modal.Title>
                             </Modal.Header>
                             <Modal.Body style={{ padding: '10px 25px', fontSize: '1rem', lineHeight: '1.5', display: 'flex', flexDirection: 'column', gap: '10px', alignItems: 'center', width: '100%' }}>
                                 <div className="flex flex-col gap-4 w-full">
-                                    <div className="mb-4 w-full">
-                                        <label className="block text-sm font-medium mb-2" htmlFor="tipoEncargo">
-                                            Tipo de Encargo
-                                        </label>
-                                        <Select
-                                            id="tipoEncargo"
-                                            options={[
-                                                { value: 'Venta', label: 'Venta' },
-                                                { value: 'Alquiler', label: 'Alquiler' }
-                                            ]}
-                                            value={tipoEncargo ? { value: tipoEncargo, label: tipoEncargo } : null}
-                                            onChange={(option) => setTipoEncargo(option?.value || '')}
-                                            placeholder="Selecciona el tipo de encargo"
-                                            className='z-[900]'
-                                        />
-                                    </div>
-                                    <div className="mb-4">
-                                        <label className="block text-sm font-medium mb-2" htmlFor="asesor">
-                                            Asesor
-                                        </label>
-                                        <SelectPicker
-                                            data={asesorOptions}
-                                            value={selectedAsesor ? selectedAsesor.value : undefined}
-                                            onChange={(value, item) => setSelectedAsesor(value)}
-                                            placeholder="Asesor"
-                                            className="basic-single z-[900]"
-                                            style={{ width: '100%' }}
-                                        />
-                                    </div>
-                                    <div className="mb-4">
-                                        <label className="block text-sm font-medium mb-2" htmlFor="cliente">
-                                            Cliente
-                                        </label>
-                                        <SelectPicker
-                                            id="cliente"
-                                            data={clienteOptions}
-                                            value={clienteOptions.find(option => option.value === selectedClienteEncargo)?.value} // Inline matching
-                                            onChange={handleSelectCliente}
-                                            placeholder="Cliente"
-                                            className="basic-single z-[800]"
-                                            searchable={true}
-                                            style={{ width: '100%' }}
-                                        />
-                                    </div>
-                                    <div className="mb-4">
-                                        <label className="block text-sm font-medium mb-2" htmlFor="precio">
-                                            Precio
-                                        </label>
-                                        <div className="flex items-center w-full">
-                                            <Input
-                                                id="precio"
-                                                min={0}
-                                                value={precio + ' ' + '€'}
-                                                onChange={handlePrecioChange}
-                                                placeholder="Introduce el precio"
-                                                className="w-full"
-                                            />
-                                        </div>
-                                    </div>
-                                    <div className='flex flex-col gap-3 items-center bg-orange-100 rounded-md p-4 w-full'>
-                                        <p>Comisión del vendedor:</p>
+                                    <div className={`flex ${screenWidth >= 600 ? 'flex-row' : 'flex-col'} gap-4 items-center w-full justify-center`}>
                                         <div className="mb-4 w-full">
-                                            <label className="block text-sm font-medium mb-2" htmlFor="tipoComision">
-                                                Tipo de Comisión
+                                            <label className="block text-sm font-medium mb-2" htmlFor="tipoEncargo">
+                                                Tipo de Encargo
                                             </label>
-                                            <Select
-                                                id="tipoComision"
-                                                options={[
-                                                    { value: 'Porcentaje', label: 'Porcentaje' },
-                                                    { value: 'Fijo', label: 'Fijo' },
+                                            <SelectPicker
+                                                id="tipoEncargo"
+                                                data={[
+                                                    { value: 'Venta', label: 'Venta' },
+                                                    { value: 'Alquiler', label: 'Alquiler' }
                                                 ]}
-                                                value={tipoComision ? { value: tipoComision, label: tipoComision } : null}
-                                                onChange={(option) => setTipoComision(option?.value || '')}
-                                                placeholder="Tipo de comisión"
+                                                value={tipoEncargo}
+                                                onChange={(value) => setTipoEncargo(value || '')}
+                                                placeholder="Selecciona el tipo de encargo"
+                                                className='z-[900]'
+                                                style={{ width: '100%' }}  // Adjust width if needed
+                                                searchable={false}
                                             />
                                         </div>
                                         <div className="mb-4 w-full">
-                                            <label className="block text-sm font-medium mb-2" htmlFor="comision">
-                                                Comisión
+                                            <label className="block text-sm font-medium mb-2" htmlFor="precio">
+                                                Precio
                                             </label>
-                                            <InputNumber
-                                                id="comision"
-                                                min={0}
-                                                value={comision}
-                                                onChange={setComision}
-                                                placeholder="Comisión"
-                                                className="w-full"
-                                            />
-                                        </div>
-                                    </div>
-                                    <div className='flex flex-col gap-3 items-center bg-blue-100 rounded-md p-4 w-full'>
-                                        <p>Comisión del pedido:</p>
-                                        <div className="mb-4 w-full">
-                                            <label className="block text-sm font-medium mb-2" htmlFor="comisionComprador">
-                                                Tipo de Comisión
-                                            </label>
-                                            <Select
-                                                id="comisionComprador"
-                                                options={[
-                                                    { value: 'Porcentaje', label: 'Porcentaje' },
-                                                    { value: 'Fijo', label: 'Fijo' },
-                                                ]}
-                                                value={comisionComprador ? { value: comisionComprador, label: comisionComprador } : null}
-                                                onChange={(option) => setComisionComprador(option?.value || '')}
-                                                placeholder="Tipo de comisión"
-                                            />
-                                        </div>
-                                        <div className="mb-4 w-full">
-                                            <label className="block text-sm font-medium mb-2" htmlFor="comision">
-                                                Comisión
-                                            </label>
-                                            <InputNumber
-                                                id="comision"
-                                                min={0}
-                                                value={comisionCompradorValue}
-                                                onChange={setComisionCompradorValue}
-                                                placeholder="Comisión"
-                                                className="w-full"
-                                            />
-                                        </div>
-                                    </div>
-                                    <div className="mb-4">
-                                        <label className="block text-sm font-medium mb-2" htmlFor="fecha">
-                                            Fecha
-                                        </label>
-                                        <DatePicker
-                                            id="fecha"
-                                            format="dd/MM/yyyy"
-                                            value={fecha ? new Date(fecha) : new Date()}
-                                            onChange={(value) => setFecha(formatDateTwo(value))}
-                                            placeholder="Fecha"
-                                            oneTap
-                                            style={{ width: '100%' }}
-                                        />
-                                    </div>
-                                    <div className="mb-4">
-                                        <label className="block text-sm font-medium mb-2" htmlFor="tiempoExclusiva">
-                                            Tiempo de Exclusiva
-                                        </label>
-                                        <DatePicker
-                                            id="tiempoExclusiva"
-                                            format="dd/MM/yyyy"
-                                            value={tiempoExclusiva ? new Date(tiempoExclusiva) : null}
-                                            onChange={(value) => {
-                                                setTiempoExclusiva(value);
-                                            }}
-                                            placeholder="Fecha de exclusiva"
-                                            oneTap
-                                            placement='topStart'
-                                            style={{ width: '100%' }}
-                                            disabledDate={disablePastDates} // This will disable past dates
-                                        />
-                                        {tiempoExclusiva && (
-                                            <div className='flex flex-col gap-2 items-center bg-slate-200 rounded-md p-4 w-full'>
-                                                <p>Tiempo restante:</p>
-                                                {!loadingTiempoExclusiva ? (
-                                                    <>
-                                                        <p className='text-center font-semibold w-[60%]'>{tiempoExclusivaCounter}</p>
-                                                    </>
-                                                ) : (
-                                                    <Skeleton width={220} height={70}>
-                                                    </Skeleton>
-                                                )}
-
+                                            <div className="flex items-center w-full">
+                                                <Input
+                                                    id="precio"
+                                                    min={0}
+                                                    value={precio + ' ' + '€'}
+                                                    onChange={handlePrecioChange}
+                                                    placeholder="Introduce el precio"
+                                                    className="w-full"
+                                                />
                                             </div>
-                                        )}
+                                        </div>
                                     </div>
+                                    <div className={`flex ${screenWidth >= 600 ? 'flex-row' : 'flex-col'} gap-4 items-center w-full justify-center`}>
+                                        <div className="mb-4 w-full">
+                                            <label className="block text-sm font-medium mb-2" htmlFor="asesor">
+                                                Asesor
+                                            </label>
+                                            <SelectPicker
+                                                data={asesorOptions}
+                                                value={isEditing ? selectedAsesor?.value : selectedAsesor?.value}
+                                                onChange={handleSelectAsesor}
+                                                placeholder="Asesor"
+                                                className="basic-single z-[900]"
+                                                style={{ width: '100%' }}
+                                            />
+                                        </div>
+                                        <div className="mb-4 w-full">
+                                            <label className="block text-sm font-medium mb-2" htmlFor="cliente">
+                                                Cliente
+                                            </label>
+                                            <SelectPicker
+                                                id="cliente"
+                                                data={clienteOptions}
+                                                value={isEditing ? selectedClienteEncargo?.value : selectedClienteEncargo?.value} // Pass the selected value
+                                                onChange={handleSelectCliente} // This should handle setting the selected value
+                                                placeholder="Cliente"
+                                                className="basic-single z-[800]"
+                                                searchable={true}
+                                                style={{ width: '100%' }}
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <div className={`flex ${screenWidth >= 600 ? 'flex-row mb-4' : 'flex-col'} gap-4 items-center`}>
+                                        <div className='flex flex-col gap-3 items-center bg-orange-100 rounded-md p-4 w-full'>
+                                            <p>Comisión del vendedor:</p>
+                                            <div className="mb-4 w-full">
+                                                <label className="block text-sm font-medium mb-2" htmlFor="tipoComision">
+                                                    Tipo de Comisión
+                                                </label>
+                                                <SelectPicker
+                                                    id="tipoComision"
+                                                    data={[
+                                                        { value: 'Porcentaje', label: 'Porcentaje' },
+                                                        { value: 'Fijo', label: 'Fijo' }
+                                                    ]}
+                                                    value={tipoComision}
+                                                    onChange={(value) => setTipoComision(value || '')}
+                                                    placeholder="Tipo de comisión"
+                                                    style={{ width: '100%' }}  // Adjust width if needed
+                                                    searchable={false}
+                                                />
+                                            </div>
+                                            <div className="mb-4 w-full">
+                                                <label className="block text-sm font-medium mb-2" htmlFor="comision">
+                                                    Comisión
+                                                </label>
+                                                <InputNumber
+                                                    id="comision"
+                                                    min={0}
+                                                    value={comision}
+                                                    onChange={setComision}
+                                                    placeholder="Comisión"
+                                                    className="w-full"
+                                                />
+                                            </div>
+                                        </div>
+                                        <div className='flex flex-col gap-3 items-center bg-blue-100 rounded-md p-4 w-full'>
+                                            <p>Comisión del pedido:</p>
+                                            <div className="mb-4 w-full">
+                                                <label className="block text-sm font-medium mb-2" htmlFor="comisionComprador">
+                                                    Tipo de Comisión
+                                                </label>
+                                                <SelectPicker
+                                                    id="comisionComprador"
+                                                    data={[
+                                                        { value: 'Porcentaje', label: 'Porcentaje' },
+                                                        { value: 'Fijo', label: 'Fijo' }
+                                                    ]}
+                                                    value={comisionComprador}
+                                                    onChange={(value) => setComisionComprador(value || '')}
+                                                    placeholder="Tipo de comisión"
+                                                    style={{ width: '100%' }}  // Adjust width if needed
+                                                    searchable={false}
+                                                />
+                                            </div>
+                                            <div className="mb-4 w-full">
+                                                <label className="block text-sm font-medium mb-2" htmlFor="comision">
+                                                    Comisión
+                                                </label>
+                                                <InputNumber
+                                                    id="comision"
+                                                    min={0}
+                                                    value={comisionCompradorValue}
+                                                    onChange={setComisionCompradorValue}
+                                                    placeholder="Comisión"
+                                                    className="w-full"
+                                                />
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className={`flex ${screenWidth >= 600 ? 'flex-row' : 'flex-col'} gap-4 items-center w-full justify-center`}>
+                                        <div className="mb-4 w-full">
+                                            <label className="block text-sm font-medium mb-2" htmlFor="fecha">
+                                                Fecha
+                                            </label>
+                                            <DatePicker
+                                                id="fecha"
+                                                format="dd/MM/yyyy"
+                                                value={fecha ? new Date(fecha) : new Date()}
+                                                onChange={(value) => setFecha(formatDateTwo(value))}
+                                                placeholder="Fecha"
+                                                oneTap
+                                                style={{ width: '100%' }}
+                                            />
+                                        </div>
+                                        <div className="mb-4 w-full">
+                                            <label className="block text-sm font-medium mb-2" htmlFor="tiempoExclusiva">
+                                                Tiempo de Exclusiva
+                                            </label>
+                                            <DatePicker
+                                                id="tiempoExclusiva"
+                                                format="dd/MM/yyyy"
+                                                value={tiempoExclusiva ? new Date(tiempoExclusiva) : null}
+                                                onChange={(value) => {
+                                                    setTiempoExclusiva(value);
+                                                }}
+                                                placeholder="Fecha de exclusiva"
+                                                oneTap
+                                                placement='topStart'
+                                                style={{ width: '100%' }}
+                                                disabledDate={disablePastDates} // This will disable past dates
+                                            />
+                                        </div>
+                                    </div>
+                                    {tiempoExclusiva && (
+                                        <div className='flex flex-col gap-2 items-center bg-slate-200 rounded-md p-4 w-full'>
+                                            <p>Tiempo restante:</p>
+                                            {!loadingTiempoExclusiva ? (
+                                                <>
+                                                    <p className='text-center font-semibold w-[60%]'>{tiempoExclusivaCounter}</p>
+                                                </>
+                                            ) : (
+                                                <Skeleton width={220} height={70}>
+                                                </Skeleton>
+                                            )}
+
+                                        </div>
+                                    )}
 
                                 </div>
                             </Modal.Body>

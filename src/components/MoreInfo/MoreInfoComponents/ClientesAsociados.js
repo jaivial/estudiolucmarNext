@@ -12,9 +12,7 @@ import './clientesasociados.css';
 const { Column, HeaderCell, Cell } = Table;
 import SearchIcon from '@rsuite/icons/Search';
 
-const ClientesAsociados = ({ inmuebleId, inmuebleDireccion, screenWidth, setFetchClientPhoneNumberRefreshKey, fetchClientesPhoneNumberRefreshKey, localizadoRefreshKey, setLocalizadoRefreshKey }) => {
-    const [clientesAsociados, setClientesAsociados] = useState([]);
-    const [clientesAsociadosInmueble, setClientesAsociadosInmueble] = useState([]);
+const ClientesAsociados = ({ setFilteredClientes, setClientesAsociadosInmueble, refreshMatchingClientesEncargos, setRefreshMatchingClientesEncargos, fetchClientesAsociados, setClientesAsociados, clientesAsociados, clientesAsociadosInmueble, filteredClientes, inmuebleId, inmuebleDireccion, screenWidth, setFetchClientPhoneNumberRefreshKey, fetchClientesPhoneNumberRefreshKey, localizadoRefreshKey, setLocalizadoRefreshKey }) => {
     const [open, setOpen] = useState(false);
     const [allClientes, setAllClientes] = useState([]);
     const [pedido, setPedido] = useState(false);
@@ -31,6 +29,8 @@ const ClientesAsociados = ({ inmuebleId, inmuebleDireccion, screenWidth, setFetc
     const [viewMoreClienteAsociadoModalOpen, setViewMoreClienteAsociadoModalOpen] = useState(false);
 
     const [newCliente, setNewCliente] = useState({
+        inmuebleId: inmuebleId,
+        inmuebleDireccion: inmuebleDireccion,
         nombre: '',
         apellido: '',
         dni: '',
@@ -71,7 +71,6 @@ const ClientesAsociados = ({ inmuebleId, inmuebleDireccion, screenWidth, setFetc
         setFilteredClientes(filtered);
     };
 
-    const [filteredClientes, setFilteredClientes] = useState(clientesAsociadosInmueble);
 
     useEffect(() => {
         console.log('editCliente', editCliente);
@@ -184,6 +183,7 @@ const ClientesAsociados = ({ inmuebleId, inmuebleDireccion, screenWidth, setFetc
                 showToast('Cliente agregado.', 'linear-gradient(to right bottom, #00603c, #006f39, #007d31, #008b24, #069903)');
                 fetchClientes();
                 setFetchClientPhoneNumberRefreshKey(setFetchClientPhoneNumberRefreshKey + 1);
+                setRefreshMatchingClientesEncargos(refreshMatchingClientesEncargos + 1);
                 fetchClientesAsociados();
                 resetForm();
             }
@@ -194,25 +194,8 @@ const ClientesAsociados = ({ inmuebleId, inmuebleDireccion, screenWidth, setFetc
 
     };
 
-    const fetchClientesAsociados = async () => {
-        try {
-            const response = await axios.get('/api/fetchClientesAsociados', {
-                params: {
-                    inmuebleId: inmuebleId,
-                },
-            });
 
-            console.log('response.data.clientesTotales', response.data.clientesTotales);
-            console.log('response.data.clientesTarget', response.data.clientesTarget);
-            setClientesAsociados(response.data.clientesTotales);
-            setClientesAsociadosInmueble(response.data.clientesTarget);
-            setFilteredClientes(response.data.clientesTarget);
-        } catch (error) {
-            console.error('Error fetching clientes asociados del inmueble:', error);
-        }
-    };
     useEffect(() => {
-
         fetchClientesAsociados();
     }, [inmuebleId]);
 
@@ -244,6 +227,11 @@ const ClientesAsociados = ({ inmuebleId, inmuebleDireccion, screenWidth, setFetc
     };
 
     const handleAsociarCliente = async () => {
+        if (!inquilino && !propietario && !clientsToAssociateInformador) {
+            showToast('Elije si es informador, propietario o inquilino', 'linear-gradient(to right bottom, #c62828, #b92125, #ac1a22, #a0131f, #930b1c)');
+            return;
+        }
+
         console.log(inmuebleId, inmuebleDireccion, pedido, clientsToAssociate._id, clientsToAssociateInformador, clientsToAssociateInteres, clientsToAssociateRangoPrecios, propietario, inquilino);
         try {
             const response = await axios.post('/api/asociar_cliente', {
@@ -417,7 +405,7 @@ const ClientesAsociados = ({ inmuebleId, inmuebleDireccion, screenWidth, setFetc
     }, [newCliente]);
 
     return (
-        <Accordion defaultActiveKey={0} className={`w-full ml-[16px] mr-[16px] ${screenWidth >= 640 ? 'mt-0' : 'mt-[20px]'} border-1 border-gray-300 bg-gray-100 rounded-lg shadow-lg`}>
+        <Accordion defaultActiveKey={0} className={`w-full  ${screenWidth >= 640 ? 'm-0' : ''} border-1 border-gray-300 bg-slate-50 rounded-2xl shadow-lg`} style={{ borderRadius: '1rem' }}>
             <Accordion.Panel header="Clientes Asociados" eventKey={0} defaultExpanded={true} style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                 <Modal open={open} onClose={handleClose} style={{ backgroundColor: 'rgba(0,0,0,0.15)', borderRadius: '10px', padding: '0px' }} backdrop="static">
                     <Modal.Header>
@@ -708,7 +696,7 @@ const ClientesAsociados = ({ inmuebleId, inmuebleDireccion, screenWidth, setFetc
                         </Modal.Footer>
                     </Modal.Body>
                 </Modal>
-                <InputGroup style={{ width: '300px', margin: '0 auto 40px auto' }}>
+                <InputGroup style={{ width: '300px', margin: '0 auto 40px auto' }} className='searchclientesasociados'>
                     <AutoComplete
                         placeholder="Buscar clientes asociados.."
                         data={clientesAsociadosInmueble.map(cliente => `${cliente.nombre} ${cliente.apellido}`)}
@@ -718,7 +706,7 @@ const ClientesAsociados = ({ inmuebleId, inmuebleDireccion, screenWidth, setFetc
                         <SearchIcon />
                     </InputGroup.Button>
                 </InputGroup>
-                {filteredClientes.length > 0 ? (
+                {filteredClientes?.length > 0 ? (
                     <ul className='flex flex-col gap-3 mt-4 w-full'>
                         {filteredClientes
                             .sort((a, b) => {
@@ -736,7 +724,7 @@ const ClientesAsociados = ({ inmuebleId, inmuebleDireccion, screenWidth, setFetc
                                             <div className='w-36  text-center'>
                                                 <p className="text-base sm:text-lg font-semibold w-full">{cliente.nombre} {cliente.apellido}</p>
                                             </div>
-                                            <div className='w-20 px-2 text-center display-flex flex-col justify-center items-center'>
+                                            <div className='min-width-20 px-2 text-center display-flex flex-col justify-center items-center'>
                                                 <div className='flex flex-col justify-center items-center mx-0 sm:flex-row md:flex-col md:min-w-fit gap-2'>
                                                     {cliente.inmuebles_asociados_propietario?.some(propietario => propietario.id === inmuebleId) && (
                                                         <Tag color="green" style={{ margin: '0 auto' }}>Propietario</Tag>
@@ -746,12 +734,7 @@ const ClientesAsociados = ({ inmuebleId, inmuebleDireccion, screenWidth, setFetc
                                                     )}
                                                 </div>
                                             </div>
-                                            {cliente.telefono && window.innerWidth >= 640 && (
-                                                <div className='flex-2 display-flex flex-row justify-center items-center'>
-                                                    <p>{cliente.telefono}</p>
-                                                </div>
-                                            )}
-                                            <div className='w-[100px] text-center flex flex-row justify-center items-center gap-2 pl-2'>
+                                            <div className='w-[50px] text-center flex flex-col justify-center items-center gap-2 pl-2'>
                                                 <button className='rounded-md text-xl' onClick={() => handleViewCliente(cliente)}>
                                                     <FaEye />
                                                 </button>

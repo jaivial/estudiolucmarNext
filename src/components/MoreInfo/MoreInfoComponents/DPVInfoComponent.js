@@ -4,6 +4,7 @@ import axios from 'axios';
 import { useState } from 'react';
 import { Accordion, Panel, Modal, Button, InputNumber, DatePicker, CustomProvider, SelectPicker, InputPicker } from 'rsuite';
 import esES from 'rsuite/locales/es_ES';
+import { borderRadius } from '@mui/system';
 
 
 const DPVInfoComponent = ({ DPVInfo }) => {
@@ -14,8 +15,8 @@ const DPVInfoComponent = ({ DPVInfo }) => {
     }, []);
 
     return (
-        <Accordion defaultActiveKey={0} className='w-auto ml-[16px] mr-[16px] mt-[20px] border-1 border-gray-300 bg-gray-100 rounded-lg shadow-lg'>
-            <Accordion.Panel header="DPV" eventKey={0} defaultExpanded={true} style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+        <Accordion defaultActiveKey={0} className='w-full m-0 border-1 border-gray-300 bg-slate-50 rounded-2xl shadow-lg' style={{ borderRadius: '1rem' }}>
+            <Accordion.Panel header="DPV" eventKey={0} defaultExpanded={true} style={{ display: 'flex', flexDirection: 'column', gap: '10px', borderRadius: '1rem' }}>
                 {DPVInfo && (
                     <div className="p-4 flex flex-col gap-4 items-center" style={{ width: '100%' }}>
                         <div className="bg-slate-200 rounded-md p-3 flex flex-col gap-2 w-full items-center">

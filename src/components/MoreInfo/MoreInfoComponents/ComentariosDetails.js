@@ -51,6 +51,8 @@ const commentTypes = {
     Cita: 'bg-yellow-500',
 };
 
+
+
 const ComentariosDetails = ({ data, fetchClientPhoneNumberRefreshKey, screenWidth, inmuebleId }) => {
     const [isOpen, setIsOpen] = useState(false);
     const [newComment, setNewComment] = useState('');
@@ -59,7 +61,7 @@ const ComentariosDetails = ({ data, fetchClientPhoneNumberRefreshKey, screenWidt
     const [commentType, setCommentType] = useState('Contacto Directo');
     const [phoneNumber, setPhoneNumber] = useState('');
     const [selectedDate, setSelectedDate] = useState(new Date());
-    const [selectedTime, setSelectedTime] = useState(null);
+    const [selectedTime, setSelectedTime] = useState(new Date());
     const [phoneOptions, setPhoneOptions] = useState([]);
 
     // Estado de edición
@@ -67,6 +69,16 @@ const ComentariosDetails = ({ data, fetchClientPhoneNumberRefreshKey, screenWidt
     const [editingCommentId, setEditingCommentId] = useState(null);
     const [editCommentText, setEditCommentText] = useState('');
     const [comentarioProgramado, setComentarioProgramado] = useState(false);
+
+    useEffect(() => {
+        if (selectedDate === null) {
+            setSelectedDate(new Date());
+        }
+        if (selectedTime === null) {
+            setSelectedTime(new Date());
+        }
+        console.log('selectedDate', selectedDate);
+    }, [selectedDate, selectedTime])
 
     const getPhoneNumbers = async () => {
         try {
@@ -162,7 +174,7 @@ const ComentariosDetails = ({ data, fetchClientPhoneNumberRefreshKey, screenWidt
                     tipo: commentType,
                     telefono: phoneNumber,
                     fecha: dateToUse, // Pass the selected date
-                    hora: selectedTime, // Pass the selected time
+                    hora: selectedTime ? selectedTime : new Date(), // Pass the selected time
                     user_id: userId, // Pass the user_id
                     comentarioProgramado: comentarioProgramado,
                 },
@@ -264,8 +276,145 @@ const ComentariosDetails = ({ data, fetchClientPhoneNumberRefreshKey, screenWidt
 
     return (
         <CustomProvider locale={esES}>
-            <Accordion defaultActiveKey={1} bordered style={{ margin: '0px 16px 0px 16px', width: '100%' }}>
-                <Accordion.Panel style={{ backgroundColor: '#f4f4f5', padding: '0px', width: '100%' }} header={'Comentarios'} eventKey={1}>
+            <Accordion defaultActiveKey={1} bordered style={{ margin: '0px', width: '100%', borderRadius: '1rem' }}>
+                <Accordion.Panel style={{ backgroundColor: 'rgb(248 250 252)', padding: '0px', width: '100%', borderRadius: '1rem' }} header={'Comentarios'} eventKey={1}>
+                    <div className={`mt-4 flex flex-col justify-center items-center gap-2 -mx-3`}>
+                        <div className={`w-full flex ${screenWidth >= 640 ? 'flex-col' : 'flex-row items-start'}  gap-2 p-2`}>
+                            <textarea
+                                value={newComment}
+                                onChange={(e) => setNewComment(e.target.value)}
+                                rows="6"
+                                className={`${screenWidth >= 640 ? 'w-full' : 'w-1/2'} border border-black p-3 rounded-2xl`}
+                                placeholder="Escribe tu comentario aquí..."
+                            />
+                            <div className={`${screenWidth >= 640 ? 'w-full' : 'w-1/2'} rounded-2xl`}>
+                                <Select
+                                    value={{ label: commentType, value: commentType }}
+                                    onChange={(option) => {
+                                        setCommentType(option.value);
+                                        if (option.value !== 'Llamada') {
+                                            setPhoneNumber('');
+                                        }
+                                        if (option.value !== 'Cita') {
+                                            setSelectedDate(null);
+                                            setSelectedTime(null);
+                                        }
+                                    }}
+                                    options={[
+                                        { label: 'Contacto Directo', value: 'Contacto Directo' },
+                                        { label: 'Llamada', value: 'Llamada' },
+                                        { label: 'Cita', value: 'Cita' }
+                                    ]}
+                                    className="rounded-2xl bg-white w-full selectcommentoptions"
+                                />
+
+                                {commentType === 'Contacto Directo' && (
+                                    <>
+                                        <DatePicker
+                                            value={selectedDate ? selectedDate : new Date()}
+                                            onChange={handleDateChange}
+                                            className="w-full selectcommentoptions mt-2 mb-1 rounded-2xl"
+                                            placeholder="Fecha"
+                                            oneTap
+                                            format="dd.MM.yyyy"
+                                            placement='topEnd'
+                                            isoWeek
+                                        />
+                                        <DatePicker
+                                            value={selectedDate ? selectedDate : new Date()}
+                                            onChange={handleTimeChange}
+                                            className="w-full selectcommentoptions my-1 rounded-2xl"
+                                            placeholder="Hora"
+                                            format="HH:mm"
+                                            caretAs={FaClock}
+                                            placement='topEnd'
+                                        />
+                                        <Toggle
+                                            checked={comentarioProgramado}
+                                            onChange={(checked) => setComentarioProgramado(checked)}
+                                            className={`${screenWidth >= 640 ? 'mt-2 w-full text-center' : 'mt-2'}`}
+                                        >
+                                            {comentarioProgramado ? 'Programado' : 'Realizado'}
+                                        </Toggle>
+                                    </>
+                                )}
+                                {commentType === 'Llamada' && (
+                                    <>
+                                        <Select
+                                            value={phoneNumber ? { label: phoneNumber, value: phoneNumber } : null}
+                                            onChange={(option) => setPhoneNumber(option?.value || '')}
+                                            options={phoneOptions}
+                                            className="w-full border border-gray-300 rounded mt-2"
+                                            placeholder="Teléfono"
+                                            isSearchable
+                                        />
+
+                                        <DatePicker
+                                            value={selectedDate ? selectedDate : new Date()}
+                                            onChange={handleDateChange}
+                                            className="w-full border border-gray-300 mt-2 mb-1 rounded"
+                                            placeholder="Fecha"
+                                            format="dd.MM.yyyy"
+                                            placement='topEnd'
+                                            isoWeek
+                                        />
+                                        <DatePicker
+                                            value={selectedDate ? selectedDate : new Date()}
+                                            onChange={handleTimeChange}
+                                            className="w-full border border-gray-300 my-1 rounded"
+                                            placeholder="Hora"
+                                            format="HH:mm"
+                                            caretAs={FaClock}
+                                            placement='topEnd'
+                                        />
+                                        <Toggle
+                                            checked={comentarioProgramado}
+                                            onChange={(checked) => setComentarioProgramado(checked)}
+                                            className="mt-2"
+                                        >
+                                            {comentarioProgramado ? 'Programado' : 'Realizado'}
+                                        </Toggle>
+                                    </>
+                                )}
+
+                                {commentType === 'Cita' && (
+                                    <>
+                                        <DatePicker
+                                            value={selectedDate ? selectedDate : new Date()}
+                                            onChange={handleDateChange}
+                                            className="w-full border border-gray-300 mt-2 mb-1 rounded"
+                                            placeholder="Fecha"
+                                            format="dd.MM.yyyy"
+                                            placement='topEnd'
+                                            isoWeek
+                                        />
+                                        <DatePicker
+                                            value={selectedDate ? selectedDate : new Date()}
+                                            onChange={handleTimeChange}
+                                            className="w-full border border-gray-300 my-1 rounded"
+                                            placeholder="Hora"
+                                            format="HH:mm"
+                                            caretAs={FaClock}
+                                            placement='topEnd'
+                                        />
+                                        <Toggle
+                                            checked={comentarioProgramado}
+                                            onChange={(checked) => setComentarioProgramado(checked)}
+                                            className="mt-2"
+                                        >
+                                            {comentarioProgramado ? 'Realizado' : 'Programado'}
+                                        </Toggle>
+                                    </>
+                                )}
+                            </div>
+                        </div>
+                        <button
+                            onClick={handleAddComment}
+                            className="bg-blue-500 text-white p-2 rounded mt-2"
+                        >
+                            Añadir Comentario
+                        </button>
+                    </div>
                     {programados.length > 0 && (
                         <div>
                             <h3 className="font-bold text-base underline -mb-1">Programados</h3>
@@ -419,142 +568,7 @@ const ComentariosDetails = ({ data, fetchClientPhoneNumberRefreshKey, screenWidt
                         </div>
                     )}
 
-                    <div className={`mt-4 flex flex-col justify-center items-center gap-2 -mx-3`}>
-                        <div className={`w-full flex ${screenWidth >= 640 ? 'flex-col' : 'flex-row items-start'}  gap-2`}>
-                            <textarea
-                                value={newComment}
-                                onChange={(e) => setNewComment(e.target.value)}
-                                rows="6"
-                                className={`${screenWidth >= 640 ? 'w-full' : 'w-1/2'} border border-gray-300 p-2 rounded-md`}
-                                placeholder="Escribe tu comentario aquí..."
-                            />
-                            <div className={`${screenWidth >= 640 ? 'w-full' : 'w-1/2'}`}>
-                                <Select
-                                    value={{ label: commentType, value: commentType }}
-                                    onChange={(option) => {
-                                        setCommentType(option.value);
-                                        if (option.value !== 'Llamada') {
-                                            setPhoneNumber('');
-                                        }
-                                        if (option.value !== 'Cita') {
-                                            setSelectedDate(null);
-                                            setSelectedTime(null);
-                                        }
-                                    }}
-                                    options={[
-                                        { label: 'Contacto Directo', value: 'Contacto Directo' },
-                                        { label: 'Llamada', value: 'Llamada' },
-                                        { label: 'Cita', value: 'Cita' }
-                                    ]}
-                                    className="border border-gray-300 rounded bg-white w-full"
-                                />
 
-                                {commentType === 'Contacto Directo' && (
-                                    <>
-                                        <DatePicker
-                                            value={selectedDate || new Date()}
-                                            onChange={handleDateChange}
-                                            className="w-full border border-gray-300 mt-2 mb-1 rounded"
-                                            placeholder="Fecha"
-                                            format="dd.MM.yyyy"
-                                            placement='topEnd'
-                                            isoWeek
-                                        />
-                                        <DatePicker
-                                            value={selectedTime || new Date()}
-                                            onChange={handleTimeChange}
-                                            className="w-full border border-gray-300 my-1 rounded"
-                                            placeholder="Hora"
-                                            format="HH:mm"
-                                            caretAs={FaClock}
-                                            placement='topEnd'
-                                        />
-                                        <Toggle
-                                            checked={comentarioProgramado}
-                                            onChange={(checked) => setComentarioProgramado(checked)}
-                                            className={`${screenWidth >= 640 ? 'mt-2 w-full text-center' : 'mt-2'}`}
-                                        >
-                                            {comentarioProgramado ? 'Programado' : 'Realizado'}
-                                        </Toggle>
-                                    </>
-                                )}
-                                {commentType === 'Llamada' && (
-                                    <>
-                                        <Select
-                                            value={phoneNumber ? { label: phoneNumber, value: phoneNumber } : null}
-                                            onChange={(option) => setPhoneNumber(option?.value || '')}
-                                            options={phoneOptions}
-                                            className="w-full border border-gray-300 rounded mt-2"
-                                            placeholder="Teléfono"
-                                            isSearchable
-                                        />
-
-                                        <DatePicker
-                                            value={selectedDate || new Date()}
-                                            onChange={handleDateChange}
-                                            className="w-full border border-gray-300 mt-2 mb-1 rounded"
-                                            placeholder="Fecha"
-                                            format="dd.MM.yyyy"
-                                            placement='topEnd'
-                                            isoWeek
-                                        />
-                                        <DatePicker
-                                            value={selectedDate || new Date()}
-                                            onChange={handleTimeChange}
-                                            className="w-full border border-gray-300 my-1 rounded"
-                                            placeholder="Hora"
-                                            format="HH:mm"
-                                            caretAs={FaClock}
-                                            placement='topEnd'
-                                        />
-                                        <Toggle
-                                            checked={comentarioProgramado}
-                                            onChange={(checked) => setComentarioProgramado(checked)}
-                                            className="mt-2"
-                                        >
-                                            {comentarioProgramado ? 'Programado' : 'Realizado'}
-                                        </Toggle>
-                                    </>
-                                )}
-
-                                {commentType === 'Cita' && (
-                                    <>
-                                        <DatePicker
-                                            value={selectedDate || new Date()}
-                                            onChange={handleDateChange}
-                                            className="w-full border border-gray-300 mt-2 mb-1 rounded"
-                                            placeholder="Fecha"
-                                            format="dd.MM.yyyy"
-                                            placement='topEnd'
-                                            isoWeek
-                                        />
-                                        <DatePicker
-                                            value={selectedDate || new Date()}
-                                            onChange={handleTimeChange}
-                                            className="w-full border border-gray-300 my-1 rounded"
-                                            placeholder="Hora"
-                                            format="HH:mm"
-                                            caretAs={FaClock}
-                                            placement='topEnd'
-                                        />
-                                        <Toggle
-                                            checked={comentarioProgramado}
-                                            onChange={(checked) => setComentarioProgramado(checked)}
-                                            className="mt-2"
-                                        >
-                                            {comentarioProgramado ? 'Realizado' : 'Programado'}
-                                        </Toggle>
-                                    </>
-                                )}
-                            </div>
-                        </div>
-                        <button
-                            onClick={handleAddComment}
-                            className="bg-blue-500 text-white p-2 rounded mt-2"
-                        >
-                            Añadir Comentario
-                        </button>
-                    </div>
                 </Accordion.Panel>
             </Accordion>
         </CustomProvider>

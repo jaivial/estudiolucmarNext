@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { FaPersonShelter } from 'react-icons/fa6';
 import { LiaKeySolid } from 'react-icons/lia'; // Import LiaKeySolid icon
 import { PiEmptyBold } from 'react-icons/pi'; // Import PiEmptyBold icon
@@ -18,6 +18,11 @@ const DetailsInfoThree = ({ data, isVisible, screenWidth }) => {
         return null;
     };
 
+    useEffect(() => {
+        console.log('data.inmueble.categoria', data.inmueble.categoria);
+        console.log('categoria', categoria);
+    }, []);
+
     // Function to render category with appropriate icon
     const renderCategoria = (categoria) => {
         switch (categoria) {
@@ -33,7 +38,7 @@ const DetailsInfoThree = ({ data, isVisible, screenWidth }) => {
                         <LiaKeySolid className="mr-2 text-3xl" /> Propietario
                     </li>
                 );
-            case 'Vacío':
+            case 'Vacio':
                 return (
                     <li className="py-1 flex items-center">
                         <PiEmptyBold className="mr-2 text-3xl" /> Vacío
@@ -129,9 +134,9 @@ const DetailsInfoThree = ({ data, isVisible, screenWidth }) => {
     };
 
     return (
-        <div className={`flex ${screenWidth >= 1280 ? 'flex-row items-start' : screenWidth >= 780 ? 'flex-row justify-center' : 'flex-col'} gap-4 px-4 w-full`}>
+        <div className={`flex gap-6 w-full ${screenWidth < 650 ? 'flex-col' : screenWidth < 780 ? 'flex-row' : screenWidth <= 1000 ? 'flex-col' : screenWidth < 1280 ? 'flex-row' : 'flex-col'}`}>
             {/* Left Column: Basic Characteristics */}
-            <div className={`bg-white p-4 px-6 border border-gray-300 rounded-md ${screenWidth >= 1280 ? 'w-full flex-1' : 'w-full'}`}>
+            <div className="w-full bg-white border-blue-400 border-2 p-6 gap-4 rounded-2xl shadow-md flex flex-col">
                 <div>
                     <h2 className="font-bold text-xl pb-2">Características básicas</h2>
                     <ul className="list-none pl-2">
@@ -156,12 +161,12 @@ const DetailsInfoThree = ({ data, isVisible, screenWidth }) => {
                 )}
             </div>
             {!isVisible && (
-                <div className="bg-white p-4 px-6 border border-gray-300 rounded-md flex-1 w-full">
+                <div className="w-full bg-white border-blue-400 border-2 p-6 gap-4 rounded-2xl shadow-md flex flex-col">
                     <div className="flex flex-col gap-4">
                         {/* Bottom Column: Commercial Information */}
                         <div>
                             <h2 className="font-bold text-xl pb-2">Información Comercial</h2>
-                            <ul className="list-none pl-2 py-1">
+                            <ul className="list-none pl-2 py-1 flex flex-col gap-2">
                                 {renderCategoria(categoria)}
                                 {renderPotencialAdquisicion(potencialAdquisicion)}
                                 {renderNoticiaState(noticiastate)}
