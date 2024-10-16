@@ -169,6 +169,20 @@ export default async function handler(req, res) {
                         }
                     }
                 );
+                // 3. Pull from inmuebles_asociados_inquilino on ALL OTHER DOCUMENTS
+                // This ensures only one tenant is associated with the property
+                await db.collection('clientes').updateMany(
+                    {
+                        _id: { $ne: new ObjectId(encargoFinalizado.pedidoID) }  // Exclude the current tenant by pedidoID
+                    },
+                    {
+                        $pull: {
+                            inmuebles_asociados_inquilino: {
+                                id: encargoFinalizado.inmuebleID  // Remove the inmueble from any other inquilino arrays
+                            }
+                        }
+                    }
+                );
             }
 
 
