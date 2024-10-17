@@ -22,8 +22,8 @@ const TransactionHistory = ({ inmuebleID, transaccionesHistory, fetchTransaccion
                             <div key={transaccion._id} className="transaction-item mb-4 flex flex-col justify-center">
                                 <div className="flex flex-col space-y-2">
                                     <div className="flex justify-between items-center">
-                                        <span className="font-semibold">Fecha: {formatDate(transaccion.fechaFinalizacion)}</span>
-                                        <span className="font-semibold">Asesor: {transaccion.asesorNombre}</span>
+                                        <span className="font-semibold text-center">Fecha: {formatDate(transaccion.fechaFinalizacion)}</span>
+                                        <span className="font-semibold text-center">Asesor: {transaccion.asesorNombre}</span>
                                         <Tag color={transaccion.tipoEncargo === 'Venta' ? 'red' : 'violet'}>
                                             {transaccion.tipoEncargo}
                                         </Tag>
@@ -33,9 +33,9 @@ const TransactionHistory = ({ inmuebleID, transaccionesHistory, fetchTransaccion
 
                                     <div className="venta-transaction flex flex-col items-center justify-between gap-3 pb-4">
                                         <div className="flex items-center space-x-2">
-                                            <span>Cliente: {transaccion.cliente}</span>
+                                            <span className='text-center'>Cliente: {transaccion.cliente}</span>
                                             <AiOutlineArrowRight />
-                                            <span>Pedido: {transaccion.pedidoName}</span>
+                                            <span className='text-center'>Pedido: {transaccion.pedidoName}</span>
                                         </div>
                                         <div className="transaction-price text-slate-900">
                                             Precio: {transaccion.precio.toLocaleString()}€
@@ -45,10 +45,10 @@ const TransactionHistory = ({ inmuebleID, transaccionesHistory, fetchTransaccion
 
                                     <div className="comision-details text-sm text-gray-700 flex-col flex items-center justify-center gap-3">
                                         <div className='flex flex-row items-center justify-center m-0 gap-3'>
-                                            <p className='m-0'>Comisión Vendedor: {transaccion.comisionVendedor.toLocaleString()}€</p>
-                                            <p className='m-0'>Comisión Pedido: {transaccion.comisionPedido.toLocaleString()}€</p>
+                                            <p className='m-0 text-center'>Comisión Vendedor: {transaccion.comisionVendedor.toLocaleString()}€</p>
+                                            <p className='m-0 text-center'>Comisión Pedido: {transaccion.comisionPedido.toLocaleString()}€</p>
                                         </div>
-                                        <p>Comisión Total: {transaccion.comisionTotal.toLocaleString()}€</p>
+                                        <p className='text-center'>Comisión Total: {transaccion.comisionTotal.toLocaleString()}€</p>
                                     </div>
                                     <Divider />
                                 </div>

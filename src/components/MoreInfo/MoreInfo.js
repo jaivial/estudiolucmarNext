@@ -551,6 +551,11 @@ const ItemDetails = ({ id, onClose, showModal, setShowModal, fetchData, currentP
                                     </div>
 
                                     <div className={`flex flex-col h-full rounded-2xl gap-6 ${!data.inmueble.noticiastate ? 'w-1/2' : 'w-1/2'} overflow-y-scroll comentariosdivcontainer`} style={{ maxHeight: `${divHeight}px` }}>
+                                        {transaccionesHistory && transaccionesHistory.length > 0 && (
+                                            <div className='flex flex-row h-auto rounded-2xl'>
+                                                <TransactionHistory inmuebleID={inmuebleId} transaccionesHistory={transaccionesHistory} fetchTransacciones={fetchTransacciones} />
+                                            </div>
+                                        )}
                                         <div className='flex flex-row h-auto rounded-2xl shadow-lg'>
                                             <ComentariosDetails data={data} inmuebleId={id} fetchClientPhoneNumberRefreshKey={fetchClientPhoneNumberRefreshKey} screenWidth={screenWidth} />
                                         </div>
@@ -581,6 +586,11 @@ const ItemDetails = ({ id, onClose, showModal, setShowModal, fetchData, currentP
                                     </div>
 
                                     <div className={`flex flex-col h-fit rounded-2xl gap-6 w-1/3 overflow-y-scroll comentariosdivcontainer max-h-[1220px]`}>
+                                        {transaccionesHistory && transaccionesHistory.length > 0 && (
+                                            <div className='flex flex-row h-auto rounded-2xl'>
+                                                <TransactionHistory inmuebleID={inmuebleId} transaccionesHistory={transaccionesHistory} fetchTransacciones={fetchTransacciones} />
+                                            </div>
+                                        )}
                                         <div className='flex flex-row h-auto rounded-2xl shadow-lg'>
                                             <ComentariosDetails data={data} inmuebleId={id} fetchClientPhoneNumberRefreshKey={fetchClientPhoneNumberRefreshKey} screenWidth={screenWidth} />
                                         </div>
@@ -609,6 +619,11 @@ const ItemDetails = ({ id, onClose, showModal, setShowModal, fetchData, currentP
 
 
                                     <div className={`flex flex-col h-fit rounded-2xl gap-6 w-1/2 overflow-y-scroll comentariosdivcontainer max-h-full`}>
+                                        {transaccionesHistory && transaccionesHistory.length > 0 && (
+                                            <div className='flex flex-row h-auto rounded-2xl'>
+                                                <TransactionHistory inmuebleID={inmuebleId} transaccionesHistory={transaccionesHistory} fetchTransacciones={fetchTransacciones} />
+                                            </div>
+                                        )}
                                         <div className='flex flex-row h-auto rounded-2xl shadow-lg'>
                                             <ComentariosDetails data={data} inmuebleId={id} fetchClientPhoneNumberRefreshKey={fetchClientPhoneNumberRefreshKey} screenWidth={screenWidth} />
                                         </div>
@@ -632,7 +647,12 @@ const ItemDetails = ({ id, onClose, showModal, setShowModal, fetchData, currentP
                                         </div>
                                     )}
 
-                                    <div className='flex flex-row h-auto rounded-2xl shadow-lg'>
+                                    <div className='flex flex-col gap-6 h-auto rounded-2xl shadow-lg'>
+                                        {transaccionesHistory && transaccionesHistory.length > 0 && (
+                                            <div className='flex flex-row h-auto rounded-2xl'>
+                                                <TransactionHistory inmuebleID={inmuebleId} transaccionesHistory={transaccionesHistory} fetchTransacciones={fetchTransacciones} />
+                                            </div>
+                                        )}
                                         <ComentariosDetails data={data} inmuebleId={id} fetchClientPhoneNumberRefreshKey={fetchClientPhoneNumberRefreshKey} screenWidth={screenWidth} />
                                     </div>
 
