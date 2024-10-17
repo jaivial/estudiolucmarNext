@@ -10,6 +10,8 @@ export default async function handler(req, res) {
         try {
             const encargoFinalizado = req.body;
 
+            console.log(encargoFinalizado);
+
             // Conexión a la base de datos
             const client = await clientPromise;
             const db = client.db('inmoprocrm');
@@ -125,7 +127,22 @@ export default async function handler(req, res) {
                         }
                     }
                 );
+                await db.collection('clientes').updateMany(
+                    {
+                        _id: { $ne: new ObjectId(encargoFinalizado.pedidoID) }  // Exclude the current tenant by pedidoID
+                    },
+                    {
+                        $pull: {
+                            inmuebles_asociados_propietario: {
+                                id: encargoFinalizado.inmuebleID  // Remove the inmueble from any other inquilino arrays
+                            }
+                        }
+                    }
+                );
+
             }
+
+
 
             // Handle case when tipoEncargo === 'Alquiler'
             if (encargoFinalizado.tipoEncargo === 'Alquiler' && encargoFinalizado.inmuebleID && encargoFinalizado.direccionInmueble) {
