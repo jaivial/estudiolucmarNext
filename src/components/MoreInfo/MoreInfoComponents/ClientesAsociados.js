@@ -12,7 +12,7 @@ import './clientesasociados.css';
 const { Column, HeaderCell, Cell } = Table;
 import SearchIcon from '@rsuite/icons/Search';
 
-const ClientesAsociados = ({ setFilteredClientes, setClientesAsociadosInmueble, refreshMatchingClientesEncargos, setRefreshMatchingClientesEncargos, fetchClientesAsociados, setClientesAsociados, clientesAsociados, clientesAsociadosInmueble, filteredClientes, inmuebleId, inmuebleDireccion, screenWidth, setFetchClientPhoneNumberRefreshKey, fetchClientesPhoneNumberRefreshKey, localizadoRefreshKey, setLocalizadoRefreshKey }) => {
+const ClientesAsociados = ({ setFilteredClientes, setClientesAsociadosInmueble, refreshMatchingClientesEncargos, setRefreshMatchingClientesEncargos, fetchClientesAsociados, setClientesAsociados, clientesAsociados, clientesAsociadosInmueble, filteredClientes, inmuebleId, inmuebleDireccion, screenWidth, setFetchClientPhoneNumberRefreshKey, fetchClientesPhoneNumberRefreshKey, localizadoRefreshKey, setLocalizadoRefreshKey, fetchClientesEncargos }) => {
     const [open, setOpen] = useState(false);
     const [allClientes, setAllClientes] = useState([]);
     const [pedido, setPedido] = useState(false);
@@ -186,6 +186,7 @@ const ClientesAsociados = ({ setFilteredClientes, setClientesAsociadosInmueble, 
                 setRefreshMatchingClientesEncargos(refreshMatchingClientesEncargos + 1);
                 fetchClientesAsociados();
                 resetForm();
+                fetchClientesEncargos();
             }
         } catch (error) {
             console.error('Error al agregar cliente:', error);
@@ -253,6 +254,7 @@ const ClientesAsociados = ({ setFilteredClientes, setClientesAsociadosInmueble, 
                 setLocalizadoRefreshKey(localizadoRefreshKey + 1);
                 setOpen(false);
                 handleClose();
+                fetchClientesEncargos();
             } else {
                 showToast('Error al asociar clientes.', 'linear-gradient(to right bottom, #c62828, #b92125, #ac1a22, #a0131f, #930b1c)');
             }
@@ -308,6 +310,7 @@ const ClientesAsociados = ({ setFilteredClientes, setClientesAsociadosInmueble, 
                 setClientesAsociadosInmueble(clientesAsociadosInmueble.filter(cliente => cliente._id !== clienteId));
                 setFilteredClientes(clientesAsociadosInmueble.filter(cliente => cliente._id !== clienteId));
                 setLocalizadoRefreshKey(localizadoRefreshKey + 1);
+                fetchClientesEncargos();
             } else {
                 showToast('Error al eliminar cliente', 'linear-gradient(to right bottom, #c62828, #b92125, #ac1a22, #a0131f, #930b1c)');
             }
@@ -391,6 +394,7 @@ const ClientesAsociados = ({ setFilteredClientes, setClientesAsociadosInmueble, 
                 setFetchClientPhoneNumberRefreshKey(setFetchClientPhoneNumberRefreshKey + 1);
                 setEditClienteAsociadoModalOpen(false);
                 setLocalizadoRefreshKey(localizadoRefreshKey + 1);
+                fetchClientesEncargos();
             } else {
                 showToast('Error al actualizar el cliente', 'linear-gradient(to right bottom, #c62828, #b92125, #ac1a22, #a0131f, #930b1c)');
             }

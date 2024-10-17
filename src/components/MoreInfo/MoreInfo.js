@@ -63,6 +63,7 @@ const ItemDetails = ({ id, onClose, showModal, setShowModal, fetchData, currentP
     const [clientesAsociadosInmueble, setClientesAsociadosInmueble] = useState([]);
     const [filteredClientes, setFilteredClientes] = useState(null);
     const [refreshMatchingClientesEncargos, setRefreshMatchingClientesEncargos] = useState(1);
+    const [clienteOptions, setClienteOptions] = useState([]);
 
     useEffect(() => {
         const observer = new ResizeObserver(entries => {
@@ -192,6 +193,26 @@ const ItemDetails = ({ id, onClose, showModal, setShowModal, fetchData, currentP
     useEffect(() => {
         fetchInmuebleMoreInfo();
     }, [onAddNoticiaRefreshKey, onAddEdtMoreInfoRefreshKey, onAddDeleteDPVRefreshKey, localizado]);
+
+    const fetchClientes = useCallback(async () => {
+        const inmuebleId = data.inmueble.id;
+        try {
+            const response = await axios.get('/api/seleccionaClienteEncargos', { params: { inmuebleId } });
+            console.log('response clientes', response.data);
+            if (Array.isArray(response.data)) {
+                setClienteOptions(
+                    response.data.map((cliente) => ({
+                        value: cliente.id,
+                        label: cliente.nombrecompleto_cliente,
+                    })),
+                );
+            } else {
+                console.error('Invalid data format for clients');
+            }
+        } catch (error) {
+            console.error('Error fetching clients:', error);
+        }
+    });
 
 
     useEffect(() => {
@@ -331,7 +352,7 @@ const ItemDetails = ({ id, onClose, showModal, setShowModal, fetchData, currentP
 
                                     <div className={`flex flex-col h-full rounded-lg gap-6 ${data.inmueble.noticiastate ? 'w-full' : 'w-1/2'} overflow-y-scroll`}>
                                         <div className='flex flex-row h-auto rounded-2xl shadow-lg'>
-                                            <ClientesAsociados setFilteredClientes={setFilteredClientes} refreshMatchingClientesEncargos={refreshMatchingClientesEncargos} setRefreshMatchingClientesEncargos={setRefreshMatchingClientesEncargos} fetchClientesAsociados={fetchClientesAsociados} setClientesAsociadosInmueble={setClientesAsociadosInmueble} setClientesAsociados={setClientesAsociados} clientesAsociados={clientesAsociados} clientesAsociadosInmueble={clientesAsociadosInmueble} filteredClientes={filteredClientes} inmuebleId={data.inmueble.id} inmuebleDireccion={data.inmueble.direccion} screenWidth={screenWidth} setFetchClientPhoneNumberRefreshKey={setFetchClientPhoneNumberRefreshKey} fetchClientPhoneNumberRefreshKey={fetchClientPhoneNumberRefreshKey} localizadoRefreshKey={localizadoRefreshKey} setLocalizadoRefreshKey={setLocalizadoRefreshKey} />
+                                            <ClientesAsociados fetchClientesEncargos={fetchClientes} setFilteredClientes={setFilteredClientes} refreshMatchingClientesEncargos={refreshMatchingClientesEncargos} setRefreshMatchingClientesEncargos={setRefreshMatchingClientesEncargos} fetchClientesAsociados={fetchClientesAsociados} setClientesAsociadosInmueble={setClientesAsociadosInmueble} setClientesAsociados={setClientesAsociados} clientesAsociados={clientesAsociados} clientesAsociadosInmueble={clientesAsociadosInmueble} filteredClientes={filteredClientes} inmuebleId={data.inmueble.id} inmuebleDireccion={data.inmueble.direccion} screenWidth={screenWidth} setFetchClientPhoneNumberRefreshKey={setFetchClientPhoneNumberRefreshKey} fetchClientPhoneNumberRefreshKey={fetchClientPhoneNumberRefreshKey} localizadoRefreshKey={localizadoRefreshKey} setLocalizadoRefreshKey={setLocalizadoRefreshKey} />
                                         </div>
                                         {!data.inmueble.noticiastate && (
                                             <div className='flex flex-row h-auto rounded-2xl shadow-lg'>
@@ -339,9 +360,14 @@ const ItemDetails = ({ id, onClose, showModal, setShowModal, fetchData, currentP
                                             </div>
                                         )}
                                         <div className='flex flex-row h-auto rounded-2xl shadow-lg'>
-                                            {data.inmueble.DPV ? <DPVInfoComponent DPVInfo={DPVInfo} /> : !data.inmueble.encargostate && <NoticiasDetails data={data} setOnAddNoticiaRefreshKey={setOnAddNoticiaRefreshKey} onAddNoticiaRefreshKey={onAddNoticiaRefreshKey} fetchData={fetchData} currentPage={currentPage} searchTerm={searchTerm} screenWidth={screenWidth} />
+                                            {data.inmueble.DPV && <DPVInfoComponent DPVInfo={DPVInfo} />
                                             }
                                         </div>
+                                        {!data.inmueble.DPV && data.inmueble.noticiastate && (
+                                            <div className='flex flex-col h-fit rounded-2xl'>
+                                                <NoticiasDetails data={data} setOnAddNoticiaRefreshKey={setOnAddNoticiaRefreshKey} onAddNoticiaRefreshKey={onAddNoticiaRefreshKey} fetchData={fetchData} currentPage={currentPage} searchTerm={searchTerm} screenWidth={screenWidth} />
+                                            </div>
+                                        )}
 
                                     </div>
 
@@ -357,13 +383,9 @@ const ItemDetails = ({ id, onClose, showModal, setShowModal, fetchData, currentP
                                                     <NoticiasDetails data={data} setOnAddNoticiaRefreshKey={setOnAddNoticiaRefreshKey} onAddNoticiaRefreshKey={onAddNoticiaRefreshKey} fetchData={fetchData} currentPage={currentPage} searchTerm={searchTerm} screenWidth={screenWidth} />
                                                 </div>
                                             )}
-                                            {!data.inmueble.DPV && data.inmueble.encargostate && (
-                                                <div className='flex flex-col h-fit rounded-2xl'>
-                                                    <NoticiasDetails data={data} setOnAddNoticiaRefreshKey={setOnAddNoticiaRefreshKey} onAddNoticiaRefreshKey={onAddNoticiaRefreshKey} fetchData={fetchData} currentPage={currentPage} searchTerm={searchTerm} screenWidth={screenWidth} />
-                                                </div>
-                                            )}
+
                                             <div className='flex flex-row h-auto rounded-2xl'>
-                                                <EncargosDetails refreshMatchingClientesEncargos={refreshMatchingClientesEncargos} fetchClientesAsociados={fetchClientesAsociados} data={data} fetchInmuebleMoreInfo={fetchInmuebleMoreInfo} fetchData={fetchData} currentPage={currentPage} searchTerm={searchTerm} screenWidth={screenWidth} />
+                                                <EncargosDetails fetchClientes={fetchClientes} clienteOptions={clienteOptions} setClienteOptions={setClienteOptions} refreshMatchingClientesEncargos={refreshMatchingClientesEncargos} fetchClientesAsociados={fetchClientesAsociados} data={data} fetchInmuebleMoreInfo={fetchInmuebleMoreInfo} fetchData={fetchData} currentPage={currentPage} searchTerm={searchTerm} screenWidth={screenWidth} />
                                             </div>
                                         </div>
                                     )}
@@ -477,7 +499,7 @@ const ItemDetails = ({ id, onClose, showModal, setShowModal, fetchData, currentP
                                 <div className={`flex flex-row gap-6 rounded-2xl w-2/3 overflow-y-hidden ${screenWidth <= 1280 && 'hidden'}`} style={{ maxHeight: `${divHeight}px` }}>
                                     <div className={`flex flex-col justify-start rounded-lg gap-6 w-1/2 overflow-y-scroll`} style={{ maxHeight: `${divHeight}px` }}>
                                         <div className='flex flex-row h-auto rounded-2xl shadow-lg'>
-                                            <ClientesAsociados setFilteredClientes={setFilteredClientes} setClientesAsociadosInmueble={setClientesAsociadosInmueble} refreshMatchingClientesEncargos={refreshMatchingClientesEncargos} setRefreshMatchingClientesEncargos={setRefreshMatchingClientesEncargos} fetchClientesAsociados={fetchClientesAsociados} setClientesAsociados={setClientesAsociados} clientesAsociados={clientesAsociados} clientesAsociadosInmueble={clientesAsociadosInmueble} filteredClientes={filteredClientes} inmuebleId={data.inmueble.id} inmuebleDireccion={data.inmueble.direccion} screenWidth={screenWidth} setFetchClientPhoneNumberRefreshKey={setFetchClientPhoneNumberRefreshKey} fetchClientPhoneNumberRefreshKey={fetchClientPhoneNumberRefreshKey} localizadoRefreshKey={localizadoRefreshKey} setLocalizadoRefreshKey={setLocalizadoRefreshKey} />
+                                            <ClientesAsociados fetchClientesEncargos={fetchClientes} setFilteredClientes={setFilteredClientes} setClientesAsociadosInmueble={setClientesAsociadosInmueble} refreshMatchingClientesEncargos={refreshMatchingClientesEncargos} setRefreshMatchingClientesEncargos={setRefreshMatchingClientesEncargos} fetchClientesAsociados={fetchClientesAsociados} setClientesAsociados={setClientesAsociados} clientesAsociados={clientesAsociados} clientesAsociadosInmueble={clientesAsociadosInmueble} filteredClientes={filteredClientes} inmuebleId={data.inmueble.id} inmuebleDireccion={data.inmueble.direccion} screenWidth={screenWidth} setFetchClientPhoneNumberRefreshKey={setFetchClientPhoneNumberRefreshKey} fetchClientPhoneNumberRefreshKey={fetchClientPhoneNumberRefreshKey} localizadoRefreshKey={localizadoRefreshKey} setLocalizadoRefreshKey={setLocalizadoRefreshKey} />
                                         </div>
 
                                         <div className='flex flex-col w-full h-fit rounded-2xl gap-6 ease-in-out '>
@@ -486,7 +508,7 @@ const ItemDetails = ({ id, onClose, showModal, setShowModal, fetchData, currentP
                                             </div>
                                             {data.inmueble.noticiastate && (
                                                 <div className='flex flex-row h-fit rounded-2xl'>
-                                                    <EncargosDetails refreshMatchingClientesEncargos={refreshMatchingClientesEncargos} fetchClientesAsociados={fetchClientesAsociados} data={data} fetchInmuebleMoreInfo={fetchInmuebleMoreInfo} fetchData={fetchData} currentPage={currentPage} searchTerm={searchTerm} screenWidth={screenWidth} />
+                                                    <EncargosDetails fetchClientes={fetchClientes} clienteOptions={clienteOptions} setClienteOptions={setClienteOptions} refreshMatchingClientesEncargos={refreshMatchingClientesEncargos} fetchClientesAsociados={fetchClientesAsociados} data={data} fetchInmuebleMoreInfo={fetchInmuebleMoreInfo} fetchData={fetchData} currentPage={currentPage} searchTerm={searchTerm} screenWidth={screenWidth} />
                                                 </div>
                                             )}
                                         </div>
@@ -510,7 +532,7 @@ const ItemDetails = ({ id, onClose, showModal, setShowModal, fetchData, currentP
                                 <div className={`flex flex-row gap-6 rounded-2xl w-full overflow-y-hidden mt-2 ${(screenWidth > 1280 || screenWidth <= 1150) && 'hidden'}`}>
 
                                     <div className='flex flex-col gap-6 h-fit w-1/3 rounded-2xl overflow-y-scroll  max-h-[1250px]'>
-                                        <ClientesAsociados setFilteredClientes={setFilteredClientes} setClientesAsociadosInmueble={setClientesAsociadosInmueble} refreshMatchingClientesEncargos={refreshMatchingClientesEncargos} setRefreshMatchingClientesEncargos={setRefreshMatchingClientesEncargos} fetchClientesAsociados={fetchClientesAsociados} setClientesAsociados={setClientesAsociados} clientesAsociados={clientesAsociados} clientesAsociadosInmueble={clientesAsociadosInmueble} filteredClientes={filteredClientes} inmuebleId={data.inmueble.id} inmuebleDireccion={data.inmueble.direccion} screenWidth={screenWidth} setFetchClientPhoneNumberRefreshKey={setFetchClientPhoneNumberRefreshKey} fetchClientPhoneNumberRefreshKey={fetchClientPhoneNumberRefreshKey} localizadoRefreshKey={localizadoRefreshKey} setLocalizadoRefreshKey={setLocalizadoRefreshKey} />
+                                        <ClientesAsociados fetchClientesEncargos={fetchClientes} setFilteredClientes={setFilteredClientes} setClientesAsociadosInmueble={setClientesAsociadosInmueble} refreshMatchingClientesEncargos={refreshMatchingClientesEncargos} setRefreshMatchingClientesEncargos={setRefreshMatchingClientesEncargos} fetchClientesAsociados={fetchClientesAsociados} setClientesAsociados={setClientesAsociados} clientesAsociados={clientesAsociados} clientesAsociadosInmueble={clientesAsociadosInmueble} filteredClientes={filteredClientes} inmuebleId={data.inmueble.id} inmuebleDireccion={data.inmueble.direccion} screenWidth={screenWidth} setFetchClientPhoneNumberRefreshKey={setFetchClientPhoneNumberRefreshKey} fetchClientPhoneNumberRefreshKey={fetchClientPhoneNumberRefreshKey} localizadoRefreshKey={localizadoRefreshKey} setLocalizadoRefreshKey={setLocalizadoRefreshKey} />
                                         {data.inmueble.DPV && (
                                             <div className='flex flex-row h-fit rounded-2xl shadow-lg'>
                                                 <DPVInfoComponent DPVInfo={DPVInfo} />
@@ -524,7 +546,7 @@ const ItemDetails = ({ id, onClose, showModal, setShowModal, fetchData, currentP
                                         </div>
                                         {data.inmueble.noticiastate && (
                                             <div className='flex flex-row h-fit rounded-2xl shadow-lg'>
-                                                <EncargosDetails refreshMatchingClientesEncargos={refreshMatchingClientesEncargos} fetchClientesAsociados={fetchClientesAsociados} data={data} fetchInmuebleMoreInfo={fetchInmuebleMoreInfo} fetchData={fetchData} currentPage={currentPage} searchTerm={searchTerm} screenWidth={screenWidth} />
+                                                <EncargosDetails fetchClientes={fetchClientes} clienteOptions={clienteOptions} setClienteOptions={setClienteOptions} refreshMatchingClientesEncargos={refreshMatchingClientesEncargos} fetchClientesAsociados={fetchClientesAsociados} data={data} fetchInmuebleMoreInfo={fetchInmuebleMoreInfo} fetchData={fetchData} currentPage={currentPage} searchTerm={searchTerm} screenWidth={screenWidth} />
                                             </div>
                                         )}
                                     </div>
@@ -539,14 +561,14 @@ const ItemDetails = ({ id, onClose, showModal, setShowModal, fetchData, currentP
 
                                     <div className='flex flex-col gap-6 h-fit w-1/2 rounded-2xl overflow-y-scroll  max-h-full'>
                                         <div>
-                                            <ClientesAsociados setFilteredClientes={setFilteredClientes} setClientesAsociadosInmueble={setClientesAsociadosInmueble} refreshMatchingClientesEncargos={refreshMatchingClientesEncargos} setRefreshMatchingClientesEncargos={setRefreshMatchingClientesEncargos} fetchClientesAsociados={fetchClientesAsociados} setClientesAsociados={setClientesAsociados} clientesAsociados={clientesAsociados} clientesAsociadosInmueble={clientesAsociadosInmueble} filteredClientes={filteredClientes} inmuebleId={data.inmueble.id} inmuebleDireccion={data.inmueble.direccion} screenWidth={screenWidth} setFetchClientPhoneNumberRefreshKey={setFetchClientPhoneNumberRefreshKey} fetchClientPhoneNumberRefreshKey={fetchClientPhoneNumberRefreshKey} localizadoRefreshKey={localizadoRefreshKey} setLocalizadoRefreshKey={setLocalizadoRefreshKey} />
+                                            <ClientesAsociados fetchClientesEncargos={fetchClientes} setFilteredClientes={setFilteredClientes} setClientesAsociadosInmueble={setClientesAsociadosInmueble} refreshMatchingClientesEncargos={refreshMatchingClientesEncargos} setRefreshMatchingClientesEncargos={setRefreshMatchingClientesEncargos} fetchClientesAsociados={fetchClientesAsociados} setClientesAsociados={setClientesAsociados} clientesAsociados={clientesAsociados} clientesAsociadosInmueble={clientesAsociadosInmueble} filteredClientes={filteredClientes} inmuebleId={data.inmueble.id} inmuebleDireccion={data.inmueble.direccion} screenWidth={screenWidth} setFetchClientPhoneNumberRefreshKey={setFetchClientPhoneNumberRefreshKey} fetchClientPhoneNumberRefreshKey={fetchClientPhoneNumberRefreshKey} localizadoRefreshKey={localizadoRefreshKey} setLocalizadoRefreshKey={setLocalizadoRefreshKey} />
                                         </div>
                                         <div className='flex flex-row h-auto rounded-2xl shadow-lg'>
                                             <NoticiasDetails data={data} setOnAddNoticiaRefreshKey={setOnAddNoticiaRefreshKey} onAddNoticiaRefreshKey={onAddNoticiaRefreshKey} fetchData={fetchData} currentPage={currentPage} searchTerm={searchTerm} screenWidth={screenWidth} />
                                         </div>
                                         {data.inmueble.noticiastate && (
                                             <div className='flex flex-row h-fit rounded-2xl shadow-lg'>
-                                                <EncargosDetails refreshMatchingClientesEncargos={refreshMatchingClientesEncargos} fetchClientesAsociados={fetchClientesAsociados} data={data} fetchInmuebleMoreInfo={fetchInmuebleMoreInfo} fetchData={fetchData} currentPage={currentPage} searchTerm={searchTerm} screenWidth={screenWidth} />
+                                                <EncargosDetails fetchClientes={fetchClientes} clienteOptions={clienteOptions} setClienteOptions={setClienteOptions} refreshMatchingClientesEncargos={refreshMatchingClientesEncargos} fetchClientesAsociados={fetchClientesAsociados} data={data} fetchInmuebleMoreInfo={fetchInmuebleMoreInfo} fetchData={fetchData} currentPage={currentPage} searchTerm={searchTerm} screenWidth={screenWidth} />
                                             </div>
                                         )}
                                         {data.inmueble.DPV && (
@@ -565,14 +587,14 @@ const ItemDetails = ({ id, onClose, showModal, setShowModal, fetchData, currentP
                                 </div>
                                 <div className={`flex flex-col gap-6 rounded-2xl w-full overflow-y-hidden mt-2 ${screenWidth > 780 && 'hidden'}`}>
                                     <div>
-                                        <ClientesAsociados setFilteredClientes={setFilteredClientes} setClientesAsociadosInmueble={setClientesAsociadosInmueble} fetchClientesAsociados={fetchClientesAsociados} setClientesAsociados={setClientesAsociados} clientesAsociados={clientesAsociados} clientesAsociadosInmueble={clientesAsociadosInmueble} filteredClientes={filteredClientes} inmuebleId={data.inmueble.id} inmuebleDireccion={data.inmueble.direccion} screenWidth={screenWidth} setFetchClientPhoneNumberRefreshKey={setFetchClientPhoneNumberRefreshKey} fetchClientPhoneNumberRefreshKey={fetchClientPhoneNumberRefreshKey} localizadoRefreshKey={localizadoRefreshKey} setLocalizadoRefreshKey={setLocalizadoRefreshKey} />
+                                        <ClientesAsociados fetchClientesEncargos={fetchClientes} setFilteredClientes={setFilteredClientes} setClientesAsociadosInmueble={setClientesAsociadosInmueble} fetchClientesAsociados={fetchClientesAsociados} setClientesAsociados={setClientesAsociados} clientesAsociados={clientesAsociados} clientesAsociadosInmueble={clientesAsociadosInmueble} filteredClientes={filteredClientes} inmuebleId={data.inmueble.id} inmuebleDireccion={data.inmueble.direccion} screenWidth={screenWidth} setFetchClientPhoneNumberRefreshKey={setFetchClientPhoneNumberRefreshKey} fetchClientPhoneNumberRefreshKey={fetchClientPhoneNumberRefreshKey} localizadoRefreshKey={localizadoRefreshKey} setLocalizadoRefreshKey={setLocalizadoRefreshKey} />
                                     </div>
                                     <div className='flex flex-row h-auto rounded-2xl shadow-lg'>
                                         <NoticiasDetails data={data} setOnAddNoticiaRefreshKey={setOnAddNoticiaRefreshKey} onAddNoticiaRefreshKey={onAddNoticiaRefreshKey} fetchData={fetchData} currentPage={currentPage} searchTerm={searchTerm} screenWidth={screenWidth} />
                                     </div>
                                     {data.inmueble.noticiastate && (
                                         <div className='flex flex-row h-fit rounded-2xl shadow-lg'>
-                                            <EncargosDetails refreshMatchingClientesEncargos={refreshMatchingClientesEncargos} fetchClientesAsociados={fetchClientesAsociados} data={data} fetchInmuebleMoreInfo={fetchInmuebleMoreInfo} fetchData={fetchData} currentPage={currentPage} searchTerm={searchTerm} screenWidth={screenWidth} />
+                                            <EncargosDetails fetchClientes={fetchClientes} clienteOptions={clienteOptions} setClienteOptions={setClienteOptions} refreshMatchingClientesEncargos={refreshMatchingClientesEncargos} fetchClientesAsociados={fetchClientesAsociados} data={data} fetchInmuebleMoreInfo={fetchInmuebleMoreInfo} fetchData={fetchData} currentPage={currentPage} searchTerm={searchTerm} screenWidth={screenWidth} />
                                         </div>
                                     )}
                                     {data.inmueble.DPV && (

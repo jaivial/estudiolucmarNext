@@ -81,8 +81,12 @@ const DesktopSliderComponent = ({ data, encargoData, images, screenWidth }) => {
                     )}
                 </div>
             ) : (
-                <div className='h-[800px] rounded-lg w-[90%] shadow-lg flex'>
-                    <div className="keen-slider__slide h-full flex flex-col gap-2 justify-center items-center w-full bg-slate-100 rounded-lg">
+                <div className={`keen-slider rounded-2xl shadow-lg w-full flex relative ${screenWidth <= 1280 ? 'h-[500px]' : 'h-[400px]'}`}>
+                    <div className='bg-white absolute top-5 right-5 flex flex-row gap-2 items-center justify-center px-3 py-2 rounded-3xl hover:bg-slate-900 cursor-pointer group z-[9]' onClick={toggleMap}>
+                        <Icon icon="solar:map-outline" className='text-slate-900 text-2xl font-bold group-hover:text-white' />
+                        <p className='font-sans text-slate-900 font-bold text-sm group-hover:text-white'>Abrir Mapa</p>
+                    </div>
+                    <div className="keen-slider__slide moreinfoslider h-full flex flex-col gap-2 justify-center items-center w-full bg-slate-100 rounded-lg">
                         <div className='min-w-[770.234px] h-full flex flex-col gap-2 justify-center items-center'>
                             <Icon icon="fluent:camera-off-16-regular" className='text-4xl' />
                             <p>No hay imágenes</p>

@@ -51,7 +51,7 @@ const showToast = (message, backgroundColor) => {
     }).showToast();
 };
 
-const EncargosDetails = ({ refreshMatchingClientesEncargos, fetchClientesAsociados, data, fetchInmuebleMoreInfo, fetchData, currentPage, searchTerm, screenWidth }) => {
+const EncargosDetails = ({ fetchClientes, setClienteOptions, clienteOptions, refreshMatchingClientesEncargos, fetchClientesAsociados, data, fetchInmuebleMoreInfo, fetchData, currentPage, searchTerm, screenWidth }) => {
     const [isOpen, setIsOpen] = useState(false);
     const [isPopupOpen, setIsPopupOpen] = useState(false);
     const [encargos, setEncargos] = useState([]);
@@ -66,7 +66,6 @@ const EncargosDetails = ({ refreshMatchingClientesEncargos, fetchClientesAsociad
     const [isEditing, setIsEditing] = useState(false);
     const [currentEncargoId, setCurrentEncargoId] = useState(null);
     const [clientes, setClientes] = useState([]);
-    const [clienteOptions, setClienteOptions] = useState([]);
     const [selectedCliente, setSelectedCliente] = useState(null);
     const [matchingCliente, setMatchingCliente] = useState([null]);
     const [nombreCliente, setNombreCliente] = useState('');
@@ -239,25 +238,7 @@ const EncargosDetails = ({ refreshMatchingClientesEncargos, fetchClientesAsociad
 
 
 
-    const fetchClientes = async () => {
-        const inmuebleId = data.inmueble.id;
-        try {
-            const response = await axios.get('/api/seleccionaClienteEncargos', { params: { inmuebleId } });
-            console.log('response clientes', response.data);
-            if (Array.isArray(response.data)) {
-                setClienteOptions(
-                    response.data.map((cliente) => ({
-                        value: cliente.id,
-                        label: cliente.nombrecompleto_cliente,
-                    })),
-                );
-            } else {
-                console.error('Invalid data format for clients');
-            }
-        } catch (error) {
-            console.error('Error fetching clients:', error);
-        }
-    };
+
 
     useEffect(() => {
         fetchEncargos();
