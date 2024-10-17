@@ -251,6 +251,7 @@ const ClientesAsociados = ({ setFilteredClientes, setClientesAsociadosInmueble, 
                 fetchClientesAsociados();
                 showToast('Clientes asociados correctamente.', 'linear-gradient(to right bottom, #00603c, #006f39, #007d31, #008b24, #069903)');
                 setFetchClientPhoneNumberRefreshKey(setFetchClientPhoneNumberRefreshKey + 1);
+                setRefreshMatchingClientesEncargos(refreshMatchingClientesEncargos + 1);
                 setLocalizadoRefreshKey(localizadoRefreshKey + 1);
                 setOpen(false);
                 handleClose();
@@ -404,9 +405,6 @@ const ClientesAsociados = ({ setFilteredClientes, setClientesAsociadosInmueble, 
         }
     };
 
-    useEffect(() => {
-        console.log('newCliente', newCliente);
-    }, [newCliente]);
 
     return (
         <Accordion defaultActiveKey={0} className={`w-full  ${screenWidth >= 640 ? 'm-0' : ''} border-1 border-gray-300 bg-slate-50 rounded-2xl shadow-lg`} style={{ borderRadius: '1rem' }}>

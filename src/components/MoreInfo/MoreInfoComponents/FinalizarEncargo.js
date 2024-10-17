@@ -8,7 +8,7 @@ import CountUp from 'react-countup';
 import { Checkbox, AutoComplete } from 'rsuite';
 
 
-const FinalizarEncargo = ({ fetchClientesAsociados, clienteID, direccionInmueble, inmuebleID, fetchMatchingEncargos, matchingClientesEncargos, cliente, asesorID, asesorNombre, precio, encargos, tipoEncargo, encargoID, fetchData, currentPage, searchTerm, fetchInmuebleMoreInfo }) => {
+const FinalizarEncargo = ({ fetchTransacciones, fetchClientesAsociados, clienteID, direccionInmueble, inmuebleID, fetchMatchingEncargos, matchingClientesEncargos, cliente, asesorID, asesorNombre, precio, encargos, tipoEncargo, encargoID, fetchData, currentPage, searchTerm, fetchInmuebleMoreInfo }) => {
 
     // Lógica para calcular la comisión del vendedor
     const calcularComisionVendedor = () => {
@@ -46,6 +46,7 @@ const FinalizarEncargo = ({ fetchClientesAsociados, clienteID, direccionInmueble
     const [showConfirm, setShowConfirm] = useState(false);
     const [showConfetti, setShowConfetti] = useState(false);
     const [selectedClientID, setSelectedClientID] = useState(null); // Store selected client ID
+    const [selectedClientName, setSelectedClienName] = useState(null); // Store selected client ID
     const [filteredClientes, setFilteredClientes] = useState(matchingClientesEncargos); // Filtered clients for autocomplete
 
     const [encargoFinalizado, setEncargoFinalizado] = useState({
@@ -61,6 +62,7 @@ const FinalizarEncargo = ({ fetchClientesAsociados, clienteID, direccionInmueble
         comisionTotal: parseInt(comisionTotal, 10),
         encargoID: parseInt(encargoID, 10),
         pedidoID: selectedClientID,
+        pedidoName: selectedClientName,
         inmuebleID: inmuebleID,
         direccionInmueble: direccionInmueble,
     });
@@ -74,9 +76,6 @@ const FinalizarEncargo = ({ fetchClientesAsociados, clienteID, direccionInmueble
         }
     };
 
-    useEffect(() => {
-        console.log('encargoFinalizado PARAMS', encargoFinalizado);
-    }, [encargoFinalizado]);
 
     useEffect(() => {
         fetchMatchingEncargos();
@@ -90,14 +89,15 @@ const FinalizarEncargo = ({ fetchClientesAsociados, clienteID, direccionInmueble
 
     // Handle selection or deselection of a row (checkbox click)
     const handleSelectRow = (id) => {
-        if (selectedClientID === id) {
+        if (selectedClientID === id._id) {
             // If already selected, unselect it (toggle off)
             setSelectedClientID(null);
             handleInputChange(null, 'pedidoID'); // Clear pedidoID
         } else {
             // Select the row and store pedidoID
-            setSelectedClientID(id);
-            handleInputChange(id, 'pedidoID');
+            setSelectedClientID(id._id);
+            setSelectedClienName(id.nombre + ' ' + id.apellido);
+            handleInputChange(id._id, 'pedidoID');
         }
     };
 
@@ -129,6 +129,14 @@ const FinalizarEncargo = ({ fetchClientesAsociados, clienteID, direccionInmueble
             [name]: value
         });
     };
+
+    useEffect(() => {
+        setEncargoFinalizado(prev => ({
+            ...prev,
+            pedidoName: selectedClientName
+        }));
+    }, [selectedClientName]);
+
 
     // Function to fetch ventasTotales using axios
     const fetchVentasTotales = async (userID) => {
@@ -180,13 +188,17 @@ const FinalizarEncargo = ({ fetchClientesAsociados, clienteID, direccionInmueble
         fetchData(currentPage, searchTerm);
         fetchClientesAsociados();
         fetchInmuebleMoreInfo();
+        fetchTransacciones(inmuebleID);
     };
 
     const formatCurrency = (value) => {
         return value.toLocaleString('es-ES', { style: 'currency', currency: 'EUR', minimumFractionDigits: 0 });
     };
 
+    useEffect(() => {
+        console.log('selectedClientName', selectedClientName);
 
+    }, [selectedClientName]);
     return (
         <div>
             <Button appearance="primary" onClick={handleOpen} style={{ marginTop: '20px' }}>
@@ -249,13 +261,13 @@ const FinalizarEncargo = ({ fetchClientesAsociados, clienteID, direccionInmueble
                                         {filteredClientes.map((cliente) => (
                                             <tr
                                                 key={cliente._id}
-                                                onClick={() => handleSelectRow(cliente._id)}
+                                                onClick={() => handleSelectRow(cliente)}
                                                 className={`cursor-pointer hover:bg-gray-100 ${selectedClientID === cliente._id ? 'bg-gray-200' : ''}`}
                                             >
                                                 <td className="px-4 py-2">
                                                     <Checkbox
                                                         checked={selectedClientID === cliente._id}
-                                                        onChange={() => handleSelectRow(cliente._id)}
+                                                        onChange={() => handleSelectRow(cliente)}
                                                     />
                                                 </td>
                                                 <td className="px-4 py-2">
@@ -334,7 +346,7 @@ const FinalizarEncargo = ({ fetchClientesAsociados, clienteID, direccionInmueble
 
                     {/* Mensaje de éxito */}
                     <div className="text-center text-white animate-fade-in">
-                        <h2 className="text-4xl font-bold mb-6">¡Enhorabuena! <br /> ¡Has completado una venta!</h2>
+                        <h2 className="text-4xl font-bold mb-6">¡Enhorabuena! <br /> <br /> {asesorNombre} <br /> <br />¡Has completado una venta!</h2>
 
                         {/* Nueva h3 para comisionTotal */}
                         <h3 className="text-3xl font-bold text-blue-500 mb-2 animate-bounce">

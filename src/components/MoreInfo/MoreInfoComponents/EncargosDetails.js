@@ -51,7 +51,7 @@ const showToast = (message, backgroundColor) => {
     }).showToast();
 };
 
-const EncargosDetails = ({ fetchClientes, setClienteOptions, clienteOptions, refreshMatchingClientesEncargos, fetchClientesAsociados, data, fetchInmuebleMoreInfo, fetchData, currentPage, searchTerm, screenWidth }) => {
+const EncargosDetails = ({ fetchTransacciones, fetchClientes, setClienteOptions, clienteOptions, refreshMatchingClientesEncargos, fetchClientesAsociados, data, fetchInmuebleMoreInfo, fetchData, currentPage, searchTerm, screenWidth }) => {
     const [isOpen, setIsOpen] = useState(false);
     const [isPopupOpen, setIsPopupOpen] = useState(false);
     const [encargos, setEncargos] = useState([]);
@@ -632,7 +632,7 @@ const EncargosDetails = ({ fetchClientes, setClienteOptions, clienteOptions, ref
                                                         <p className="text-base text-gray-950 py-1 text-center">Asesor: {encargos[0].comercial_encargo.label}</p>
                                                     </div>
                                                     <div>
-                                                        <FinalizarEncargo fetchClientesAsociados={fetchClientesAsociados} direccionInmueble={data.inmueble.direccion} inmuebleID={encargos[0].encargo_id} fetchMatchingEncargos={fetchMatchingEncargos} matchingClientesEncargos={matchingClientesEncargos} fetchInmuebleMoreInfo={fetchInmuebleMoreInfo} fetchData={fetchData} currentPage={currentPage} searchTerm={searchTerm} cliente={encargos[0].fullCliente.label} clienteID={encargos[0].fullCliente.value} asesorID={encargos[0].comercial_encargo.value} asesorNombre={encargos[0].comercial_encargo.label} encargos={encargos} tipoEncargo={encargos[0].tipo_encargo} precio={encargos[0].precio_1 || encargos[0].precio_2} encargoID={encargos[0].encargo_id} />
+                                                        <FinalizarEncargo fetchTransacciones={fetchTransacciones} fetchClientesAsociados={fetchClientesAsociados} direccionInmueble={data.inmueble.direccion} inmuebleID={encargos[0].encargo_id} fetchMatchingEncargos={fetchMatchingEncargos} matchingClientesEncargos={matchingClientesEncargos} fetchInmuebleMoreInfo={fetchInmuebleMoreInfo} fetchData={fetchData} currentPage={currentPage} searchTerm={searchTerm} cliente={encargos[0].fullCliente.label} clienteID={encargos[0].fullCliente.value} asesorID={encargos[0].comercial_encargo.value} asesorNombre={encargos[0].comercial_encargo.label} encargos={encargos} tipoEncargo={encargos[0].tipo_encargo} precio={encargos[0].precio_1 || encargos[0].precio_2} encargoID={encargos[0].encargo_id} />
                                                     </div>
                                                     <div className="absolute top-0 right-0 flex flex-col gap-6">
                                                         <div className='flex flex-col items-center gap-4'>
