@@ -476,7 +476,7 @@ const ItemDetails = ({ id, onClose, showModal, setShowModal, fetchData, currentP
                                             <div className={`flex flex-col gap-6 h-full rounded-2xl ${screenWidth < 705 ? 'w-full' : 'w-1/2'}`}>
                                                 <DesktopAdditionalInfo data={data} encargoData={encargoData} isVisible={isVisible} setIsVisible={setIsVisible} screenWidth={screenWidth} inmuebles_asociados_informador={inmuebles_asociados_informador} inmuebles_asociados_inquilino={inmuebles_asociados_inquilino} inmuebles_asociados_propietario={inmuebles_asociados_propietario} nombre={nombre} apellido={apellido} inmuebleId={data.inmueble.id} />
                                             </div>
-                                            <div className={`w-full bg-red-400 border-blue-400 border-2 gap-4 rounded-2xl shadow-md flex flex-col min-h-[258px] ${screenWidth < 650 ? 'p-0' : 'p-2'}`}>
+                                            <div className={`w-full bg-white border-blue-400 border-2 gap-4 rounded-2xl shadow-md flex flex-col min-h-[258px] ${screenWidth < 650 ? 'p-0' : 'p-2'}`}>
                                                 <DetailsInfoTwo data={data} descripcion={descripcion} setDescripcion={setDescripcion} newDescripcion={newDescripcion} setNewDescripcion={setNewDescripcion} screenWidth={screenWidth} />
                                             </div>
                                         </div>
@@ -557,7 +557,7 @@ const ItemDetails = ({ id, onClose, showModal, setShowModal, fetchData, currentP
                                         </div>
                                     </div>
                                 </div>
-                                <div className={`flex flex-row gap-6 rounded-2xl bg-blue-200 w-full overflow-y-hidden mt-2 ${(screenWidth < 780 || screenWidth > (1150)) && 'hidden'}`}>
+                                <div className={`flex flex-row gap-6 rounded-2xl w-full overflow-y-hidden mt-2 ${(screenWidth < 780 || screenWidth > (1150)) && 'hidden'}`}>
 
                                     <div className='flex flex-col gap-6 h-fit w-1/2 rounded-2xl overflow-y-scroll  max-h-full'>
                                         <div>

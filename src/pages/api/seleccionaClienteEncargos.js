@@ -26,13 +26,12 @@ export default async function handler(req, res) {
         // Fetch all documents from the 'clientes' collection that match the inmuebleId
         const clientes = await db.collection('clientes')
             .find({
-                $or: [
-                    { inmuebles_asociados_informador: { $elemMatch: { id: parseInt(inmuebleId) } } },
-                    { inmuebles_asociados_propietario: { $elemMatch: { id: parseInt(inmuebleId) } } },
-                    { inmuebles_asociados_inquilino: { $elemMatch: { id: parseInt(inmuebleId) } } }
-                ]
+                inmuebles_asociados_propietario: {
+                    $elemMatch: { id: parseInt(inmuebleId) }
+                }
             }, { projection: { _id: 1, nombre: 1, apellido: 1, client_id: 1 } })
             .toArray();
+
 
         // Transform the data
         const result = clientes.map(cliente => ({
