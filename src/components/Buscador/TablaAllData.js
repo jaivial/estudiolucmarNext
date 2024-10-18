@@ -26,15 +26,66 @@ import { FaArrowLeft } from "react-icons/fa6";
 const Table = ({ parentsEdificioProps, admin, screenWidth, loadingLoader }) => {
     const [expanded, setExpanded] = useState(false);
     const [expandedEscalera, setExpandedEscalera] = useState(false);
+    const [expandedEscaleraId, setExpandedEscaleraId] = useState(null);
     const contentRef = useRef(null);
     const [contentHeight, setContentHeight] = useState(0);
+    const [expandedItems, setExpandedItems] = useState({});
+    const [expandedItemsEscalera, setExpandedItemsEscalera] = useState({});
 
-    const handleToggle = () => {
-        setExpanded(!expanded);
+
+    //     <div className="cursor-pointer flex flex-row justify-center w-[30%]">
+    //     {!expandedItems[item.EdificioID] && (
+    //         <svg xmlns="http://www.w3.org/2000/svg" width="2.5em" height="2.5em" viewBox="0 0 24 24">
+    //             <path fill="currentColor" fillRule="evenodd" d="M7 9a1 1 0 0 0-.707 1.707l5 5a1 1 0 0 0 1.414 0l5-5A1 1 0 0 0 17 9z" clipRule="evenodd" />
+    //         </svg>
+    //     )}
+    //     {expandedItems[item.EdificioID] && (
+    //         <svg xmlns="http://www.w3.org/2000/svg" width="2.5em" height="2.5em" viewBox="0 0 24 24">
+    //             <path fill="currentColor" d="M18.2 13.3L12 7l-6.2 6.3c-.2.2-.3.5-.3.7s.1.5.3.7c.2.2.4.3.7.3h11c.3 0 .5-.1.7-.3c.2-.2.3-.5.3-.7s-.1-.5-.3-.7" />
+    //         </svg>
+    //     )}
+    // </div>
+
+    // </div>
+    // {expandedItems[item.EdificioID] && edifciosChildren(item)}
+    // </div>
+
+    //     onClick={() => handleToggle(item.EdificioID)}>
+
+    //     const [expandedItems, setExpandedItems] = useState({});
+
+    //     const handleToggle = (itemId) => {
+    //         setExpandedItems((prev) => ({
+    //             ...prev,
+    //             [itemId]: !prev[itemId],
+    //         }));
+    //     };
+
+    //     {expandedItems[child.id] && (
+    //         console.log('child.nestedInmuebles', child.nestedinmuebles)
+    //     )}
+    //     {expandedItems[child.id] && <div className="w-full flex flex-col justify-center items-center px-2">{escalerasChildren(child.nestedinmuebles)}</div>}
+    // </div>
+
+    const handleToggle = (edificioId) => {
+        setExpandedItems(prevState => ({
+            ...prevState,
+            [edificioId]: !prevState[edificioId],
+        }));
     };
-    const handleToggleEscalera = () => {
-        setExpandedEscalera(!expandedEscalera);
+    const handleToggleEscalera = (escaleraId) => {
+        setExpandedItemsEscalera(prevState => ({
+            ...prevState,
+            [escaleraId]: !prevState[escaleraId],
+        }));
     };
+
+
+    useEffect(() => {
+        console.log('expandedItems', expandedItems);
+    }, [expandedItems]);
+
+
 
     useEffect(() => {
         if (contentRef.current) {
@@ -47,6 +98,8 @@ const Table = ({ parentsEdificioProps, admin, screenWidth, loadingLoader }) => {
                     totalHeight += escaleraContent.scrollHeight;
                 }
             }
+
+            console.log('totalheight', totalHeight);
 
             setContentHeight(totalHeight);
         }
@@ -64,7 +117,6 @@ const Table = ({ parentsEdificioProps, admin, screenWidth, loadingLoader }) => {
     const [childsEdificio, setChildsEdificio] = useState([]);
     const [parentsEscalera, setParentsEscalera] = useState(parentsEdificioProps.escaleras);
     const [parentsEdificio, setParentsEdificio] = useState(parentsEdificioProps.edificios);
-    const [expandedItems, setExpandedItems] = useState({});
     const [showExtraButtons, setShowExtraButtons] = useState(false);
     const [showUngroupButtons, setShowUngroupButtons] = useState(false);
     const [selectedItems, setSelectedItems] = useState(new Set());
@@ -1957,7 +2009,7 @@ const Table = ({ parentsEdificioProps, admin, screenWidth, loadingLoader }) => {
                             key={child.id}
                             className={`relative border border-gray-400 mb-0 p-0 rounded-md shadow-xl flex items-center flex-col w-full bg-gray-100 transition-all duration-300 ease-in-out`}
                         >
-                            <div className="flex flex-row justify-stretch items-stretch gap-2 w-full cursor-pointer" onClick={handleToggleEscalera}>
+                            <div className="flex flex-row justify-stretch items-stretch gap-2 w-full cursor-pointer" onClick={() => handleToggleEscalera(child.id)}>
                                 {showDeleteInmuebleButtons && (
                                     <Checkbox
                                         checked={selectedItems.has(child.id)}
@@ -1974,7 +2026,7 @@ const Table = ({ parentsEdificioProps, admin, screenWidth, loadingLoader }) => {
                                     </span>
                                     <p className="text-start w-[30%]">{child.zona === 'NULL' ? 'N/A' : child.zona}</p>
                                     <div
-                                        className={`cursor-pointer flex flex-row justify-center w-[20%] transition-transform duration-[1000ms] ${expandedEscalera ? 'rotate-180' : 'rotate-0'}`}
+                                        className={`cursor-pointer flex flex-row justify-center w-[20%] transition-transform duration-[1000ms] ${expandedItemsEscalera[child.id] ? 'rotate-180' : 'rotate-0'}`}
                                     >
                                         <svg xmlns="http://www.w3.org/2000/svg" width="2.5em" height="2.5em" viewBox="0 0 24 24">
                                             <path fill="currentColor" d="M18.2 13.3L12 7l-6.2 6.3c-.2.2-.3.5-.3.7s.1.5.3.7c.2.2.4.3.7.3h11c.3 0 .5-.1.7-.3c.2-.2.3-.5.3-.7s-.1-.5-.3-.7" />
@@ -1984,20 +2036,21 @@ const Table = ({ parentsEdificioProps, admin, screenWidth, loadingLoader }) => {
                             </div>
                             <div
                                 style={{
-                                    maxHeight: expandedEscalera ? '1000px' : '0px',
+                                    maxHeight: expandedItemsEscalera[child.id] ? '1000px' : '0px',
                                     width: '100%',
                                 }}
                                 className={`overflow-hidden transition-max-height duration-[1000ms] ease-in-out`}
                             >
-                                <div className="p-2 escalera-content w-full">
-                                    {expandedEscalera && <div className="w-full flex flex-col justify-center items-center px-2">{escalerasChildren(child.nestedinmuebles)}</div>}
+                                <div className="p-2  w-full">
+                                    {expandedItemsEscalera[child.id] && <div className="w-full flex escalera-content flex-col justify-center items-center px-2">{escalerasChildren(child.nestedinmuebles)}</div>}
                                 </div>
                             </div>
                         </div>
 
 
-                    ))}
-            </div>
+                    ))
+                }
+            </div >
 
         );
     };
@@ -2656,10 +2709,9 @@ const Table = ({ parentsEdificioProps, admin, screenWidth, loadingLoader }) => {
                                                                 className={`edificioagrupacion relative border border-gray-400 mb-0 p-0 rounded-md shadow-xl flex items-center flex-col w-full bg-gray-100 transition-all duration-300 ease-in-out`}
                                                             >
                                                                 <div
-                                                                    onClick={handleToggle}
+                                                                    onClick={() => handleToggle(item.id)}
                                                                     className="flex flex-row justify-stretch items-center gap-2 w-full cursor-pointer"
                                                                 >
-
                                                                     {showDeleteInmuebleButtons && (
                                                                         <Checkbox
                                                                             checked={selectedItems.has(item.id)}
@@ -2679,28 +2731,24 @@ const Table = ({ parentsEdificioProps, admin, screenWidth, loadingLoader }) => {
                                                                         </span>
                                                                         <p className="text-start w-[30%] ">{item.zona === 'NULL' ? 'N/A' : item.zona}</p>
                                                                         <div
-                                                                            className={`cursor-pointer flex flex-row justify-center w-[20%] transition-transform duration-[1000ms] ${expanded ? 'rotate-180' : 'rotate-0'
-                                                                                }`}
+                                                                            className={`cursor-pointer flex flex-row justify-center w-[20%] transition-transform duration-[1000ms] ${expandedItems[item.id] ? 'rotate-180' : 'rotate-0'}`}
                                                                         >
                                                                             <svg xmlns="http://www.w3.org/2000/svg" width="2.5em" height="2.5em" viewBox="0 0 24 24">
-
                                                                                 <path fill="currentColor" d="M18.2 13.3L12 7l-6.2 6.3c-.2.2-.3.5-.3.7s.1.5.3.7c.2.2.4.3.7.3h11c.3 0 .5-.1.7-.3c.2-.2.3-.5.3-.7s-.1-.5-.3-.7" />
-
                                                                             </svg>
                                                                         </div>
-
                                                                     </div>
                                                                 </div>
                                                                 <div
                                                                     ref={contentRef}
                                                                     style={{
-                                                                        maxHeight: expanded ? `${contentHeight}px` : '0px',
+                                                                        maxHeight: expandedItems[item.id] ? `1000px` : '0',
                                                                         width: '100%',
                                                                     }}
                                                                     className={`overflow-hidden transition-max-height duration-[1000ms] ease-in-out`}
                                                                 >
                                                                     <div className="p-2 w-full">
-                                                                        {edifciosChildren(item)}
+                                                                        {expandedItems[item.id] && edifciosChildren(item)}
                                                                     </div>
                                                                 </div>
                                                             </div>
