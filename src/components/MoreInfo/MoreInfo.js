@@ -167,6 +167,8 @@ const ItemDetails = ({ id, onClose, showModal, setShowModal, fetchData, currentP
 
     // Memoized function for fetching data
     const fetchInmuebleMoreInfo = useCallback(() => {
+
+        console.log('id de PRUEBA', id);
         axios
             .get(`/api/inmuebleMoreInfo`, {
                 params: { id: id },
@@ -380,7 +382,7 @@ const ItemDetails = ({ id, onClose, showModal, setShowModal, fetchData, currentP
                                         </div>
                                         {!data.inmueble.noticiastate && (
                                             <div className='flex flex-row h-auto rounded-2xl shadow-lg'>
-                                                <NoticiasDetails data={data} setOnAddNoticiaRefreshKey={setOnAddNoticiaRefreshKey} onAddNoticiaRefreshKey={onAddNoticiaRefreshKey} fetchData={fetchData} currentPage={currentPage} searchTerm={searchTerm} screenWidth={screenWidth} />
+                                                <NoticiasDetails id={id} data={data} setOnAddNoticiaRefreshKey={setOnAddNoticiaRefreshKey} onAddNoticiaRefreshKey={onAddNoticiaRefreshKey} fetchData={fetchData} currentPage={currentPage} searchTerm={searchTerm} screenWidth={screenWidth} />
                                             </div>
                                         )}
                                         <div className='flex flex-row h-auto rounded-2xl shadow-lg'>
@@ -389,7 +391,7 @@ const ItemDetails = ({ id, onClose, showModal, setShowModal, fetchData, currentP
                                         </div>
                                         {!data.inmueble.DPV && data.inmueble.noticiastate && (
                                             <div className='flex flex-col h-fit rounded-2xl'>
-                                                <NoticiasDetails data={data} setOnAddNoticiaRefreshKey={setOnAddNoticiaRefreshKey} onAddNoticiaRefreshKey={onAddNoticiaRefreshKey} fetchData={fetchData} currentPage={currentPage} searchTerm={searchTerm} screenWidth={screenWidth} />
+                                                <NoticiasDetails id={id} data={data} setOnAddNoticiaRefreshKey={setOnAddNoticiaRefreshKey} onAddNoticiaRefreshKey={onAddNoticiaRefreshKey} fetchData={fetchData} currentPage={currentPage} searchTerm={searchTerm} screenWidth={screenWidth} />
                                             </div>
                                         )}
 
@@ -399,12 +401,12 @@ const ItemDetails = ({ id, onClose, showModal, setShowModal, fetchData, currentP
                                         <div className='flex flex-col w-full h-full rounded-2xl gap-6 transition-all duration-[800ms] ease-in-out overflow-y-scroll'>
                                             {data.inmueble.DPV && !data.inmueble.encargostate && (
                                                 <div className='flex flex-row h-auto rounded-2xl shadow-lg'>
-                                                    <NoticiasDetails data={data} setOnAddNoticiaRefreshKey={setOnAddNoticiaRefreshKey} onAddNoticiaRefreshKey={onAddNoticiaRefreshKey} fetchData={fetchData} currentPage={currentPage} searchTerm={searchTerm} screenWidth={screenWidth} />
+                                                    <NoticiasDetails id={id} data={data} setOnAddNoticiaRefreshKey={setOnAddNoticiaRefreshKey} onAddNoticiaRefreshKey={onAddNoticiaRefreshKey} fetchData={fetchData} currentPage={currentPage} searchTerm={searchTerm} screenWidth={screenWidth} />
                                                 </div>
                                             )}
                                             {data.inmueble.DPV && data.inmueble.encargostate && (
                                                 <div className='flex flex-row h-auto rounded-2xl shadow-lg'>
-                                                    <NoticiasDetails data={data} setOnAddNoticiaRefreshKey={setOnAddNoticiaRefreshKey} onAddNoticiaRefreshKey={onAddNoticiaRefreshKey} fetchData={fetchData} currentPage={currentPage} searchTerm={searchTerm} screenWidth={screenWidth} />
+                                                    <NoticiasDetails id={id} data={data} setOnAddNoticiaRefreshKey={setOnAddNoticiaRefreshKey} onAddNoticiaRefreshKey={onAddNoticiaRefreshKey} fetchData={fetchData} currentPage={currentPage} searchTerm={searchTerm} screenWidth={screenWidth} />
                                                 </div>
                                             )}
 
@@ -533,7 +535,7 @@ const ItemDetails = ({ id, onClose, showModal, setShowModal, fetchData, currentP
 
                                         <div className='flex flex-col w-full h-fit rounded-2xl gap-6 ease-in-out '>
                                             <div className='flex flex-row h-auto rounded-2xl shadow-lg'>
-                                                <NoticiasDetails data={data} setOnAddNoticiaRefreshKey={setOnAddNoticiaRefreshKey} onAddNoticiaRefreshKey={onAddNoticiaRefreshKey} fetchData={fetchData} currentPage={currentPage} searchTerm={searchTerm} screenWidth={screenWidth} />
+                                                <NoticiasDetails id={id} data={data} setOnAddNoticiaRefreshKey={setOnAddNoticiaRefreshKey} onAddNoticiaRefreshKey={onAddNoticiaRefreshKey} fetchData={fetchData} currentPage={currentPage} searchTerm={searchTerm} screenWidth={screenWidth} />
                                             </div>
                                             {data.inmueble.noticiastate && (
                                                 <div className='flex flex-row h-fit rounded-2xl'>
@@ -576,7 +578,7 @@ const ItemDetails = ({ id, onClose, showModal, setShowModal, fetchData, currentP
 
                                     <div className='flex flex-col w-1/3 h-fit rounded-2xl gap-6 ease-in-out overflow-y-scroll max-h-[1220px]'>
                                         <div className='flex flex-row h-auto rounded-2xl shadow-lg'>
-                                            <NoticiasDetails data={data} setOnAddNoticiaRefreshKey={setOnAddNoticiaRefreshKey} onAddNoticiaRefreshKey={onAddNoticiaRefreshKey} fetchData={fetchData} currentPage={currentPage} searchTerm={searchTerm} screenWidth={screenWidth} />
+                                            <NoticiasDetails id={id} data={data} setOnAddNoticiaRefreshKey={setOnAddNoticiaRefreshKey} onAddNoticiaRefreshKey={onAddNoticiaRefreshKey} fetchData={fetchData} currentPage={currentPage} searchTerm={searchTerm} screenWidth={screenWidth} />
                                         </div>
                                         {data.inmueble.noticiastate && (
                                             <div className='flex flex-row h-fit rounded-2xl shadow-lg'>
@@ -603,7 +605,7 @@ const ItemDetails = ({ id, onClose, showModal, setShowModal, fetchData, currentP
                                             <ClientesAsociados fetchClientesEncargos={fetchClientes} setFilteredClientes={setFilteredClientes} setClientesAsociadosInmueble={setClientesAsociadosInmueble} refreshMatchingClientesEncargos={refreshMatchingClientesEncargos} setRefreshMatchingClientesEncargos={setRefreshMatchingClientesEncargos} fetchClientesAsociados={fetchClientesAsociados} setClientesAsociados={setClientesAsociados} clientesAsociados={clientesAsociados} clientesAsociadosInmueble={clientesAsociadosInmueble} filteredClientes={filteredClientes} inmuebleId={data.inmueble.id} inmuebleDireccion={data.inmueble.direccion} screenWidth={screenWidth} setFetchClientPhoneNumberRefreshKey={setFetchClientPhoneNumberRefreshKey} fetchClientPhoneNumberRefreshKey={fetchClientPhoneNumberRefreshKey} localizadoRefreshKey={localizadoRefreshKey} setLocalizadoRefreshKey={setLocalizadoRefreshKey} />
                                         </div>
                                         <div className='flex flex-row h-auto rounded-2xl shadow-lg'>
-                                            <NoticiasDetails data={data} setOnAddNoticiaRefreshKey={setOnAddNoticiaRefreshKey} onAddNoticiaRefreshKey={onAddNoticiaRefreshKey} fetchData={fetchData} currentPage={currentPage} searchTerm={searchTerm} screenWidth={screenWidth} />
+                                            <NoticiasDetails id={id} data={data} setOnAddNoticiaRefreshKey={setOnAddNoticiaRefreshKey} onAddNoticiaRefreshKey={onAddNoticiaRefreshKey} fetchData={fetchData} currentPage={currentPage} searchTerm={searchTerm} screenWidth={screenWidth} />
                                         </div>
                                         {data.inmueble.noticiastate && (
                                             <div className='flex flex-row h-fit rounded-2xl shadow-lg'>
@@ -634,7 +636,7 @@ const ItemDetails = ({ id, onClose, showModal, setShowModal, fetchData, currentP
                                         <ClientesAsociados fetchClientesEncargos={fetchClientes} setFilteredClientes={setFilteredClientes} setClientesAsociadosInmueble={setClientesAsociadosInmueble} fetchClientesAsociados={fetchClientesAsociados} setClientesAsociados={setClientesAsociados} clientesAsociados={clientesAsociados} clientesAsociadosInmueble={clientesAsociadosInmueble} filteredClientes={filteredClientes} inmuebleId={data.inmueble.id} inmuebleDireccion={data.inmueble.direccion} screenWidth={screenWidth} setFetchClientPhoneNumberRefreshKey={setFetchClientPhoneNumberRefreshKey} fetchClientPhoneNumberRefreshKey={fetchClientPhoneNumberRefreshKey} localizadoRefreshKey={localizadoRefreshKey} setLocalizadoRefreshKey={setLocalizadoRefreshKey} />
                                     </div>
                                     <div className='flex flex-row h-auto rounded-2xl shadow-lg'>
-                                        <NoticiasDetails data={data} setOnAddNoticiaRefreshKey={setOnAddNoticiaRefreshKey} onAddNoticiaRefreshKey={onAddNoticiaRefreshKey} fetchData={fetchData} currentPage={currentPage} searchTerm={searchTerm} screenWidth={screenWidth} />
+                                        <NoticiasDetails id={id} data={data} setOnAddNoticiaRefreshKey={setOnAddNoticiaRefreshKey} onAddNoticiaRefreshKey={onAddNoticiaRefreshKey} fetchData={fetchData} currentPage={currentPage} searchTerm={searchTerm} screenWidth={screenWidth} />
                                     </div>
                                     {data.inmueble.noticiastate && (
                                         <div className='flex flex-row h-fit rounded-2xl shadow-lg'>

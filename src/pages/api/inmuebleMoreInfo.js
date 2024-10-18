@@ -20,17 +20,28 @@ export default async function handler(req, res) {
 
             // Try to find the inmueble by id in 'inmuebles'
             let inmueble = await db.collection('inmuebles').findOne({ id: parseInt(id) });
-
+            let item = null;
             // If not found, search in 'nestedinmuebles'
             if (!inmueble) {
-                inmueble = await db.collection('inmuebles').findOne({ "nestedinmuebles.id": parseInt(id) });
+                let inmueblefind = await db.collection('inmuebles').findOne({ "nestedinmuebles.id": parseInt(id) });
+                if (inmueblefind) {
+                    inmueble = inmueblefind.nestedinmuebles.find(nested => nested.id === parseInt(id));
+                }
             }
 
             // If still not found, search in 'nestedescaleras.nestedinmuebles'
             if (!inmueble) {
-                inmueble = await db.collection('inmuebles').findOne({ "nestedescaleras.nestedinmuebles.id": parseInt(id) });
+                let inmueblefind = await db.collection('inmuebles').findOne({ "nestedescaleras.nestedinmuebles.id": parseInt(id) });
+                if (inmueblefind) {
+                    for (const escalera of inmueblefind.nestedescaleras) {
+                        const nested = escalera.nestedinmuebles.find(nested => nested.id === parseInt(id));
+                        if (nested) {
+                            inmueble = nested;
+                            break;
+                        }
+                    }
+                }
             }
-
             // If inmueble is still not found, return 404
             if (!inmueble) {
                 return res.status(404).json({ message: 'Inmueble not found' });

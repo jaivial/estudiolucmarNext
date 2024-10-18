@@ -1,8 +1,8 @@
 import cors, { runMiddleware } from '../../utils/cors';
 // /pages/api/agregarNoticia.js
 import clientPromise from '../../lib/mongodb';
-export default async function handler(req, res) {
 
+export default async function handler(req, res) {
     // Run CORS middleware
     await runMiddleware(req, res, cors);
 
@@ -46,13 +46,38 @@ export default async function handler(req, res) {
             }
 
             // Update inmuebles
-            const inmueblesResult = await db.collection('inmuebles').updateOne(
+            let inmueblesResult = await db.collection('inmuebles').updateOne(
                 { id: Number(id) },
                 { $set: { noticiastate: true } }
             );
 
+            // If the main property was not updated, search for the nested ones
             if (inmueblesResult.modifiedCount === 0) {
-                throw new Error('Failed to update inmuebles');
+                // Try to update nestedinmuebles inside documents with tipoagrupacion == 2
+                inmueblesResult = await db.collection('inmuebles').updateOne(
+                    {
+                        tipoagrupacion: 2,
+                        "nestedinmuebles.id": Number(id)
+                    },
+                    { $set: { "nestedinmuebles.$.noticiastate": true } }
+                );
+
+                // If still not updated, try to update nestedescaleras.nestedinmuebles inside documents with tipoagrupacion == 2
+                if (inmueblesResult.modifiedCount === 0) {
+                    inmueblesResult = await db.collection('inmuebles').updateOne(
+                        {
+                            tipoagrupacion: 2,
+                            "nestedescaleras.nestedinmuebles.id": Number(id)
+                        },
+                        { $set: { "nestedescaleras.$[].nestedinmuebles.$[elem].noticiastate": true } },
+                        { arrayFilters: [{ "elem.id": Number(id) }] }
+                    );
+                }
+            }
+
+            // If still not updated, return an error
+            if (inmueblesResult.modifiedCount === 0) {
+                throw new Error('Failed to update inmuebles or nested property');
             }
 
             res.status(200).json({ success: 'Record added and noticiastate updated successfully' });

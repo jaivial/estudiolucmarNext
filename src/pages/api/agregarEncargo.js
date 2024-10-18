@@ -3,10 +3,8 @@ import cors, { runMiddleware } from '../../utils/cors';
 import clientPromise from '../../lib/mongodb';
 
 export default async function handler(req, res) {
-
     // Run CORS middleware
     await runMiddleware(req, res, cors);
-
 
     if (req.method !== 'POST') {
         // Only allow POST requests
@@ -15,20 +13,21 @@ export default async function handler(req, res) {
 
     console.log(req.body);
 
-    const { encargo_id, tipoEncargo, comercial, cliente, precio, tipoComision, comision, fecha, comisionCompradorValue, comisionComprador, tiempoExclusiva } = req.body;
+    const {
+        encargo_id,
+        tipoEncargo,
+        comercial,
+        cliente,
+        precio,
+        tipoComision,
+        comision,
+        fecha,
+        comisionCompradorValue,
+        comisionComprador,
+        tiempoExclusiva,
+    } = req.body;
 
     console.log('encargo_id', encargo_id);
-    console.log('tipoEncargo', tipoEncargo);
-    console.log('comercial', comercial);
-    console.log('cliente', cliente);
-    console.log('precio', precio);
-    console.log('tipoComision', tipoComision);
-    console.log('comision', comision);
-    console.log('fecha', fecha);
-    console.log('comisionCompradorValue', comisionCompradorValue);
-    console.log('comisionComprador', comisionComprador);
-    console.log('tiempoExclusiva', tiempoExclusiva);
-
 
     try {
         // Connect to MongoDB
@@ -36,7 +35,7 @@ export default async function handler(req, res) {
         const db = client.db('inmoprocrm');
 
         // Insert into 'encargos' collection
-        await db.collection('encargos').insertOne({
+        const encargoResult = await db.collection('encargos').insertOne({
             encargo_id: parseInt(encargo_id, 10),
             encargo_fecha: fecha,
             comercial_encargo: comercial,
@@ -51,27 +50,48 @@ export default async function handler(req, res) {
             tiempo_exclusiva: tiempoExclusiva,
         });
 
+        if (encargoResult.insertedCount === 0) {
+            throw new Error('Failed to insert encargo');
+        }
+
         // Update 'inmuebles' collection
-        await db.collection('inmuebles').updateOne(
+        let inmueblesResult = await db.collection('inmuebles').updateOne(
             { id: parseInt(encargo_id, 10) },
             { $set: { encargostate: true } }
         );
 
-        // Update 'inmuebles.nestedinmuebles' collection
-        await db.collection('inmuebles.nestedinmuebles').updateOne(
-            { id: parseInt(encargo_id, 10) },
-            { $set: { encargostate: true } }
-        );
+        // If the main property was not updated, search for the nested ones
+        if (inmueblesResult.modifiedCount === 0) {
+            // Try to update nestedinmuebles inside documents with tipoagrupacion == 2
+            inmueblesResult = await db.collection('inmuebles').updateOne(
+                {
+                    tipoagrupacion: 2,
+                    "nestedinmuebles.id": parseInt(encargo_id, 10)
+                },
+                { $set: { "nestedinmuebles.$.encargostate": true } }
+            );
 
-        // Update 'inmuebles.nestedescaleras.nestedinmuebles' collection
-        await db.collection('inmuebles.nestedescaleras.nestedinmuebles').updateOne(
-            { id: parseInt(encargo_id, 10) },
-            { $set: { encargostate: true } }
-        );
+            // If still not updated, try to update nestedescaleras.nestedinmuebles inside documents with tipoagrupacion == 2
+            if (inmueblesResult.modifiedCount === 0) {
+                inmueblesResult = await db.collection('inmuebles').updateOne(
+                    {
+                        tipoagrupacion: 2,
+                        "nestedescaleras.nestedinmuebles.id": parseInt(encargo_id, 10)
+                    },
+                    { $set: { "nestedescaleras.$[].nestedinmuebles.$[elem].encargostate": true } },
+                    { arrayFilters: [{ "elem.id": parseInt(encargo_id, 10) }] }
+                );
+            }
+        }
+
+        // If still not updated, return an error
+        if (inmueblesResult.modifiedCount === 0) {
+            throw new Error('Failed to update inmuebles or nested property');
+        }
 
         res.status(200).json({ success: 'Record added and encargoState updated successfully' });
     } catch (error) {
         console.error('Error connecting to database:', error);
-        res.status(500).json({ error: 'Error connecting to database' });
+        res.status(500).json({ error: `Error connecting to database: ${error.message}` });
     }
 }
