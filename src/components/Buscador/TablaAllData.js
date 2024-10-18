@@ -462,6 +462,14 @@ const Table = ({ parentsEdificioProps, admin, screenWidth, loadingLoader }) => {
     };
 
     useEffect(() => {
+        setFormData((prevFormData) => ({
+            ...prevFormData, // Preserve the other values in formData
+            tipo: selectedType, // Update the 'tipo' field with the value of selectedType
+        }));
+    }, [selectedType]);
+
+
+    useEffect(() => {
         ressetSelectedType();
     }, [showFormType]);
 

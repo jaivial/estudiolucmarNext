@@ -164,25 +164,38 @@ export default async function handler(req, res) {
                 }
             };
 
+            // Function to apply both noticia and encargo filters
+            const applyNoticiaAndEncargoFilters = (inmueble) => {
+                const matchesNoticia = filterNoticiaValueResults === null || inmueble.noticiastate === filterNoticiaValueResults;
+                const matchesEncargo = filterEncargoValueResults === null || inmueble.encargostate === filterEncargoValueResults;
+                return matchesNoticia && matchesEncargo;
+            };
+
             // Check if the result is tipoagrupacion === 2
             if (result.tipoagrupacion === 2) {
                 // Do not set dataUpdateTime for the main document
                 // Instead, analyze nestedinmuebles and nestedescaleras.nestedinmuebles
 
                 if (result.nestedinmuebles) {
-                    result.nestedinmuebles = result.nestedinmuebles.map(nested => ({
-                        ...nested,
-                        dataUpdateTime: setDataUpdateTime(nested.lastCommentDate),
-                    }));
+                    result.nestedinmuebles = result.nestedinmuebles
+                        .filter(applyNoticiaAndEncargoFilters)
+                        .map(nested => ({
+                            ...nested,
+                            dataUpdateTime: setDataUpdateTime(nested.lastCommentDate),
+                        }));
                 }
 
                 if (result.nestedescaleras) {
                     result.nestedescaleras = result.nestedescaleras.map(escalera => ({
                         ...escalera,
-                        nestedinmuebles: escalera.nestedinmuebles.map(nested => ({
-                            ...nested,
-                            dataUpdateTime: setDataUpdateTime(nested.lastCommentDate),
-                        })),
+                        nestedinmuebles: escalera.nestedinmuebles
+                            ? escalera.nestedinmuebles
+                                .filter(applyNoticiaAndEncargoFilters)
+                                .map(nested => ({
+                                    ...nested,
+                                    dataUpdateTime: setDataUpdateTime(nested.lastCommentDate),
+                                }))
+                            : []
                     }));
                 }
             } else {
@@ -207,6 +220,8 @@ export default async function handler(req, res) {
                     }));
                 }
             }
+
+
 
             const applyDPVFilter = (inmueble) => {
                 if (DPVValueResults !== null) {
