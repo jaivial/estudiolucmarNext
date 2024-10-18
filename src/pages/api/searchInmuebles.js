@@ -131,7 +131,21 @@ export default async function handler(req, res) {
         // Calculate total pages
         const totalPages = Math.ceil(totalCount / limit);
 
+        const noticiasCollection = db.collection('noticias');
 
+        const noticiasData = await noticiasCollection.find({}).toArray();
+        const noticias = noticiasData.reduce((acc, noticia) => {
+            acc[parseInt(noticia.noticia_id, 10)] = noticia;
+            return acc;
+        }, {});
+
+        // Fetch encargos documents
+        const encargosCollection = db.collection('encargos');
+        const encargosData = await encargosCollection.find({}).toArray();
+        const encargos = encargosData.reduce((acc, encargo) => {
+            acc[parseInt(encargo.encargo_id, 10)] = encargo;
+            return acc;
+        }, {});
         // Query the 'inmuebles' collection to find matching documents, ordered by 'direccion' asc, with pagination
         const results = await db.collection('inmuebles')
             .find(query)
@@ -143,6 +157,9 @@ export default async function handler(req, res) {
         const currentDate = new Date();
 
         const finalResults = results.map(result => {
+            // Fetch all noticias documents
+
+
             const setDataUpdateTime = (dateStr) => {
                 if (!dateStr) {
                     return 'gray';
@@ -164,6 +181,7 @@ export default async function handler(req, res) {
                 }
             };
 
+
             // Function to apply both noticia and encargo filters
             const applyNoticiaAndEncargoFilters = (inmueble) => {
                 const matchesNoticia = filterNoticiaValueResults === null || inmueble.noticiastate === filterNoticiaValueResults;
@@ -179,11 +197,19 @@ export default async function handler(req, res) {
                 if (result.nestedinmuebles) {
                     result.nestedinmuebles = result.nestedinmuebles
                         .filter(applyNoticiaAndEncargoFilters)
-                        .map(nested => ({
-                            ...nested,
-                            dataUpdateTime: setDataUpdateTime(nested.lastCommentDate),
-                        }));
+                        .map(nested => {
+                            // Check if there's a matching noticia or encargo for the nested.id
+                            const matchingNoticia = noticias[nested.id];
+                            const matchingEncargo = encargos[nested.id];
+                            return {
+                                ...nested,
+                                dataUpdateTime: setDataUpdateTime(nested.lastCommentDate),
+                                ...(matchingNoticia ? { noticia: matchingNoticia } : {}),
+                                ...(matchingEncargo ? { encargo: matchingEncargo } : {})
+                            };
+                        });
                 }
+
 
                 if (result.nestedescaleras) {
                     result.nestedescaleras = result.nestedescaleras.map(escalera => ({
@@ -191,32 +217,61 @@ export default async function handler(req, res) {
                         nestedinmuebles: escalera.nestedinmuebles
                             ? escalera.nestedinmuebles
                                 .filter(applyNoticiaAndEncargoFilters)
-                                .map(nested => ({
-                                    ...nested,
-                                    dataUpdateTime: setDataUpdateTime(nested.lastCommentDate),
-                                }))
+                                .map(nested => {
+                                    // Check if there's a matching noticia for the nested.id
+                                    const matchingNoticia = noticias[nested.id];
+                                    const matchingEncargo = encargos[nested.id];
+                                    return {
+                                        ...nested,
+                                        dataUpdateTime: setDataUpdateTime(nested.lastCommentDate),
+                                        ...(matchingNoticia ? { noticia: matchingNoticia } : {}),
+                                        ...(matchingEncargo ? { encargo: matchingEncargo } : {})
+                                    };
+                                })
                             : []
                     }));
                 }
             } else {
-                // For other cases, set dataUpdateTime for the main document
+                // Attach noticia to result if available
+                const noticiaId = parseInt(result.id, 10);
+                result.noticia = noticias[noticiaId] || null;
+
+                const encargoId = parseInt(result.id, 10);
+                result.encargo = encargos[encargoId] || null;
+
+                // Set dataUpdateTime for the main document
                 result.dataUpdateTime = setDataUpdateTime(result.lastCommentDate);
 
-                // Also check nested arrays for consistency
-                if (result.nestedinmuebles) {
-                    result.nestedinmuebles = result.nestedinmuebles.map(nested => ({
-                        ...nested,
-                        dataUpdateTime: setDataUpdateTime(nested.lastCommentDate),
-                    }));
-                }
-
-                if (result.nestedescaleras) {
-                    result.nestedescaleras = result.nestedescaleras.map(escalera => ({
-                        ...escalera,
-                        nestedinmuebles: escalera.nestedinmuebles.map(nested => ({
+                // Check nestedinmuebles array for consistency and set dataUpdateTime
+                if (result.nestedinmuebles && Array.isArray(result.nestedinmuebles)) {
+                    result.nestedinmuebles = result.nestedinmuebles.map(nested => {
+                        const matchingNoticia = noticias[nested.id];
+                        const matchingEncargo = encargos[nested.id];
+                        return {
                             ...nested,
                             dataUpdateTime: setDataUpdateTime(nested.lastCommentDate),
-                        })),
+                            ...(matchingNoticia ? { noticia: matchingNoticia } : {}),
+                            ...(matchingEncargo ? { encargo: matchingEncargo } : {})
+                        };
+                    });
+                }
+
+                // Check nestedescaleras array for consistency and set dataUpdateTime for nestedinmuebles inside escalera
+                if (result.nestedescaleras && Array.isArray(result.nestedescaleras)) {
+                    result.nestedescaleras = result.nestedescaleras.map(escalera => ({
+                        ...escalera,
+                        nestedinmuebles: escalera.nestedinmuebles && Array.isArray(escalera.nestedinmuebles)
+                            ? escalera.nestedinmuebles.map(nested => {
+                                const matchingNoticia = noticias[nested.id];
+                                const matchingEncargo = encargos[nested.id];
+                                return {
+                                    ...nested,
+                                    dataUpdateTime: setDataUpdateTime(nested.lastCommentDate),
+                                    ...(matchingNoticia ? { noticia: matchingNoticia } : {}),
+                                    ...(matchingEncargo ? { encargo: matchingEncargo } : {})
+                                };
+                            })
+                            : []
                     }));
                 }
             }

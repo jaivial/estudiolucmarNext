@@ -180,8 +180,6 @@ const Table = ({ parentsEdificioProps, admin, screenWidth, loadingLoader }) => {
         let tipoValue = determineFilterValueInterger(filters.tipo);
         let banosValue = determineFilterValueInterger(filters.banos);
         let habitacionesValue = determineFilterValueInterger(filters.habitaciones);
-        console.log('habitacionesValue', habitacionesValue);
-        console.log('typeof habitacionesValue', typeof habitacionesValue);
 
 
         try {
@@ -214,14 +212,12 @@ const Table = ({ parentsEdificioProps, admin, screenWidth, loadingLoader }) => {
             });
             axios.get('api/searchInmuebles', { params }).then((response) => {
                 const data = response.data;
-                console.log('searchInmuebles Response:', data); // Log the entire API response
                 setData(data.results);
+                console.log('searchInmuebles data', data.results);
                 setTotalPages(data.totalPages);
                 setCurrentPage(data.currentPage);
-                console.log('analyticsData', data.analyitics[0]);
                 setAnalyticsData(data.analyitics[0]);
                 setTotalItems(data.analyitics[0].totalInmuebles);
-                console.log('totalItems', data.analyitics[0].totalInmuebles);
                 setTimeout(() => {
                     setLoadingPage(false);
                 }, 1);
@@ -250,7 +246,6 @@ const Table = ({ parentsEdificioProps, admin, screenWidth, loadingLoader }) => {
     const fetchParentsEdificio = async () => {
         try {
             const { data } = await axios.get('/api/fetch_parents'); // Use axios to fetch parents
-            console.log('parents edificio', data);
 
             setParentsEdificio(data.edificios || []); // Set the state with fetched data
             setParentsEscalera(data.escaleras || []); // Set the state with fetched data
@@ -291,9 +286,6 @@ const Table = ({ parentsEdificioProps, admin, screenWidth, loadingLoader }) => {
         }));
     };
 
-    useEffect(() => {
-        console.log('formData', formData);
-    }, [formData]);
 
     // OPTIONS AND HANDECHANGE FOR NUEVO GRUPO ESCALERA
     const optionsNuevoGrupoEscalera = parentsEdificio?.map((parent) => ({
@@ -319,7 +311,6 @@ const Table = ({ parentsEdificioProps, admin, screenWidth, loadingLoader }) => {
                 setCurrentPage(totalPages > 0 ? totalPages : 1); // Ensure currentPage is set to a valid page number
             }
         };
-        console.log('analyticsData', analyticsData);
         fetchAndSetData();
     }, [
         currentPage,
@@ -385,7 +376,6 @@ const Table = ({ parentsEdificioProps, admin, screenWidth, loadingLoader }) => {
             newSelectedItems.has(itemId) ? newSelectedItems.delete(itemId) : newSelectedItems.add(itemId);
             return newSelectedItems;
         });
-        console.log('selectedItems', selectedItems);
     };
 
     const handleCheckboxChangeUngroup = (itemId) => {
@@ -429,8 +419,6 @@ const Table = ({ parentsEdificioProps, admin, screenWidth, loadingLoader }) => {
         if (showExtraButtons) setShowExtraButtons(false);
         if (showUngroupButtons) setShowUngroupButtons(false);
         if (showDeleteInmuebleButtons) setShowDeleteInmuebleButtons(false);
-        console.log('showAddNewInmueble', showAddNewInmueble);
-        console.log('showAddInmuebleButtons', showAddInmuebleButtons);
     };
 
     const handlePopupToggle = () => {
@@ -518,12 +506,11 @@ const Table = ({ parentsEdificioProps, admin, screenWidth, loadingLoader }) => {
             return;
         }
         try {
-            console.log('selectedItems', selectedItems);
+
             const response = await axios.post('/api/check_children_nested', {
                 inmuebles: Array.from(selectedItems) // Transform Set to Array
             });
 
-            console.log('response', response.data);
 
             if (response.data.empty) {
                 setShowPopupDeleteInmueble(!showPopupDeleteInmueble);
@@ -531,7 +518,6 @@ const Table = ({ parentsEdificioProps, admin, screenWidth, loadingLoader }) => {
                 setShowPopupDeleteInmueble(!showPopupDeleteInmueble);
                 setThereAreChildrenDelete(true);
                 setNestedElements(response.data.nestedElements);
-                console.log('nested Elements HERE', response.data.nestedElements);
             }
         } catch (error) {
             console.error('Error checking nested elements:', error);
@@ -545,7 +531,6 @@ const Table = ({ parentsEdificioProps, admin, screenWidth, loadingLoader }) => {
             ...prev,
             [name]: value,
         }));
-        console.log(formData);
     };
 
     const handleSubmitForm = async (e) => {
@@ -599,8 +584,6 @@ const Table = ({ parentsEdificioProps, admin, screenWidth, loadingLoader }) => {
                             name: formData.nombre,
                             selectedInmuebles: Array.from(selectedItems),
                         });
-
-                        console.log('response data', response.data); // Debugging line
 
                         Toastify({
                             text: 'Edificio creado.',
@@ -661,13 +644,11 @@ const Table = ({ parentsEdificioProps, admin, screenWidth, loadingLoader }) => {
                 } else {
                     // Call Supabase function
                     setSmallLoadingScreen(true);
-                    console.log('selectedItems', selectedItems);
                     const { data, error } = await axios.post('/api/create_new_escalera_agrupacion', {
                         name: formData.nombre,
                         selectedInmuebles: Array.from(selectedItems),
                         grupo: parseInt(formData.grupo, 10), // Convert grupo to an integer
                     });
-                    console.log('data', data); // Debugging line
 
                     if (error) {
                         console.error('Error performing operation:', error);
@@ -758,7 +739,6 @@ const Table = ({ parentsEdificioProps, admin, screenWidth, loadingLoader }) => {
                     inmuebles: Array.from(selectedItems),
                     existingGroup: parseInt(formData.existingGroup, 10),
                 });
-                console.log('data', data);
                 if (error) {
                     console.error('Error performing operation:', error);
                     Toastify({
@@ -814,7 +794,6 @@ const Table = ({ parentsEdificioProps, admin, screenWidth, loadingLoader }) => {
                     inmuebles: Array.from(selectedItems),
                     existingGroup: parseInt(formData.existingGroup, 10),
                 });
-                console.log('data escalera', data);
                 if (error) {
                     console.error('Error performing operation:', error);
                     Toastify({
@@ -866,7 +845,6 @@ const Table = ({ parentsEdificioProps, admin, screenWidth, loadingLoader }) => {
         try {
             setSmallLoadingScreen(true);
             const response = await axios.post('/api/ungroup', { inmuebles: Array.from(selectedItemsUngroup) });
-            console.log(response.data);
             if (response.data.empty === true) {
                 setOrphanInfo(response.data.emptyParents);
                 setShowAskForDeleteOrphan(true)
@@ -893,7 +871,6 @@ const Table = ({ parentsEdificioProps, admin, screenWidth, loadingLoader }) => {
             fetchData(currentPage, searchTerm);
             setShowExtraButtons(false);
             setShowUngroupButtons(false);
-            console.log('orphanInfo', orphanInfo);
         } catch (error) {
             console.error('Error performing operation:', error);
         }
@@ -910,7 +887,6 @@ const Table = ({ parentsEdificioProps, admin, screenWidth, loadingLoader }) => {
         axios
             .post('/api/delete_orphan', { orphanIds }) // Use POST request
             .then((response) => {
-                console.log(response.data);
                 if (response.data.status === 'success') {
                     Toastify({
                         text: 'Grupos eliminados',
@@ -957,14 +933,12 @@ const Table = ({ parentsEdificioProps, admin, screenWidth, loadingLoader }) => {
     };
 
     const handleDeleteInmueble = () => {
-        console.log('handleDeleteInmueble', Array.from(selectedItems));
         setSmallLoadingScreen(true);
         axios
             .post('/api/delete_inmueble', { // Use POST request
                 inmuebles: Array.from(selectedItems),
             })
             .then((response) => {
-                console.log(response.data);
                 if (response.data.status === 'success') {
                     Toastify({
                         text: 'Inmueble eliminado',
@@ -1010,7 +984,6 @@ const Table = ({ parentsEdificioProps, admin, screenWidth, loadingLoader }) => {
                 inmuebles: nestedElements,
             })
             .then((response) => {
-                console.log(response.data);
                 if (response.data.status === 'success') {
                     Toastify({
                         text: 'Grupo eliminado',
@@ -1109,7 +1082,6 @@ const Table = ({ parentsEdificioProps, admin, screenWidth, loadingLoader }) => {
     };
 
     const escalerasChildren = (item) => {
-        console.log('escalerasChildren', item);
 
         if (item === null) {
             return <p>No hay detalles disponibles</p>;
@@ -1272,7 +1244,6 @@ const Table = ({ parentsEdificioProps, admin, screenWidth, loadingLoader }) => {
 
     const edifciosChildren = (item) => {
 
-        console.log('edifciosChildren', item.nestedescaleras);
 
         if (item.nestedinmuebles && item.nestedinmuebles.length === 0 && item.nestedescaleras.length === 0) {
             return <p>No hay detalles disponibles</p>;
