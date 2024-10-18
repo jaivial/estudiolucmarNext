@@ -2007,7 +2007,7 @@ const Table = ({ parentsEdificioProps, admin, screenWidth, loadingLoader }) => {
                     item.nestedescaleras.map((child) => (
                         <div
                             key={child.id}
-                            className={`relative border border-gray-400 mb-0 p-0 rounded-md shadow-xl flex items-center flex-col w-full bg-gray-100 transition-all duration-300 ease-in-out`}
+                            className={`relative border border-gray-400 mb-0 p-0 rounded-md shadow-xl flex items-center flex-col w-full bg-gray-100 transition-all duration-[1000ms] ease-in-out`}
                         >
                             <div className="flex flex-row justify-stretch items-stretch gap-2 w-full cursor-pointer" onClick={() => handleToggleEscalera(child.id)}>
                                 {showDeleteInmuebleButtons && (
@@ -2036,7 +2036,7 @@ const Table = ({ parentsEdificioProps, admin, screenWidth, loadingLoader }) => {
                             </div>
                             <div
                                 style={{
-                                    maxHeight: expandedItemsEscalera[child.id] ? '1000px' : '0px',
+                                    maxHeight: expandedItemsEscalera[child.id] ? '9000px' : '0px',
                                     width: '100%',
                                 }}
                                 className={`overflow-hidden transition-max-height duration-[1000ms] ease-in-out`}
@@ -2742,7 +2742,7 @@ const Table = ({ parentsEdificioProps, admin, screenWidth, loadingLoader }) => {
                                                                 <div
                                                                     ref={contentRef}
                                                                     style={{
-                                                                        maxHeight: expandedItems[item.id] ? `1000px` : '0',
+                                                                        maxHeight: expandedItems[item.id] ? `10000px` : '0',
                                                                         width: '100%',
                                                                     }}
                                                                     className={`overflow-hidden transition-max-height duration-[1000ms] ease-in-out`}
