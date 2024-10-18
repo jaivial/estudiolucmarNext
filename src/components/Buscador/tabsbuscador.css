@@ -1,11 +1,13 @@
 /* Active state with bg-blue-700 */
-.tabsTablaAllData.rs-nav-item-active {
-    background-color: #1D4ED8 !important; /* Tailwind's bg-blue-700 equivalent */
-    color: white !important; /* Optional: set text color to white for contrast */
+/* Styles applied when aria-selected is "true" */
+.tabsTablaAllData[aria-selected="true"] {
+    background-color: #1D4ED8; /* Tailwind's bg-blue-700 equivalent */
+    color: white !important; /* Set text color to white for contrast */
     font-size: 1.2rem !important; /* Keep font-size and padding */
     padding: 0.4rem 1.5rem !important;
-    border-radius: 8px !important; /* Optional: give rounded corners */
+    border-radius: 8px !important; /* Rounded corners */
 }
+
 
 
 .edificioagrupacion h2.rs-panel-header.rs-heading {

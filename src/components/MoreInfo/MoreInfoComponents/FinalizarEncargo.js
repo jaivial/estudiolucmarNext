@@ -180,6 +180,7 @@ const FinalizarEncargo = ({ fetchTransacciones, fetchClientesAsociados, clienteI
     };
 
     const handleConfirm = () => {
+        handleClose();
         setShowConfirm(true); // Abrir modal de confirmación
     };
 
@@ -326,8 +327,8 @@ const FinalizarEncargo = ({ fetchTransacciones, fetchClientesAsociados, clienteI
 
             {/* Modal de confirmación */}
             <Modal open={showConfirm} onClose={() => setShowConfirm(false)} size="xs">
-                <Modal.Body>¿Está seguro que quiere finalizar este encargo?</Modal.Body>
-                <Modal.Footer>
+                <Modal.Body style={{ fontSize: '1rem', textAlign: 'center', paddingBottom: '40px' }}>¿Está seguro que quiere finalizar este encargo?</Modal.Body>
+                <Modal.Footer style={{ display: 'flex', justifyContent: 'center', gap: '10px' }}>
                     <Button onClick={handleFinalizarEncargo} appearance="primary">
                         Sí
                     </Button>
