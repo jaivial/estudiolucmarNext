@@ -720,9 +720,11 @@ const ClientesAsociados = ({ setFilteredClientes, setClientesAsociadosInmueble, 
                                 <>
                                     <li key={cliente._id} className="flex flex-row justify-stretch items-center">
                                         <div className="flex flex-row justify-evenly items-center w-full gap-1">
-                                            <div className='flex flex-row pr-1 justify-center items-center gap-1'>
-                                                <Icon icon="mdi:information" style={{ fontSize: '2rem' }} className={cliente.informador ? 'text-blue-500' : 'text-transparent'} />
-                                            </div>
+                                            {cliente.inmuebles_asociados_informador?.some(propietario => propietario.id === inmuebleId) && (
+                                                <div className='flex flex-row pr-1 justify-center items-center gap-1'>
+                                                    <Icon icon="mdi:information" style={{ fontSize: '2rem' }} className={cliente.informador ? 'text-blue-500' : 'text-transparent'} />
+                                                </div>
+                                            )}
                                             <div className='w-36  text-center'>
                                                 <p className="text-base sm:text-lg font-semibold w-full">{cliente.nombre} {cliente.apellido}</p>
                                             </div>

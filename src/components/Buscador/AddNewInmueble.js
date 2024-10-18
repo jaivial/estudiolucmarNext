@@ -25,7 +25,7 @@ const currentYear = new Date().getFullYear();
 const years = Array.from({ length: currentYear - 1850 + 1 }, (_, index) => ({ value: 1850 + index, label: (1850 + index).toString() }));
 const meters = Array.from({ length: 2501 }, (_, index) => ({ value: index, label: index.toString() + ' m²' }));
 
-const AddInmueblePopup = ({ showAddNewInmueble, setShowAddNewInmueble, fetchData, currentPage, searchTerm, fetchParentsAndChilds, handleIconAddInmueble }) => {
+const AddInmueblePopup = ({ screenWidth, showAddNewInmueble, setShowAddNewInmueble, fetchData, currentPage, searchTerm, fetchParentsAndChilds, handleIconAddInmueble }) => {
     const [direccion, setDireccion] = useState('');
     const [tipo, setTipo] = useState('Selecciona un tipo');
     const [uso, setUso] = useState('Selecciona un uso');
@@ -142,47 +142,56 @@ const AddInmueblePopup = ({ showAddNewInmueble, setShowAddNewInmueble, fetchData
     };
 
     return (
-        <Modal open={showAddNewInmueble} onClose={() => setShowAddNewInmueble(false)} style={{ backgroundColor: 'rgba(0,0,0,0.15)', borderRadius: '10px', padding: '0px', marginBottom: '70px' }} size="xs" overflow={false} backdrop>
+        <Modal open={showAddNewInmueble} onClose={() => setShowAddNewInmueble(false)} style={{ backgroundColor: 'rgba(0,0,0,0.15)', borderRadius: '10px', padding: '0px', marginBottom: '70px' }} size="md" overflow={false} backdrop>
             <Modal.Header style={{ display: 'flex', flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: '10px', width: '100%', marginTop: '10px' }}>
                 <Modal.Title style={{ fontSize: '1.5rem', textAlign: 'center' }}>Añadir Inmueble</Modal.Title>
             </Modal.Header>
             <Modal.Body style={{ padding: '20px 20px 0px 20px' }}>
                 <div className="flex flex-col gap-4">
-                    <input type="text" placeholder="Dirección" value={direccion} onChange={(e) => setDireccion(e.target.value)} className="border p-2 rounded w-full" />
-                    <select value={tipo} onChange={(e) => setTipo(e.target.value)} className="border p-2 rounded w-full">
-                        <option>Selecciona un tipo</option>
-                        <option>Urbano</option>
-                        <option>Rural</option>
-                    </select>
-                    <select value={uso} onChange={(e) => setUso(e.target.value)} className="border p-2 rounded w-full">
-                        <option>Selecciona un uso</option>
-                        <option>Industrial</option>
-                        <option>Residencial</option>
-                        <option>Almacén-Estacionamiento</option>
-                        <option>Comercial</option>
-                        <option>Sanidad y Beneficiencia</option>
-                        <option>Suelo sin edif</option>
-                    </select>
-                    <Select maxMenuHeight={150} options={years} placeholder="Año de construcción" value={anoConstruccion} onChange={setAnoConstruccion} className="w-full z-[9999]" />
-                    <Select maxMenuHeight={150} options={meters} placeholder="Superfície m²" value={superficie} onChange={setSuperficie} className="w-full z-[9990]" />
-                    <select value={categoriaOcupacion} onChange={(e) => setCategoriaOcupacion(e.target.value)} className="border p-2 rounded w-full">
-                        <option>Elige una opción</option>
-                        <option>Propietario</option>
-                        <option>Inquilino</option>
-                        <option>Vacío</option>
-                    </select>
-                    <Accordion defaultActiveKey={['0']} className='w-auto ml-[16px] mr-[16px] mt-[20px] border-1 border-gray-300 bg-gray-100 rounded-lg shadow-lg'>
-                        <Accordion.Panel header="Más Opciones" eventKey="0" style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                    <div className={`${screenWidth >= 990 ? 'flex flex-row' : 'flex flex-col'} gap-4 w-full`}>
+                        <input type="text" placeholder="Dirección" value={direccion} onChange={(e) => setDireccion(e.target.value)} className="border p-2 rounded w-full" />
+                        <select value={tipo} onChange={(e) => setTipo(e.target.value)} className="border rounded w-full">
+                            <option>Selecciona un tipo</option>
+                            <option>Urbano</option>
+                            <option>Rural</option>
+                        </select>
+                    </div>
+                    <div className={`${screenWidth >= 990 ? 'flex flex-row' : 'flex flex-col'} gap-4 w-full`}>
 
-                            <div>
-                                <label className='ml-1'>Habitaciones</label>
-                                <Select placeholder='Habitaciones' options={numberOptions(15)} value={habitaciones} onChange={setHabitaciones} />
+                        <select value={uso} onChange={(e) => setUso(e.target.value)} className="border rounded w-full">
+                            <option>Selecciona un uso</option>
+                            <option>Industrial</option>
+                            <option>Residencial</option>
+                            <option>Almacén-Estacionamiento</option>
+                            <option>Comercial</option>
+                            <option>Sanidad y Beneficiencia</option>
+                            <option>Suelo sin edif</option>
+                        </select>
+                        <Select maxMenuHeight={150} options={years} placeholder="Año de construcción" value={anoConstruccion} onChange={setAnoConstruccion} className="w-full z-[9999]" />
+                    </div>
+                    <div className={`${screenWidth >= 990 ? 'flex flex-row' : 'flex flex-col'} gap-4 w-full`}>
+
+                        <Select maxMenuHeight={150} options={meters} placeholder="Superfície m²" value={superficie} onChange={setSuperficie} className="w-full z-[9990]" />
+                        <select value={categoriaOcupacion} onChange={(e) => setCategoriaOcupacion(e.target.value)} className="border rounded w-full">
+                            <option>Elige una opción</option>
+                            <option>Propietario</option>
+                            <option>Inquilino</option>
+                            <option>Vacío</option>
+                        </select>
+                    </div>
+                    <Accordion defaultActiveKey='0' className='w-auto m-0 mt-[20px] border-2 border-blue-400 bg-white rounded-2xl'>
+                        <Accordion.Panel header="Más Opciones" eventKey="0" style={{ display: 'flex', flexDirection: 'column', gap: '1px' }}>
+                            <div className={`${screenWidth >= 990 ? 'flex flex-row gap-4 w-full' : 'flex flex-col gap-4 w-full'}`}>
+                                <div className='flex flex-col gap-4 w-full'>
+                                    <label className='ml-1'>Habitaciones</label>
+                                    <Select placeholder='Habitaciones' options={numberOptions(15)} value={habitaciones} onChange={setHabitaciones} />
+                                </div>
+                                <div className='flex flex-col gap-4 w-full'>
+                                    <label className='ml-1'>Baños</label>
+                                    <Select placeholder='Baños' options={numberOptions(10)} value={banyos} onChange={setBanyos} />
+                                </div>
                             </div>
-                            <div>
-                                <label className='ml-1'>Baños</label>
-                                <Select placeholder='Baños' options={numberOptions(10)} value={banyos} onChange={setBanyos} />
-                            </div>
-                            <div className='checkbox-options grid grid-cols-1 gap-2 rounded-b-md p-4 w-full'>
+                            <div className={`checkbox-options ${screenWidth >= 990 ? 'grid grid-cols-4' : 'grid grid-cols-2'} gap-2 rounded-b-md p-4 w-full`}>
                                 <div className='flex items-center justify-start gap-3'>
                                     <input type="checkbox" checked={garaje} onChange={(e) => setGaraje(e.target.checked)} />
                                     <label>Garaje</label>
@@ -212,7 +221,7 @@ const AddInmueblePopup = ({ showAddNewInmueble, setShowAddNewInmueble, fetchData
                         </Accordion.Panel>
                     </Accordion>
                     <h2 className="text-lg font-bold w-[80%] text-center flex justify-center items-center mx-auto">Selecciona su ubicación</h2>
-                    <MapContainer center={[39.4033747, -0.4028759]} zoom={14} className="h-[200px] w-[100%]">
+                    <MapContainer center={[39.4033747, -0.4028759]} zoom={14} className="h-[400px] w-[100%]">
                         <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
                         {markerPosition && <Marker position={markerPosition} icon={icon} />}
                         <MapEvents />
@@ -227,7 +236,7 @@ const AddInmueblePopup = ({ showAddNewInmueble, setShowAddNewInmueble, fetchData
                     </div>
                 </div>
             </Modal.Body>
-        </Modal>
+        </Modal >
     );
 };
 

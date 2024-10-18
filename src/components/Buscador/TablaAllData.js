@@ -17,8 +17,8 @@ import { Icon } from '@iconify/react';
 import MoreInfo from '../MoreInfo/MoreInfo.js';
 import { AiOutlineLoading } from "react-icons/ai";
 import BuscadorTabs from './TabsBuscador.js';
-import { Accordion, Panel } from 'rsuite';
-
+import { Accordion, Panel, Checkbox, Modal, Button, RadioGroup, Radio, SelectPicker } from 'rsuite';
+import { FaArrowLeft } from "react-icons/fa6";
 
 
 
@@ -26,15 +26,66 @@ import { Accordion, Panel } from 'rsuite';
 const Table = ({ parentsEdificioProps, admin, screenWidth, loadingLoader }) => {
     const [expanded, setExpanded] = useState(false);
     const [expandedEscalera, setExpandedEscalera] = useState(false);
+    const [expandedEscaleraId, setExpandedEscaleraId] = useState(null);
     const contentRef = useRef(null);
     const [contentHeight, setContentHeight] = useState(0);
+    const [expandedItems, setExpandedItems] = useState({});
+    const [expandedItemsEscalera, setExpandedItemsEscalera] = useState({});
 
-    const handleToggle = () => {
-        setExpanded(!expanded);
+
+    //     <div className="cursor-pointer flex flex-row justify-center w-[30%]">
+    //     {!expandedItems[item.EdificioID] && (
+    //         <svg xmlns="http://www.w3.org/2000/svg" width="2.5em" height="2.5em" viewBox="0 0 24 24">
+    //             <path fill="currentColor" fillRule="evenodd" d="M7 9a1 1 0 0 0-.707 1.707l5 5a1 1 0 0 0 1.414 0l5-5A1 1 0 0 0 17 9z" clipRule="evenodd" />
+    //         </svg>
+    //     )}
+    //     {expandedItems[item.EdificioID] && (
+    //         <svg xmlns="http://www.w3.org/2000/svg" width="2.5em" height="2.5em" viewBox="0 0 24 24">
+    //             <path fill="currentColor" d="M18.2 13.3L12 7l-6.2 6.3c-.2.2-.3.5-.3.7s.1.5.3.7c.2.2.4.3.7.3h11c.3 0 .5-.1.7-.3c.2-.2.3-.5.3-.7s-.1-.5-.3-.7" />
+    //         </svg>
+    //     )}
+    // </div>
+
+    // </div>
+    // {expandedItems[item.EdificioID] && edifciosChildren(item)}
+    // </div>
+
+    //     onClick={() => handleToggle(item.EdificioID)}>
+
+    //     const [expandedItems, setExpandedItems] = useState({});
+
+    //     const handleToggle = (itemId) => {
+    //         setExpandedItems((prev) => ({
+    //             ...prev,
+    //             [itemId]: !prev[itemId],
+    //         }));
+    //     };
+
+    //     {expandedItems[child.id] && (
+    //         console.log('child.nestedInmuebles', child.nestedinmuebles)
+    //     )}
+    //     {expandedItems[child.id] && <div className="w-full flex flex-col justify-center items-center px-2">{escalerasChildren(child.nestedinmuebles)}</div>}
+    // </div>
+
+    const handleToggle = (edificioId) => {
+        setExpandedItems(prevState => ({
+            ...prevState,
+            [edificioId]: !prevState[edificioId],
+        }));
     };
-    const handleToggleEscalera = () => {
-        setExpandedEscalera(!expandedEscalera);
+    const handleToggleEscalera = (escaleraId) => {
+        setExpandedItemsEscalera(prevState => ({
+            ...prevState,
+            [escaleraId]: !prevState[escaleraId],
+        }));
     };
+
+
+    useEffect(() => {
+        console.log('expandedItems', expandedItems);
+    }, [expandedItems]);
+
+
 
     useEffect(() => {
         if (contentRef.current) {
@@ -47,6 +98,8 @@ const Table = ({ parentsEdificioProps, admin, screenWidth, loadingLoader }) => {
                     totalHeight += escaleraContent.scrollHeight;
                 }
             }
+
+            console.log('totalheight', totalHeight);
 
             setContentHeight(totalHeight);
         }
@@ -64,7 +117,6 @@ const Table = ({ parentsEdificioProps, admin, screenWidth, loadingLoader }) => {
     const [childsEdificio, setChildsEdificio] = useState([]);
     const [parentsEscalera, setParentsEscalera] = useState(parentsEdificioProps.escaleras);
     const [parentsEdificio, setParentsEdificio] = useState(parentsEdificioProps.edificios);
-    const [expandedItems, setExpandedItems] = useState({});
     const [showExtraButtons, setShowExtraButtons] = useState(false);
     const [showUngroupButtons, setShowUngroupButtons] = useState(false);
     const [selectedItems, setSelectedItems] = useState(new Set());
@@ -180,8 +232,6 @@ const Table = ({ parentsEdificioProps, admin, screenWidth, loadingLoader }) => {
         let tipoValue = determineFilterValueInterger(filters.tipo);
         let banosValue = determineFilterValueInterger(filters.banos);
         let habitacionesValue = determineFilterValueInterger(filters.habitaciones);
-        console.log('habitacionesValue', habitacionesValue);
-        console.log('typeof habitacionesValue', typeof habitacionesValue);
 
 
         try {
@@ -214,14 +264,12 @@ const Table = ({ parentsEdificioProps, admin, screenWidth, loadingLoader }) => {
             });
             axios.get('api/searchInmuebles', { params }).then((response) => {
                 const data = response.data;
-                console.log('searchInmuebles Response:', data); // Log the entire API response
                 setData(data.results);
+                console.log('searchInmuebles data', data.results);
                 setTotalPages(data.totalPages);
                 setCurrentPage(data.currentPage);
-                console.log('analyticsData', data.analyitics[0]);
                 setAnalyticsData(data.analyitics[0]);
                 setTotalItems(data.analyitics[0].totalInmuebles);
-                console.log('totalItems', data.analyitics[0].totalInmuebles);
                 setTimeout(() => {
                     setLoadingPage(false);
                 }, 1);
@@ -250,7 +298,6 @@ const Table = ({ parentsEdificioProps, admin, screenWidth, loadingLoader }) => {
     const fetchParentsEdificio = async () => {
         try {
             const { data } = await axios.get('/api/fetch_parents'); // Use axios to fetch parents
-            console.log('parents edificio', data);
 
             setParentsEdificio(data.edificios || []); // Set the state with fetched data
             setParentsEscalera(data.escaleras || []); // Set the state with fetched data
@@ -283,15 +330,14 @@ const Table = ({ parentsEdificioProps, admin, screenWidth, loadingLoader }) => {
             setOptions([]);
         }
     }, [selectedType, parentsEdificio, parentsEscalera]);
-    // Handle the change event for react-select
+
     const handleChangeExistingGroup = (selectedOption) => {
-        handleFormChange({
-            target: {
-                name: 'existingGroup',
-                value: selectedOption ? selectedOption.value : '',
-            },
-        });
+        setFormData((prevFormData) => ({
+            ...prevFormData,
+            existingGroup: selectedOption ? selectedOption : '',
+        }));
     };
+
 
     // OPTIONS AND HANDECHANGE FOR NUEVO GRUPO ESCALERA
     const optionsNuevoGrupoEscalera = parentsEdificio?.map((parent) => ({
@@ -317,7 +363,6 @@ const Table = ({ parentsEdificioProps, admin, screenWidth, loadingLoader }) => {
                 setCurrentPage(totalPages > 0 ? totalPages : 1); // Ensure currentPage is set to a valid page number
             }
         };
-        console.log('analyticsData', analyticsData);
         fetchAndSetData();
     }, [
         currentPage,
@@ -383,7 +428,6 @@ const Table = ({ parentsEdificioProps, admin, screenWidth, loadingLoader }) => {
             newSelectedItems.has(itemId) ? newSelectedItems.delete(itemId) : newSelectedItems.add(itemId);
             return newSelectedItems;
         });
-        console.log('selectedItems', selectedItems);
     };
 
     const handleCheckboxChangeUngroup = (itemId) => {
@@ -427,8 +471,6 @@ const Table = ({ parentsEdificioProps, admin, screenWidth, loadingLoader }) => {
         if (showExtraButtons) setShowExtraButtons(false);
         if (showUngroupButtons) setShowUngroupButtons(false);
         if (showDeleteInmuebleButtons) setShowDeleteInmuebleButtons(false);
-        console.log('showAddNewInmueble', showAddNewInmueble);
-        console.log('showAddInmuebleButtons', showAddInmuebleButtons);
     };
 
     const handlePopupToggle = () => {
@@ -458,6 +500,14 @@ const Table = ({ parentsEdificioProps, admin, screenWidth, loadingLoader }) => {
     const ressetSelectedType = () => {
         setSelectedType('');
     };
+
+    useEffect(() => {
+        setFormData((prevFormData) => ({
+            ...prevFormData, // Preserve the other values in formData
+            tipo: selectedType, // Update the 'tipo' field with the value of selectedType
+        }));
+    }, [selectedType]);
+
 
     useEffect(() => {
         ressetSelectedType();
@@ -508,12 +558,11 @@ const Table = ({ parentsEdificioProps, admin, screenWidth, loadingLoader }) => {
             return;
         }
         try {
-            console.log('selectedItems', selectedItems);
+
             const response = await axios.post('/api/check_children_nested', {
                 inmuebles: Array.from(selectedItems) // Transform Set to Array
             });
 
-            console.log('response', response.data);
 
             if (response.data.empty) {
                 setShowPopupDeleteInmueble(!showPopupDeleteInmueble);
@@ -521,7 +570,6 @@ const Table = ({ parentsEdificioProps, admin, screenWidth, loadingLoader }) => {
                 setShowPopupDeleteInmueble(!showPopupDeleteInmueble);
                 setThereAreChildrenDelete(true);
                 setNestedElements(response.data.nestedElements);
-                console.log('nested Elements HERE', response.data.nestedElements);
             }
         } catch (error) {
             console.error('Error checking nested elements:', error);
@@ -535,7 +583,6 @@ const Table = ({ parentsEdificioProps, admin, screenWidth, loadingLoader }) => {
             ...prev,
             [name]: value,
         }));
-        console.log(formData);
     };
 
     const handleSubmitForm = async (e) => {
@@ -589,8 +636,6 @@ const Table = ({ parentsEdificioProps, admin, screenWidth, loadingLoader }) => {
                             name: formData.nombre,
                             selectedInmuebles: Array.from(selectedItems),
                         });
-
-                        console.log('response data', response.data); // Debugging line
 
                         Toastify({
                             text: 'Edificio creado.',
@@ -651,13 +696,11 @@ const Table = ({ parentsEdificioProps, admin, screenWidth, loadingLoader }) => {
                 } else {
                     // Call Supabase function
                     setSmallLoadingScreen(true);
-                    console.log('selectedItems', selectedItems);
                     const { data, error } = await axios.post('/api/create_new_escalera_agrupacion', {
                         name: formData.nombre,
                         selectedInmuebles: Array.from(selectedItems),
                         grupo: parseInt(formData.grupo, 10), // Convert grupo to an integer
                     });
-                    console.log('data', data); // Debugging line
 
                     if (error) {
                         console.error('Error performing operation:', error);
@@ -748,7 +791,6 @@ const Table = ({ parentsEdificioProps, admin, screenWidth, loadingLoader }) => {
                     inmuebles: Array.from(selectedItems),
                     existingGroup: parseInt(formData.existingGroup, 10),
                 });
-                console.log('data', data);
                 if (error) {
                     console.error('Error performing operation:', error);
                     Toastify({
@@ -855,7 +897,6 @@ const Table = ({ parentsEdificioProps, admin, screenWidth, loadingLoader }) => {
         try {
             setSmallLoadingScreen(true);
             const response = await axios.post('/api/ungroup', { inmuebles: Array.from(selectedItemsUngroup) });
-            console.log(response.data);
             if (response.data.empty === true) {
                 setOrphanInfo(response.data.emptyParents);
                 setShowAskForDeleteOrphan(true)
@@ -882,7 +923,6 @@ const Table = ({ parentsEdificioProps, admin, screenWidth, loadingLoader }) => {
             fetchData(currentPage, searchTerm);
             setShowExtraButtons(false);
             setShowUngroupButtons(false);
-            console.log('orphanInfo', orphanInfo);
         } catch (error) {
             console.error('Error performing operation:', error);
         }
@@ -899,7 +939,6 @@ const Table = ({ parentsEdificioProps, admin, screenWidth, loadingLoader }) => {
         axios
             .post('/api/delete_orphan', { orphanIds }) // Use POST request
             .then((response) => {
-                console.log(response.data);
                 if (response.data.status === 'success') {
                     Toastify({
                         text: 'Grupos eliminados',
@@ -946,14 +985,12 @@ const Table = ({ parentsEdificioProps, admin, screenWidth, loadingLoader }) => {
     };
 
     const handleDeleteInmueble = () => {
-        console.log('handleDeleteInmueble', Array.from(selectedItems));
         setSmallLoadingScreen(true);
         axios
             .post('/api/delete_inmueble', { // Use POST request
                 inmuebles: Array.from(selectedItems),
             })
             .then((response) => {
-                console.log(response.data);
                 if (response.data.status === 'success') {
                     Toastify({
                         text: 'Inmueble eliminado',
@@ -999,7 +1036,6 @@ const Table = ({ parentsEdificioProps, admin, screenWidth, loadingLoader }) => {
                 inmuebles: nestedElements,
             })
             .then((response) => {
-                console.log(response.data);
                 if (response.data.status === 'success') {
                     Toastify({
                         text: 'Grupo eliminado',
@@ -1098,7 +1134,6 @@ const Table = ({ parentsEdificioProps, admin, screenWidth, loadingLoader }) => {
     };
 
     const escalerasChildren = (item) => {
-        console.log('escalerasChildren', item);
 
         if (item === null) {
             return <p>No hay detalles disponibles</p>;
@@ -1110,46 +1145,136 @@ const Table = ({ parentsEdificioProps, admin, screenWidth, loadingLoader }) => {
                     <div className="tableheader relative px-2 py-1 mt-2 rounded-md shadow-lg flex items-center justify-center flex-row bg-slate-600 w-full mb-1">
                         <div className="true flex flex-row justify-between w-full">
                             <div className="flex flex-row justify-center items-center gap-1 w-[100%] py-2 text-white">
-                                <p className={`w-[95%] ${screenWidth > 450 && 'w-[72.5%]'} sm:w-[55%] md:w-[45%] lg:w-[40%] xl:w-[37.5%] 2xl:w-[35%] text-center m-0`}>
-                                    <strong>Dirección</strong>
-                                </p>
-                                {screenWidth > 1024 && (
-                                    <p className="text-center w-[10%] xl:w-[10%] m-0">
-                                        <strong>Localizado</strong>
-                                    </p>
-                                )}
-                                {screenWidth > 768 && (
-                                    <p className="text-center w-[10%] lg:w-[10%] 2xl:w-[7.5%] m-0">
-                                        <strong>m²</strong>
-                                    </p>
-                                )}
-                                {screenWidth > 1280 && (
-                                    <p className="text-center w-[7.5%] m-0">
-                                        <strong>Año</strong>
-                                    </p>
-                                )}
-                                {screenWidth > 640 && (
-                                    <p className="text-center w-[20%] lg:w-[17.5%] 2xl:w-[15%] m-0">
-                                        <strong>Zona</strong>
-                                    </p>
-                                )}
-                                {screenWidth > 1024 && (
-                                    <p className="text-center w-[7.5%] m-0">
-                                        <strong>DPV</strong>
-                                    </p>
-                                )}
-                                {screenWidth > 1536 && (
-                                    <p className="text-center w-[10%] m-0">
-                                        <strong>Categoría</strong>
-                                    </p>
-                                )}
-                                {screenWidth > 450 && (
-                                    <p className="text-center w-[22.5%] sm:w-[20%] lg:w-[20%] xl:w-[17.5%] 2xl:w-[15%] m-0">
-                                        <strong>Actividad</strong>
-                                    </p>
+                                {paginaBuscador === 'Todos' ? (
+                                    <>
+                                        <p className={`w-[100%] ${screenWidth > 450 && 'w-[72.5%]'} sm:w-[55%] md:w-[45%] lg:w-[40%] xl:w-[37.5%] 2xl:w-[35%] text-center m-0`}>
+                                            <strong>Dirección</strong>
+                                        </p>
+                                        {screenWidth > 1024 && (
+                                            <p className="text-center w-[10%] xl:w-[10%] m-0">
+                                                <strong>Localizado</strong>
+                                            </p>
+                                        )}
+                                        {screenWidth > 768 && (
+                                            <p className="text-center w-[10%] lg:w-[10%] 2xl:w-[7.5%] m-0">
+                                                <strong>m²</strong>
+                                            </p>
+                                        )}
+                                        {screenWidth > 1280 && (
+                                            <p className="text-center w-[7.5%] m-0">
+                                                <strong>Año</strong>
+                                            </p>
+                                        )}
+                                        {screenWidth > 640 && (
+                                            <p className="text-center w-[20%] lg:w-[17.5%] 2xl:w-[15%] m-0">
+                                                <strong>Zona</strong>
+                                            </p>
+                                        )}
+                                        {screenWidth > 1024 && (
+                                            <p className="text-center w-[7.5%] m-0">
+                                                <strong>DPV</strong>
+                                            </p>
+                                        )}
+                                        {screenWidth > 1536 && (
+                                            <p className="text-center w-[10%] m-0">
+                                                <strong>Categoría</strong>
+                                            </p>
+                                        )}
+                                        {screenWidth > 450 && (
+                                            <p className="text-center w-[22.5%] sm:w-[20%] lg:w-[20%] xl:w-[17.5%] 2xl:w-[15%] m-0">
+                                                <strong>Actividad</strong>
+                                            </p>
+                                        )}
+                                    </>
+                                ) : paginaBuscador === 'Noticias' ? (
+                                    <>
+                                        <p className={`w-[100%] ${screenWidth > 450 && 'w-[72.5%]'} sm:w-[55%] md:w-[45%] lg:w-[40%] xl:w-[37.5%] 2xl:w-[35%] text-center m-0`}>
+                                            <strong>Dirección</strong>
+                                        </p>
+                                        {screenWidth > 768 && (
+                                            <p className="text-center w-[10%] lg:w-[10%] 2xl:w-[7.5%] m-0">
+                                                <strong>m²</strong>
+                                            </p>
+                                        )}
+                                        {screenWidth > 640 && (
+                                            <p className="text-center w-[15%] lg:w-[12.5%] 2xl:w-[10%] m-0">
+                                                <strong>Zona</strong>
+                                            </p>
+                                        )}
+                                        {screenWidth > 1024 && (
+                                            <p className="text-center w-[10%] xl:w-[10%] m-0">
+                                                <strong>Prioridad</strong>
+                                            </p>
+                                        )}
+
+                                        {screenWidth > 1280 && (
+                                            <p className="text-center w-[7.5%] m-0">
+                                                <strong>Tipo</strong>
+                                            </p>
+                                        )}
+
+                                        {screenWidth > 1024 && (
+                                            <p className="text-center w-[12.5%] m-0">
+                                                <strong>Valoración</strong>
+                                            </p>
+                                        )}
+                                        {screenWidth > 1536 && (
+                                            <p className="text-center w-[10%] m-0">
+                                                <strong>Categoría</strong>
+                                            </p>
+                                        )}
+                                        {screenWidth > 450 && (
+                                            <p className="text-center w-[22.5%] sm:w-[20%] lg:w-[20%] xl:w-[17.5%] 2xl:w-[15%] m-0">
+                                                <strong>Actividad</strong>
+                                            </p>
+                                        )}
+                                    </>
+                                ) : paginaBuscador === 'Encargos' ? (
+                                    <>
+                                        <p className={`w-[100%] ${screenWidth > 450 && 'w-[72.5%]'} sm:w-[55%] md:w-[45%] lg:w-[40%] xl:w-[37.5%] 2xl:w-[35%] text-center m-0`}>
+                                            <strong>Dirección</strong>
+                                        </p>
+                                        {screenWidth > 768 && (
+                                            <p className="text-center w-[10%] lg:w-[10%] 2xl:w-[7.5%] m-0">
+                                                <strong>Tipo</strong>
+                                            </p>
+                                        )}
+                                        {screenWidth > 640 && (
+                                            <p className="text-center w-[15%] lg:w-[12.5%] 2xl:w-[10%] m-0">
+                                                <strong>Precio 1</strong>
+                                            </p>
+                                        )}
+                                        {screenWidth > 640 && (
+                                            <p className="text-center w-[15%] lg:w-[12.5%] 2xl:w-[10%] m-0">
+                                                <strong>Precio 2</strong>
+                                            </p>
+                                        )}
+                                        {screenWidth > 1024 && (
+                                            <p className="text-center w-[10%] xl:w-[10%] m-0">
+                                                <strong>Comisión Comprador</strong>
+                                            </p>
+                                        )}
+                                        {screenWidth > 1024 && (
+                                            <p className="text-center w-[10%] xl:w-[10%] m-0">
+                                                <strong>Comisión Encargo</strong>
+                                            </p>
+                                        )}
+
+                                        {screenWidth > 1536 && (
+                                            <p className="text-center w-[10%] m-0">
+                                                <strong>Categoría</strong>
+                                            </p>
+                                        )}
+                                        {screenWidth > 450 && (
+                                            <p className="text-center w-[22.5%] sm:w-[20%] lg:w-[20%] xl:w-[17.5%] 2xl:w-[15%] m-0">
+                                                <strong>Actividad</strong>
+                                            </p>
+                                        )}
+                                    </>
+                                ) : (
+                                    null
                                 )}
 
-                                <div className="flex flex-row justify-end items-center gap-3 w-[5%]"></div>
                             </div>
                         </div>
                     </div>
@@ -1158,87 +1283,284 @@ const Table = ({ parentsEdificioProps, admin, screenWidth, loadingLoader }) => {
                             <div
                                 key={child.id}
                                 className={`relative px-2 py-4 border border-zinc-400 gap-1 rounded-md h-[4.5rem] flex items-center flex-row w-full ${child.dataUpdateTime === 'green' ? 'bg-green-200 md:hover:bg-emerald-400 md:hover:cursor-pointer' : child.dataUpdateTime === 'red' ? 'bg-red-100 md:hover:bg-red-300 md:hover:cursor-pointer' : child.dataUpdateTime === 'yellow' ? 'bg-yellow-200 md:hover:bg-yellow-400 md:hover:cursor-pointer' : child.dataUpdateTime === 'gray' ? 'bg-white md:hover:cursor-pointer md:hover:bg-slate-300' : 'bg-white hover:bg-slate-300 hover:cursor-pointer'}`}
+                                // Dynamically assign the onClick based on showExtraButtons
+                                onClick={() => {
+                                    if (showExtraButtons) {
+                                        handleCheckboxChange(child.id);
+                                    } else if (showDeleteInmuebleButtons) {
+                                        handleCheckboxChange(child.id);
+                                    } else if (showUngroupButtons) {
+                                        handleCheckboxChangeUngroup(child.id);
+                                    } else {
+                                        handleItemClick(child.id);
+                                    }
+                                }}
                             >
-                                <div className="flex flex-row justify-between w-full">
-                                    {showUngroupButtons && <input type="checkbox" checked={selectedItemsUngroup.has(child.id)} onChange={() => handleCheckboxChangeUngroup(child.id)} className="mr-4 ml-4 w-[25px] h-[25px]" />}
-                                    {showExtraButtons && <input type="checkbox" checked={selectedItems.has(child.id)} onChange={() => handleCheckboxChange(child.id)} className="mr-4 ml-4 w-[25px] h-[25px]" />}
-                                    {showDeleteInmuebleButtons && <input type="checkbox" checked={selectedItems.has(child.id)} onChange={() => handleCheckboxChange(child.id)} className="mr-4 ml-4 w-[25px] h-[25px]" />}
+                                <div className="flex flex-row justify-between items-center w-full">
+                                    {showUngroupButtons && (
+                                        <Checkbox
+                                            checked={selectedItemsUngroup.has(child.id)}
+                                            onChange={() => handleCheckboxChangeUngroup(child.id)}
+                                            className="m-0 h-fit w-fit p-0"
+                                        />
+                                    )}
+                                    {showExtraButtons && (
+                                        <Checkbox
+                                            checked={selectedItems.has(child.id)}
+                                            onChange={() => handleCheckboxChange(child.id)}
+                                            className="m-0 h-fit w-fit p-0"
+                                        />
+                                    )}
+                                    {showDeleteInmuebleButtons && (
+                                        <Checkbox
+                                            checked={selectedItems.has(child.id)}
+                                            onChange={() => handleCheckboxChange(child.id)}
+                                            className="m-0 h-fit w-fit p-0"
+                                        />
+                                    )}
                                     <div className="flex flex-row justify-start items-center gap-1 w-[100%] py-2 ">
-                                        <p className={`w-[95%] ${screenWidth > 450 ? 'w-[72.5%]' : ''} sm:w-[55%] md:w-[45%] lg:w-[40%] xl:w-[37.5%] 2xl:w-[35%] text-center truncate`} style={{ marginTop: '0px' }}>
-                                            {child.direccion}
-                                        </p>
-                                        {screenWidth > 1024 && (
-                                            <p className={`w-[10%] xl:w-[10%] text-center truncate mt-0`}>
-                                                {child.localizado === false ? (
-                                                    <></>
-                                                ) : (
-                                                    <div className='flex flex-row justify-center items-center'>
-                                                        <p className='text-center text-green-900 bg-green-100 border border-green-900 rounded-md w-min px-2 mx-auto my-auto text-xs'>Sí</p>
+                                        {paginaBuscador === 'Todos' ? (
+                                            <>
+                                                <p className={`w-[100%] ${screenWidth > 450 ? 'w-[72.5%]' : ''} sm:w-[55%] md:w-[45%] lg:w-[40%] xl:w-[37.5%] 2xl:w-[35%] text-center truncate`} style={{ marginTop: '0px' }}>
+                                                    {child.direccion}
+                                                </p>
+                                                {screenWidth > 1024 && (
+                                                    <p className={`w-[10%] xl:w-[10%] text-center truncate mt-0`}>
+                                                        {child.localizado === false ? (
+                                                            <></>
+                                                        ) : (
+                                                            <div className='flex flex-row justify-center items-center'>
+                                                                <p className='text-center text-green-900 bg-green-100 border border-green-900 rounded-md w-min px-2 mx-auto my-auto text-xs'>Sí</p>
+                                                            </div>
+                                                        )}
+                                                    </p>
+                                                )}
+                                                {screenWidth > 768 && (
+                                                    <p className={`w-[10%] lg:w-[10%] 2xl:w-[7.5%] text-center truncate mt-0`}>
+                                                        {child.superficie} m²
+                                                    </p>
+                                                )}
+                                                {screenWidth > 1280 && (
+                                                    <p className={`w-[7.5%] text-center truncate mt-0`}>
+                                                        {child.ano_construccion}
+                                                    </p>
+                                                )}
+                                                {screenWidth > 640 && (
+                                                    <p className={`w-[20%] lg:w-[17.5%] xl:w-[17.5%] 2xl:w-[15%] text-center truncate mt-0`}>
+                                                        {child.zona}
+                                                    </p>
+                                                )}
+                                                {screenWidth > 1024 && (
+                                                    <p className={`w-[7.5%] text-center truncate mt-0`}>
+                                                        {child.DPV === false ? (
+                                                            <></>
+                                                        ) : (
+                                                            <div className='flex flex-row justify-center items-center'>
+                                                                <p className='text-center text-green-900 bg-green-100 border border-green-900 rounded-md w-min px-2 mx-auto my-auto text-xs'>Sí</p>
+                                                            </div>
+                                                        )}
+                                                    </p>
+                                                )}
+                                                {screenWidth > 1536 && (
+                                                    <p className={`w-[10%] text-center truncate mt-0`}>
+                                                        {child.categoria}
+                                                    </p>
+                                                )}
+                                                {screenWidth > 450 && (
+                                                    <div className="flex flex-col gap-2 py-6 w-[22.5%] sm:w-[20%] lg:w-[20%] xl:w-[17.5%] 2xl:w-[15%] h-fit justify-center items-center">
+                                                        {child.noticiastate === true && (
+                                                            <p className='bg-blue-100 text-center text-blue-900 rounded-md border border-blue-900 w-min px-2 mx-auto my-auto text-sm'>Noticia</p>
+                                                        )}
+                                                        {child.encargostate === true && (
+                                                            <p className='bg-orange-100 text-center text-orange-900 rounded-md border border-orange-900 w-min px-2 mx-auto my-auto text-sm'>Encargo</p>
+
+                                                        )}
                                                     </div>
                                                 )}
-                                            </p>
-                                        )}
-                                        {screenWidth > 768 && (
-                                            <p className={`w-[10%] lg:w-[10%] 2xl:w-[7.5%] text-center truncate mt-0`}>
-                                                {child.superficie} m²
-                                            </p>
-                                        )}
-                                        {screenWidth > 1280 && (
-                                            <p className={`w-[7.5%] text-center truncate mt-0`}>
-                                                {child.ano_construccion}
-                                            </p>
-                                        )}
-                                        {screenWidth > 640 && (
-                                            <p className={`w-[20%] lg:w-[17.5%] xl:w-[17.5%] 2xl:w-[15%] text-center truncate mt-0`}>
-                                                {child.zona}
-                                            </p>
-                                        )}
-                                        {screenWidth > 1024 && (
-                                            <p className={`w-[7.5%] text-center truncate mt-0`}>
-                                                {child.DPV === false ? (
-                                                    <></>
-                                                ) : (
-                                                    <div className='flex flex-row justify-center items-center'>
-                                                        <p className='text-center text-green-900 bg-green-100 border border-green-900 rounded-md w-min px-2 mx-auto my-auto text-xs'>Sí</p>
+                                            </>
+                                        ) : paginaBuscador === 'Noticias' ? (
+                                            <>
+                                                <p className={`w-[100%] ${screenWidth > 450 ? 'w-[72.5%]' : ''} sm:w-[55%] md:w-[45%] lg:w-[40%] xl:w-[37.5%] 2xl:w-[35%] text-center truncate`} style={{ marginTop: '0px' }}>
+                                                    {child.direccion}
+                                                </p>
+                                                {screenWidth > 768 && (
+                                                    <p className={`w-[10%] lg:w-[10%] 2xl:w-[7.5%] text-center truncate mt-0`}>
+                                                        {child.superficie} m²
+                                                    </p>
+                                                )}
+                                                {screenWidth > 640 && (
+                                                    <p className={`w-[15%] lg:w-[12.5%] xl:w-[12.5%] 2xl:w-[10%] text-center truncate mt-0`}>
+                                                        {child.zona}
+                                                    </p>
+                                                )}
+                                                {screenWidth > 1024 && (
+                                                    <p className={`w-[10%] xl:w-[10%] text-center truncate mt-0`}>
+                                                        {child.noticia?.prioridad === 'Baja' ? (
+                                                            <>
+                                                                <div className='flex flex-row justify-center items-center'>
+                                                                    <p className='text-center text-green-900 bg-green-100 border border-green-900 rounded-md w-min px-2 mx-auto my-auto text-xs'>Baja</p>
+                                                                </div>
+                                                            </>
+                                                        ) : (
+                                                            <div className='flex flex-row justify-center items-center'>
+                                                                <p className='text-center text-red-900 bg-red-100 border border-red-900 rounded-md w-min px-2 mx-auto my-auto text-xs'>Alta</p>
+                                                            </div>
+                                                        )}
+                                                    </p>
+                                                )}
+
+                                                {screenWidth > 1280 && (
+                                                    <p className={`w-[7.5%] text-center truncate mt-0`}>
+                                                        {child.noticia?.tipo_PV}
+                                                    </p>
+                                                )}
+
+                                                {screenWidth > 1024 && (
+                                                    <p className={`w-[12.5%] text-center truncate mt-0`}>
+                                                        {child.noticia?.valoracion === 1 ? (
+                                                            <>
+                                                                {child.noticia.valoracion_establecida?.toLocaleString('es-ES')} €
+
+                                                            </>
+                                                        ) : (
+                                                            <></>
+                                                        )}
+                                                    </p>
+                                                )}
+                                                {screenWidth > 1536 && (
+                                                    <p className={`w-[10%] text-center truncate mt-0`}>
+                                                        {child.categoria}
+                                                    </p>
+                                                )}
+                                                {screenWidth > 450 && (
+                                                    <div className="flex flex-col gap-2 py-6 w-[22.5%] sm:w-[20%] lg:w-[20%] xl:w-[17.5%] 2xl:w-[15%] h-fit justify-center items-center">
+                                                        {child.noticiastate === true && (
+                                                            <p className='bg-blue-100 text-center text-blue-900 rounded-md border border-blue-900 w-min px-2 mx-auto my-auto text-sm'>Noticia</p>
+                                                        )}
+                                                        {child.encargostate === true && (
+                                                            <p className='bg-orange-100 text-center text-orange-900 rounded-md border border-orange-900 w-min px-2 mx-auto my-auto text-sm'>Encargo</p>
+
+                                                        )}
                                                     </div>
                                                 )}
-                                            </p>
-                                        )}
-                                        {screenWidth > 1536 && (
-                                            <p className={`w-[10%] text-center truncate mt-0`}>
-                                                {child.categoria}
-                                            </p>
-                                        )}
-                                        {screenWidth > 450 && (
-                                            <div className="flex flex-col gap-2 py-6 w-[22.5%] sm:w-[20%] lg:w-[20%] xl:w-[17.5%] 2xl:w-[15%] h-fit justify-center items-center">
-                                                {child.noticiastate === true && (
-                                                    // <svg xmlns="http://www.w3.org/2000/svg" width="2.1em" height="2.1em" viewBox="0 0 24 24">
-                                                    //     <path
-                                                    //         fill="currentColor"
-                                                    //         d="M10 7h4V5.615q0-.269-.173-.442T13.385 5h-2.77q-.269 0-.442.173T10 5.615zm8 15q-1.671 0-2.835-1.164Q14 19.67 14 18t1.165-2.835T18 14t2.836 1.165T22 18t-1.164 2.836T18 22M4.615 20q-.69 0-1.153-.462T3 18.384V8.616q0-.691.463-1.153T4.615 7H9V5.615q0-.69.463-1.153T10.616 4h2.769q.69 0 1.153.462T15 5.615V7h4.385q.69 0 1.152.463T21 8.616v4.198q-.683-.414-1.448-.614T18 12q-2.496 0-4.248 1.752T12 18q0 .506.086 1.009t.262.991zM18 20.423q.2 0 .33-.13t.132-.331t-.131-.331T18 19.5t-.33.13t-.132.332t.131.33t.331.131m-.385-1.846h.77v-3h-.77z"
-                                                    //     />
-                                                    // </svg>
-                                                    <p className='bg-blue-100 text-center text-blue-900 rounded-md border border-blue-900 w-min px-2 mx-auto my-auto text-sm'>Noticia</p>
+                                            </>
+                                        ) : paginaBuscador === 'Encargos' ? (
+                                            <>
+                                                <p className={`w-[100%] ${screenWidth > 450 ? 'w-[72.5%]' : ''} sm:w-[55%] md:w-[45%] lg:w-[40%] xl:w-[37.5%] 2xl:w-[35%] text-center truncate`} style={{ marginTop: '0px' }}>
+                                                    {child.direccion}
+                                                </p>
+                                                {screenWidth > 768 && (
+                                                    <p className={`w-[10%] lg:w-[10%] 2xl:w-[7.5%] text-center truncate mt-0`}>
+                                                        {child.encargo?.tipo_encargo}
+                                                    </p>
                                                 )}
-                                                {child.encargostate === true && (
-                                                    // <svg xmlns="http://www.w3.org/2000/svg" width="2em" height="2em" viewBox="0 0 20 20">
-                                                    //     <path
-                                                    //         fill="currentColor"
-                                                    //         d="M2 3a1 1 0 0 1 2 0h13a1 1 0 1 1 0 2H4v12.5a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5zm3 3.5a.5.5 0 0 1 .5-.5h11a.5.5 0 0 1 .5.5v7a2.5 2.5 0 0 1-2.5 2.5h-7A2.5 2.5 0 0 1 5 13.5zm3 7a.5.5 0 0 0 .5.5h1a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 0 .5.5h1a.5.5 0 0 0 .5-.5v-2.55a1 1 0 0 0-.336-.748L11.332 8.13a.5.5 0 0 0-.664 0L8.336 10.2a1 1 0 0 0-.336.75z"
-                                                    //     />
-                                                    // </svg>
-                                                    <p className='bg-orange-100 text-center text-orange-900 rounded-md border border-orange-900 w-min px-2 mx-auto my-auto text-sm'>Encargo</p>
-
+                                                {screenWidth > 640 && (
+                                                    <p className={`w-[15%] lg:w-[12.5%] xl:w-[12.5%] 2xl:w-[10%] text-center truncate mt-0`}>
+                                                        {child.encargo?.precio_1?.toLocaleString('es-ES')} €
+                                                    </p>
                                                 )}
-                                            </div>
+                                                {screenWidth > 640 && (
+                                                    <>
+                                                        {child.encargo?.precio_2 ? (
+                                                            <p className={`w-[15%] lg:w-[12.5%] xl:w-[12.5%] 2xl:w-[10%] text-center truncate mt-0`}>
+                                                                {child.encargo?.precio_2?.toLocaleString('es-ES')} €
+                                                            </p>
+                                                        ) : (
+                                                            <p className={`w-[15%] lg:w-[12.5%] xl:w-[12.5%] 2xl:w-[10%] text-center truncate mt-0`}>
+
+                                                            </p>
+                                                        )}
+                                                    </>
+                                                )}
+                                                {screenWidth > 1024 && (
+                                                    <p className={`w-[10%] xl:w-[10%] text-center truncate mt-0`}>
+                                                        {child.encargo?.comisionComprador === 'Porcentaje' ? (
+                                                            <>
+                                                                <div className='flex flex-col justify-center items-center'>
+                                                                    <p className='text-center w-min px-2 mx-auto my-auto text-xs'>
+                                                                        {child.encargo?.comisionCompradorValue?.toLocaleString('es-ES')}%
+                                                                    </p>
+                                                                    <div className='h-[1px] w-full my-1 bg-slate-500'></div>
+                                                                    <p className='text-center w-min px-2 mx-auto my-auto text-xs'>
+                                                                        {child.encargo?.comisionCompradorValue?.toLocaleString('es-ES')}€
+                                                                    </p>
+                                                                </div>
+                                                            </>
+                                                        ) : child.encargo?.comisionComprador === 'Fijo' ? (
+                                                            <>
+                                                                <div className='flex flex-col justify-center items-center'>
+                                                                    <p className='text-center w-min px-2 mx-auto my-auto text-xs'>
+                                                                        {child.encargo?.comisionCompradorValue?.toLocaleString('es-ES')}€
+                                                                    </p>
+                                                                </div>
+                                                            </>
+                                                        ) : (
+                                                            <>
+                                                                <div className='flex flex-row justify-center items-center'>
+                                                                    <p className='text-center rounded-md w-min px-2 mx-auto my-auto text-xs'></p>
+                                                                </div>
+                                                            </>
+                                                        )}
+                                                    </p>
+                                                )}
+                                                {screenWidth > 1024 && (
+                                                    <p className={`w-[10%] xl:w-[10%] text-center truncate mt-0`}>
+                                                        {child.encargo?.tipo_comision_encargo === 'Porcentaje' ? (
+                                                            <>
+                                                                <div className='flex flex-col justify-center items-center'>
+                                                                    <p className='text-center w-min px-2 mx-auto my-auto text-xs'>
+                                                                        {child.encargo?.comision_encargo?.toLocaleString('es-ES')}%
+                                                                    </p>
+                                                                    <div className='h-[1px] w-full my-1 bg-slate-500'></div>
+                                                                    <p className='text-center w-min px-2 mx-auto my-auto text-xs'>
+                                                                        {(
+                                                                            (child.encargo?.precio_2 ?? child.encargo?.precio_1) *
+                                                                            (child.encargo?.comision_encargo ?? 0) / 100
+                                                                        )?.toLocaleString('es-ES')} €
+                                                                    </p>
+                                                                </div>
+                                                            </>
+                                                        ) : child.encargo?.tipo_comision_encargo === 'Fijo' ? (
+                                                            <>
+                                                                <div className='flex flex-col justify-center items-center'>
+                                                                    <p className='text-center w-min px-2 mx-auto my-auto text-xs'>
+                                                                        {child.encargo?.comision_encargo?.toLocaleString('es-ES')}€
+                                                                    </p>
+                                                                </div>
+                                                            </>
+                                                        ) : (
+                                                            <>
+                                                                <div className='flex flex-row justify-center items-center'>
+                                                                    <p className='text-center rounded-md w-min px-2 mx-auto my-auto text-xs'></p>
+                                                                </div>
+                                                            </>
+                                                        )}
+                                                    </p>
+                                                )}
+
+
+
+                                                {screenWidth > 1536 && (
+                                                    <p className={`w-[10%] text-center truncate mt-0`}>
+                                                        {child.categoria}
+                                                    </p>
+                                                )}
+                                                {screenWidth > 450 && (
+                                                    <div className="flex flex-col gap-2 py-6 w-[22.5%] sm:w-[20%] lg:w-[20%] xl:w-[17.5%] 2xl:w-[15%] h-fit justify-center items-center">
+                                                        {child.noticiastate === true && (
+                                                            <p className='bg-blue-100 text-center text-blue-900 rounded-md border border-blue-900 w-min px-2 mx-auto my-auto text-sm'>Noticia</p>
+                                                        )}
+                                                        {child.encargostate === true && (
+                                                            <p className='bg-orange-100 text-center text-orange-900 rounded-md border border-orange-900 w-min px-2 mx-auto my-auto text-sm'>Encargo</p>
+
+                                                        )}
+                                                    </div>
+                                                )}
+                                            </>
+                                        ) : (
+                                            null
                                         )}
 
-
-                                        <div onClick={() => handleItemClick(child.id)} className="cursor-pointer w-[5%] mx-0 text-center flex flex-row justify-center items-center">
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="2.1em" height="2.1em" viewBox="0 0 16 16" className="text-cyan-800 bg-white rounded-full hover:w-[2.5em] hover:h-[2.5em] hover:shadow-lg hover:text-cyan-600">
-                                                <path fill="currentColor" d="M8 0a8 8 0 1 1 0 16A8 8 0 0 1 8 0m1.062 4.312a1 1 0 1 0-2 0v2.75h-2.75a1 1 0 0 0 0 2h2.75v2.75a1 1 0 1 0 2 0v-2.75h2.75a1 1 0 1 0 0-2h-2.75Z" />
-                                            </svg>
-                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -1250,7 +1572,6 @@ const Table = ({ parentsEdificioProps, admin, screenWidth, loadingLoader }) => {
 
     const edifciosChildren = (item) => {
 
-        console.log('edifciosChildren', item.nestedescaleras);
 
         if (item.nestedinmuebles && item.nestedinmuebles.length === 0 && item.nestedescaleras.length === 0) {
             return <p>No hay detalles disponibles</p>;
@@ -1262,46 +1583,135 @@ const Table = ({ parentsEdificioProps, admin, screenWidth, loadingLoader }) => {
                 <div className="tableheader relative px-2 py-1 mt-2 rounded-md shadow-lg flex items-center justify-center flex-row bg-slate-600 w-full mb-1">
                     <div className="true flex flex-row justify-between w-full">
                         <div className="flex flex-row justify-center items-center gap-1 w-[100%] py-2 text-white">
-                            <p className={`w-[95%] ${screenWidth > 450 && 'w-[72.5%]'} sm:w-[55%] md:w-[45%] lg:w-[40%] xl:w-[37.5%] 2xl:w-[35%] text-center m-0`}>
-                                <strong>Dirección</strong>
-                            </p>
-                            {screenWidth > 1024 && (
-                                <p className="text-center w-[10%] xl:w-[10%] m-0">
-                                    <strong>Localizado</strong>
-                                </p>
-                            )}
-                            {screenWidth > 768 && (
-                                <p className="text-center w-[10%] lg:w-[10%] 2xl:w-[7.5%] m-0">
-                                    <strong>m²</strong>
-                                </p>
-                            )}
-                            {screenWidth > 1280 && (
-                                <p className="text-center w-[7.5%] m-0">
-                                    <strong>Año</strong>
-                                </p>
-                            )}
-                            {screenWidth > 640 && (
-                                <p className="text-center w-[20%] lg:w-[17.5%] 2xl:w-[15%] m-0">
-                                    <strong>Zona</strong>
-                                </p>
-                            )}
-                            {screenWidth > 1024 && (
-                                <p className="text-center w-[7.5%] m-0">
-                                    <strong>DPV</strong>
-                                </p>
-                            )}
-                            {screenWidth > 1536 && (
-                                <p className="text-center w-[10%] m-0">
-                                    <strong>Categoría</strong>
-                                </p>
-                            )}
-                            {screenWidth > 450 && (
-                                <p className="text-center w-[22.5%] sm:w-[20%] lg:w-[20%] xl:w-[17.5%] 2xl:w-[15%] m-0">
-                                    <strong>Actividad</strong>
-                                </p>
-                            )}
+                            {paginaBuscador === 'Todos' ? (
+                                <>
+                                    <p className={`w-[100%] ${screenWidth > 450 && 'w-[72.5%]'} sm:w-[55%] md:w-[45%] lg:w-[40%] xl:w-[37.5%] 2xl:w-[35%] text-center m-0`}>
+                                        <strong>Dirección</strong>
+                                    </p>
+                                    {screenWidth > 1024 && (
+                                        <p className="text-center w-[10%] xl:w-[10%] m-0">
+                                            <strong>Localizado</strong>
+                                        </p>
+                                    )}
+                                    {screenWidth > 768 && (
+                                        <p className="text-center w-[10%] lg:w-[10%] 2xl:w-[7.5%] m-0">
+                                            <strong>m²</strong>
+                                        </p>
+                                    )}
+                                    {screenWidth > 1280 && (
+                                        <p className="text-center w-[7.5%] m-0">
+                                            <strong>Año</strong>
+                                        </p>
+                                    )}
+                                    {screenWidth > 640 && (
+                                        <p className="text-center w-[20%] lg:w-[17.5%] 2xl:w-[15%] m-0">
+                                            <strong>Zona</strong>
+                                        </p>
+                                    )}
+                                    {screenWidth > 1024 && (
+                                        <p className="text-center w-[7.5%] m-0">
+                                            <strong>DPV</strong>
+                                        </p>
+                                    )}
+                                    {screenWidth > 1536 && (
+                                        <p className="text-center w-[10%] m-0">
+                                            <strong>Categoría</strong>
+                                        </p>
+                                    )}
+                                    {screenWidth > 450 && (
+                                        <p className="text-center w-[22.5%] sm:w-[20%] lg:w-[20%] xl:w-[17.5%] 2xl:w-[15%] m-0">
+                                            <strong>Actividad</strong>
+                                        </p>
+                                    )}
+                                </>
+                            ) : paginaBuscador === 'Noticias' ? (
+                                <>
+                                    <p className={`w-[100%] ${screenWidth > 450 && 'w-[72.5%]'} sm:w-[55%] md:w-[45%] lg:w-[40%] xl:w-[37.5%] 2xl:w-[35%] text-center m-0`}>
+                                        <strong>Dirección</strong>
+                                    </p>
+                                    {screenWidth > 768 && (
+                                        <p className="text-center w-[10%] lg:w-[10%] 2xl:w-[7.5%] m-0">
+                                            <strong>m²</strong>
+                                        </p>
+                                    )}
+                                    {screenWidth > 640 && (
+                                        <p className="text-center w-[15%] lg:w-[12.5%] 2xl:w-[10%] m-0">
+                                            <strong>Zona</strong>
+                                        </p>
+                                    )}
+                                    {screenWidth > 1024 && (
+                                        <p className="text-center w-[10%] xl:w-[10%] m-0">
+                                            <strong>Prioridad</strong>
+                                        </p>
+                                    )}
 
-                            <div className="flex flex-row justify-end items-center gap-3 w-[5%]"></div>
+                                    {screenWidth > 1280 && (
+                                        <p className="text-center w-[7.5%] m-0">
+                                            <strong>Tipo</strong>
+                                        </p>
+                                    )}
+
+                                    {screenWidth > 1024 && (
+                                        <p className="text-center w-[12.5%] m-0">
+                                            <strong>Valoración</strong>
+                                        </p>
+                                    )}
+                                    {screenWidth > 1536 && (
+                                        <p className="text-center w-[10%] m-0">
+                                            <strong>Categoría</strong>
+                                        </p>
+                                    )}
+                                    {screenWidth > 450 && (
+                                        <p className="text-center w-[22.5%] sm:w-[20%] lg:w-[20%] xl:w-[17.5%] 2xl:w-[15%] m-0">
+                                            <strong>Actividad</strong>
+                                        </p>
+                                    )}
+                                </>
+                            ) : paginaBuscador === 'Encargos' ? (
+                                <>
+                                    <p className={`w-[100%] ${screenWidth > 450 && 'w-[72.5%]'} sm:w-[55%] md:w-[45%] lg:w-[40%] xl:w-[37.5%] 2xl:w-[35%] text-center m-0`}>
+                                        <strong>Dirección</strong>
+                                    </p>
+                                    {screenWidth > 768 && (
+                                        <p className="text-center w-[10%] lg:w-[10%] 2xl:w-[7.5%] m-0">
+                                            <strong>Tipo</strong>
+                                        </p>
+                                    )}
+                                    {screenWidth > 640 && (
+                                        <p className="text-center w-[15%] lg:w-[12.5%] 2xl:w-[10%] m-0">
+                                            <strong>Precio 1</strong>
+                                        </p>
+                                    )}
+                                    {screenWidth > 640 && (
+                                        <p className="text-center w-[15%] lg:w-[12.5%] 2xl:w-[10%] m-0">
+                                            <strong>Precio 2</strong>
+                                        </p>
+                                    )}
+                                    {screenWidth > 1024 && (
+                                        <p className="text-center w-[10%] xl:w-[10%] m-0">
+                                            <strong>Comisión Comprador</strong>
+                                        </p>
+                                    )}
+                                    {screenWidth > 1024 && (
+                                        <p className="text-center w-[10%] xl:w-[10%] m-0">
+                                            <strong>Comisión Encargo</strong>
+                                        </p>
+                                    )}
+
+                                    {screenWidth > 1536 && (
+                                        <p className="text-center w-[10%] m-0">
+                                            <strong>Categoría</strong>
+                                        </p>
+                                    )}
+                                    {screenWidth > 450 && (
+                                        <p className="text-center w-[22.5%] sm:w-[20%] lg:w-[20%] xl:w-[17.5%] 2xl:w-[15%] m-0">
+                                            <strong>Actividad</strong>
+                                        </p>
+                                    )}
+                                </>
+                            ) : (
+                                null
+                            )}
                         </div>
                     </div>
                 </div>
@@ -1310,109 +1720,284 @@ const Table = ({ parentsEdificioProps, admin, screenWidth, loadingLoader }) => {
                         <div
                             key={child.id}
                             className={`relative px-2 py-4 border border-zinc-400 gap-1 rounded-md h-[4.5rem] flex items-center flex-row w-full ${child.dataUpdateTime === 'green' ? 'bg-green-200 md:hover:bg-emerald-400 md:hover:cursor-pointer' : child.dataUpdateTime === 'red' ? 'bg-red-100 md:hover:bg-red-300 md:hover:cursor-pointer' : child.dataUpdateTime === 'yellow' ? 'bg-yellow-200 md:hover:bg-yellow-400 md:hover:cursor-pointer' : child.dataUpdateTime === 'gray' ? 'bg-white md:hover:cursor-pointer md:hover:bg-slate-300' : 'bg-white hover:bg-slate-300 hover:cursor-pointer'}`}
+                            // Dynamically assign the onClick based on showExtraButtons
+                            onClick={() => {
+                                if (showExtraButtons) {
+                                    handleCheckboxChange(child.id);
+                                } else if (showDeleteInmuebleButtons) {
+                                    handleCheckboxChange(child.id);
+                                } else if (showUngroupButtons) {
+                                    handleCheckboxChangeUngroup(child.id);
+                                } else {
+                                    handleItemClick(child.id);
+                                }
+                            }}
                         >
-                            <div className="flex flex-row justify-between w-full">
+                            <div className="flex flex-row justify-between items-center w-full">
 
                                 {showUngroupButtons && (
-                                    <input
-                                        type="checkbox"
+                                    <Checkbox
                                         checked={selectedItemsUngroup.has(child.id)}
                                         onChange={() => handleCheckboxChangeUngroup(child.id)}
-                                        className="mr-4 ml-4 w-[25px] h-[25px]"
+                                        className="mr-4 ml-4 h-fit w-fit p-0"
                                     />
                                 )}
                                 {showExtraButtons && (
-                                    <input
-                                        type="checkbox"
+                                    <Checkbox
                                         checked={selectedItems.has(child.id)}
                                         onChange={() => handleCheckboxChange(child.id)}
-                                        className="mr-4 ml-4 w-[25px] h-[25px]"
+                                        className="mr-4 ml-4 h-fit w-fit p-0"
                                     />
                                 )}
                                 {showDeleteInmuebleButtons && (
-                                    <input
-                                        type="checkbox"
+                                    <Checkbox
                                         checked={selectedItems.has(child.id)}
                                         onChange={() => handleCheckboxChange(child.id)}
-                                        className="mr-4 ml-4 w-[25px] h-[25px]"
+                                        className="mr-4 ml-4 h-fit w-fit p-0"
                                     />
                                 )}
                                 <div className="flex flex-row justify-start items-center gap-1 w-[100%] py-2 ">
-                                    <p className={`w-[95%] ${screenWidth > 450 ? 'w-[72.5%]' : ''} sm:w-[55%] md:w-[45%] lg:w-[40%] xl:w-[37.5%] 2xl:w-[35%] text-center truncate`} style={{ marginTop: '0px' }}>
-                                        {child.direccion}
-                                    </p>
-                                    {screenWidth > 1024 && (
-                                        <p className={`w-[10%] xl:w-[10%] text-center truncate mt-0`}>
-                                            {child.localizado === false ? (
-                                                <></>
-                                            ) : (
-                                                <div className='flex flex-row justify-center items-center'>
-                                                    <p className='text-center text-green-900 bg-green-100 border border-green-900 rounded-md w-min px-2 mx-auto my-auto text-xs'>Sí</p>
+                                    {paginaBuscador === 'Todos' ? (
+                                        <>
+                                            <p className={`w-[100%] ${screenWidth > 450 ? 'w-[72.5%]' : ''} sm:w-[55%] md:w-[45%] lg:w-[40%] xl:w-[37.5%] 2xl:w-[35%] text-center truncate`} style={{ marginTop: '0px' }}>
+                                                {child.direccion}
+                                            </p>
+                                            {screenWidth > 1024 && (
+                                                <p className={`w-[10%] xl:w-[10%] text-center truncate mt-0`}>
+                                                    {child.localizado === false ? (
+                                                        <></>
+                                                    ) : (
+                                                        <div className='flex flex-row justify-center items-center'>
+                                                            <p className='text-center text-green-900 bg-green-100 border border-green-900 rounded-md w-min px-2 mx-auto my-auto text-xs'>Sí</p>
+                                                        </div>
+                                                    )}
+                                                </p>
+                                            )}
+                                            {screenWidth > 768 && (
+                                                <p className={`w-[10%] lg:w-[10%] 2xl:w-[7.5%] text-center truncate mt-0`}>
+                                                    {child.superficie} m²
+                                                </p>
+                                            )}
+                                            {screenWidth > 1280 && (
+                                                <p className={`w-[7.5%] text-center truncate mt-0`}>
+                                                    {child.ano_construccion}
+                                                </p>
+                                            )}
+                                            {screenWidth > 640 && (
+                                                <p className={`w-[20%] lg:w-[17.5%] xl:w-[17.5%] 2xl:w-[15%] text-center truncate mt-0`}>
+                                                    {child.zona}
+                                                </p>
+                                            )}
+                                            {screenWidth > 1024 && (
+                                                <p className={`w-[7.5%] text-center truncate mt-0`}>
+                                                    {child.DPV === false ? (
+                                                        <></>
+                                                    ) : (
+                                                        <div className='flex flex-row justify-center items-center'>
+                                                            <p className='text-center text-green-900 bg-green-100 border border-green-900 rounded-md w-min px-2 mx-auto my-auto text-xs'>Sí</p>
+                                                        </div>
+                                                    )}
+                                                </p>
+                                            )}
+                                            {screenWidth > 1536 && (
+                                                <p className={`w-[10%] text-center truncate mt-0`}>
+                                                    {child.categoria}
+                                                </p>
+                                            )}
+                                            {screenWidth > 450 && (
+                                                <div className="flex flex-col gap-2 py-6 w-[22.5%] sm:w-[20%] lg:w-[20%] xl:w-[17.5%] 2xl:w-[15%] h-fit justify-center items-center">
+                                                    {child.noticiastate === true && (
+                                                        <p className='bg-blue-100 text-center text-blue-900 rounded-md border border-blue-900 w-min px-2 mx-auto my-auto text-sm'>Noticia</p>
+                                                    )}
+                                                    {child.encargostate === true && (
+                                                        <p className='bg-orange-100 text-center text-orange-900 rounded-md border border-orange-900 w-min px-2 mx-auto my-auto text-sm'>Encargo</p>
+
+                                                    )}
                                                 </div>
                                             )}
-                                        </p>
-                                    )}
-                                    {screenWidth > 768 && (
-                                        <p className={`w-[10%] lg:w-[10%] 2xl:w-[7.5%] text-center truncate mt-0`}>
-                                            {child.superficie} m²
-                                        </p>
-                                    )}
-                                    {screenWidth > 1280 && (
-                                        <p className={`w-[7.5%] text-center truncate mt-0`}>
-                                            {child.ano_construccion}
-                                        </p>
-                                    )}
-                                    {screenWidth > 640 && (
-                                        <p className={`w-[20%] lg:w-[17.5%] xl:w-[17.5%] 2xl:w-[15%] text-center truncate mt-0`}>
-                                            {child.zona}
-                                        </p>
-                                    )}
-                                    {screenWidth > 1024 && (
-                                        <p className={`w-[7.5%] text-center truncate mt-0`}>
-                                            {child.DPV === false ? (
-                                                <></>
-                                            ) : (
-                                                <div className='flex flex-row justify-center items-center'>
-                                                    <p className='text-center text-green-900 bg-green-100 border border-green-900 rounded-md w-min px-2 mx-auto my-auto text-xs'>Sí</p>
+                                        </>
+                                    ) : paginaBuscador === 'Noticias' ? (
+                                        <>
+                                            <p className={`w-[100%] ${screenWidth > 450 ? 'w-[72.5%]' : ''} sm:w-[55%] md:w-[45%] lg:w-[40%] xl:w-[37.5%] 2xl:w-[35%] text-center truncate`} style={{ marginTop: '0px' }}>
+                                                {child.direccion}
+                                            </p>
+                                            {screenWidth > 768 && (
+                                                <p className={`w-[10%] lg:w-[10%] 2xl:w-[7.5%] text-center truncate mt-0`}>
+                                                    {child.superficie} m²
+                                                </p>
+                                            )}
+                                            {screenWidth > 640 && (
+                                                <p className={`w-[15%] lg:w-[12.5%] xl:w-[12.5%] 2xl:w-[10%] text-center truncate mt-0`}>
+                                                    {child.zona}
+                                                </p>
+                                            )}
+                                            {screenWidth > 1024 && (
+                                                <p className={`w-[10%] xl:w-[10%] text-center truncate mt-0`}>
+                                                    {child.noticia?.prioridad === 'Baja' ? (
+                                                        <>
+                                                            <div className='flex flex-row justify-center items-center'>
+                                                                <p className='text-center text-green-900 bg-green-100 border border-green-900 rounded-md w-min px-2 mx-auto my-auto text-xs'>Baja</p>
+                                                            </div>
+                                                        </>
+                                                    ) : (
+                                                        <div className='flex flex-row justify-center items-center'>
+                                                            <p className='text-center text-red-900 bg-red-100 border border-red-900 rounded-md w-min px-2 mx-auto my-auto text-xs'>Alta</p>
+                                                        </div>
+                                                    )}
+                                                </p>
+                                            )}
+
+                                            {screenWidth > 1280 && (
+                                                <p className={`w-[7.5%] text-center truncate mt-0`}>
+                                                    {child.noticia?.tipo_PV}
+                                                </p>
+                                            )}
+
+                                            {screenWidth > 1024 && (
+                                                <p className={`w-[12.5%] text-center truncate mt-0`}>
+                                                    {child.noticia?.valoracion === 1 ? (
+                                                        <>
+                                                            {child.noticia.valoracion_establecida?.toLocaleString('es-ES')} €
+
+                                                        </>
+                                                    ) : (
+                                                        <></>
+                                                    )}
+                                                </p>
+                                            )}
+                                            {screenWidth > 1536 && (
+                                                <p className={`w-[10%] text-center truncate mt-0`}>
+                                                    {child.categoria}
+                                                </p>
+                                            )}
+                                            {screenWidth > 450 && (
+                                                <div className="flex flex-col gap-2 py-6 w-[22.5%] sm:w-[20%] lg:w-[20%] xl:w-[17.5%] 2xl:w-[15%] h-fit justify-center items-center">
+                                                    {child.noticiastate === true && (
+                                                        <p className='bg-blue-100 text-center text-blue-900 rounded-md border border-blue-900 w-min px-2 mx-auto my-auto text-sm'>Noticia</p>
+                                                    )}
+                                                    {child.encargostate === true && (
+                                                        <p className='bg-orange-100 text-center text-orange-900 rounded-md border border-orange-900 w-min px-2 mx-auto my-auto text-sm'>Encargo</p>
+
+                                                    )}
                                                 </div>
                                             )}
-                                        </p>
-                                    )}
-                                    {screenWidth > 1536 && (
-                                        <p className={`w-[10%] text-center truncate mt-0`}>
-                                            {child.categoria}
-                                        </p>
-                                    )}
-                                    {screenWidth > 450 && (
-                                        <div className="flex flex-col gap-2 py-6 w-[22.5%] sm:w-[20%] lg:w-[20%] xl:w-[17.5%] 2xl:w-[15%] h-fit justify-center items-center">
-                                            {child.noticiastate === true && (
-                                                // <svg xmlns="http://www.w3.org/2000/svg" width="2.1em" height="2.1em" viewBox="0 0 24 24">
-                                                //     <path
-                                                //         fill="currentColor"
-                                                //         d="M10 7h4V5.615q0-.269-.173-.442T13.385 5h-2.77q-.269 0-.442.173T10 5.615zm8 15q-1.671 0-2.835-1.164Q14 19.67 14 18t1.165-2.835T18 14t2.836 1.165T22 18t-1.164 2.836T18 22M4.615 20q-.69 0-1.153-.462T3 18.384V8.616q0-.691.463-1.153T4.615 7H9V5.615q0-.69.463-1.153T10.616 4h2.769q.69 0 1.153.462T15 5.615V7h4.385q.69 0 1.152.463T21 8.616v4.198q-.683-.414-1.448-.614T18 12q-2.496 0-4.248 1.752T12 18q0 .506.086 1.009t.262.991zM18 20.423q.2 0 .33-.13t.132-.331t-.131-.331T18 19.5t-.33.13t-.132.332t.131.33t.331.131m-.385-1.846h.77v-3h-.77z"
-                                                //     />
-                                                // </svg>
-                                                <p className='bg-blue-100 text-center text-blue-900 rounded-md border border-blue-900 w-min px-2 mx-auto my-auto text-sm'>Noticia</p>
+                                        </>
+                                    ) : paginaBuscador === 'Encargos' ? (
+                                        <>
+                                            <p className={`w-[100%] ${screenWidth > 450 ? 'w-[72.5%]' : ''} sm:w-[55%] md:w-[45%] lg:w-[40%] xl:w-[37.5%] 2xl:w-[35%] text-center truncate`} style={{ marginTop: '0px' }}>
+                                                {child.direccion}
+                                            </p>
+                                            {screenWidth > 768 && (
+                                                <p className={`w-[10%] lg:w-[10%] 2xl:w-[7.5%] text-center truncate mt-0`}>
+                                                    {child.encargo?.tipo_encargo}
+                                                </p>
                                             )}
-                                            {child.encargostate === true && (
-                                                // <svg xmlns="http://www.w3.org/2000/svg" width="2em" height="2em" viewBox="0 0 20 20">
-                                                //     <path
-                                                //         fill="currentColor"
-                                                //         d="M2 3a1 1 0 0 1 2 0h13a1 1 0 1 1 0 2H4v12.5a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5zm3 3.5a.5.5 0 0 1 .5-.5h11a.5.5 0 0 1 .5.5v7a2.5 2.5 0 0 1-2.5 2.5h-7A2.5 2.5 0 0 1 5 13.5zm3 7a.5.5 0 0 0 .5.5h1a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 0 .5.5h1a.5.5 0 0 0 .5-.5v-2.55a1 1 0 0 0-.336-.748L11.332 8.13a.5.5 0 0 0-.664 0L8.336 10.2a1 1 0 0 0-.336.75z"
-                                                //     />
-                                                // </svg>
-                                                <p className='bg-orange-100 text-center text-orange-900 rounded-md border border-orange-900 w-min px-2 mx-auto my-auto text-sm'>Encargo</p>
-
+                                            {screenWidth > 640 && (
+                                                <p className={`w-[15%] lg:w-[12.5%] xl:w-[12.5%] 2xl:w-[10%] text-center truncate mt-0`}>
+                                                    {child.encargo?.precio_1?.toLocaleString('es-ES')} €
+                                                </p>
                                             )}
-                                        </div>
+                                            {screenWidth > 640 && (
+                                                <>
+                                                    {child.encargo?.precio_2 ? (
+                                                        <p className={`w-[15%] lg:w-[12.5%] xl:w-[12.5%] 2xl:w-[10%] text-center truncate mt-0`}>
+                                                            {child.encargo?.precio_2?.toLocaleString('es-ES')} €
+                                                        </p>
+                                                    ) : (
+                                                        <p className={`w-[15%] lg:w-[12.5%] xl:w-[12.5%] 2xl:w-[10%] text-center truncate mt-0`}>
+
+                                                        </p>
+                                                    )}
+                                                </>
+                                            )}
+                                            {screenWidth > 1024 && (
+                                                <p className={`w-[10%] xl:w-[10%] text-center truncate mt-0`}>
+                                                    {child.encargo?.comisionComprador === 'Porcentaje' ? (
+                                                        <>
+                                                            <div className='flex flex-col justify-center items-center'>
+                                                                <p className='text-center w-min px-2 mx-auto my-auto text-xs'>
+                                                                    {child.encargo?.comisionCompradorValue?.toLocaleString('es-ES')}%
+                                                                </p>
+                                                                <div className='h-[1px] w-full my-1 bg-slate-500'></div>
+                                                                <p className='text-center w-min px-2 mx-auto my-auto text-xs'>
+                                                                    {child.encargo?.comisionCompradorValue?.toLocaleString('es-ES')}€
+                                                                </p>
+                                                            </div>
+                                                        </>
+                                                    ) : child.encargo?.comisionComprador === 'Fijo' ? (
+                                                        <>
+                                                            <div className='flex flex-col justify-center items-center'>
+                                                                <p className='text-center w-min px-2 mx-auto my-auto text-xs'>
+                                                                    {child.encargo?.comisionCompradorValue?.toLocaleString('es-ES')}€
+                                                                </p>
+                                                            </div>
+                                                        </>
+                                                    ) : (
+                                                        <>
+                                                            <div className='flex flex-row justify-center items-center'>
+                                                                <p className='text-center rounded-md w-min px-2 mx-auto my-auto text-xs'></p>
+                                                            </div>
+                                                        </>
+                                                    )}
+                                                </p>
+                                            )}
+                                            {screenWidth > 1024 && (
+                                                <p className={`w-[10%] xl:w-[10%] text-center truncate mt-0`}>
+                                                    {child.encargo?.tipo_comision_encargo === 'Porcentaje' ? (
+                                                        <>
+                                                            <div className='flex flex-col justify-center items-center'>
+                                                                <p className='text-center w-min px-2 mx-auto my-auto text-xs'>
+                                                                    {child.encargo?.comision_encargo?.toLocaleString('es-ES')}%
+                                                                </p>
+                                                                <div className='h-[1px] w-full my-1 bg-slate-500'></div>
+                                                                <p className='text-center w-min px-2 mx-auto my-auto text-xs'>
+                                                                    {(
+                                                                        (child.encargo?.precio_2 ?? child.encargo?.precio_1) *
+                                                                        (child.encargo?.comision_encargo ?? 0) / 100
+                                                                    )?.toLocaleString('es-ES')} €
+                                                                </p>
+                                                            </div>
+                                                        </>
+                                                    ) : child.encargo?.tipo_comision_encargo === 'Fijo' ? (
+                                                        <>
+                                                            <div className='flex flex-col justify-center items-center'>
+                                                                <p className='text-center w-min px-2 mx-auto my-auto text-xs'>
+                                                                    {child.encargo?.comision_encargo?.toLocaleString('es-ES')}€
+                                                                </p>
+                                                            </div>
+                                                        </>
+                                                    ) : (
+                                                        <>
+                                                            <div className='flex flex-row justify-center items-center'>
+                                                                <p className='text-center rounded-md w-min px-2 mx-auto my-auto text-xs'></p>
+                                                            </div>
+                                                        </>
+                                                    )}
+                                                </p>
+                                            )}
+
+
+
+                                            {screenWidth > 1536 && (
+                                                <p className={`w-[10%] text-center truncate mt-0`}>
+                                                    {child.categoria}
+                                                </p>
+                                            )}
+                                            {screenWidth > 450 && (
+                                                <div className="flex flex-col gap-2 py-6 w-[22.5%] sm:w-[20%] lg:w-[20%] xl:w-[17.5%] 2xl:w-[15%] h-fit justify-center items-center">
+                                                    {child.noticiastate === true && (
+                                                        <p className='bg-blue-100 text-center text-blue-900 rounded-md border border-blue-900 w-min px-2 mx-auto my-auto text-sm'>Noticia</p>
+                                                    )}
+                                                    {child.encargostate === true && (
+                                                        <p className='bg-orange-100 text-center text-orange-900 rounded-md border border-orange-900 w-min px-2 mx-auto my-auto text-sm'>Encargo</p>
+
+                                                    )}
+                                                </div>
+                                            )}
+                                        </>
+                                    ) : (
+                                        null
                                     )}
-
-
-                                    <div onClick={() => handleItemClick(child.id)} className="cursor-pointer w-[5%] mx-0 text-center flex flex-row justify-center items-center">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="2.1em" height="2.1em" viewBox="0 0 16 16" className="text-cyan-800 bg-white rounded-full hover:w-[2.5em] hover:h-[2.5em] hover:shadow-lg hover:text-cyan-600">
-                                            <path fill="currentColor" d="M8 0a8 8 0 1 1 0 16A8 8 0 0 1 8 0m1.062 4.312a1 1 0 1 0-2 0v2.75h-2.75a1 1 0 0 0 0 2h2.75v2.75a1 1 0 1 0 2 0v-2.75h2.75a1 1 0 1 0 0-2h-2.75Z" />
-                                        </svg>
-                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -1422,15 +2007,14 @@ const Table = ({ parentsEdificioProps, admin, screenWidth, loadingLoader }) => {
                     item.nestedescaleras.map((child) => (
                         <div
                             key={child.id}
-                            className={`relative border border-gray-400 mb-0 p-0 rounded-md shadow-xl flex items-center flex-col w-full bg-gray-100 transition-all duration-300 ease-in-out`}
+                            className={`relative border border-gray-400 mb-0 p-0 rounded-md shadow-xl flex items-center flex-col w-full bg-gray-100 transition-all duration-[1000ms] ease-in-out`}
                         >
-                            <div className="flex flex-row justify-stretch items-stretch gap-2 w-full cursor-pointer" onClick={handleToggleEscalera}>
+                            <div className="flex flex-row justify-stretch items-stretch gap-2 w-full cursor-pointer" onClick={() => handleToggleEscalera(child.id)}>
                                 {showDeleteInmuebleButtons && (
-                                    <input
-                                        type="checkbox"
+                                    <Checkbox
                                         checked={selectedItems.has(child.id)}
                                         onChange={() => handleCheckboxChange(child.id)}
-                                        className="mr-4 ml-4 w-[25px] h-[25px]"
+                                        className="mr-4 ml-4 h-fit w-fit p-0"
                                     />
                                 )}
                                 <div className="flex flex-row justify-evenly items-center w-full py-2 px-4 h-[4.5rem]">
@@ -1442,7 +2026,7 @@ const Table = ({ parentsEdificioProps, admin, screenWidth, loadingLoader }) => {
                                     </span>
                                     <p className="text-start w-[30%]">{child.zona === 'NULL' ? 'N/A' : child.zona}</p>
                                     <div
-                                        className={`cursor-pointer flex flex-row justify-center w-[20%] transition-transform duration-[1000ms] ${expandedEscalera ? 'rotate-180' : 'rotate-0'}`}
+                                        className={`cursor-pointer flex flex-row justify-center w-[20%] transition-transform duration-[1000ms] ${expandedItemsEscalera[child.id] ? 'rotate-180' : 'rotate-0'}`}
                                     >
                                         <svg xmlns="http://www.w3.org/2000/svg" width="2.5em" height="2.5em" viewBox="0 0 24 24">
                                             <path fill="currentColor" d="M18.2 13.3L12 7l-6.2 6.3c-.2.2-.3.5-.3.7s.1.5.3.7c.2.2.4.3.7.3h11c.3 0 .5-.1.7-.3c.2-.2.3-.5.3-.7s-.1-.5-.3-.7" />
@@ -1452,20 +2036,21 @@ const Table = ({ parentsEdificioProps, admin, screenWidth, loadingLoader }) => {
                             </div>
                             <div
                                 style={{
-                                    maxHeight: expandedEscalera ? '1000px' : '0px',
+                                    maxHeight: expandedItemsEscalera[child.id] ? '9000px' : '0px',
                                     width: '100%',
                                 }}
                                 className={`overflow-hidden transition-max-height duration-[1000ms] ease-in-out`}
                             >
-                                <div className="p-2 escalera-content w-full">
-                                    {expandedEscalera && <div className="w-full flex flex-col justify-center items-center px-2">{escalerasChildren(child.nestedinmuebles)}</div>}
+                                <div className="p-2  w-full">
+                                    {expandedItemsEscalera[child.id] && <div className="w-full flex escalera-content flex-col justify-center items-center px-2">{escalerasChildren(child.nestedinmuebles)}</div>}
                                 </div>
                             </div>
                         </div>
 
 
-                    ))}
-            </div>
+                    ))
+                }
+            </div >
 
         );
     };
@@ -1477,7 +2062,7 @@ const Table = ({ parentsEdificioProps, admin, screenWidth, loadingLoader }) => {
 
     return (
         <div className="bg-slate-400 h-full w-full overflow-x-hidden">
-            <div className="md:w-[calc(100%-5rem)] ml-auto p-4 pb-24">
+            <div className={`${screenWidth >= 990 ? 'w-[calc(100%-5rem)]' : 'w-full'} ml-auto p-4 pb-24`}>
                 <form onSubmit={handleSearch} className="mb-4 flex flex-row gap-2 mt-0 w-full justify-center items-center bg-slate-200 rounded-2xl p-4 shadow-2xl">
                     <div className="relative w-[80%]">
                         <input type="text" value={searchTerm} onChange={(e) => { setSearchTerm(e.target.value); setShowMoreInfo(false); }} placeholder="Buscar una dirección..." className="border border-gray-300 px-3 py-2 w-[100%] rounded-3xl" />
@@ -1671,51 +2256,143 @@ const Table = ({ parentsEdificioProps, admin, screenWidth, loadingLoader }) => {
                                     </p>
                                 </div>
 
-                                <div className="w-full flex flex-row gap-3 mt-5">
+                                <div className={`w-full flex flex-row ${(screenWidth >= 990 && showAnalytics) ? 'gap-3' : 'gap-0'} mt-5`}>
                                     <div className={`flex flex-col gap-2 w-full ${showAnalytics ? 'xl:w-[60%]' : 'xl:w-[100%]'} bg-slate-100 rounded-xl p-4 shadow-lg h-min pt-5 items-center transition-all duration-[1000ms] ease-in-out`}>
                                         <div className="tableheader relative px-2 py-1 mt-2 rounded-md shadow-lg flex items-center justify-center flex-row bg-blue-950 w-full mb-1">
                                             <div className="true flex flex-row justify-between w-full">
                                                 <div className="flex flex-row justify-center items-center gap-1 w-[100%] py-2 text-white">
-                                                    <p className={`w-[95%] ${screenWidth > 450 && 'w-[72.5%]'} sm:w-[55%] md:w-[45%] lg:w-[40%] xl:w-[37.5%] 2xl:w-[35%] text-center m-0`}>
-                                                        <strong>Dirección</strong>
-                                                    </p>
-                                                    {screenWidth > 1024 && (
-                                                        <p className="text-center w-[10%] xl:w-[10%] m-0">
-                                                            <strong>Localizado</strong>
-                                                        </p>
-                                                    )}
-                                                    {screenWidth > 768 && (
-                                                        <p className="text-center w-[10%] lg:w-[10%] 2xl:w-[7.5%] m-0">
-                                                            <strong>m²</strong>
-                                                        </p>
-                                                    )}
-                                                    {screenWidth > 1280 && (
-                                                        <p className="text-center w-[7.5%] m-0">
-                                                            <strong>Año</strong>
-                                                        </p>
-                                                    )}
-                                                    {screenWidth > 640 && (
-                                                        <p className="text-center w-[20%] lg:w-[17.5%] 2xl:w-[15%] m-0">
-                                                            <strong>Zona</strong>
-                                                        </p>
-                                                    )}
-                                                    {screenWidth > 1024 && (
-                                                        <p className="text-center w-[7.5%] m-0">
-                                                            <strong>DPV</strong>
-                                                        </p>
-                                                    )}
-                                                    {screenWidth > 1536 && (
-                                                        <p className="text-center w-[10%] m-0">
-                                                            <strong>Categoría</strong>
-                                                        </p>
-                                                    )}
-                                                    {screenWidth > 450 && (
-                                                        <p className="text-center w-[22.5%] sm:w-[20%] lg:w-[20%] xl:w-[17.5%] 2xl:w-[15%] m-0">
-                                                            <strong>Actividad</strong>
-                                                        </p>
+                                                    {paginaBuscador === 'Todos' ? (
+                                                        <>
+                                                            <p className={`w-[100%] ${screenWidth > 450 && 'w-[72.5%]'} sm:w-[55%] md:w-[45%] lg:w-[40%] xl:w-[37.5%] 2xl:w-[35%] text-center m-0`}>
+                                                                <strong>Dirección</strong>
+                                                            </p>
+                                                            {screenWidth > 1024 && (
+                                                                <p className="text-center w-[10%] xl:w-[10%] m-0">
+                                                                    <strong>Localizado</strong>
+                                                                </p>
+                                                            )}
+                                                            {screenWidth > 768 && (
+                                                                <p className="text-center w-[10%] lg:w-[10%] 2xl:w-[7.5%] m-0">
+                                                                    <strong>m²</strong>
+                                                                </p>
+                                                            )}
+                                                            {screenWidth > 1280 && (
+                                                                <p className="text-center w-[7.5%] m-0">
+                                                                    <strong>Año</strong>
+                                                                </p>
+                                                            )}
+                                                            {screenWidth > 640 && (
+                                                                <p className="text-center w-[20%] lg:w-[17.5%] 2xl:w-[15%] m-0">
+                                                                    <strong>Zona</strong>
+                                                                </p>
+                                                            )}
+                                                            {screenWidth > 1024 && (
+                                                                <p className="text-center w-[7.5%] m-0">
+                                                                    <strong>DPV</strong>
+                                                                </p>
+                                                            )}
+                                                            {screenWidth > 1536 && (
+                                                                <p className="text-center w-[10%] m-0">
+                                                                    <strong>Categoría</strong>
+                                                                </p>
+                                                            )}
+                                                            {screenWidth > 450 && (
+                                                                <p className="text-center w-[22.5%] sm:w-[20%] lg:w-[20%] xl:w-[17.5%] 2xl:w-[15%] m-0">
+                                                                    <strong>Actividad</strong>
+                                                                </p>
+                                                            )}
+                                                        </>
+                                                    ) : paginaBuscador === 'Noticias' ? (
+                                                        <>
+                                                            <p className={`w-[100%] ${screenWidth > 450 && 'w-[72.5%]'} sm:w-[55%] md:w-[45%] lg:w-[40%] xl:w-[37.5%] 2xl:w-[35%] text-center m-0`}>
+                                                                <strong>Dirección</strong>
+                                                            </p>
+                                                            {screenWidth > 768 && (
+                                                                <p className="text-center w-[10%] lg:w-[10%] 2xl:w-[7.5%] m-0">
+                                                                    <strong>m²</strong>
+                                                                </p>
+                                                            )}
+                                                            {screenWidth > 640 && (
+                                                                <p className="text-center w-[15%] lg:w-[12.5%] 2xl:w-[10%] m-0">
+                                                                    <strong>Zona</strong>
+                                                                </p>
+                                                            )}
+                                                            {screenWidth > 1024 && (
+                                                                <p className="text-center w-[10%] xl:w-[10%] m-0">
+                                                                    <strong>Prioridad</strong>
+                                                                </p>
+                                                            )}
+
+                                                            {screenWidth > 1280 && (
+                                                                <p className="text-center w-[7.5%] m-0">
+                                                                    <strong>Tipo</strong>
+                                                                </p>
+                                                            )}
+
+                                                            {screenWidth > 1024 && (
+                                                                <p className="text-center w-[12.5%] m-0">
+                                                                    <strong>Valoración</strong>
+                                                                </p>
+                                                            )}
+                                                            {screenWidth > 1536 && (
+                                                                <p className="text-center w-[10%] m-0">
+                                                                    <strong>Categoría</strong>
+                                                                </p>
+                                                            )}
+                                                            {screenWidth > 450 && (
+                                                                <p className="text-center w-[22.5%] sm:w-[20%] lg:w-[20%] xl:w-[17.5%] 2xl:w-[15%] m-0">
+                                                                    <strong>Actividad</strong>
+                                                                </p>
+                                                            )}
+                                                        </>
+                                                    ) : paginaBuscador === 'Encargos' ? (
+                                                        <>
+                                                            <p className={`w-[100%] ${screenWidth > 450 && 'w-[72.5%]'} sm:w-[55%] md:w-[45%] lg:w-[40%] xl:w-[37.5%] 2xl:w-[35%] text-center m-0`}>
+                                                                <strong>Dirección</strong>
+                                                            </p>
+                                                            {screenWidth > 768 && (
+                                                                <p className="text-center w-[10%] lg:w-[10%] 2xl:w-[7.5%] m-0">
+                                                                    <strong>Tipo</strong>
+                                                                </p>
+                                                            )}
+                                                            {screenWidth > 640 && (
+                                                                <p className="text-center w-[15%] lg:w-[12.5%] 2xl:w-[10%] m-0">
+                                                                    <strong>Precio 1</strong>
+                                                                </p>
+                                                            )}
+                                                            {screenWidth > 640 && (
+                                                                <p className="text-center w-[15%] lg:w-[12.5%] 2xl:w-[10%] m-0">
+                                                                    <strong>Precio 2</strong>
+                                                                </p>
+                                                            )}
+                                                            {screenWidth > 1024 && (
+                                                                <p className="text-center w-[10%] xl:w-[10%] m-0">
+                                                                    <strong>Comisión Comprador</strong>
+                                                                </p>
+                                                            )}
+                                                            {screenWidth > 1024 && (
+                                                                <p className="text-center w-[10%] xl:w-[10%] m-0">
+                                                                    <strong>Comisión Encargo</strong>
+                                                                </p>
+                                                            )}
+
+                                                            {screenWidth > 1536 && (
+                                                                <p className="text-center w-[10%] m-0">
+                                                                    <strong>Categoría</strong>
+                                                                </p>
+                                                            )}
+                                                            {screenWidth > 450 && (
+                                                                <p className="text-center w-[22.5%] sm:w-[20%] lg:w-[20%] xl:w-[17.5%] 2xl:w-[15%] m-0">
+                                                                    <strong>Actividad</strong>
+                                                                </p>
+                                                            )}
+                                                        </>
+                                                    ) : (
+                                                        null
                                                     )}
 
-                                                    <div className="flex flex-row justify-end items-center gap-3 w-[5%]"></div>
+
+
                                                 </div>
                                             </div>
                                         </div>
@@ -1741,87 +2418,288 @@ const Table = ({ parentsEdificioProps, admin, screenWidth, loadingLoader }) => {
                                                     item.tipoagrupacion === 1 ? (
                                                         <div
                                                             key={item.id}
-                                                            className={`relative px-2 py-4 border border-zinc-400 gap-1 rounded-md h-[4.5rem] flex items-center flex-row w-full ${item.dataUpdateTime === 'green' ? 'bg-green-200 md:hover:bg-emerald-400 md:hover:cursor-pointer' : item.dataUpdateTime === 'red' ? 'bg-red-100 md:hover:bg-red-300 md:hover:cursor-pointer' : item.dataUpdateTime === 'yellow' ? 'bg-yellow-200 md:hover:bg-yellow-400 md:hover:cursor-pointer' : item.dataUpdateTime === 'gray' ? 'bg-white md:hover:cursor-pointer md:hover:bg-slate-300' : 'bg-white hover:bg-slate-300 hover:cursor-pointer'}`}
-                                                            onClick={() => handleItemClick(item.id)}>
-                                                            <div className="flex flex-row justify-between w-full">
-                                                                {showExtraButtons && <input type="checkbox" checked={selectedItems.has(item.id)} onChange={() => handleCheckboxChange(item.id)} className="mr-4 w-[25px]" />}
-                                                                {showDeleteInmuebleButtons && <input type="checkbox" checked={selectedItems.has(item.id)} onChange={() => handleCheckboxChange(item.id)} className="mr-4 w-[25px]" />}
+                                                            className={`relative px-2 py-4 border border-zinc-400 gap-1 rounded-md h-[4.5rem] flex items-center flex-row w-full ${item.dataUpdateTime === 'green'
+                                                                ? 'bg-green-200 md:hover:bg-emerald-400 md:hover:cursor-pointer'
+                                                                : item.dataUpdateTime === 'red'
+                                                                    ? 'bg-red-100 md:hover:bg-red-300 md:hover:cursor-pointer'
+                                                                    : item.dataUpdateTime === 'yellow'
+                                                                        ? 'bg-yellow-200 md:hover:bg-yellow-400 md:hover:cursor-pointer'
+                                                                        : item.dataUpdateTime === 'gray'
+                                                                            ? 'bg-white md:hover:cursor-pointer md:hover:bg-slate-300'
+                                                                            : 'bg-white hover:bg-slate-300 hover:cursor-pointer'
+                                                                }`}
+                                                            // Dynamically assign the onClick based on showExtraButtons
+                                                            onClick={() => {
+                                                                if (showExtraButtons) {
+                                                                    handleCheckboxChange(item.id);
+                                                                } else if (showDeleteInmuebleButtons) {
+                                                                    handleCheckboxChange(item.id);
+                                                                } else {
+                                                                    handleItemClick(item.id);
+                                                                }
+                                                            }}
+                                                        >
+                                                            <div className="flex flex-row justify-between w-full items-center">
+                                                                {showExtraButtons && (
+                                                                    <Checkbox
+                                                                        checked={selectedItems.has(item.id)}
+                                                                        onChange={() => handleCheckboxChange(item.id)}
+                                                                        className="mr-4 ml-4 h-fit w-fit p-0"
+                                                                    />
+                                                                )}
+                                                                {showDeleteInmuebleButtons && (
+                                                                    <Checkbox
+                                                                        checked={selectedItems.has(item.id)}
+                                                                        onChange={() => handleCheckboxChange(item.id)}
+                                                                        className="mr-4 ml-4 h-fit w-fit p-0"
+                                                                    />
+                                                                )}
                                                                 <div className="flex flex-row justify-start items-center gap-1 w-[100%] py-2 ">
-                                                                    <p className={`w-[95%] ${screenWidth > 450 ? 'w-[72.5%]' : ''} sm:w-[55%] md:w-[45%] lg:w-[40%] xl:w-[37.5%] 2xl:w-[35%] text-center truncate`} style={{ marginTop: '0px' }}>
-                                                                        {item.direccion}
-                                                                    </p>
-                                                                    {screenWidth > 1024 && (
-                                                                        <p className={`w-[10%] xl:w-[10%] text-center truncate mt-0`}>
-                                                                            {item.localizado === false ? (
-                                                                                <></>
-                                                                            ) : (
-                                                                                <div className='flex flex-row justify-center items-center'>
-                                                                                    <p className='text-center text-green-900 bg-green-100 border border-green-900 rounded-md w-min px-2 mx-auto my-auto text-xs'>Sí</p>
+                                                                    {paginaBuscador === 'Todos' ? (
+                                                                        <>
+                                                                            <p className={`w-[100%] ${screenWidth > 450 ? 'w-[72.5%]' : ''} sm:w-[55%] md:w-[45%] lg:w-[40%] xl:w-[37.5%] 2xl:w-[35%] text-center truncate`} style={{ marginTop: '0px' }}>
+                                                                                {item.direccion}
+                                                                            </p>
+                                                                            {screenWidth > 1024 && (
+                                                                                <p className={`w-[10%] xl:w-[10%] text-center truncate mt-0`}>
+                                                                                    {item.localizado === false ? (
+                                                                                        <></>
+                                                                                    ) : (
+                                                                                        <div className='flex flex-row justify-center items-center'>
+                                                                                            <p className='text-center text-green-900 bg-green-100 border border-green-900 rounded-md w-min px-2 mx-auto my-auto text-xs'>Sí</p>
+                                                                                        </div>
+                                                                                    )}
+                                                                                </p>
+                                                                            )}
+                                                                            {screenWidth > 768 && (
+                                                                                <p className={`w-[10%] lg:w-[10%] 2xl:w-[7.5%] text-center truncate mt-0`}>
+                                                                                    {item.superficie} m²
+                                                                                </p>
+                                                                            )}
+                                                                            {screenWidth > 1280 && (
+                                                                                <p className={`w-[7.5%] text-center truncate mt-0`}>
+                                                                                    {item.ano_construccion}
+                                                                                </p>
+                                                                            )}
+                                                                            {screenWidth > 640 && (
+                                                                                <p className={`w-[20%] lg:w-[17.5%] xl:w-[17.5%] 2xl:w-[15%] text-center truncate mt-0`}>
+                                                                                    {item.zona}
+                                                                                </p>
+                                                                            )}
+                                                                            {screenWidth > 1024 && (
+                                                                                <p className={`w-[7.5%] text-center truncate mt-0`}>
+                                                                                    {item.DPV === false ? (
+                                                                                        <></>
+                                                                                    ) : (
+                                                                                        <div className='flex flex-row justify-center items-center'>
+                                                                                            <p className='text-center text-green-900 bg-green-100 border border-green-900 rounded-md w-min px-2 mx-auto my-auto text-xs'>Sí</p>
+                                                                                        </div>
+                                                                                    )}
+                                                                                </p>
+                                                                            )}
+                                                                            {screenWidth > 1536 && (
+                                                                                <p className={`w-[10%] text-center truncate mt-0`}>
+                                                                                    {item.categoria}
+                                                                                </p>
+                                                                            )}
+                                                                            {screenWidth > 450 && (
+                                                                                <div className="flex flex-col gap-2 py-6 w-[22.5%] sm:w-[20%] lg:w-[20%] xl:w-[17.5%] 2xl:w-[15%] h-fit justify-center items-center">
+                                                                                    {item.noticiastate === true && (
+                                                                                        <p className='bg-blue-100 text-center text-blue-900 rounded-md border border-blue-900 w-min px-2 mx-auto my-auto text-sm'>Noticia</p>
+                                                                                    )}
+                                                                                    {item.encargostate === true && (
+                                                                                        <p className='bg-orange-100 text-center text-orange-900 rounded-md border border-orange-900 w-min px-2 mx-auto my-auto text-sm'>Encargo</p>
+
+                                                                                    )}
                                                                                 </div>
                                                                             )}
-                                                                        </p>
-                                                                    )}
-                                                                    {screenWidth > 768 && (
-                                                                        <p className={`w-[10%] lg:w-[10%] 2xl:w-[7.5%] text-center truncate mt-0`}>
-                                                                            {item.superficie} m²
-                                                                        </p>
-                                                                    )}
-                                                                    {screenWidth > 1280 && (
-                                                                        <p className={`w-[7.5%] text-center truncate mt-0`}>
-                                                                            {item.ano_construccion}
-                                                                        </p>
-                                                                    )}
-                                                                    {screenWidth > 640 && (
-                                                                        <p className={`w-[20%] lg:w-[17.5%] xl:w-[17.5%] 2xl:w-[15%] text-center truncate mt-0`}>
-                                                                            {item.zona}
-                                                                        </p>
-                                                                    )}
-                                                                    {screenWidth > 1024 && (
-                                                                        <p className={`w-[7.5%] text-center truncate mt-0`}>
-                                                                            {item.DPV === false ? (
-                                                                                <></>
-                                                                            ) : (
-                                                                                <div className='flex flex-row justify-center items-center'>
-                                                                                    <p className='text-center text-green-900 bg-green-100 border border-green-900 rounded-md w-min px-2 mx-auto my-auto text-xs'>Sí</p>
+
+                                                                        </>
+                                                                    ) : paginaBuscador === 'Noticias' ? (
+                                                                        <>
+                                                                            <p className={`w-[100%] ${screenWidth > 450 ? 'w-[72.5%]' : ''} sm:w-[55%] md:w-[45%] lg:w-[40%] xl:w-[37.5%] 2xl:w-[35%] text-center truncate`} style={{ marginTop: '0px' }}>
+                                                                                {item.direccion}
+                                                                            </p>
+                                                                            {screenWidth > 768 && (
+                                                                                <p className={`w-[10%] lg:w-[10%] 2xl:w-[7.5%] text-center truncate mt-0`}>
+                                                                                    {item.superficie} m²
+                                                                                </p>
+                                                                            )}
+                                                                            {screenWidth > 640 && (
+                                                                                <p className={`w-[15%] lg:w-[12.5%] xl:w-[12.5%] 2xl:w-[10%] text-center truncate mt-0`}>
+                                                                                    {item.zona}
+                                                                                </p>
+                                                                            )}
+                                                                            {screenWidth > 1024 && (
+                                                                                <p className={`w-[10%] xl:w-[10%] text-center truncate mt-0`}>
+                                                                                    {item.noticia?.prioridad === 'Baja' ? (
+                                                                                        <>
+                                                                                            <div className='flex flex-row justify-center items-center'>
+                                                                                                <p className='text-center text-green-900 bg-green-100 border border-green-900 rounded-md w-min px-2 mx-auto my-auto text-xs'>Baja</p>
+                                                                                            </div>
+                                                                                        </>
+                                                                                    ) : (
+                                                                                        <div className='flex flex-row justify-center items-center'>
+                                                                                            <p className='text-center text-red-900 bg-red-100 border border-red-900 rounded-md w-min px-2 mx-auto my-auto text-xs'>Alta</p>
+                                                                                        </div>
+                                                                                    )}
+                                                                                </p>
+                                                                            )}
+
+                                                                            {screenWidth > 1280 && (
+                                                                                <p className={`w-[7.5%] text-center truncate mt-0`}>
+                                                                                    {item.noticia?.tipo_PV}
+                                                                                </p>
+                                                                            )}
+
+                                                                            {screenWidth > 1024 && (
+                                                                                <p className={`w-[12.5%] text-center truncate mt-0`}>
+                                                                                    {item.noticia?.valoracion === 1 ? (
+                                                                                        <>
+                                                                                            {item.noticia.valoracion_establecida?.toLocaleString('es-ES')} €
+
+                                                                                        </>
+                                                                                    ) : (
+                                                                                        <></>
+                                                                                    )}
+                                                                                </p>
+                                                                            )}
+                                                                            {screenWidth > 1536 && (
+                                                                                <p className={`w-[10%] text-center truncate mt-0`}>
+                                                                                    {item.categoria}
+                                                                                </p>
+                                                                            )}
+                                                                            {screenWidth > 450 && (
+                                                                                <div className="flex flex-col gap-2 py-6 w-[22.5%] sm:w-[20%] lg:w-[20%] xl:w-[17.5%] 2xl:w-[15%] h-fit justify-center items-center">
+                                                                                    {item.noticiastate === true && (
+                                                                                        <p className='bg-blue-100 text-center text-blue-900 rounded-md border border-blue-900 w-min px-2 mx-auto my-auto text-sm'>Noticia</p>
+                                                                                    )}
+                                                                                    {item.encargostate === true && (
+                                                                                        <p className='bg-orange-100 text-center text-orange-900 rounded-md border border-orange-900 w-min px-2 mx-auto my-auto text-sm'>Encargo</p>
+
+                                                                                    )}
                                                                                 </div>
                                                                             )}
-                                                                        </p>
-                                                                    )}
-                                                                    {screenWidth > 1536 && (
-                                                                        <p className={`w-[10%] text-center truncate mt-0`}>
-                                                                            {item.categoria}
-                                                                        </p>
-                                                                    )}
-                                                                    {screenWidth > 450 && (
-                                                                        <div className="flex flex-col gap-2 py-6 w-[22.5%] sm:w-[20%] lg:w-[20%] xl:w-[17.5%] 2xl:w-[15%] h-fit justify-center items-center">
-                                                                            {item.noticiastate === true && (
-                                                                                // <svg xmlns="http://www.w3.org/2000/svg" width="2.1em" height="2.1em" viewBox="0 0 24 24">
-                                                                                //     <path
-                                                                                //         fill="currentColor"
-                                                                                //         d="M10 7h4V5.615q0-.269-.173-.442T13.385 5h-2.77q-.269 0-.442.173T10 5.615zm8 15q-1.671 0-2.835-1.164Q14 19.67 14 18t1.165-2.835T18 14t2.836 1.165T22 18t-1.164 2.836T18 22M4.615 20q-.69 0-1.153-.462T3 18.384V8.616q0-.691.463-1.153T4.615 7H9V5.615q0-.69.463-1.153T10.616 4h2.769q.69 0 1.153.462T15 5.615V7h4.385q.69 0 1.152.463T21 8.616v4.198q-.683-.414-1.448-.614T18 12q-2.496 0-4.248 1.752T12 18q0 .506.086 1.009t.262.991zM18 20.423q.2 0 .33-.13t.132-.331t-.131-.331T18 19.5t-.33.13t-.132.332t.131.33t.331.131m-.385-1.846h.77v-3h-.77z"
-                                                                                //     />
-                                                                                // </svg>
-                                                                                <p className='bg-blue-100 text-center text-blue-900 rounded-md border border-blue-900 w-min px-2 mx-auto my-auto text-sm'>Noticia</p>
+
+                                                                        </>
+                                                                    ) : paginaBuscador === 'Encargos' ? (
+                                                                        <>
+                                                                            <p className={`w-[100%] ${screenWidth > 450 ? 'w-[72.5%]' : ''} sm:w-[55%] md:w-[45%] lg:w-[40%] xl:w-[37.5%] 2xl:w-[35%] text-center truncate`} style={{ marginTop: '0px' }}>
+                                                                                {item.direccion}
+                                                                            </p>
+                                                                            {screenWidth > 768 && (
+                                                                                <p className={`w-[10%] lg:w-[10%] 2xl:w-[7.5%] text-center truncate mt-0`}>
+                                                                                    {item.encargo?.tipo_encargo}
+                                                                                </p>
                                                                             )}
-                                                                            {item.encargostate === true && (
-                                                                                // <svg xmlns="http://www.w3.org/2000/svg" width="2em" height="2em" viewBox="0 0 20 20">
-                                                                                //     <path
-                                                                                //         fill="currentColor"
-                                                                                //         d="M2 3a1 1 0 0 1 2 0h13a1 1 0 1 1 0 2H4v12.5a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5zm3 3.5a.5.5 0 0 1 .5-.5h11a.5.5 0 0 1 .5.5v7a2.5 2.5 0 0 1-2.5 2.5h-7A2.5 2.5 0 0 1 5 13.5zm3 7a.5.5 0 0 0 .5.5h1a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 0 .5.5h1a.5.5 0 0 0 .5-.5v-2.55a1 1 0 0 0-.336-.748L11.332 8.13a.5.5 0 0 0-.664 0L8.336 10.2a1 1 0 0 0-.336.75z"
-                                                                                //     />
-                                                                                // </svg>
-                                                                                <p className='bg-orange-100 text-center text-orange-900 rounded-md border border-orange-900 w-min px-2 mx-auto my-auto text-sm'>Encargo</p>
-
+                                                                            {screenWidth > 640 && (
+                                                                                <p className={`w-[15%] lg:w-[12.5%] xl:w-[12.5%] 2xl:w-[10%] text-center truncate mt-0`}>
+                                                                                    {item.encargo?.precio_1?.toLocaleString('es-ES')} €
+                                                                                </p>
                                                                             )}
-                                                                        </div>
+                                                                            {screenWidth > 640 && (
+                                                                                <>
+                                                                                    {item.encargo?.precio_2 ? (
+                                                                                        <p className={`w-[15%] lg:w-[12.5%] xl:w-[12.5%] 2xl:w-[10%] text-center truncate mt-0`}>
+                                                                                            {item.encargo?.precio_2?.toLocaleString('es-ES')} €
+                                                                                        </p>
+                                                                                    ) : (
+                                                                                        <p className={`w-[15%] lg:w-[12.5%] xl:w-[12.5%] 2xl:w-[10%] text-center truncate mt-0`}>
+
+                                                                                        </p>
+                                                                                    )}
+                                                                                </>
+                                                                            )}
+                                                                            {screenWidth > 1024 && (
+                                                                                <p className={`w-[10%] xl:w-[10%] text-center truncate mt-0`}>
+                                                                                    {item.encargo?.comisionComprador === 'Porcentaje' ? (
+                                                                                        <>
+                                                                                            <div className='flex flex-col justify-center items-center'>
+                                                                                                <p className='text-center w-min px-2 mx-auto my-auto text-xs'>
+                                                                                                    {item.encargo?.comisionCompradorValue?.toLocaleString('es-ES')}%
+                                                                                                </p>
+                                                                                                <div className='h-[1px] w-full my-1 bg-slate-500'></div>
+                                                                                                <p className='text-center w-min px-2 mx-auto my-auto text-xs'>
+                                                                                                    {item.encargo?.comisionCompradorValue?.toLocaleString('es-ES')}€
+                                                                                                </p>
+                                                                                            </div>
+                                                                                        </>
+                                                                                    ) : item.encargo?.comisionComprador === 'Fijo' ? (
+                                                                                        <>
+                                                                                            <div className='flex flex-col justify-center items-center'>
+                                                                                                <p className='text-center w-min px-2 mx-auto my-auto text-xs'>
+                                                                                                    {item.encargo?.comisionCompradorValue?.toLocaleString('es-ES')}€
+                                                                                                </p>
+                                                                                            </div>
+                                                                                        </>
+                                                                                    ) : (
+                                                                                        <>
+                                                                                            <div className='flex flex-row justify-center items-center'>
+                                                                                                <p className='text-center rounded-md w-min px-2 mx-auto my-auto text-xs'></p>
+                                                                                            </div>
+                                                                                        </>
+                                                                                    )}
+                                                                                </p>
+                                                                            )}
+                                                                            {screenWidth > 1024 && (
+                                                                                <p className={`w-[10%] xl:w-[10%] text-center truncate mt-0`}>
+                                                                                    {item.encargo?.tipo_comision_encargo === 'Porcentaje' ? (
+                                                                                        <>
+                                                                                            <div className='flex flex-col justify-center items-center'>
+                                                                                                <p className='text-center w-min px-2 mx-auto my-auto text-xs'>
+                                                                                                    {item.encargo?.comision_encargo?.toLocaleString('es-ES')}%
+                                                                                                </p>
+                                                                                                <div className='h-[1px] w-full my-1 bg-slate-500'></div>
+                                                                                                <p className='text-center w-min px-2 mx-auto my-auto text-xs'>
+                                                                                                    {(
+                                                                                                        (item.encargo?.precio_2 ?? item.encargo?.precio_1) *
+                                                                                                        (item.encargo?.comision_encargo ?? 0) / 100
+                                                                                                    )?.toLocaleString('es-ES')} €
+                                                                                                </p>
+                                                                                            </div>
+                                                                                        </>
+                                                                                    ) : item.encargo?.tipo_comision_encargo === 'Fijo' ? (
+                                                                                        <>
+                                                                                            <div className='flex flex-col justify-center items-center'>
+                                                                                                <p className='text-center w-min px-2 mx-auto my-auto text-xs'>
+                                                                                                    {item.encargo?.comision_encargo?.toLocaleString('es-ES')}€
+                                                                                                </p>
+                                                                                            </div>
+                                                                                        </>
+                                                                                    ) : (
+                                                                                        <>
+                                                                                            <div className='flex flex-row justify-center items-center'>
+                                                                                                <p className='text-center rounded-md w-min px-2 mx-auto my-auto text-xs'></p>
+                                                                                            </div>
+                                                                                        </>
+                                                                                    )}
+                                                                                </p>
+                                                                            )}
+
+
+
+                                                                            {screenWidth > 1536 && (
+                                                                                <p className={`w-[10%] text-center truncate mt-0`}>
+                                                                                    {item.categoria}
+                                                                                </p>
+                                                                            )}
+                                                                            {screenWidth > 450 && (
+                                                                                <div className="flex flex-col gap-2 py-6 w-[22.5%] sm:w-[20%] lg:w-[20%] xl:w-[17.5%] 2xl:w-[15%] h-fit justify-center items-center">
+                                                                                    {item.noticiastate === true && (
+                                                                                        <p className='bg-blue-100 text-center text-blue-900 rounded-md border border-blue-900 w-min px-2 mx-auto my-auto text-sm'>Noticia</p>
+                                                                                    )}
+                                                                                    {item.encargostate === true && (
+                                                                                        <p className='bg-orange-100 text-center text-orange-900 rounded-md border border-orange-900 w-min px-2 mx-auto my-auto text-sm'>Encargo</p>
+
+                                                                                    )}
+                                                                                </div>
+                                                                            )}
+                                                                        </>
+                                                                    ) : (
+                                                                        null
                                                                     )}
 
 
-                                                                    <div onClick={() => handleItemClick(item.id)} className="cursor-pointer w-[5%] mx-0 text-center flex flex-row justify-center items-center">
-                                                                        <svg xmlns="http://www.w3.org/2000/svg" width="2.1em" height="2.1em" viewBox="0 0 16 16" className="text-cyan-800 bg-white rounded-full hover:w-[2.5em] hover:h-[2.5em] hover:shadow-lg hover:text-cyan-600">
-                                                                            <path fill="currentColor" d="M8 0a8 8 0 1 1 0 16A8 8 0 0 1 8 0m1.062 4.312a1 1 0 1 0-2 0v2.75h-2.75a1 1 0 0 0 0 2h2.75v2.75a1 1 0 1 0 2 0v-2.75h2.75a1 1 0 1 0 0-2h-2.75Z" />
-                                                                        </svg>
-                                                                    </div>
                                                                 </div>
                                                             </div>
                                                         </div>
@@ -1831,15 +2709,14 @@ const Table = ({ parentsEdificioProps, admin, screenWidth, loadingLoader }) => {
                                                                 className={`edificioagrupacion relative border border-gray-400 mb-0 p-0 rounded-md shadow-xl flex items-center flex-col w-full bg-gray-100 transition-all duration-300 ease-in-out`}
                                                             >
                                                                 <div
-                                                                    onClick={handleToggle}
-                                                                    className="flex flex-row justify-stretch items-stretch gap-2 w-full cursor-pointer"
+                                                                    onClick={() => handleToggle(item.id)}
+                                                                    className="flex flex-row justify-stretch items-center gap-2 w-full cursor-pointer"
                                                                 >
                                                                     {showDeleteInmuebleButtons && (
-                                                                        <input
-                                                                            type="checkbox"
+                                                                        <Checkbox
                                                                             checked={selectedItems.has(item.id)}
                                                                             onChange={() => handleCheckboxChange(item.id)}
-                                                                            className="mr-4 w-[25px] h-[25px]"
+                                                                            className="mr-4 ml-4 h-fit w-fit p-0"
                                                                         />
                                                                     )}
                                                                     <div className="flex flex-row justify-evenly items-center w-full py-2 px-4 h-[4.5rem]">
@@ -1854,28 +2731,24 @@ const Table = ({ parentsEdificioProps, admin, screenWidth, loadingLoader }) => {
                                                                         </span>
                                                                         <p className="text-start w-[30%] ">{item.zona === 'NULL' ? 'N/A' : item.zona}</p>
                                                                         <div
-                                                                            className={`cursor-pointer flex flex-row justify-center w-[20%] transition-transform duration-[1000ms] ${expanded ? 'rotate-180' : 'rotate-0'
-                                                                                }`}
+                                                                            className={`cursor-pointer flex flex-row justify-center w-[20%] transition-transform duration-[1000ms] ${expandedItems[item.id] ? 'rotate-180' : 'rotate-0'}`}
                                                                         >
                                                                             <svg xmlns="http://www.w3.org/2000/svg" width="2.5em" height="2.5em" viewBox="0 0 24 24">
-
                                                                                 <path fill="currentColor" d="M18.2 13.3L12 7l-6.2 6.3c-.2.2-.3.5-.3.7s.1.5.3.7c.2.2.4.3.7.3h11c.3 0 .5-.1.7-.3c.2-.2.3-.5.3-.7s-.1-.5-.3-.7" />
-
                                                                             </svg>
                                                                         </div>
-
                                                                     </div>
                                                                 </div>
                                                                 <div
                                                                     ref={contentRef}
                                                                     style={{
-                                                                        maxHeight: expanded ? `${contentHeight}px` : '0px',
+                                                                        maxHeight: expandedItems[item.id] ? `10000px` : '0',
                                                                         width: '100%',
                                                                     }}
                                                                     className={`overflow-hidden transition-max-height duration-[1000ms] ease-in-out`}
                                                                 >
                                                                     <div className="p-2 w-full">
-                                                                        {edifciosChildren(item)}
+                                                                        {expandedItems[item.id] && edifciosChildren(item)}
                                                                     </div>
                                                                 </div>
                                                             </div>
@@ -1927,263 +2800,226 @@ const Table = ({ parentsEdificioProps, admin, screenWidth, loadingLoader }) => {
                 )
                 }
 
-                {
-                    showPopup && (
-                        <div className="popup-container fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-75 z-50">
-                            <div className="popup-content bg-white p-4 shadow-lg flex flex-col justify-center items-center gap-4 rounded-lg w-4/6">
-                                {!showFormType && (
+                <Modal open={showPopup} onClose={handlePopupToggle} size="md" backdrop>
+                    <Modal.Header style={{ display: 'flex', flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: '10px', width: '100%', marginTop: '10px', textAlign: 'center', fontFamily: 'sans-serif' }}>
+                        <Modal.Title>{!showFormType ? 'Agrupar Inmueble' : showFormType === 'new' ? 'Crear nuevo grupo' : 'Asignar a grupo existente'}</Modal.Title>
+                    </Modal.Header>
+                    <Modal.Body>
+                        {!showFormType && (
+                            <>
+                                <div className="flex flex-col gap-4 text-center mx-auto w-fit mt-4">
+                                    <Button appearance="primary" onClick={() => setShowFormType('new')} block>
+                                        Crear nuevo grupo
+                                    </Button>
+                                    <Button appearance="primary" onClick={() => setShowFormType('existing')} block>
+                                        Asignar a grupo existente
+                                    </Button>
+                                    <Button appearance="subtle" onClick={handlePopupToggle} block>
+                                        Cerrar
+                                    </Button>
+                                </div>
+                            </>
+                        )}
+
+                        {showFormType === 'new' && (
+                            <form onSubmit={handleSubmitForm} className="flex flex-col gap-4">
+                                <Button appearance="default" onClick={() => setShowFormType('')} icon={<i className="rs-icon rs-icon-arrow-left-line" />} className='flex flex-row gap-2 w-fit mx-auto'>
+                                    <FaArrowLeft />
+                                    <p>Volver atrás</p>
+                                </Button>
+                                <div className='flex flex-col gap-4 w-fit mx-auto'>
+                                    <p className='text-slate-900 text-center font-sans'>Elige el tipo de agrupación:</p>
+                                    <RadioGroup name="tipo" onChange={(value) => setFormData({ ...formData, tipo: value })} value={formData.tipo} style={{ gap: '35px', display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }}>
+
+                                        <Radio value="Edificio" className={`${formData.tipo === 'Edificio' ? 'bg-slate-800 text-white border-slate-800' : 'bg-slate-100 border-2 border-slate-500'} rounded-xl w-[fit] md:hover:bg-slate-800 md:hover:text-white md:hover:border-slate-800 md:hover:cursor-pointer flex flex-row gap-2 items-center justify-center crearnuevogruporadio`}>
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="2em" height="2em" viewBox="0 0 24 24">
+                                                <g fill="none">
+                                                    <path d="M24 0v24H0V0zM12.593 23.258l-.011.002l-.071.035l-.02.004l-.014-.004l-.071-.035q-.016-.005-.024.005l-.004.01l-.017.428l.005.02l.01.013l.104.074l.015.004l.012-.004l.104-.074l.012-.016l.004-.017l-.017-.427q-.004-.016-.017-.018m.265-.113l-.013.002l-.185.093l-.01.01l-.003.011l.018.43l.005.012l.008.007l.201.093q.019.005.029-.008l.004-.014l-.034-.614q-.005-.019-.02-.022m-.715.002a.02.02 0 0 0-.027.006l-.006.014l-.034.614q.001.018.017.024l.015-.002l.201-.093l.01-.008l.004-.011l.017-.43l-.003-.012l-.01-.01z" />
+                                                    <path fill="currentColor" d="M3 19h1V6.36a1.5 1.5 0 0 1 1.026-1.423l8-2.666A1.5 1.5 0 0 1 15 3.694V19h1V9.99a.5.5 0 0 1 .598-.49l2.196.44A1.5 1.5 0 0 1 20 11.41V19h1a1 1 0 1 1 0 2H3a1 1 0 1 1 0-2" />
+                                                </g>
+                                            </svg> Edificio</Radio>
+
+
+                                        <Radio value="Escalera" className={`${formData.tipo === 'Escalera' ? 'bg-slate-800 text-white border-slate-800' : 'bg-slate-100 border-2 border-slate-500'} rounded-xl w-[fit] md:hover:bg-slate-800 md:hover:text-white md:hover:border-slate-800 md:hover:cursor-pointer flex flex-row gap-2 items-center justify-center crearnuevogruporadio`}>
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="2em" height="2em" viewBox="0 0 24 24">
+                                                <path fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M22 5h-5v5h-5v5H7v5H2" />
+                                            </svg> Escalera</Radio>
+
+                                    </RadioGroup>
+                                </div>
+
+                                {formData.tipo && (
                                     <>
-                                        <h2 className="text-lg font-bold w-[80%] text-center flex justify-center">Agrupar Inmueble</h2>
-                                        <div className="flex flex-col gap-4 w-full justify-center items-center text-center mt-4">
-                                            <button onClick={() => setShowFormType('new')} className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mb-4">
-                                                Crear nuevo grupo
-                                            </button>
-                                            <button onClick={() => setShowFormType('existing')} className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mb-4">
-                                                Asignar a grupo existente
-                                            </button>
-                                            <button type="button" onClick={handlePopupToggle} className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded">
-                                                Cerrar
-                                            </button>
+                                        <div className='flex flex-col gap-4 w-2/4 mx-auto mt-4'>
+                                            <label>Nombre:</label>
+                                            <input type="text" name="nombre" value={formData.nombre} onChange={handleFormChange} className="rs-input" placeholder={`Dirección de ${formData.tipo}`} />
+
+                                            {formData.tipo === 'Escalera' && (
+                                                <div className='flex flex-col gap-4 w-full mx-auto mt-4'>
+                                                    <label>Grupo:</label>
+                                                    <SelectPicker
+                                                        data={optionsNuevoGrupoEscalera}
+                                                        value={formData.grupo}
+                                                        onChange={(value) => setFormData({ ...formData, grupo: value })}
+                                                        placeholder="Seleccione un grupo"
+                                                        searchable
+                                                        style={{ width: '100%' }}
+                                                    />
+                                                </div>
+                                            )}
                                         </div>
                                     </>
                                 )}
-                                {showFormType === 'new' && (
-                                    <div className="relative pt-0 flex flex-col justify-center items-center w-[80%]">
-                                        <div
-                                            className="absolute top-0 -left-7 text-gray-700"
-                                            onClick={() => {
-                                                setShowFormType('');
-                                                setFormData({ tipo: '', nombre: '', existingGroup: '' });
-                                            }}
-                                        >
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="2.3em" height="2.3em" viewBox="0 0 20 20">
-                                                <path fill="currentColor" fill-rule="evenodd" d="M9.707 16.707a1 1 0 0 1-1.414 0l-6-6a1 1 0 0 1 0-1.414l6-6a1 1 0 0 1 1.414 1.414L5.414 9H17a1 1 0 1 1 0 2H5.414l4.293 4.293a1 1 0 0 1 0 1.414" clip-rule="evenodd" />
-                                            </svg>
-                                        </div>
-                                        <h2 className="text-lg font-bold w-[80%] text-center flex justify-center">Crear nuevo grupo</h2>
-                                        <form onSubmit={handleSubmitForm} className="flex flex-col gap-4 mt-4">
-                                            <div className="flex flex-col gap-3 justify-center items-center mb-2">
-                                                <label className="block">Tipo:</label>
-                                                <div className="flex gap-4">
-                                                    <label className="flex flex-row gap-2">
-                                                        <input type="radio" name="tipo" value="Edificio" checked={formData.tipo === 'Edificio'} onChange={handleFormChange} />
-                                                        Edificio
-                                                    </label>
-                                                    <label className="flex flex-row gap-2">
-                                                        <input type="radio" name="tipo" value="Escalera" checked={formData.tipo === 'Escalera'} onChange={handleFormChange} />
-                                                        Escalera
-                                                    </label>
-                                                </div>
-                                            </div>
-                                            {formData.tipo === 'Edificio' ? (
-                                                <div>
-                                                    <div>
-                                                        <label className="block mb-2">Nombre:</label>
-                                                        <input type="text" name="nombre" value={formData.nombre} onChange={handleFormChange} className="border p-2 rounded w-full" placeholder="Dirección del edificio" />
-                                                    </div>
-                                                </div>
-                                            ) : formData.tipo === 'Escalera' ? (
-                                                <div className="flex flex-col gap-3 w-full">
-                                                    <div>
-                                                        <label className="block">Nombre:</label>
-                                                        <input type="text" name="nombre" value={formData.nombre} onChange={handleFormChange} className="border p-2 rounded w-full" placeholder="Dirección de la escalera" />{' '}
-                                                    </div>
-                                                    <label className="block">Grupo:</label>
-                                                    <Select
-                                                        name="grupo"
-                                                        value={optionsNuevoGrupoEscalera.find(option => option.value === formData.grupo) || null} onChange={handleChange}
-                                                        options={optionsNuevoGrupoEscalera}
-                                                        className="w-full"
-                                                        classNamePrefix="react-select"
-                                                        placeholder="Seleccione un grupo"
-                                                        isClearable
-                                                        isSearchable
-                                                    />
-                                                </div>
-                                            ) : (
-                                                <div>
-                                                    <label className="block mb-2">Nombre:</label>
-                                                    <input type="text" name="nombre" value={formData.nombre} onChange={handleFormChange} className="border p-2 rounded w-full" placeholder="Dirección del edificio" />
-                                                </div>
-                                            )}
-                                            <div className="flex gap-4 mt-4 flex-row justify-center items-center">
-                                                <button type="submit" className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
-                                                    Crear
-                                                </button>
-                                                <button type="button" onClick={handlePopupToggle} className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded">
-                                                    Cerrar
-                                                </button>
-                                            </div>
-                                        </form>
-                                    </div>
-                                )}
-                                {showFormType === 'existing' && (
-                                    <div className="relative pt-0 flex flex-col justify-center items-center w-[80%]">
-                                        <div
-                                            className="absolute top-0 -left-7 text-gray-700"
-                                            onClick={() => {
-                                                setShowFormType('');
-                                                setFormData({ tipo: '', nombre: '', existingGroup: '' });
-                                            }}
-                                        >
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="2.3em" height="2.3em" viewBox="0 0 20 20">
-                                                <path fill="currentColor" fill-rule="evenodd" d="M9.707 16.707a1 1 0 0 1-1.414 0l-6-6a1 1 0 0 1 0-1.414l6-6a1 1 0 0 1 1.414 1.414L5.414 9H17a1 1 0 1 1 0 2H5.414l4.293 4.293a1 1 0 0 1 0 1.414" clip-rule="evenodd" />
-                                            </svg>
-                                        </div>
-                                        <h2 className="text-lg font-bold mb-4 w-[70%] text-center flex justify-center">Asignar a grupo existente</h2>
-                                        <form onSubmit={handleSubmitForm} className="flex flex-col gap-4">
-                                            <div className="flex flex-col gap-3 justify-center items-center mb-2">
-                                                <label className="block">Tipo:</label>
-                                                <div className="flex gap-4">
-                                                    <label className="flex flex-row gap-2">
-                                                        <input
-                                                            type="radio"
-                                                            name="tipo"
-                                                            value="Edificio"
-                                                            checked={selectedType === 'Edificio'}
-                                                            onChange={(e) => {
-                                                                setSelectedType('Edificio');
-                                                                handleFormChange(e);
-                                                            }}
-                                                        />
-                                                        Edificio
-                                                    </label>
-                                                    <label className="flex flex-row gap-2">
-                                                        <input
-                                                            type="radio"
-                                                            name="tipo"
-                                                            value="Escalera"
-                                                            checked={selectedType === 'Escalera'}
-                                                            onChange={(e) => {
-                                                                setSelectedType('Escalera');
-                                                                handleFormChange(e);
-                                                            }}
-                                                        />
-                                                        Escalera
-                                                    </label>
-                                                </div>
-                                            </div>
-                                            <div>
-                                                <label className="block mb-2">Elige un grupo:</label>
-                                                <Select
-                                                    name="existingGroup"
-                                                    value={options.find(option => option.value === formData.existingGroup) || null}
-                                                    onChange={handleChangeExistingGroup}
-                                                    options={options}
-                                                    className="w-full"
-                                                    classNamePrefix="react-select"
-                                                    placeholder="Seleccione un grupo"
-                                                    isClearable
-                                                    isSearchable
-                                                />
-                                            </div>
-                                            <div className="flex gap-4 mt-4 flex-row justify-center items-center">
-                                                <button type="button" onClick={handlePopupToggle} className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded">
-                                                    Cerrar
-                                                </button>
-                                                <button type="submit" className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
-                                                    Asignar
-                                                </button>
-                                            </div>
-                                        </form>
-                                    </div>
-                                )}
-                            </div>
-                        </div>
-                    )
-                }
 
-                {
-                    showPopupUngroup && (
-                        <div className="popup-container fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-75 z-50">
-                            <div className="popup-content bg-white p-4 shadow-lg flex flex-col justify-center items-center gap-4 rounded-lg w-4/6">
-                                <div className="relative pt-0 flex flex-col justify-center items-center">
-                                    <div className="absolute top-0 -left-1 text-gray-700" onClick={handlePopupToggleUngroup}>
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="2.3em" height="2.3em" viewBox="0 0 20 20">
-                                            <path fill="currentColor" fill-rule="evenodd" d="M9.707 16.707a1 1 0 0 1-1.414 0l-6-6a1 1 0 0 1 0-1.414l6-6a1 1 0 0 1 1.414 1.414L5.414 9H17a1 1 0 1 1 0 2H5.414l4.293 4.293a1 1 0 0 1 0 1.414" clip-rule="evenodd" />
-                                        </svg>
-                                    </div>
-                                    <h2 className="text-lg font-bold mb-4 w-[60%] text-center flex justify-center">Desagrupar</h2>
-                                    <form onSubmit={handleSubmitFormUngroup} className="flex flex-col justify-center items-center gap-4">
-                                        <div className="flex flex-col justify-center items-center gap-4 w-[75%]">
-                                            <h2 className="text-center">Se van a desagrupar los elementos seleccionados.</h2>
-                                            <h2>¿Está seguro?</h2>
-                                            <div className="flex flex-row justify-center items-center gap-4">
-                                                <button type="submit" className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded text-center w-[120px]">
-                                                    Desagrupar
-                                                </button>
-                                                <button type="button" onClick={handlePopupToggleUngroup} className="bg-red-500 hover:bg-red-700 text-white font-bold text-center py-2 px-4 rounded w-[120px]">
-                                                    Cancelar
-                                                </button>
-                                            </div>
-                                        </div>
-                                    </form>
+                                <div className="flex justify-center gap-4 mt-4">
+                                    <Button type="submit" appearance="primary">Crear</Button>
+                                    <Button onClick={handlePopupToggle} appearance="subtle">Cerrar</Button>
                                 </div>
-                            </div>
+                            </form>
+                        )}
+
+                        {showFormType === 'existing' && (
+                            <form className="flex flex-col gap-4">
+                                <Button appearance="default" onClick={() => setShowFormType('')} icon={<i className="rs-icon rs-icon-arrow-left-line" />} className='flex flex-row gap-2 w-fit mx-auto'>
+                                    <FaArrowLeft />
+                                    <p>Volver atrás</p>
+                                </Button>
+                                <div className='flex flex-col gap-4 w-fit mx-auto'>
+                                    <p className='text-slate-900 text-center font-sans'>Elige el tipo de agrupación:</p>
+                                    <RadioGroup name="tipo" onChange={(value) => setSelectedType(value)} value={selectedType} className='radiogroupselector'>
+
+                                        <Radio value="Edificio" className={`${selectedType === 'Edificio' ? 'bg-slate-800 text-white border-slate-800' : 'bg-slate-100 border-2 border-slate-500'} rounded-xl w-[fit] md:hover:bg-slate-800 md:hover:text-white md:hover:border-slate-800 md:hover:cursor-pointer flex flex-row gap-2 items-center justify-center crearnuevogruporadio`}>
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="2em" height="2em" viewBox="0 0 24 24">
+                                                <g fill="none">
+                                                    <path d="M24 0v24H0V0zM12.593 23.258l-.011.002l-.071.035l-.02.004l-.014-.004l-.071-.035q-.016-.005-.024.005l-.004.01l-.017.428l.005.02l.01.013l.104.074l.015.004l.012-.004l.104-.074l.012-.016l.004-.017l-.017-.427q-.004-.016-.017-.018m.265-.113l-.013.002l-.185.093l-.01.01l-.003.011l.018.43l.005.012l.008.007l.201.093q.019.005.029-.008l.004-.014l-.034-.614q-.005-.019-.02-.022m-.715.002a.02.02 0 0 0-.027.006l-.006.014l-.034.614q.001.018.017.024l.015-.002l.201-.093l.01-.008l.004-.011l.017-.43l-.003-.012l-.01-.01z" />
+                                                    <path fill="currentColor" d="M3 19h1V6.36a1.5 1.5 0 0 1 1.026-1.423l8-2.666A1.5 1.5 0 0 1 15 3.694V19h1V9.99a.5.5 0 0 1 .598-.49l2.196.44A1.5 1.5 0 0 1 20 11.41V19h1a1 1 0 1 1 0 2H3a1 1 0 1 1 0-2" />
+                                                </g>
+                                            </svg> Edificio</Radio>
+
+
+                                        <Radio value="Escalera" className={`${selectedType === 'Escalera' ? 'bg-slate-800 text-white border-slate-800' : 'bg-slate-100 border-2 border-slate-500'} rounded-xl w-[fit] md:hover:bg-slate-800 md:hover:text-white md:hover:border-slate-800 md:hover:cursor-pointer flex flex-row gap-2 items-center justify-center crearnuevogruporadio`}>
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="2em" height="2em" viewBox="0 0 24 24">
+                                                <path fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M22 5h-5v5h-5v5H7v5H2" />
+                                            </svg> Escalera</Radio>
+
+                                    </RadioGroup>
+                                </div>
+                                {selectedType && (
+                                    <>
+                                        <div className='flex flex-col gap-4 w-2/4 mx-auto mt-4'>
+                                            <label>Elige {selectedType}:</label>
+                                            <SelectPicker
+                                                data={options}
+                                                value={formData.existingGroup}
+                                                onChange={handleChangeExistingGroup}
+                                                placeholder={`Selecciona ${selectedType}`}
+                                                searchable
+                                                style={{ width: '100%' }}
+                                            />
+                                        </div>
+                                    </>
+                                )}
+
+                                <div className="flex justify-center gap-4 mt-4">
+                                    <Button type="submit" appearance="primary" onClick={handleSubmitForm}>Asignar</Button>
+                                    <Button onClick={handlePopupToggle} appearance="subtle">Cerrar</Button>
+                                </div>
+                            </form>
+                        )}
+                    </Modal.Body>
+                </Modal>
+
+                <Modal open={showPopupUngroup} onClose={handlePopupToggleUngroup} backdrop size="xs">
+                    <Modal.Header>
+                        <Modal.Title style={{ fontSize: '1.5rem', textAlign: 'center' }}>Desagrupar</Modal.Title>
+                    </Modal.Header>
+
+                    <Modal.Body>
+                        <div className="text-center py-10">
+                            <p className='text-slate-900 text-lg'>Se van a desagrupar los elementos seleccionados.</p>
+                            <p className='text-slate-900 text-lg'>¿Está seguro?</p>
                         </div>
-                    )
-                }
+                    </Modal.Body>
+
+                    <Modal.Footer className="flex justify-center gap-4">
+                        <Button onClick={handleSubmitFormUngroup} appearance="primary" className="w-[120px]">
+                            Desagrupar
+                        </Button>
+                        <Button onClick={handlePopupToggleUngroup} appearance="default" className="w-[120px]">
+                            Cancelar
+                        </Button>
+                    </Modal.Footer>
+                </Modal>
             </div >
 
-            {
-                showAskForDeleteOrphan && (
-                    <div className="popup-container fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-75 z-50">
-                        <div className="popup-content bg-white p-4 shadow-lg flex flex-col justify-center items-center gap-4 rounded-lg w-4/6">
-                            <h2 className="text-lg font-bold w-[80%] text-center flex justify-center">Los siguientes grupos se han quedado vacíos:</h2>
-                            {orphanInfo.map((info, index) => (
-                                <p key={index}>{info.direccion}</p>
-                            ))}
-                            <p>¿Desea eliminarlos?</p>
-                            <div className="flex justify-center gap-4">
-                                <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded w-[120px]" onClick={handleKeepOrphan}>
-                                    Mantener
-                                </button>
-                                <button className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded w-[120px]" onClick={handleDeleteOrphan}>
-                                    Eliminar
-                                </button>
+
+            <Modal open={showAskForDeleteOrphan} onClose={handleKeepOrphan} backdrop size="xs">
+                <Modal.Header>
+                    <Modal.Title style={{ fontSize: '1.5rem', textAlign: 'center' }}>Grupo vacío</Modal.Title>
+                </Modal.Header>
+
+                <Modal.Body>
+                    <div className='flex flex-col justify-center items-center gap-4 w-full py-8'>
+                        <p className='font-sans text-slate-900 text-lg text-center'>Los siguientes grupos se han quedado vacíos:</p>
+                        {orphanInfo.map((info, index) => (
+                            <p className='font-sans text-slate-900 text-lg text-center' key={index}>{info.direccion}</p>
+                        ))}
+                        <p className='font-sans text-slate-900 text-lg text-center'>¿Desea eliminarlos?</p>
+                    </div>
+                </Modal.Body>
+
+                <Modal.Footer className="flex justify-center gap-4">
+                    <Button appearance="primary" onClick={handleKeepOrphan} className="w-[120px]">
+                        Mantener
+                    </Button>
+                    <Button appearance="primary" color="red" onClick={handleDeleteOrphan} className="w-[120px]">
+                        Eliminar
+                    </Button>
+                </Modal.Footer>
+            </Modal>
+
+            <Modal open={showPopupDeleteInmueble} onClose={handleKeepDeleteInmueble} backdrop={true} size="xs">
+                <Modal.Header>
+                    <Modal.Title style={{ fontSize: '1.5rem', textAlign: 'center' }}>Eliminar elemento</Modal.Title>
+                </Modal.Header>
+
+                <Modal.Body>
+                    {thereAreChildrenDelete ? (
+                        <div className="flex flex-col gap-4 w-full justify-center items-center text-center">
+                            <div className='py-10 flex flex-col gap-4 w-full justify-center items-center text-center'>
+                                <p className='font-sans text-slate-900 text-lg'>Alguno de los elementos seleccionados contiene elementos agrupados.</p>
+                                <p className='font-sans text-slate-900 text-lg'>¿Desea eliminar los elementos agrupados o mantenerlos?</p>
                             </div>
+                            <div className="flex flex-row justify-center items-center gap-4 mb-6">
+                                <Button appearance="primary" color="red" onClick={handleDeleteInmueble}>
+                                    Eliminar
+                                </Button>
+                                <Button appearance="primary" onClick={handleDeleteKeepChildren}>
+                                    Mantener
+                                </Button>
+                            </div>
+                            <Button appearance="default" onClick={handleKeepDeleteInmueble} className="bg-red-500 hover:bg-red-700 text-white">
+                                Cancelar
+                            </Button>
                         </div>
-                    </div>
-                )
-            }
-            {
-                showPopupDeleteInmueble && (
-                    <div className="popup-container fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-75 z-50">
-                        <div className="popup-content bg-white p-4 shadow-lg flex flex-col justify-center items-center gap-4 rounded-lg w-4/6">
-                            <h2 className="text-lg font-bold w-[80%] text-center flex justify-center">Eliminar elemento</h2>
-                            {thereAreChildrenDelete ? (
-                                <div className="flex flex-col gap-4 w-fit justify-center items-center">
-                                    <p className="text-center w-full">Alguno de los elementos seleccionados contiene elementos agrupados.</p>
-                                    <p className="text-center w-full">¿Desea eliminar los elementos agrupados o mantenerlos?</p>
-                                    <div className="flex flex-row justify-center items-center gap-4">
-                                        <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" onClick={handleDeleteInmueble}>
-                                            Eliminar
-                                        </button>
-                                        <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" onClick={handleDeleteKeepChildren}>
-                                            Mantener
-                                        </button>
-                                    </div>
-                                    <button className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded" onClick={handleKeepDeleteInmueble}>
-                                        Cancelar
-                                    </button>
-                                </div>
-                            ) : (
-                                <div className="flex flex-col gap-4 w-full justify-center items-center text-center">
-                                    <p>¿Está seguro?</p>
-                                    <div className="flex justify-center gap-4">
-                                        <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" onClick={handleDeleteInmueble}>
-                                            Eliminar
-                                        </button>
-                                        <button className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded" onClick={handleKeepDeleteInmueble}>
-                                            Cancelar
-                                        </button>
-                                    </div>
-                                </div>
-                            )}
+                    ) : (
+                        <div className="flex flex-col gap-4 w-full justify-center items-center text-center">
+                            <div className='py-10'>
+                                <p className='font-sans text-slate-900 text-lg'>¿Está seguro?</p>
+                            </div>
+                            <div className="flex justify-center gap-4">
+                                <Button appearance="primary" onClick={handleDeleteInmueble}>
+                                    Eliminar
+                                </Button>
+                                <Button appearance="default" onClick={handleKeepDeleteInmueble}>
+                                    Cancelar
+                                </Button>
+                            </div>
+
                         </div>
-                    </div>
-                )
-            }
+                    )}
+                </Modal.Body>
+            </Modal>
             {
                 showAddNewInmueble && (
                     <AddNewInmueble
@@ -2193,6 +3029,7 @@ const Table = ({ parentsEdificioProps, admin, screenWidth, loadingLoader }) => {
                         currentPage={currentPage}
                         searchTerm={searchTerm}
                         handleIconAddInmueble={handleIconAddInmueble}
+                        screenWidth={screenWidth}
                     />
                 )
             }

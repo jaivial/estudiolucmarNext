@@ -5,18 +5,32 @@ const CategoriasChart = ({ analyticsData }) => {
     // Safely extract data from analyticsData
     const categoriasData = analyticsData?.categorias || {};
 
-    // Convert the categorias object into an array of { name, count } objects
-    const rawBarChartData = Object.entries(categoriasData).map(([key, count]) => {
-        // Normalizamos el nombre de la categoría
-        const normalizedKey = key === 'NULL' || key === '' ? 'Sin categoria' : key;
-        // Convertimos la primera letra en mayúscula y el resto en minúsculas
-        const name = normalizedKey.charAt(0).toUpperCase() + normalizedKey.slice(1).toLowerCase();
+    // Convert the categorias object into an array of { name, count } objects and combine 'vacio' and 'vacío'
+    const combinedCategorias = {};
 
-        return {
-            name,
-            count,
-        };
+    Object.entries(categoriasData).forEach(([key, count]) => {
+        let normalizedKey;
+
+        if (key.toLowerCase() === 'vacio' || key.toLowerCase() === 'vacío') {
+            normalizedKey = 'Vacío';
+        } else if (key === 'NULL' || key === '') {
+            normalizedKey = 'Sin categoria';
+        } else {
+            normalizedKey = key.charAt(0).toUpperCase() + key.slice(1).toLowerCase();
+        }
+
+        if (combinedCategorias[normalizedKey]) {
+            combinedCategorias[normalizedKey] += count;
+        } else {
+            combinedCategorias[normalizedKey] = count;
+        }
     });
+
+    // Convert the combinedCategorias object into an array for the chart
+    const rawBarChartData = Object.entries(combinedCategorias).map(([name, count]) => ({
+        name,
+        count,
+    }));
 
 
     // Determine the maximum count value

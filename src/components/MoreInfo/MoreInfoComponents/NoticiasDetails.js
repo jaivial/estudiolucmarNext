@@ -50,7 +50,7 @@ const showToast = (message, backgroundColor) => {
     }).showToast();
 };
 
-const NoticiasDetails = ({ data, setOnAddNoticiaRefreshKey, onAddNoticiaRefreshKey, fetchData, currentPage, searchTerm }) => {
+const NoticiasDetails = ({ id, data, setOnAddNoticiaRefreshKey, onAddNoticiaRefreshKey, fetchData, currentPage, searchTerm }) => {
     const [isOpen, setIsOpen] = useState(false);
     const [isPopupOpen, setIsPopupOpen] = useState(false);
     const [noticias, setNoticias] = useState([]);
@@ -71,7 +71,7 @@ const NoticiasDetails = ({ data, setOnAddNoticiaRefreshKey, onAddNoticiaRefreshK
             return;
         } else {
             try {
-                const parsedInmuebleId = parseInt(data.inmueble.id);
+                const parsedInmuebleId = parseInt(id);
                 const response = await axios.get('/api/fetchAllNoticias', {
                     params: { id: parsedInmuebleId },
                 });
@@ -79,7 +79,6 @@ const NoticiasDetails = ({ data, setOnAddNoticiaRefreshKey, onAddNoticiaRefreshK
                 if (response.data.status === 'success') {
                     const noticia = response.data.noticia; // Get the noticia object
                     if (noticia) {
-                        console.log('noticia', noticia);
                         // Wrap the single noticia object in an array
                         setNoticias([noticia]);
                     } else {
@@ -158,7 +157,7 @@ const NoticiasDetails = ({ data, setOnAddNoticiaRefreshKey, onAddNoticiaRefreshK
 
         // Prepare parameters
         const params = {
-            id: isEditing ? currentNoticiaId : data.inmueble.id,
+            id: isEditing ? currentNoticiaId : id,
             tipoPVA: tipoVenta,
             valoracion: valoracion === 'Con Valoración' ? 1 : 0,
             valoraciontext: valoracionPrice,
