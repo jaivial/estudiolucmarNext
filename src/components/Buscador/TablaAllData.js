@@ -1659,44 +1659,137 @@ const Table = ({ parentsEdificioProps, admin, screenWidth, loadingLoader }) => {
                                         <div className="tableheader relative px-2 py-1 mt-2 rounded-md shadow-lg flex items-center justify-center flex-row bg-blue-950 w-full mb-1">
                                             <div className="true flex flex-row justify-between w-full">
                                                 <div className="flex flex-row justify-center items-center gap-1 w-[100%] py-2 text-white">
-                                                    <p className={`w-[100%] ${screenWidth > 450 && 'w-[72.5%]'} sm:w-[55%] md:w-[45%] lg:w-[40%] xl:w-[37.5%] 2xl:w-[35%] text-center m-0`}>
-                                                        <strong>Dirección</strong>
-                                                    </p>
-                                                    {screenWidth > 1024 && (
-                                                        <p className="text-center w-[10%] xl:w-[10%] m-0">
-                                                            <strong>Localizado</strong>
-                                                        </p>
+                                                    {paginaBuscador === 'Todos' ? (
+                                                        <>
+                                                            <p className={`w-[100%] ${screenWidth > 450 && 'w-[72.5%]'} sm:w-[55%] md:w-[45%] lg:w-[40%] xl:w-[37.5%] 2xl:w-[35%] text-center m-0`}>
+                                                                <strong>Dirección</strong>
+                                                            </p>
+                                                            {screenWidth > 1024 && (
+                                                                <p className="text-center w-[10%] xl:w-[10%] m-0">
+                                                                    <strong>Localizado</strong>
+                                                                </p>
+                                                            )}
+                                                            {screenWidth > 768 && (
+                                                                <p className="text-center w-[10%] lg:w-[10%] 2xl:w-[7.5%] m-0">
+                                                                    <strong>m²</strong>
+                                                                </p>
+                                                            )}
+                                                            {screenWidth > 1280 && (
+                                                                <p className="text-center w-[7.5%] m-0">
+                                                                    <strong>Año</strong>
+                                                                </p>
+                                                            )}
+                                                            {screenWidth > 640 && (
+                                                                <p className="text-center w-[20%] lg:w-[17.5%] 2xl:w-[15%] m-0">
+                                                                    <strong>Zona</strong>
+                                                                </p>
+                                                            )}
+                                                            {screenWidth > 1024 && (
+                                                                <p className="text-center w-[7.5%] m-0">
+                                                                    <strong>DPV</strong>
+                                                                </p>
+                                                            )}
+                                                            {screenWidth > 1536 && (
+                                                                <p className="text-center w-[10%] m-0">
+                                                                    <strong>Categoría</strong>
+                                                                </p>
+                                                            )}
+                                                            {screenWidth > 450 && (
+                                                                <p className="text-center w-[22.5%] sm:w-[20%] lg:w-[20%] xl:w-[17.5%] 2xl:w-[15%] m-0">
+                                                                    <strong>Actividad</strong>
+                                                                </p>
+                                                            )}
+                                                        </>
+                                                    ) : paginaBuscador === 'Noticias' ? (
+                                                        <>
+                                                            <p className={`w-[100%] ${screenWidth > 450 && 'w-[72.5%]'} sm:w-[55%] md:w-[45%] lg:w-[40%] xl:w-[37.5%] 2xl:w-[35%] text-center m-0`}>
+                                                                <strong>Dirección</strong>
+                                                            </p>
+                                                            {screenWidth > 768 && (
+                                                                <p className="text-center w-[10%] lg:w-[10%] 2xl:w-[7.5%] m-0">
+                                                                    <strong>m²</strong>
+                                                                </p>
+                                                            )}
+                                                            {screenWidth > 640 && (
+                                                                <p className="text-center w-[15%] lg:w-[12.5%] 2xl:w-[10%] m-0">
+                                                                    <strong>Zona</strong>
+                                                                </p>
+                                                            )}
+                                                            {screenWidth > 1024 && (
+                                                                <p className="text-center w-[10%] xl:w-[10%] m-0">
+                                                                    <strong>Prioridad</strong>
+                                                                </p>
+                                                            )}
+
+                                                            {screenWidth > 1280 && (
+                                                                <p className="text-center w-[7.5%] m-0">
+                                                                    <strong>Tipo</strong>
+                                                                </p>
+                                                            )}
+
+                                                            {screenWidth > 1024 && (
+                                                                <p className="text-center w-[12.5%] m-0">
+                                                                    <strong>Valoración</strong>
+                                                                </p>
+                                                            )}
+                                                            {screenWidth > 1536 && (
+                                                                <p className="text-center w-[10%] m-0">
+                                                                    <strong>Categoría</strong>
+                                                                </p>
+                                                            )}
+                                                            {screenWidth > 450 && (
+                                                                <p className="text-center w-[22.5%] sm:w-[20%] lg:w-[20%] xl:w-[17.5%] 2xl:w-[15%] m-0">
+                                                                    <strong>Actividad</strong>
+                                                                </p>
+                                                            )}
+                                                        </>
+                                                    ) : paginaBuscador === 'Encargos' ? (
+                                                        <>
+                                                            <p className={`w-[100%] ${screenWidth > 450 && 'w-[72.5%]'} sm:w-[55%] md:w-[45%] lg:w-[40%] xl:w-[37.5%] 2xl:w-[35%] text-center m-0`}>
+                                                                <strong>Dirección</strong>
+                                                            </p>
+                                                            {screenWidth > 768 && (
+                                                                <p className="text-center w-[10%] lg:w-[10%] 2xl:w-[7.5%] m-0">
+                                                                    <strong>Tipo</strong>
+                                                                </p>
+                                                            )}
+                                                            {screenWidth > 640 && (
+                                                                <p className="text-center w-[15%] lg:w-[12.5%] 2xl:w-[10%] m-0">
+                                                                    <strong>Precio 1</strong>
+                                                                </p>
+                                                            )}
+                                                            {screenWidth > 640 && (
+                                                                <p className="text-center w-[15%] lg:w-[12.5%] 2xl:w-[10%] m-0">
+                                                                    <strong>Precio 2</strong>
+                                                                </p>
+                                                            )}
+                                                            {screenWidth > 1024 && (
+                                                                <p className="text-center w-[10%] xl:w-[10%] m-0">
+                                                                    <strong>Comisión Comprador</strong>
+                                                                </p>
+                                                            )}
+                                                            {screenWidth > 1024 && (
+                                                                <p className="text-center w-[10%] xl:w-[10%] m-0">
+                                                                    <strong>Comisión Encargo</strong>
+                                                                </p>
+                                                            )}
+
+                                                            {screenWidth > 1536 && (
+                                                                <p className="text-center w-[10%] m-0">
+                                                                    <strong>Categoría</strong>
+                                                                </p>
+                                                            )}
+                                                            {screenWidth > 450 && (
+                                                                <p className="text-center w-[22.5%] sm:w-[20%] lg:w-[20%] xl:w-[17.5%] 2xl:w-[15%] m-0">
+                                                                    <strong>Actividad</strong>
+                                                                </p>
+                                                            )}
+                                                        </>
+                                                    ) : (
+                                                        null
                                                     )}
-                                                    {screenWidth > 768 && (
-                                                        <p className="text-center w-[10%] lg:w-[10%] 2xl:w-[7.5%] m-0">
-                                                            <strong>m²</strong>
-                                                        </p>
-                                                    )}
-                                                    {screenWidth > 1280 && (
-                                                        <p className="text-center w-[7.5%] m-0">
-                                                            <strong>Año</strong>
-                                                        </p>
-                                                    )}
-                                                    {screenWidth > 640 && (
-                                                        <p className="text-center w-[20%] lg:w-[17.5%] 2xl:w-[15%] m-0">
-                                                            <strong>Zona</strong>
-                                                        </p>
-                                                    )}
-                                                    {screenWidth > 1024 && (
-                                                        <p className="text-center w-[7.5%] m-0">
-                                                            <strong>DPV</strong>
-                                                        </p>
-                                                    )}
-                                                    {screenWidth > 1536 && (
-                                                        <p className="text-center w-[10%] m-0">
-                                                            <strong>Categoría</strong>
-                                                        </p>
-                                                    )}
-                                                    {screenWidth > 450 && (
-                                                        <p className="text-center w-[22.5%] sm:w-[20%] lg:w-[20%] xl:w-[17.5%] 2xl:w-[15%] m-0">
-                                                            <strong>Actividad</strong>
-                                                        </p>
-                                                    )}
+
+
 
                                                 </div>
                                             </div>
@@ -1760,61 +1853,248 @@ const Table = ({ parentsEdificioProps, admin, screenWidth, loadingLoader }) => {
                                                                     />
                                                                 )}
                                                                 <div className="flex flex-row justify-start items-center gap-1 w-[100%] py-2 ">
-                                                                    <p className={`w-[100%] ${screenWidth > 450 ? 'w-[72.5%]' : ''} sm:w-[55%] md:w-[45%] lg:w-[40%] xl:w-[37.5%] 2xl:w-[35%] text-center truncate`} style={{ marginTop: '0px' }}>
-                                                                        {item.direccion}
-                                                                    </p>
-                                                                    {screenWidth > 1024 && (
-                                                                        <p className={`w-[10%] xl:w-[10%] text-center truncate mt-0`}>
-                                                                            {item.localizado === false ? (
-                                                                                <></>
-                                                                            ) : (
-                                                                                <div className='flex flex-row justify-center items-center'>
-                                                                                    <p className='text-center text-green-900 bg-green-100 border border-green-900 rounded-md w-min px-2 mx-auto my-auto text-xs'>Sí</p>
-                                                                                </div>
+                                                                    {paginaBuscador === 'Todos' ? (
+                                                                        <>
+                                                                            <p className={`w-[100%] ${screenWidth > 450 ? 'w-[72.5%]' : ''} sm:w-[55%] md:w-[45%] lg:w-[40%] xl:w-[37.5%] 2xl:w-[35%] text-center truncate`} style={{ marginTop: '0px' }}>
+                                                                                {item.direccion}
+                                                                            </p>
+                                                                            {screenWidth > 1024 && (
+                                                                                <p className={`w-[10%] xl:w-[10%] text-center truncate mt-0`}>
+                                                                                    {item.localizado === false ? (
+                                                                                        <></>
+                                                                                    ) : (
+                                                                                        <div className='flex flex-row justify-center items-center'>
+                                                                                            <p className='text-center text-green-900 bg-green-100 border border-green-900 rounded-md w-min px-2 mx-auto my-auto text-xs'>Sí</p>
+                                                                                        </div>
+                                                                                    )}
+                                                                                </p>
                                                                             )}
-                                                                        </p>
-                                                                    )}
-                                                                    {screenWidth > 768 && (
-                                                                        <p className={`w-[10%] lg:w-[10%] 2xl:w-[7.5%] text-center truncate mt-0`}>
-                                                                            {item.superficie} m²
-                                                                        </p>
-                                                                    )}
-                                                                    {screenWidth > 1280 && (
-                                                                        <p className={`w-[7.5%] text-center truncate mt-0`}>
-                                                                            {item.ano_construccion}
-                                                                        </p>
-                                                                    )}
-                                                                    {screenWidth > 640 && (
-                                                                        <p className={`w-[20%] lg:w-[17.5%] xl:w-[17.5%] 2xl:w-[15%] text-center truncate mt-0`}>
-                                                                            {item.zona}
-                                                                        </p>
-                                                                    )}
-                                                                    {screenWidth > 1024 && (
-                                                                        <p className={`w-[7.5%] text-center truncate mt-0`}>
-                                                                            {item.DPV === false ? (
-                                                                                <></>
-                                                                            ) : (
-                                                                                <div className='flex flex-row justify-center items-center'>
-                                                                                    <p className='text-center text-green-900 bg-green-100 border border-green-900 rounded-md w-min px-2 mx-auto my-auto text-xs'>Sí</p>
-                                                                                </div>
+                                                                            {screenWidth > 768 && (
+                                                                                <p className={`w-[10%] lg:w-[10%] 2xl:w-[7.5%] text-center truncate mt-0`}>
+                                                                                    {item.superficie} m²
+                                                                                </p>
                                                                             )}
-                                                                        </p>
-                                                                    )}
-                                                                    {screenWidth > 1536 && (
-                                                                        <p className={`w-[10%] text-center truncate mt-0`}>
-                                                                            {item.categoria}
-                                                                        </p>
-                                                                    )}
-                                                                    {screenWidth > 450 && (
-                                                                        <div className="flex flex-col gap-2 py-6 w-[22.5%] sm:w-[20%] lg:w-[20%] xl:w-[17.5%] 2xl:w-[15%] h-fit justify-center items-center">
-                                                                            {item.noticiastate === true && (
-                                                                                <p className='bg-blue-100 text-center text-blue-900 rounded-md border border-blue-900 w-min px-2 mx-auto my-auto text-sm'>Noticia</p>
+                                                                            {screenWidth > 1280 && (
+                                                                                <p className={`w-[7.5%] text-center truncate mt-0`}>
+                                                                                    {item.ano_construccion}
+                                                                                </p>
                                                                             )}
-                                                                            {item.encargostate === true && (
-                                                                                <p className='bg-orange-100 text-center text-orange-900 rounded-md border border-orange-900 w-min px-2 mx-auto my-auto text-sm'>Encargo</p>
+                                                                            {screenWidth > 640 && (
+                                                                                <p className={`w-[20%] lg:w-[17.5%] xl:w-[17.5%] 2xl:w-[15%] text-center truncate mt-0`}>
+                                                                                    {item.zona}
+                                                                                </p>
+                                                                            )}
+                                                                            {screenWidth > 1024 && (
+                                                                                <p className={`w-[7.5%] text-center truncate mt-0`}>
+                                                                                    {item.DPV === false ? (
+                                                                                        <></>
+                                                                                    ) : (
+                                                                                        <div className='flex flex-row justify-center items-center'>
+                                                                                            <p className='text-center text-green-900 bg-green-100 border border-green-900 rounded-md w-min px-2 mx-auto my-auto text-xs'>Sí</p>
+                                                                                        </div>
+                                                                                    )}
+                                                                                </p>
+                                                                            )}
+                                                                            {screenWidth > 1536 && (
+                                                                                <p className={`w-[10%] text-center truncate mt-0`}>
+                                                                                    {item.categoria}
+                                                                                </p>
+                                                                            )}
+                                                                            {screenWidth > 450 && (
+                                                                                <div className="flex flex-col gap-2 py-6 w-[22.5%] sm:w-[20%] lg:w-[20%] xl:w-[17.5%] 2xl:w-[15%] h-fit justify-center items-center">
+                                                                                    {item.noticiastate === true && (
+                                                                                        <p className='bg-blue-100 text-center text-blue-900 rounded-md border border-blue-900 w-min px-2 mx-auto my-auto text-sm'>Noticia</p>
+                                                                                    )}
+                                                                                    {item.encargostate === true && (
+                                                                                        <p className='bg-orange-100 text-center text-orange-900 rounded-md border border-orange-900 w-min px-2 mx-auto my-auto text-sm'>Encargo</p>
 
+                                                                                    )}
+                                                                                </div>
                                                                             )}
-                                                                        </div>
+
+                                                                        </>
+                                                                    ) : paginaBuscador === 'Noticias' ? (
+                                                                        <>
+                                                                            <p className={`w-[100%] ${screenWidth > 450 ? 'w-[72.5%]' : ''} sm:w-[55%] md:w-[45%] lg:w-[40%] xl:w-[37.5%] 2xl:w-[35%] text-center truncate`} style={{ marginTop: '0px' }}>
+                                                                                {item.direccion}
+                                                                            </p>
+                                                                            {screenWidth > 768 && (
+                                                                                <p className={`w-[10%] lg:w-[10%] 2xl:w-[7.5%] text-center truncate mt-0`}>
+                                                                                    {item.superficie} m²
+                                                                                </p>
+                                                                            )}
+                                                                            {screenWidth > 640 && (
+                                                                                <p className={`w-[15%] lg:w-[12.5%] xl:w-[12.5%] 2xl:w-[10%] text-center truncate mt-0`}>
+                                                                                    {item.zona}
+                                                                                </p>
+                                                                            )}
+                                                                            {screenWidth > 1024 && (
+                                                                                <p className={`w-[10%] xl:w-[10%] text-center truncate mt-0`}>
+                                                                                    {item.noticia?.prioridad === 'Baja' ? (
+                                                                                        <>
+                                                                                            <div className='flex flex-row justify-center items-center'>
+                                                                                                <p className='text-center text-green-900 bg-green-100 border border-green-900 rounded-md w-min px-2 mx-auto my-auto text-xs'>Baja</p>
+                                                                                            </div>
+                                                                                        </>
+                                                                                    ) : (
+                                                                                        <div className='flex flex-row justify-center items-center'>
+                                                                                            <p className='text-center text-red-900 bg-red-100 border border-red-900 rounded-md w-min px-2 mx-auto my-auto text-xs'>Alta</p>
+                                                                                        </div>
+                                                                                    )}
+                                                                                </p>
+                                                                            )}
+
+                                                                            {screenWidth > 1280 && (
+                                                                                <p className={`w-[7.5%] text-center truncate mt-0`}>
+                                                                                    {item.noticia?.tipo_PV}
+                                                                                </p>
+                                                                            )}
+
+                                                                            {screenWidth > 1024 && (
+                                                                                <p className={`w-[12.5%] text-center truncate mt-0`}>
+                                                                                    {item.noticia?.valoracion === 1 ? (
+                                                                                        <>
+                                                                                            {item.noticia.valoracion_establecida?.toLocaleString('es-ES')} €
+
+                                                                                        </>
+                                                                                    ) : (
+                                                                                        <></>
+                                                                                    )}
+                                                                                </p>
+                                                                            )}
+                                                                            {screenWidth > 1536 && (
+                                                                                <p className={`w-[10%] text-center truncate mt-0`}>
+                                                                                    {item.categoria}
+                                                                                </p>
+                                                                            )}
+                                                                            {screenWidth > 450 && (
+                                                                                <div className="flex flex-col gap-2 py-6 w-[22.5%] sm:w-[20%] lg:w-[20%] xl:w-[17.5%] 2xl:w-[15%] h-fit justify-center items-center">
+                                                                                    {item.noticiastate === true && (
+                                                                                        <p className='bg-blue-100 text-center text-blue-900 rounded-md border border-blue-900 w-min px-2 mx-auto my-auto text-sm'>Noticia</p>
+                                                                                    )}
+                                                                                    {item.encargostate === true && (
+                                                                                        <p className='bg-orange-100 text-center text-orange-900 rounded-md border border-orange-900 w-min px-2 mx-auto my-auto text-sm'>Encargo</p>
+
+                                                                                    )}
+                                                                                </div>
+                                                                            )}
+
+                                                                        </>
+                                                                    ) : paginaBuscador === 'Encargos' ? (
+                                                                        <>
+                                                                            <p className={`w-[100%] ${screenWidth > 450 ? 'w-[72.5%]' : ''} sm:w-[55%] md:w-[45%] lg:w-[40%] xl:w-[37.5%] 2xl:w-[35%] text-center truncate`} style={{ marginTop: '0px' }}>
+                                                                                {item.direccion}
+                                                                            </p>
+                                                                            {screenWidth > 768 && (
+                                                                                <p className={`w-[10%] lg:w-[10%] 2xl:w-[7.5%] text-center truncate mt-0`}>
+                                                                                    {item.encargo?.tipo_encargo}
+                                                                                </p>
+                                                                            )}
+                                                                            {screenWidth > 640 && (
+                                                                                <p className={`w-[15%] lg:w-[12.5%] xl:w-[12.5%] 2xl:w-[10%] text-center truncate mt-0`}>
+                                                                                    {item.encargo?.precio_1?.toLocaleString('es-ES')} €
+                                                                                </p>
+                                                                            )}
+                                                                            {screenWidth > 640 && (
+                                                                                <>
+                                                                                    {item.encargo?.precio_2 ? (
+                                                                                        <p className={`w-[15%] lg:w-[12.5%] xl:w-[12.5%] 2xl:w-[10%] text-center truncate mt-0`}>
+                                                                                            {item.encargo?.precio_2?.toLocaleString('es-ES')} €
+                                                                                        </p>
+                                                                                    ) : (
+                                                                                        <p className={`w-[15%] lg:w-[12.5%] xl:w-[12.5%] 2xl:w-[10%] text-center truncate mt-0`}>
+
+                                                                                        </p>
+                                                                                    )}
+                                                                                </>
+                                                                            )}
+                                                                            {screenWidth > 1024 && (
+                                                                                <p className={`w-[10%] xl:w-[10%] text-center truncate mt-0`}>
+                                                                                    {item.encargo?.comisionComprador === 'Porcentaje' ? (
+                                                                                        <>
+                                                                                            <div className='flex flex-col justify-center items-center'>
+                                                                                                <p className='text-center w-min px-2 mx-auto my-auto text-xs'>
+                                                                                                    {item.encargo?.comisionCompradorValue?.toLocaleString('es-ES')}%
+                                                                                                </p>
+                                                                                                <div className='h-[1px] w-full my-1 bg-slate-500'></div>
+                                                                                                <p className='text-center w-min px-2 mx-auto my-auto text-xs'>
+                                                                                                    {item.encargo?.comisionCompradorValue?.toLocaleString('es-ES')}€
+                                                                                                </p>
+                                                                                            </div>
+                                                                                        </>
+                                                                                    ) : item.encargo?.comisionComprador === 'Fijo' ? (
+                                                                                        <>
+                                                                                            <div className='flex flex-col justify-center items-center'>
+                                                                                                <p className='text-center w-min px-2 mx-auto my-auto text-xs'>
+                                                                                                    {item.encargo?.comisionCompradorValue?.toLocaleString('es-ES')}€
+                                                                                                </p>
+                                                                                            </div>
+                                                                                        </>
+                                                                                    ) : (
+                                                                                        <>
+                                                                                            <div className='flex flex-row justify-center items-center'>
+                                                                                                <p className='text-center rounded-md w-min px-2 mx-auto my-auto text-xs'></p>
+                                                                                            </div>
+                                                                                        </>
+                                                                                    )}
+                                                                                </p>
+                                                                            )}
+                                                                            {screenWidth > 1024 && (
+                                                                                <p className={`w-[10%] xl:w-[10%] text-center truncate mt-0`}>
+                                                                                    {item.encargo?.tipo_comision_encargo === 'Porcentaje' ? (
+                                                                                        <>
+                                                                                            <div className='flex flex-col justify-center items-center'>
+                                                                                                <p className='text-center w-min px-2 mx-auto my-auto text-xs'>
+                                                                                                    {item.encargo?.comision_encargo?.toLocaleString('es-ES')}%
+                                                                                                </p>
+                                                                                                <div className='h-[1px] w-full my-1 bg-slate-500'></div>
+                                                                                                <p className='text-center w-min px-2 mx-auto my-auto text-xs'>
+                                                                                                    {(
+                                                                                                        (item.encargo?.precio_2 ?? item.encargo?.precio_1) *
+                                                                                                        (item.encargo?.comision_encargo ?? 0) / 100
+                                                                                                    )?.toLocaleString('es-ES')} €
+                                                                                                </p>
+                                                                                            </div>
+                                                                                        </>
+                                                                                    ) : item.encargo?.tipo_comision_encargo === 'Fijo' ? (
+                                                                                        <>
+                                                                                            <div className='flex flex-col justify-center items-center'>
+                                                                                                <p className='text-center w-min px-2 mx-auto my-auto text-xs'>
+                                                                                                    {item.encargo?.comision_encargo?.toLocaleString('es-ES')}€
+                                                                                                </p>
+                                                                                            </div>
+                                                                                        </>
+                                                                                    ) : (
+                                                                                        <>
+                                                                                            <div className='flex flex-row justify-center items-center'>
+                                                                                                <p className='text-center rounded-md w-min px-2 mx-auto my-auto text-xs'></p>
+                                                                                            </div>
+                                                                                        </>
+                                                                                    )}
+                                                                                </p>
+                                                                            )}
+
+
+
+                                                                            {screenWidth > 1536 && (
+                                                                                <p className={`w-[10%] text-center truncate mt-0`}>
+                                                                                    {item.categoria}
+                                                                                </p>
+                                                                            )}
+                                                                            {screenWidth > 450 && (
+                                                                                <div className="flex flex-col gap-2 py-6 w-[22.5%] sm:w-[20%] lg:w-[20%] xl:w-[17.5%] 2xl:w-[15%] h-fit justify-center items-center">
+                                                                                    {item.noticiastate === true && (
+                                                                                        <p className='bg-blue-100 text-center text-blue-900 rounded-md border border-blue-900 w-min px-2 mx-auto my-auto text-sm'>Noticia</p>
+                                                                                    )}
+                                                                                    {item.encargostate === true && (
+                                                                                        <p className='bg-orange-100 text-center text-orange-900 rounded-md border border-orange-900 w-min px-2 mx-auto my-auto text-sm'>Encargo</p>
+
+                                                                                    )}
+                                                                                </div>
+                                                                            )}
+                                                                        </>
+                                                                    ) : (
+                                                                        null
                                                                     )}
 
 
