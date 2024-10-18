@@ -2096,27 +2096,6 @@ const Table = ({ parentsEdificioProps, admin, screenWidth, loadingLoader }) => {
                 </Modal>
             </div >
 
-            {/* {
-                showAskForDeleteOrphan && (
-                    <div className="popup-container fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-75 z-50">
-                        <div className="popup-content bg-white p-4 shadow-lg flex flex-col justify-center items-center gap-4 rounded-lg w-4/6">
-                            <h2 className="text-lg font-bold w-[80%] text-center flex justify-center">Los siguientes grupos se han quedado vacíos:</h2>
-                            {orphanInfo.map((info, index) => (
-                                <p key={index}>{info.direccion}</p>
-                            ))}
-                            <p>¿Desea eliminarlos?</p>
-                            <div className="flex justify-center gap-4">
-                                <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded w-[120px]" onClick={handleKeepOrphan}>
-                                    Mantener
-                                </button>
-                                <button className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded w-[120px]" onClick={handleDeleteOrphan}>
-                                    Eliminar
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                )
-            } */}
 
             <Modal open={showAskForDeleteOrphan} onClose={handleKeepOrphan} backdrop size="xs">
                 <Modal.Header>
@@ -2194,6 +2173,7 @@ const Table = ({ parentsEdificioProps, admin, screenWidth, loadingLoader }) => {
                         currentPage={currentPage}
                         searchTerm={searchTerm}
                         handleIconAddInmueble={handleIconAddInmueble}
+                        screenWidth={screenWidth}
                     />
                 )
             }
