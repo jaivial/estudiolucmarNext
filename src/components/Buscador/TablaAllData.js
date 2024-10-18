@@ -17,8 +17,8 @@ import { Icon } from '@iconify/react';
 import MoreInfo from '../MoreInfo/MoreInfo.js';
 import { AiOutlineLoading } from "react-icons/ai";
 import BuscadorTabs from './TabsBuscador.js';
-import { Accordion, Panel, Checkbox } from 'rsuite';
-
+import { Accordion, Panel, Checkbox, Modal, Button, RadioGroup, Radio, SelectPicker } from 'rsuite';
+import { FaArrowLeft } from "react-icons/fa6";
 
 
 
@@ -283,15 +283,17 @@ const Table = ({ parentsEdificioProps, admin, screenWidth, loadingLoader }) => {
             setOptions([]);
         }
     }, [selectedType, parentsEdificio, parentsEscalera]);
-    // Handle the change event for react-select
+
     const handleChangeExistingGroup = (selectedOption) => {
-        handleFormChange({
-            target: {
-                name: 'existingGroup',
-                value: selectedOption ? selectedOption.value : '',
-            },
-        });
+        setFormData((prevFormData) => ({
+            ...prevFormData,
+            existingGroup: selectedOption ? selectedOption : '',
+        }));
     };
+
+    useEffect(() => {
+        console.log('formData', formData);
+    }, [formData]);
 
     // OPTIONS AND HANDECHANGE FOR NUEVO GRUPO ESCALERA
     const optionsNuevoGrupoEscalera = parentsEdificio?.map((parent) => ({
@@ -804,6 +806,7 @@ const Table = ({ parentsEdificioProps, admin, screenWidth, loadingLoader }) => {
                     inmuebles: Array.from(selectedItems),
                     existingGroup: parseInt(formData.existingGroup, 10),
                 });
+                console.log('data escalera', data);
                 if (error) {
                     console.error('Error performing operation:', error);
                     Toastify({
@@ -1175,21 +1178,21 @@ const Table = ({ parentsEdificioProps, admin, screenWidth, loadingLoader }) => {
                                         <Checkbox
                                             checked={selectedItemsUngroup.has(child.id)}
                                             onChange={() => handleCheckboxChangeUngroup(child.id)}
-                                            className="mr-4 ml-4 h-fit w-fit p-0"
+                                            className="m-0 h-fit w-fit p-0"
                                         />
                                     )}
                                     {showExtraButtons && (
                                         <Checkbox
                                             checked={selectedItems.has(child.id)}
                                             onChange={() => handleCheckboxChange(child.id)}
-                                            className="mr-4 ml-4 h-fit w-fit p-0"
+                                            className="m-0 h-fit w-fit p-0"
                                         />
                                     )}
                                     {showDeleteInmuebleButtons && (
                                         <Checkbox
                                             checked={selectedItems.has(child.id)}
                                             onChange={() => handleCheckboxChange(child.id)}
-                                            className="mr-4 ml-4 h-fit w-fit p-0"
+                                            className="m-0 h-fit w-fit p-0"
                                         />
                                     )}
                                     <div className="flex flex-row justify-start items-center gap-1 w-[100%] py-2 ">
@@ -1428,11 +1431,10 @@ const Table = ({ parentsEdificioProps, admin, screenWidth, loadingLoader }) => {
                         >
                             <div className="flex flex-row justify-stretch items-stretch gap-2 w-full cursor-pointer" onClick={handleToggleEscalera}>
                                 {showDeleteInmuebleButtons && (
-                                    <input
-                                        type="checkbox"
+                                    <Checkbox
                                         checked={selectedItems.has(child.id)}
                                         onChange={() => handleCheckboxChange(child.id)}
-                                        className="mr-4 ml-4 w-[25px] h-[25px]"
+                                        className="mr-4 ml-4 h-fit w-fit p-0"
                                     />
                                 )}
                                 <div className="flex flex-row justify-evenly items-center w-full py-2 px-4 h-[4.5rem]">
@@ -1479,7 +1481,7 @@ const Table = ({ parentsEdificioProps, admin, screenWidth, loadingLoader }) => {
 
     return (
         <div className="bg-slate-400 h-full w-full overflow-x-hidden">
-            <div className="md:w-[calc(100%-5rem)] ml-auto p-4 pb-24">
+            <div className={`${screenWidth >= 990 ? 'w-[calc(100%-5rem)]' : 'w-full'} ml-auto p-4 pb-24`}>
                 <form onSubmit={handleSearch} className="mb-4 flex flex-row gap-2 mt-0 w-full justify-center items-center bg-slate-200 rounded-2xl p-4 shadow-2xl">
                     <div className="relative w-[80%]">
                         <input type="text" value={searchTerm} onChange={(e) => { setSearchTerm(e.target.value); setShowMoreInfo(false); }} placeholder="Buscar una dirección..." className="border border-gray-300 px-3 py-2 w-[100%] rounded-3xl" />
@@ -1673,7 +1675,7 @@ const Table = ({ parentsEdificioProps, admin, screenWidth, loadingLoader }) => {
                                     </p>
                                 </div>
 
-                                <div className="w-full flex flex-row gap-3 mt-5">
+                                <div className={`w-full flex flex-row ${(screenWidth >= 990 && showAnalytics) ? 'gap-3' : 'gap-0'} mt-5`}>
                                     <div className={`flex flex-col gap-2 w-full ${showAnalytics ? 'xl:w-[60%]' : 'xl:w-[100%]'} bg-slate-100 rounded-xl p-4 shadow-lg h-min pt-5 items-center transition-all duration-[1000ms] ease-in-out`}>
                                         <div className="tableheader relative px-2 py-1 mt-2 rounded-md shadow-lg flex items-center justify-center flex-row bg-blue-950 w-full mb-1">
                                             <div className="true flex flex-row justify-between w-full">
@@ -1847,14 +1849,14 @@ const Table = ({ parentsEdificioProps, admin, screenWidth, loadingLoader }) => {
                                                             >
                                                                 <div
                                                                     onClick={handleToggle}
-                                                                    className="flex flex-row justify-stretch items-stretch gap-2 w-full cursor-pointer"
+                                                                    className="flex flex-row justify-stretch items-center gap-2 w-full cursor-pointer"
                                                                 >
+
                                                                     {showDeleteInmuebleButtons && (
-                                                                        <input
-                                                                            type="checkbox"
+                                                                        <Checkbox
                                                                             checked={selectedItems.has(item.id)}
                                                                             onChange={() => handleCheckboxChange(item.id)}
-                                                                            className="mr-4 w-[25px] h-[25px]"
+                                                                            className="mr-4 ml-4 h-fit w-fit p-0"
                                                                         />
                                                                     )}
                                                                     <div className="flex flex-row justify-evenly items-center w-full py-2 px-4 h-[4.5rem]">
@@ -1942,205 +1944,159 @@ const Table = ({ parentsEdificioProps, admin, screenWidth, loadingLoader }) => {
                 )
                 }
 
-                {
-                    showPopup && (
-                        <div className="popup-container fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-75 z-50">
-                            <div className="popup-content bg-white p-4 shadow-lg flex flex-col justify-center items-center gap-4 rounded-lg w-4/6">
-                                {!showFormType && (
+                <Modal open={showPopup} onClose={handlePopupToggle} size="md" backdrop>
+                    <Modal.Header style={{ display: 'flex', flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: '10px', width: '100%', marginTop: '10px', textAlign: 'center', fontFamily: 'sans-serif' }}>
+                        <Modal.Title>{!showFormType ? 'Agrupar Inmueble' : showFormType === 'new' ? 'Crear nuevo grupo' : 'Asignar a grupo existente'}</Modal.Title>
+                    </Modal.Header>
+                    <Modal.Body>
+                        {!showFormType && (
+                            <>
+                                <div className="flex flex-col gap-4 text-center mx-auto w-fit mt-4">
+                                    <Button appearance="primary" onClick={() => setShowFormType('new')} block>
+                                        Crear nuevo grupo
+                                    </Button>
+                                    <Button appearance="primary" onClick={() => setShowFormType('existing')} block>
+                                        Asignar a grupo existente
+                                    </Button>
+                                    <Button appearance="subtle" onClick={handlePopupToggle} block>
+                                        Cerrar
+                                    </Button>
+                                </div>
+                            </>
+                        )}
+
+                        {showFormType === 'new' && (
+                            <form onSubmit={handleSubmitForm} className="flex flex-col gap-4">
+                                <Button appearance="default" onClick={() => setShowFormType('')} icon={<i className="rs-icon rs-icon-arrow-left-line" />} className='flex flex-row gap-2 w-fit mx-auto'>
+                                    <FaArrowLeft />
+                                    <p>Volver atrás</p>
+                                </Button>
+                                <div className='flex flex-col gap-4 w-fit mx-auto'>
+                                    <p className='text-slate-900 text-center font-sans'>Elige el tipo de agrupación:</p>
+                                    <RadioGroup name="tipo" onChange={(value) => setFormData({ ...formData, tipo: value })} value={formData.tipo} style={{ gap: '35px', display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }}>
+
+                                        <Radio value="Edificio" className={`${formData.tipo === 'Edificio' ? 'bg-slate-800 text-white border-slate-800' : 'bg-slate-100 border-2 border-slate-500'} rounded-xl w-[fit] md:hover:bg-slate-800 md:hover:text-white md:hover:border-slate-800 md:hover:cursor-pointer flex flex-row gap-2 items-center justify-center crearnuevogruporadio`}>
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="2em" height="2em" viewBox="0 0 24 24">
+                                                <g fill="none">
+                                                    <path d="M24 0v24H0V0zM12.593 23.258l-.011.002l-.071.035l-.02.004l-.014-.004l-.071-.035q-.016-.005-.024.005l-.004.01l-.017.428l.005.02l.01.013l.104.074l.015.004l.012-.004l.104-.074l.012-.016l.004-.017l-.017-.427q-.004-.016-.017-.018m.265-.113l-.013.002l-.185.093l-.01.01l-.003.011l.018.43l.005.012l.008.007l.201.093q.019.005.029-.008l.004-.014l-.034-.614q-.005-.019-.02-.022m-.715.002a.02.02 0 0 0-.027.006l-.006.014l-.034.614q.001.018.017.024l.015-.002l.201-.093l.01-.008l.004-.011l.017-.43l-.003-.012l-.01-.01z" />
+                                                    <path fill="currentColor" d="M3 19h1V6.36a1.5 1.5 0 0 1 1.026-1.423l8-2.666A1.5 1.5 0 0 1 15 3.694V19h1V9.99a.5.5 0 0 1 .598-.49l2.196.44A1.5 1.5 0 0 1 20 11.41V19h1a1 1 0 1 1 0 2H3a1 1 0 1 1 0-2" />
+                                                </g>
+                                            </svg> Edificio</Radio>
+
+
+                                        <Radio value="Escalera" className={`${formData.tipo === 'Escalera' ? 'bg-slate-800 text-white border-slate-800' : 'bg-slate-100 border-2 border-slate-500'} rounded-xl w-[fit] md:hover:bg-slate-800 md:hover:text-white md:hover:border-slate-800 md:hover:cursor-pointer flex flex-row gap-2 items-center justify-center crearnuevogruporadio`}>
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="2em" height="2em" viewBox="0 0 24 24">
+                                                <path fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M22 5h-5v5h-5v5H7v5H2" />
+                                            </svg> Escalera</Radio>
+
+                                    </RadioGroup>
+                                </div>
+
+                                {formData.tipo && (
                                     <>
-                                        <h2 className="text-lg font-bold w-[80%] text-center flex justify-center">Agrupar Inmueble</h2>
-                                        <div className="flex flex-col gap-4 w-full justify-center items-center text-center mt-4">
-                                            <button onClick={() => setShowFormType('new')} className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mb-4">
-                                                Crear nuevo grupo
-                                            </button>
-                                            <button onClick={() => setShowFormType('existing')} className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mb-4">
-                                                Asignar a grupo existente
-                                            </button>
-                                            <button type="button" onClick={handlePopupToggle} className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded">
-                                                Cerrar
-                                            </button>
+                                        <div className='flex flex-col gap-4 w-2/4 mx-auto mt-4'>
+                                            <label>Nombre:</label>
+                                            <input type="text" name="nombre" value={formData.nombre} onChange={handleFormChange} className="rs-input" placeholder={`Dirección de ${formData.tipo}`} />
+
+                                            {formData.tipo === 'Escalera' && (
+                                                <div className='flex flex-col gap-4 w-full mx-auto mt-4'>
+                                                    <label>Grupo:</label>
+                                                    <SelectPicker
+                                                        data={optionsNuevoGrupoEscalera}
+                                                        value={formData.grupo}
+                                                        onChange={(value) => setFormData({ ...formData, grupo: value })}
+                                                        placeholder="Seleccione un grupo"
+                                                        searchable
+                                                        style={{ width: '100%' }}
+                                                    />
+                                                </div>
+                                            )}
                                         </div>
                                     </>
                                 )}
-                                {showFormType === 'new' && (
-                                    <div className="relative pt-0 flex flex-col justify-center items-center w-[80%]">
-                                        <div
-                                            className="absolute top-0 -left-7 text-gray-700"
-                                            onClick={() => {
-                                                setShowFormType('');
-                                                setFormData({ tipo: '', nombre: '', existingGroup: '' });
-                                            }}
-                                        >
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="2.3em" height="2.3em" viewBox="0 0 20 20">
-                                                <path fill="currentColor" fill-rule="evenodd" d="M9.707 16.707a1 1 0 0 1-1.414 0l-6-6a1 1 0 0 1 0-1.414l6-6a1 1 0 0 1 1.414 1.414L5.414 9H17a1 1 0 1 1 0 2H5.414l4.293 4.293a1 1 0 0 1 0 1.414" clip-rule="evenodd" />
-                                            </svg>
-                                        </div>
-                                        <h2 className="text-lg font-bold w-[80%] text-center flex justify-center">Crear nuevo grupo</h2>
-                                        <form onSubmit={handleSubmitForm} className="flex flex-col gap-4 mt-4">
-                                            <div className="flex flex-col gap-3 justify-center items-center mb-2">
-                                                <label className="block">Tipo:</label>
-                                                <div className="flex gap-4">
-                                                    <label className="flex flex-row gap-2">
-                                                        <input type="radio" name="tipo" value="Edificio" checked={formData.tipo === 'Edificio'} onChange={handleFormChange} />
-                                                        Edificio
-                                                    </label>
-                                                    <label className="flex flex-row gap-2">
-                                                        <input type="radio" name="tipo" value="Escalera" checked={formData.tipo === 'Escalera'} onChange={handleFormChange} />
-                                                        Escalera
-                                                    </label>
-                                                </div>
-                                            </div>
-                                            {formData.tipo === 'Edificio' ? (
-                                                <div>
-                                                    <div>
-                                                        <label className="block mb-2">Nombre:</label>
-                                                        <input type="text" name="nombre" value={formData.nombre} onChange={handleFormChange} className="border p-2 rounded w-full" placeholder="Dirección del edificio" />
-                                                    </div>
-                                                </div>
-                                            ) : formData.tipo === 'Escalera' ? (
-                                                <div className="flex flex-col gap-3 w-full">
-                                                    <div>
-                                                        <label className="block">Nombre:</label>
-                                                        <input type="text" name="nombre" value={formData.nombre} onChange={handleFormChange} className="border p-2 rounded w-full" placeholder="Dirección de la escalera" />{' '}
-                                                    </div>
-                                                    <label className="block">Grupo:</label>
-                                                    <Select
-                                                        name="grupo"
-                                                        value={optionsNuevoGrupoEscalera.find(option => option.value === formData.grupo) || null} onChange={handleChange}
-                                                        options={optionsNuevoGrupoEscalera}
-                                                        className="w-full"
-                                                        classNamePrefix="react-select"
-                                                        placeholder="Seleccione un grupo"
-                                                        isClearable
-                                                        isSearchable
-                                                    />
-                                                </div>
-                                            ) : (
-                                                <div>
-                                                    <label className="block mb-2">Nombre:</label>
-                                                    <input type="text" name="nombre" value={formData.nombre} onChange={handleFormChange} className="border p-2 rounded w-full" placeholder="Dirección del edificio" />
-                                                </div>
-                                            )}
-                                            <div className="flex gap-4 mt-4 flex-row justify-center items-center">
-                                                <button type="submit" className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
-                                                    Crear
-                                                </button>
-                                                <button type="button" onClick={handlePopupToggle} className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded">
-                                                    Cerrar
-                                                </button>
-                                            </div>
-                                        </form>
-                                    </div>
-                                )}
-                                {showFormType === 'existing' && (
-                                    <div className="relative pt-0 flex flex-col justify-center items-center w-[80%]">
-                                        <div
-                                            className="absolute top-0 -left-7 text-gray-700"
-                                            onClick={() => {
-                                                setShowFormType('');
-                                                setFormData({ tipo: '', nombre: '', existingGroup: '' });
-                                            }}
-                                        >
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="2.3em" height="2.3em" viewBox="0 0 20 20">
-                                                <path fill="currentColor" fill-rule="evenodd" d="M9.707 16.707a1 1 0 0 1-1.414 0l-6-6a1 1 0 0 1 0-1.414l6-6a1 1 0 0 1 1.414 1.414L5.414 9H17a1 1 0 1 1 0 2H5.414l4.293 4.293a1 1 0 0 1 0 1.414" clip-rule="evenodd" />
-                                            </svg>
-                                        </div>
-                                        <h2 className="text-lg font-bold mb-4 w-[70%] text-center flex justify-center">Asignar a grupo existente</h2>
-                                        <form onSubmit={handleSubmitForm} className="flex flex-col gap-4">
-                                            <div className="flex flex-col gap-3 justify-center items-center mb-2">
-                                                <label className="block">Tipo:</label>
-                                                <div className="flex gap-4">
-                                                    <label className="flex flex-row gap-2">
-                                                        <input
-                                                            type="radio"
-                                                            name="tipo"
-                                                            value="Edificio"
-                                                            checked={selectedType === 'Edificio'}
-                                                            onChange={(e) => {
-                                                                setSelectedType('Edificio');
-                                                                handleFormChange(e);
-                                                            }}
-                                                        />
-                                                        Edificio
-                                                    </label>
-                                                    <label className="flex flex-row gap-2">
-                                                        <input
-                                                            type="radio"
-                                                            name="tipo"
-                                                            value="Escalera"
-                                                            checked={selectedType === 'Escalera'}
-                                                            onChange={(e) => {
-                                                                setSelectedType('Escalera');
-                                                                handleFormChange(e);
-                                                            }}
-                                                        />
-                                                        Escalera
-                                                    </label>
-                                                </div>
-                                            </div>
-                                            <div>
-                                                <label className="block mb-2">Elige un grupo:</label>
-                                                <Select
-                                                    name="existingGroup"
-                                                    value={options.find(option => option.value === formData.existingGroup) || null}
-                                                    onChange={handleChangeExistingGroup}
-                                                    options={options}
-                                                    className="w-full"
-                                                    classNamePrefix="react-select"
-                                                    placeholder="Seleccione un grupo"
-                                                    isClearable
-                                                    isSearchable
-                                                />
-                                            </div>
-                                            <div className="flex gap-4 mt-4 flex-row justify-center items-center">
-                                                <button type="button" onClick={handlePopupToggle} className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded">
-                                                    Cerrar
-                                                </button>
-                                                <button type="submit" className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
-                                                    Asignar
-                                                </button>
-                                            </div>
-                                        </form>
-                                    </div>
-                                )}
-                            </div>
-                        </div>
-                    )
-                }
 
-                {
-                    showPopupUngroup && (
-                        <div className="popup-container fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-75 z-50">
-                            <div className="popup-content bg-white p-4 shadow-lg flex flex-col justify-center items-center gap-4 rounded-lg w-4/6">
-                                <div className="relative pt-0 flex flex-col justify-center items-center">
-                                    <div className="absolute top-0 -left-1 text-gray-700" onClick={handlePopupToggleUngroup}>
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="2.3em" height="2.3em" viewBox="0 0 20 20">
-                                            <path fill="currentColor" fill-rule="evenodd" d="M9.707 16.707a1 1 0 0 1-1.414 0l-6-6a1 1 0 0 1 0-1.414l6-6a1 1 0 0 1 1.414 1.414L5.414 9H17a1 1 0 1 1 0 2H5.414l4.293 4.293a1 1 0 0 1 0 1.414" clip-rule="evenodd" />
-                                        </svg>
-                                    </div>
-                                    <h2 className="text-lg font-bold mb-4 w-[60%] text-center flex justify-center">Desagrupar</h2>
-                                    <form onSubmit={handleSubmitFormUngroup} className="flex flex-col justify-center items-center gap-4">
-                                        <div className="flex flex-col justify-center items-center gap-4 w-[75%]">
-                                            <h2 className="text-center">Se van a desagrupar los elementos seleccionados.</h2>
-                                            <h2>¿Está seguro?</h2>
-                                            <div className="flex flex-row justify-center items-center gap-4">
-                                                <button type="submit" className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded text-center w-[120px]">
-                                                    Desagrupar
-                                                </button>
-                                                <button type="button" onClick={handlePopupToggleUngroup} className="bg-red-500 hover:bg-red-700 text-white font-bold text-center py-2 px-4 rounded w-[120px]">
-                                                    Cancelar
-                                                </button>
-                                            </div>
-                                        </div>
-                                    </form>
+                                <div className="flex justify-center gap-4 mt-4">
+                                    <Button type="submit" appearance="primary">Crear</Button>
+                                    <Button onClick={handlePopupToggle} appearance="subtle">Cerrar</Button>
                                 </div>
-                            </div>
+                            </form>
+                        )}
+
+                        {showFormType === 'existing' && (
+                            <form className="flex flex-col gap-4">
+                                <Button appearance="default" onClick={() => setShowFormType('')} icon={<i className="rs-icon rs-icon-arrow-left-line" />} className='flex flex-row gap-2 w-fit mx-auto'>
+                                    <FaArrowLeft />
+                                    <p>Volver atrás</p>
+                                </Button>
+                                <div className='flex flex-col gap-4 w-fit mx-auto'>
+                                    <p className='text-slate-900 text-center font-sans'>Elige el tipo de agrupación:</p>
+                                    <RadioGroup name="tipo" onChange={(value) => setSelectedType(value)} value={selectedType} className='radiogroupselector'>
+
+                                        <Radio value="Edificio" className={`${selectedType === 'Edificio' ? 'bg-slate-800 text-white border-slate-800' : 'bg-slate-100 border-2 border-slate-500'} rounded-xl w-[fit] md:hover:bg-slate-800 md:hover:text-white md:hover:border-slate-800 md:hover:cursor-pointer flex flex-row gap-2 items-center justify-center crearnuevogruporadio`}>
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="2em" height="2em" viewBox="0 0 24 24">
+                                                <g fill="none">
+                                                    <path d="M24 0v24H0V0zM12.593 23.258l-.011.002l-.071.035l-.02.004l-.014-.004l-.071-.035q-.016-.005-.024.005l-.004.01l-.017.428l.005.02l.01.013l.104.074l.015.004l.012-.004l.104-.074l.012-.016l.004-.017l-.017-.427q-.004-.016-.017-.018m.265-.113l-.013.002l-.185.093l-.01.01l-.003.011l.018.43l.005.012l.008.007l.201.093q.019.005.029-.008l.004-.014l-.034-.614q-.005-.019-.02-.022m-.715.002a.02.02 0 0 0-.027.006l-.006.014l-.034.614q.001.018.017.024l.015-.002l.201-.093l.01-.008l.004-.011l.017-.43l-.003-.012l-.01-.01z" />
+                                                    <path fill="currentColor" d="M3 19h1V6.36a1.5 1.5 0 0 1 1.026-1.423l8-2.666A1.5 1.5 0 0 1 15 3.694V19h1V9.99a.5.5 0 0 1 .598-.49l2.196.44A1.5 1.5 0 0 1 20 11.41V19h1a1 1 0 1 1 0 2H3a1 1 0 1 1 0-2" />
+                                                </g>
+                                            </svg> Edificio</Radio>
+
+
+                                        <Radio value="Escalera" className={`${selectedType === 'Escalera' ? 'bg-slate-800 text-white border-slate-800' : 'bg-slate-100 border-2 border-slate-500'} rounded-xl w-[fit] md:hover:bg-slate-800 md:hover:text-white md:hover:border-slate-800 md:hover:cursor-pointer flex flex-row gap-2 items-center justify-center crearnuevogruporadio`}>
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="2em" height="2em" viewBox="0 0 24 24">
+                                                <path fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M22 5h-5v5h-5v5H7v5H2" />
+                                            </svg> Escalera</Radio>
+
+                                    </RadioGroup>
+                                </div>
+                                {selectedType && (
+                                    <>
+                                        <div className='flex flex-col gap-4 w-2/4 mx-auto mt-4'>
+                                            <label>Elige {selectedType}:</label>
+                                            <SelectPicker
+                                                data={options}
+                                                value={formData.existingGroup}
+                                                onChange={handleChangeExistingGroup}
+                                                placeholder={`Selecciona ${selectedType}`}
+                                                searchable
+                                                style={{ width: '100%' }}
+                                            />
+                                        </div>
+                                    </>
+                                )}
+
+                                <div className="flex justify-center gap-4 mt-4">
+                                    <Button type="submit" appearance="primary" onClick={handleSubmitForm}>Asignar</Button>
+                                    <Button onClick={handlePopupToggle} appearance="subtle">Cerrar</Button>
+                                </div>
+                            </form>
+                        )}
+                    </Modal.Body>
+                </Modal>
+
+                <Modal open={showPopupUngroup} onClose={handlePopupToggleUngroup} backdrop size="xs">
+                    <Modal.Header>
+                        <Modal.Title style={{ fontSize: '1.5rem', textAlign: 'center' }}>Desagrupar</Modal.Title>
+                    </Modal.Header>
+
+                    <Modal.Body>
+                        <div className="text-center py-10">
+                            <p className='text-slate-900 text-lg'>Se van a desagrupar los elementos seleccionados.</p>
+                            <p className='text-slate-900 text-lg'>¿Está seguro?</p>
                         </div>
-                    )
-                }
+                    </Modal.Body>
+
+                    <Modal.Footer className="flex justify-center gap-4">
+                        <Button onClick={handleSubmitFormUngroup} appearance="primary" className="w-[120px]">
+                            Desagrupar
+                        </Button>
+                        <Button onClick={handlePopupToggleUngroup} appearance="default" className="w-[120px]">
+                            Cancelar
+                        </Button>
+                    </Modal.Footer>
+                </Modal>
             </div >
 
-            {
+            {/* {
                 showAskForDeleteOrphan && (
                     <div className="popup-container fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-75 z-50">
                         <div className="popup-content bg-white p-4 shadow-lg flex flex-col justify-center items-center gap-4 rounded-lg w-4/6">
@@ -2160,45 +2116,75 @@ const Table = ({ parentsEdificioProps, admin, screenWidth, loadingLoader }) => {
                         </div>
                     </div>
                 )
-            }
-            {
-                showPopupDeleteInmueble && (
-                    <div className="popup-container fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-75 z-50">
-                        <div className="popup-content bg-white p-4 shadow-lg flex flex-col justify-center items-center gap-4 rounded-lg w-4/6">
-                            <h2 className="text-lg font-bold w-[80%] text-center flex justify-center">Eliminar elemento</h2>
-                            {thereAreChildrenDelete ? (
-                                <div className="flex flex-col gap-4 w-fit justify-center items-center">
-                                    <p className="text-center w-full">Alguno de los elementos seleccionados contiene elementos agrupados.</p>
-                                    <p className="text-center w-full">¿Desea eliminar los elementos agrupados o mantenerlos?</p>
-                                    <div className="flex flex-row justify-center items-center gap-4">
-                                        <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" onClick={handleDeleteInmueble}>
-                                            Eliminar
-                                        </button>
-                                        <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" onClick={handleDeleteKeepChildren}>
-                                            Mantener
-                                        </button>
-                                    </div>
-                                    <button className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded" onClick={handleKeepDeleteInmueble}>
-                                        Cancelar
-                                    </button>
-                                </div>
-                            ) : (
-                                <div className="flex flex-col gap-4 w-full justify-center items-center text-center">
-                                    <p>¿Está seguro?</p>
-                                    <div className="flex justify-center gap-4">
-                                        <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" onClick={handleDeleteInmueble}>
-                                            Eliminar
-                                        </button>
-                                        <button className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded" onClick={handleKeepDeleteInmueble}>
-                                            Cancelar
-                                        </button>
-                                    </div>
-                                </div>
-                            )}
-                        </div>
+            } */}
+
+            <Modal open={showAskForDeleteOrphan} onClose={handleKeepOrphan} backdrop size="xs">
+                <Modal.Header>
+                    <Modal.Title style={{ fontSize: '1.5rem', textAlign: 'center' }}>Grupo vacío</Modal.Title>
+                </Modal.Header>
+
+                <Modal.Body>
+                    <div className='flex flex-col justify-center items-center gap-4 w-full py-8'>
+                        <p className='font-sans text-slate-900 text-lg text-center'>Los siguientes grupos se han quedado vacíos:</p>
+                        {orphanInfo.map((info, index) => (
+                            <p className='font-sans text-slate-900 text-lg text-center' key={index}>{info.direccion}</p>
+                        ))}
+                        <p className='font-sans text-slate-900 text-lg text-center'>¿Desea eliminarlos?</p>
                     </div>
-                )
-            }
+                </Modal.Body>
+
+                <Modal.Footer className="flex justify-center gap-4">
+                    <Button appearance="primary" onClick={handleKeepOrphan} className="w-[120px]">
+                        Mantener
+                    </Button>
+                    <Button appearance="primary" color="red" onClick={handleDeleteOrphan} className="w-[120px]">
+                        Eliminar
+                    </Button>
+                </Modal.Footer>
+            </Modal>
+
+            <Modal open={showPopupDeleteInmueble} onClose={handleKeepDeleteInmueble} backdrop={true} size="xs">
+                <Modal.Header>
+                    <Modal.Title style={{ fontSize: '1.5rem', textAlign: 'center' }}>Eliminar elemento</Modal.Title>
+                </Modal.Header>
+
+                <Modal.Body>
+                    {thereAreChildrenDelete ? (
+                        <div className="flex flex-col gap-4 w-full justify-center items-center text-center">
+                            <div className='py-10 flex flex-col gap-4 w-full justify-center items-center text-center'>
+                                <p className='font-sans text-slate-900 text-lg'>Alguno de los elementos seleccionados contiene elementos agrupados.</p>
+                                <p className='font-sans text-slate-900 text-lg'>¿Desea eliminar los elementos agrupados o mantenerlos?</p>
+                            </div>
+                            <div className="flex flex-row justify-center items-center gap-4 mb-6">
+                                <Button appearance="primary" color="red" onClick={handleDeleteInmueble}>
+                                    Eliminar
+                                </Button>
+                                <Button appearance="primary" onClick={handleDeleteKeepChildren}>
+                                    Mantener
+                                </Button>
+                            </div>
+                            <Button appearance="default" onClick={handleKeepDeleteInmueble} className="bg-red-500 hover:bg-red-700 text-white">
+                                Cancelar
+                            </Button>
+                        </div>
+                    ) : (
+                        <div className="flex flex-col gap-4 w-full justify-center items-center text-center">
+                            <div className='py-10'>
+                                <p className='font-sans text-slate-900 text-lg'>¿Está seguro?</p>
+                            </div>
+                            <div className="flex justify-center gap-4">
+                                <Button appearance="primary" onClick={handleDeleteInmueble}>
+                                    Eliminar
+                                </Button>
+                                <Button appearance="default" onClick={handleKeepDeleteInmueble}>
+                                    Cancelar
+                                </Button>
+                            </div>
+
+                        </div>
+                    )}
+                </Modal.Body>
+            </Modal>
             {
                 showAddNewInmueble && (
                     <AddNewInmueble
