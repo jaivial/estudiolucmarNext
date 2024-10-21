@@ -2,6 +2,13 @@ import cors, { runMiddleware } from '../../utils/cors';
 // /pages/api/agregarNoticia.js
 import clientPromise from '../../lib/mongodb';
 
+// Helper function to remove dots from a string and parse it as an integer
+const formatToInt = (value) => {
+    if (!value) return 0; // Return 0 if value is null or undefined
+    const formattedValue = value.replace(/\./g, ''); // Remove dots
+    return parseInt(formattedValue, 10); // Parse as integer
+};
+
 export default async function handler(req, res) {
     // Run CORS middleware
     await runMiddleware(req, res, cors);
@@ -33,8 +40,8 @@ export default async function handler(req, res) {
             const noticiaResult = await db.collection('noticias').insertOne({
                 noticia_id: Number(id),
                 tipo_PV: tipoPVA,
-                valoracion: Number(valoracion),
-                valoracion_establecida: parseInt(valoracion_establecida),
+                valoracion: (typeof valoracion === 'string') ? formatToInt(valoracion) : valoracion,
+                valoracion_establecida: (typeof valoracion === 'string') ? formatToInt(valoracion_establecida) : valoracion_establecida,
                 noticia_fecha: fechaWithDefault,
                 prioridad,
                 comercial_noticia: comercial,
