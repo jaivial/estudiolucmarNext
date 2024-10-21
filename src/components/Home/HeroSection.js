@@ -42,7 +42,7 @@ const HeroSection = ({ initialUserName, tasksSSR, allTasksSSR, datesWithComplete
             </div>
             <div id="home-title" className="flex flex-col items-center justify-center w-full h-auto pb-16">
                 <p className="text-4xl font-bold text-center animate-fade-in-up">Bienvenido a</p>
-                <h1 className="animate-fade-in-up-delayed text-5xl font-sans font-extrabold text-transparent bg-clip-text bg-gradient-to-br from-sky-800 via-sky-600 to-sky-300 inline-block">Lucmar Cloud</h1>
+                <h1 className="animate-fade-in-up-delayed text-5xl font-sans font-extrabold text-transparent bg-clip-text bg-gradient-to-br from-sky-800 via-sky-600 to-sky-300 inline-block">Estudio Lucmar</h1>
             </div>
             <CalendarApp tasksSSR={tasksSSR} allTasksSSR={allTasksSSR} datesWithCompletedTasks={datesWithCompletedTasks} datesWithIncompleteTasks={datesWithIncompleteTasks} admin={admin} setModalAsignarTarea={setModalAsignarTarea} />
         </div>
