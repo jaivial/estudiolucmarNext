@@ -210,7 +210,6 @@ export default async function handler(req, res) {
                         });
                 }
 
-
                 if (result.nestedescaleras) {
                     result.nestedescaleras = result.nestedescaleras.map(escalera => ({
                         ...escalera,
@@ -230,6 +229,15 @@ export default async function handler(req, res) {
                                 })
                             : []
                     }));
+                }
+
+                // Exclude the building if no nestedinmuebles or nestedescaleras have valid matches
+                const hasValidNestedInmuebles =
+                    (result.nestedinmuebles && result.nestedinmuebles.length > 0) ||
+                    (result.nestedescaleras && result.nestedescaleras.some(escalera => escalera.nestedinmuebles && escalera.nestedinmuebles.length > 0));
+
+                if (!hasValidNestedInmuebles) {
+                    return false;  // Exclude this result
                 }
             } else {
                 // Attach noticia to result if available
@@ -275,6 +283,7 @@ export default async function handler(req, res) {
                     }));
                 }
             }
+
 
 
 
