@@ -393,6 +393,7 @@ const ClientesAsociados = ({ setFilteredClientes, setClientesAsociadosInmueble, 
                 fetchClientesAsociados();
                 setEditClienteAsociado(null);
                 setFetchClientPhoneNumberRefreshKey(setFetchClientPhoneNumberRefreshKey + 1);
+                setRefreshMatchingClientesEncargos(refreshMatchingClientesEncargos + 1);
                 setEditClienteAsociadoModalOpen(false);
                 setLocalizadoRefreshKey(localizadoRefreshKey + 1);
                 fetchClientesEncargos();
