@@ -49,29 +49,30 @@ export default async function handler(req, res) {
             const inmueble = await db.collection('inmuebles').findOne({ id: encargoID });
 
             if (inmueble) {
-                // Update the fields if the inmueble is found
+                // Update the fields if the inmueble is found at the top level
                 await db.collection('inmuebles').updateOne(
                     { id: encargoID },
                     { $set: { noticiastate: false, encargostate: false } }
                 );
             } else {
-                // If not found, perform a search in nested arrays
-                const query = { tipoagrupacion: 2 };
-                const updateOperation = {
-                    $set: { "nestedinmuebles.$[item].noticiastate": false, "nestedinmuebles.$[item].encargostate": false }
-                };
-
-                // Look for nestedinmuebles
-                const result = await db.collection('inmuebles').updateOne(
-                    query,
-                    updateOperation,
-                    { arrayFilters: [{ "item.id": encargoID }] }
+                // If not found, perform a search in nestedinmuebles
+                let result = await db.collection('inmuebles').updateOne(
+                    { "nestedinmuebles.id": encargoID },  // Query where nestedinmuebles contains encargoID
+                    {
+                        $set: {
+                            "nestedinmuebles.$[item].noticiastate": false,
+                            "nestedinmuebles.$[item].encargostate": false
+                        }
+                    },
+                    {
+                        arrayFilters: [{ "item.id": encargoID }]  // Filter to match the item with encargoID
+                    }
                 );
 
+                // If not found in nestedinmuebles, look in nestedescaleras.nestedinmuebles
                 if (result.matchedCount === 0) {
-                    // If still not found, look into nestedescaleras.nestedinmuebles
-                    await db.collection('inmuebles').updateOne(
-                        query,
+                    result = await db.collection('inmuebles').updateOne(
+                        { "nestedescaleras.nestedinmuebles.id": encargoID },  // Query where nestedinmuebles inside nestedescaleras contains encargoID
                         {
                             $set: {
                                 "nestedescaleras.$[escalera].nestedinmuebles.$[item].noticiastate": false,
@@ -80,13 +81,20 @@ export default async function handler(req, res) {
                         },
                         {
                             arrayFilters: [
-                                { "escalera.nestedinmuebles.id": encargoID },
-                                { "item.id": encargoID }
+                                { "escalera.nestedinmuebles.id": encargoID },  // Filter to match the escalera's nestedinmuebles
+                                { "item.id": encargoID }  // Filter to match the nestedinmueble with encargoID
                             ]
                         }
                     );
                 }
+
+                // If no match found in either case, handle the error or fallback logic
+                if (result.matchedCount === 0) {
+                    // Handle the case where no document or nested document was found
+                    return res.status(404).json({ message: 'Inmueble not found in nested arrays' });
+                }
             }
+
 
 
             // UPDATE PEDIDO STATE

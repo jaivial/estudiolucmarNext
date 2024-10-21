@@ -36,11 +36,31 @@ const DPVComponent = ({ isOpen, setDPVModalOpen, inmuebleId, DPVboolean, setDPVb
     ];
 
     const accionDPVOptions = [
-        { label: "En acción", value: "En acción" },
+        { label: "Ir a dirección", value: "Ir a dirección" },
         { label: "En nota simple", value: "En nota simple" },
         { label: "A espera", value: "A espera" },
         { label: "Visita", value: "Visita" },
     ];
+
+    // Handler for input change
+    const handleInputChange = (field, value) => {
+        const formattedValue = formatNumber(value);
+        setDPVInfo(prevState => ({
+            ...prevState,
+            [field]: formattedValue
+        }));
+    };
+
+
+    // Function to format number with thousands separator
+    const formatNumber = (value) => {
+        let numericValue = value.replace(/\./g, '').replace('€', '').trim(); // Remove dots and euro sign
+        if (!isNaN(numericValue) && numericValue !== '') {
+            return new Intl.NumberFormat('de-DE').format(numericValue); // Format with dot as thousand separator
+        }
+        return numericValue; // Return raw value if it's not a number
+    };
+
 
     const showToast = (message, backgroundColor) => {
         Toastify({
@@ -346,25 +366,33 @@ const DPVComponent = ({ isOpen, setDPVModalOpen, inmuebleId, DPVboolean, setDPVb
                             />
                         </Form.Group>
 
-                        {/* Evaluación estimada */}
-                        <Form.Group style={{ width: '95%', justifyContent: 'center', display: 'flex', flexDirection: 'column' }}>
-                            <Form.ControlLabel>Valoracion estimada</Form.ControlLabel>
-                            <InputNumber
-                                value={DPVInfo.valoracionEstimada}
-                                onChange={(value) => setDPVInfo(prevState => ({ ...prevState, valoracionEstimada: value }))}
-                                max={5000000000}
-                                min={0}
-                            />
-                        </Form.Group>
+
                         {/* PRECIO ACTUAL */}
                         <Form.Group style={{ width: '95%', justifyContent: 'center', display: 'flex', flexDirection: 'column' }}>
                             <Form.ControlLabel>Precio actual</Form.ControlLabel>
-                            <InputNumber
-                                value={DPVInfo.precioActual}
-                                onChange={(value) => setDPVInfo(prevState => ({ ...prevState, precioActual: value }))}
-                                max={5000000000}
-                                min={0}
-                            />
+                            <div style={{ position: 'relative', width: '100%' }}>
+                                <Input
+                                    value={DPVInfo.precioActual.toLocaleString('es-ES')}
+                                    onChange={(value) => handleInputChange('precioActual', value)}
+                                    placeholder="0"
+                                    style={{ paddingRight: '30px' }}
+                                />
+                                <span style={{ position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)' }}>€</span>
+                            </div>
+                        </Form.Group>
+
+                        {/* EVALUACIÓN ESTIMADA */}
+                        <Form.Group style={{ width: '95%', justifyContent: 'center', display: 'flex', flexDirection: 'column' }}>
+                            <Form.ControlLabel>Valoración estimada</Form.ControlLabel>
+                            <div style={{ position: 'relative', width: '100%' }}>
+                                <Input
+                                    value={DPVInfo.valoracionEstimada.toLocaleString('es-ES')}
+                                    onChange={(value) => handleInputChange('valoracionEstimada', value)}
+                                    placeholder="0"
+                                    style={{ paddingRight: '30px' }}
+                                />
+                                <span style={{ position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)' }}>€</span>
+                            </div>
                         </Form.Group>
 
                         <Form.Group style={{ width: '95%', justifyContent: 'center', display: 'flex', flexDirection: 'column' }}>
@@ -449,26 +477,34 @@ const DPVComponent = ({ isOpen, setDPVModalOpen, inmuebleId, DPVboolean, setDPVb
                             />
                         </Form.Group>
 
-                        {/* Evaluación estimada */}
-                        <Form.Group style={{ width: '95%', justifyContent: 'center', display: 'flex', flexDirection: 'column' }}>
-                            <Form.ControlLabel>Valoración estimada</Form.ControlLabel>
-                            <InputNumber
-                                value={DPVInfo.valoracionEstimada}
-                                onChange={(value) => setDPVInfo(prevState => ({ ...prevState, valoracionEstimada: value }))}
-                                max={5000000000}
-                                min={0}
-                            />
-                        </Form.Group>
 
                         {/* PRECIO ACTUAL */}
                         <Form.Group style={{ width: '95%', justifyContent: 'center', display: 'flex', flexDirection: 'column' }}>
                             <Form.ControlLabel>Precio actual</Form.ControlLabel>
-                            <InputNumber
-                                value={DPVInfo.precioActual}
-                                onChange={(value) => setDPVInfo(prevState => ({ ...prevState, precioActual: value }))}
-                                max={5000000000}
-                                min={0}
-                            />
+                            <div style={{ position: 'relative', width: '100%' }}>
+                                <Input
+                                    value={DPVInfo.precioActual}
+                                    onChange={(value) => handleInputChange('precioActual', value)}
+                                    placeholder="0"
+                                    style={{ paddingRight: '30px' }}
+                                />
+                                <span style={{ position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)' }}>€</span>
+                            </div>
+                        </Form.Group>
+
+
+                        {/* EVALUACIÓN ESTIMADA */}
+                        <Form.Group style={{ width: '95%', justifyContent: 'center', display: 'flex', flexDirection: 'column' }}>
+                            <Form.ControlLabel>Valoración estimada</Form.ControlLabel>
+                            <div style={{ position: 'relative', width: '100%' }}>
+                                <Input
+                                    value={DPVInfo.valoracionEstimada}
+                                    onChange={(value) => handleInputChange('valoracionEstimada', value)}
+                                    placeholder="0"
+                                    style={{ paddingRight: '30px' }}
+                                />
+                                <span style={{ position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)' }}>€</span>
+                            </div>
                         </Form.Group>
 
                         <Form.Group style={{ width: '95%', justifyContent: 'center', display: 'flex', flexDirection: 'column' }}>

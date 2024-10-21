@@ -393,6 +393,7 @@ const ClientesAsociados = ({ setFilteredClientes, setClientesAsociadosInmueble, 
                 fetchClientesAsociados();
                 setEditClienteAsociado(null);
                 setFetchClientPhoneNumberRefreshKey(setFetchClientPhoneNumberRefreshKey + 1);
+                setRefreshMatchingClientesEncargos(refreshMatchingClientesEncargos + 1);
                 setEditClienteAsociadoModalOpen(false);
                 setLocalizadoRefreshKey(localizadoRefreshKey + 1);
                 fetchClientesEncargos();
@@ -407,7 +408,7 @@ const ClientesAsociados = ({ setFilteredClientes, setClientesAsociadosInmueble, 
 
 
     return (
-        <Accordion defaultActiveKey={0} className={`w-full  ${screenWidth >= 640 ? 'm-0' : ''} border-1 border-gray-300 bg-slate-50 rounded-2xl shadow-lg`} style={{ borderRadius: '1rem' }}>
+        <Accordion defaultActiveKey={0} className={`w-full  ${screenWidth >= 640 ? 'm-0' : ''} border-1 border-gray-300 bg-slate-50`} style={{ borderRadius: '1rem' }}>
             <Accordion.Panel header="Clientes Asociados" eventKey={0} defaultExpanded={true} style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                 <Modal open={open} onClose={handleClose} style={{ backgroundColor: 'rgba(0,0,0,0.15)', borderRadius: '10px', padding: '0px' }} backdrop="static">
                     <Modal.Header>

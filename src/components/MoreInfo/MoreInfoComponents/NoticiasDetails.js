@@ -14,7 +14,7 @@ import { FaHandHoldingDollar } from 'react-icons/fa6';
 import { TbUrgent } from 'react-icons/tb';
 import { FaUserTie } from 'react-icons/fa';
 import { FiEdit } from 'react-icons/fi';
-import { Accordion, Panel, Modal, Button, InputNumber, DatePicker, CustomProvider, SelectPicker, InputPicker } from 'rsuite'; // Import Accordion and Panel from rsuite
+import { Accordion, Panel, Modal, Button, InputNumber, DatePicker, CustomProvider, SelectPicker, InputPicker, Input } from 'rsuite'; // Import Accordion and Panel from rsuite
 import esES from 'rsuite/locales/es_ES';
 import { format } from 'date-fns';
 
@@ -64,6 +64,22 @@ const NoticiasDetails = ({ id, data, setOnAddNoticiaRefreshKey, onAddNoticiaRefr
     const [draggableValue, setDraggableValue] = useState(0); // 0: Baja, 1: Media, 2: Alta
     const [isEditing, setIsEditing] = useState(false); // New state for editing
     const [currentNoticiaId, setCurrentNoticiaId] = useState(null); // New state for current noticia ID
+
+    // Handler for input change
+    const handleInputChange = (value) => {
+        const formattedValue = formatNumber(value);
+        setValoracionPrice(formattedValue);
+    };
+
+
+    // Function to format number with thousands separator
+    const formatNumber = (value) => {
+        let numericValue = value.replace(/\./g, '').replace('€', '').trim(); // Remove dots and euro sign
+        if (!isNaN(numericValue) && numericValue !== '') {
+            return new Intl.NumberFormat('de-DE').format(numericValue); // Format with dot as thousand separator
+        }
+        return numericValue; // Return raw value if it's not a number
+    };
 
 
     const fetchNoticias = async () => {
@@ -391,13 +407,15 @@ const NoticiasDetails = ({ id, data, setOnAddNoticiaRefreshKey, onAddNoticiaRefr
                                     {valoracion === 'Con Valoración' && (
                                         <div className="flex flex-col gap-2">
                                             <p className="text-sm text-gray-600 -mb-2 pl-1">Precio de la Valoración</p>
-                                            <InputNumber
-                                                min={0}
-                                                value={valoracionPrice}
-                                                onChange={(value) => setValoracionPrice(value)}
-                                                className="w-full"
-                                                placeholder="Introduce un precio"
-                                            />
+                                            <div style={{ position: 'relative', width: '100%' }}>
+                                                <Input
+                                                    value={valoracionPrice}
+                                                    onChange={(value) => handleInputChange(value)}
+                                                    className="w-full"
+                                                    placeholder="0"
+                                                />
+                                                <span style={{ position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)' }}>€</span>
+                                            </div>
                                             <p className="text-sm text-gray-600 -mb-2 pl-1">Fecha de la Valoración</p>
                                             <DatePicker
                                                 value={valoracionDateTime ? new Date(valoracionDateTime) : new Date()}

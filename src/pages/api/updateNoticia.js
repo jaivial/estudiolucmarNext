@@ -1,7 +1,12 @@
 import cors, { runMiddleware } from '../../utils/cors';
 import clientPromise from '../../lib/mongodb';
+// Helper function to remove dots from a string and parse it as an integer
+const formatToInt = (value) => {
+    if (!value) return 0; // Return 0 if value is null or undefined
+    const formattedValue = value.replace(/\./g, ''); // Remove dots
+    return parseInt(formattedValue, 10); // Parse as integer
+};
 export default async function handler(req, res) {
-
     // Run CORS middleware
     await runMiddleware(req, res, cors);
 
@@ -38,7 +43,7 @@ export default async function handler(req, res) {
                 prioridad: prioridad || null,
                 tipo_PV: tipoPVA || null,
                 valoracion: Number(valoracion),
-                valoracion_establecida: parseInt(valoraciontext) || null,
+                valoracion_establecida: (typeof valoraciontext === 'string') ? formatToInt(valoraciontext) : valoraciontext,
                 comercial_noticia: comercial || null,
                 valoracionDate: fechaValoracion || null
             };

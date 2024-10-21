@@ -486,13 +486,21 @@ const EncargosDetails = ({ fetchTransacciones, fetchClientes, setClienteOptions,
         }
     };
 
+    // Handler for input change
+    const handleInputChange = (value) => {
+        const formattedValue = formatNumber(value);
+        setPrecio(formattedValue);
+    };
 
-    useEffect(() => {
-        console.log('encargos', selectedClienteEncargo);
-    }, [selectedClienteEncargo]);
-    useEffect(() => {
-        console.log('encargos', selectedAsesor);
-    }, [selectedAsesor]);
+
+    // Function to format number with thousands separator
+    const formatNumber = (value) => {
+        let numericValue = value.replace(/\./g, '').replace('€', '').trim(); // Remove dots and euro sign
+        if (!isNaN(numericValue) && numericValue !== '') {
+            return new Intl.NumberFormat('de-DE').format(numericValue); // Format with dot as thousand separator
+        }
+        return numericValue; // Return raw value if it's not a number
+    };
 
     return (
         data.inmueble.noticiastate === true && (
@@ -919,14 +927,17 @@ const EncargosDetails = ({ fetchTransacciones, fetchClientes, setClienteOptions,
                                                 Precio
                                             </label>
                                             <div className="flex items-center w-full">
-                                                <Input
-                                                    id="precio"
-                                                    min={0}
-                                                    value={precio + ' ' + '€'}
-                                                    onChange={handlePrecioChange}
-                                                    placeholder="Introduce el precio"
-                                                    className="w-full"
-                                                />
+                                                <div style={{ position: 'relative', width: '100%' }}>
+                                                    <Input
+                                                        id="precio"
+                                                        min={0}
+                                                        value={precio.toLocaleString('es-ES')}
+                                                        onChange={(value) => handleInputChange(value)}
+                                                        placeholder="Introduce el precio"
+                                                        className="w-full"
+                                                    />
+                                                    <span style={{ position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)' }}>€</span>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>

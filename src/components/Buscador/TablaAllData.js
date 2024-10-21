@@ -2005,6 +2005,7 @@ const Table = ({ parentsEdificioProps, admin, screenWidth, loadingLoader }) => {
 
                 {item.nestedescaleras && item.nestedescaleras.length > 0 &&
                     item.nestedescaleras.map((child) => (
+                        child.nestedinmuebles.length > 0 &&
                         <div
                             key={child.id}
                             className={`relative border border-gray-400 mb-0 p-0 rounded-md shadow-xl flex items-center flex-col w-full bg-gray-100 transition-all duration-[1000ms] ease-in-out`}
@@ -2413,9 +2414,9 @@ const Table = ({ parentsEdificioProps, admin, screenWidth, loadingLoader }) => {
                                         ) : (
 
 
-                                            Array.isArray(data) && data.length > 0 ? (
+                                            (Array.isArray(data) && data.length > 0 && data !== null) ? (
                                                 data.map((item) =>
-                                                    item.tipoagrupacion === 1 ? (
+                                                    (item !== null && item.tipoagrupacion === 1) ? (
                                                         <div
                                                             key={item.id}
                                                             className={`relative px-2 py-4 border border-zinc-400 gap-1 rounded-md h-[4.5rem] flex items-center flex-row w-full ${item.dataUpdateTime === 'green'
@@ -2704,7 +2705,7 @@ const Table = ({ parentsEdificioProps, admin, screenWidth, loadingLoader }) => {
                                                             </div>
                                                         </div>
                                                     ) : (
-                                                        item.tipoagrupacion === 2 && (
+                                                        item !== null && item.tipoagrupacion === 2 ? (
                                                             <div
                                                                 className={`edificioagrupacion relative border border-gray-400 mb-0 p-0 rounded-md shadow-xl flex items-center flex-col w-full bg-gray-100 transition-all duration-300 ease-in-out`}
                                                             >
@@ -2752,9 +2753,15 @@ const Table = ({ parentsEdificioProps, admin, screenWidth, loadingLoader }) => {
                                                                     </div>
                                                                 </div>
                                                             </div>
+
+                                                        ) : (
+                                                            <div className="flex mt-4 pb-4 w-full flex-row items-center justify-center">
+                                                                <p>No hay resultados</p>
+                                                            </div>
                                                         )
-                                                    ),
+                                                    )
                                                 )
+
                                             ) : (
                                                 <div className="flex mt-4 pb-4 w-full flex-row items-center justify-center">
                                                     <p>No hay resultados</p>
