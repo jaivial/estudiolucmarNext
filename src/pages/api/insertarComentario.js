@@ -54,10 +54,14 @@ export default async function handler(req, res) {
 
             console.log('insertResult', insertResult);
 
-            if (insertResult && (tipo === 'Cita' || tipo === 'Llamada') && fecha && hora) {
+            if (insertResult && (tipo === 'Cita' || tipo === 'Llamada' || tipo === 'Contacto Directo') && fecha && hora) {
                 console.log('insertando tarea');
                 const tasksCollection = db.collection('tasks');
-                const taskDescription = tipo === 'Cita' ? `Cita: ${comentario}` : `Llamada: ${comentario} ${telefono}`;
+                const taskDescription = tipo === 'Cita'
+                    ? `Cita: ${comentario}`
+                    : tipo === 'Llamada'
+                        ? `Llamada: ${comentario} ${telefono}`
+                        : `Contacto Directo: ${comentario}`;
                 const formattedHora = hora ? new Date(hora).toISOString().substring(11, 16) : null;
 
                 const taskInsertResult = await tasksCollection.insertOne({

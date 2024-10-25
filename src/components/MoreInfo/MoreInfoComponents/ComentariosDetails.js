@@ -218,6 +218,10 @@ const ComentariosDetails = ({ data, fetchClientPhoneNumberRefreshKey, screenWidt
         setEditCommentText(text);
     };
 
+    useEffect(() => {
+        console.log('comentario id', editingCommentId);
+    }, [editingCommentId]);
+
     const handleUpdateComment = async () => {
         try {
             const response = await axios.put('/api/updateComentEdit', {
