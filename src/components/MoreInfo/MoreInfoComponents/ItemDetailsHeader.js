@@ -17,16 +17,14 @@ import 'react-loading-skeleton/dist/skeleton.css'
 import '../moreinfoglobal.css'
 
 
-const ItemDetailsHeader = ({ inmuebleId, onClose, address, setImages, setIsSliderLoading, isVisible, setIsVisible, data, onAddEdtMoreInfoRefreshKey, setOnAddEdtMoreInfoRefreshKey, DPVboolean, setDPVboolean, admin, onAddDeleteDPVRefreshKey, setOnAddDeleteDPVRefreshKey, localizado, setLocalizado, direccion, nombre, setNombre, apellido, setApellido, inmuebles_asociados_inquilino, setInmueblesAsociadosInquilino, inmuebles_asociados_propietario, setInmueblesAsociadosPropietario, inmuebles_asociados_informador, setInmueblesAsociadosInformador, localizadoRefreshKey, setLocalizadoRefreshKey }) => {
+const ItemDetailsHeader = ({ loadImages, images, uploadedImages, setUploadedImages, inmuebleId, onClose, address, setImages, setIsSliderLoading, isVisible, setIsVisible, data, onAddEdtMoreInfoRefreshKey, setOnAddEdtMoreInfoRefreshKey, DPVboolean, setDPVboolean, admin, onAddDeleteDPVRefreshKey, setOnAddDeleteDPVRefreshKey, localizado, setLocalizado, direccion, nombre, setNombre, apellido, setApellido, inmuebles_asociados_inquilino, setInmueblesAsociadosInquilino, inmuebles_asociados_propietario, setInmueblesAsociadosPropietario, inmuebles_asociados_informador, setInmueblesAsociadosInformador, localizadoRefreshKey, setLocalizadoRefreshKey }) => {
     const [selectedFiles, setSelectedFiles] = useState([]);
     const [uploadStatus, setUploadStatus] = useState('');
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const [uploadedImages, setUploadedImages] = useState([]);
     const [hoveredSlot, setHoveredSlot] = useState(null);
     const [selectedSlot, setSelectedSlot] = useState(null);
     const [isUploading, setIsUploading] = useState(false);
     const [isProcessing, setIsProcessing] = useState(false);
-    const modalRef = useRef(null);
     const containerRef = useRef(null);
     const getFileRef = useRef(null);
     const buttonUploadRef = useRef(null);
@@ -36,7 +34,6 @@ const ItemDetailsHeader = ({ inmuebleId, onClose, address, setImages, setIsSlide
     const [isImageValid, setIsImageValid] = useState(true);
     const [dpvModalOpen, setDPVModalOpen] = useState(false);
     const [phoneModalOpen, setPhoneModalOpen] = useState(false); // State for PhoneModal
-    const [loadingRenderSlots, setLoadingRenderSlots] = useState(true);
 
     const closeModal = () => setIsModalOpen(false);
 
@@ -45,29 +42,8 @@ const ItemDetailsHeader = ({ inmuebleId, onClose, address, setImages, setIsSlide
     };
 
     useEffect(() => {
-        const loadImages = async () => {
-            try {
-                const response = await axios.get('/api/getImages', {
-                    params: { inmueble_id: inmuebleId },
-                });
-                if (response.data.status === 'success') {
-                    const images = response.data.images || [];
-                    setUploadedImages(images);
-                    setImages(images); // Pass the images to the parent component
-                } else {
-                    console.error('Error fetching images:', response.data.message);
-                }
-            } catch (error) {
-                console.error('Error fetching images:', error);
-            } finally {
-                setIsSliderLoading(false);
-            }
-        };
-
-        if (inmuebleId) {
-            loadImages();
-        }
-    }, [inmuebleId, getImageRefreshKey]);
+        loadImages();
+    }, [getImageRefreshKey]);
 
     const handleFileChange = async (event) => {
         setSelectedFiles(event.target.files);

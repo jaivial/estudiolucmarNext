@@ -207,11 +207,6 @@ const ClientesAsociados = ({ loadingClientesAsociados, setFilteredClientes, setC
     };
 
 
-    useEffect(() => {
-        fetchClientesAsociados();
-    }, [inmuebleId]);
-
-
     const fetchClientes = async () => {
         try {
             const response = await axios.get('/api/fetch_clientes');

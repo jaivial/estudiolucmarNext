@@ -50,13 +50,12 @@ const showToast = (message, backgroundColor) => {
     }).showToast();
 };
 
-const NoticiasDetails = ({ id, data, setOnAddNoticiaRefreshKey, onAddNoticiaRefreshKey, fetchData, currentPage, searchTerm }) => {
+const NoticiasDetails = ({ id, data, setOnAddNoticiaRefreshKey, onAddNoticiaRefreshKey, fetchData, currentPage, searchTerm, fetchNoticias, noticias, setNoticias, fetchAsesores, asesorOptions, setAsesorOptions }) => {
     const [isOpen, setIsOpen] = useState(false);
     const [isPopupOpen, setIsPopupOpen] = useState(false);
-    const [noticias, setNoticias] = useState([]);
     const [tipoVenta, setTipoVenta] = useState('');
     const [selectedAsesor, setSelectedAsesor] = useState(null);
-    const [asesorOptions, setAsesorOptions] = useState([]);
+
     const [valoracion, setValoracion] = useState('');
     const [valoracionPrice, setValoracionPrice] = useState('');
     const [valoracionDateTime, setValoracionDateTime] = useState('');
@@ -81,56 +80,6 @@ const NoticiasDetails = ({ id, data, setOnAddNoticiaRefreshKey, onAddNoticiaRefr
         return numericValue; // Return raw value if it's not a number
     };
 
-
-    const fetchNoticias = async () => {
-        if (data.inmueble.noticiastate === 0) {
-            return;
-        } else {
-            try {
-                const parsedInmuebleId = parseInt(id);
-                const response = await axios.get('/api/fetchAllNoticias', {
-                    params: { id: parsedInmuebleId },
-                });
-
-                if (response.data.status === 'success') {
-                    const noticia = response.data.noticia; // Get the noticia object
-                    if (noticia) {
-                        // Wrap the single noticia object in an array
-                        setNoticias([noticia]);
-                    } else {
-                        console.error('No noticia data available');
-                        setNoticias([]); // Set to empty array if there's no noticia
-                    }
-                }
-            } catch (error) {
-                console.error('Error fetching noticias:', error);
-                setNoticias([]); // Set to empty array on error
-            }
-        }
-    };
-
-    const fetchAsesores = async () => {
-        try {
-            const response = await axios.get('/api/fetchAsesores');
-            const asesores = response.data.asesores;
-            if (Array.isArray(asesores)) {
-                setAsesorOptions(
-                    asesores.map((user) => ({
-                        value: `${user.nombre} ${user.apellido}`,
-                        label: `${user.nombre} ${user.apellido}`,
-                    })),
-                );
-            } else {
-                console.error('Invalid data format for asesores');
-            }
-        } catch (error) {
-            console.error('Error fetching asesores:', error);
-        }
-    };
-    useEffect(() => {
-        fetchNoticias();
-        fetchAsesores();
-    }, [data]);
 
     const handleSliderChange = (value) => {
         setDraggableValue(value);
@@ -212,15 +161,6 @@ const NoticiasDetails = ({ id, data, setOnAddNoticiaRefreshKey, onAddNoticiaRefr
             showToast('Error al añadir/actualizar la noticia', 'linear-gradient(to right bottom, #c62828, #b92125, #ac1a22, #a0131f, #930b1c)');
         }
     };
-
-    useEffect(() => {
-        console.log('noticias', noticias);
-    }, [noticias]);
-
-    useEffect(() => {
-        console.log('selectedAsesor', selectedAsesor);
-    }, [selectedAsesor]);
-
 
 
     const handleEditNoticia = (noticia) => {

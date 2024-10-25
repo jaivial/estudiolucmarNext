@@ -13,14 +13,14 @@ const FinalizarEncargo = ({ screenWidth, fetchTransacciones, fetchClientesAsocia
     // Lógica para calcular la comisión del vendedor
     const calcularComisionVendedor = () => {
         let comisionVendedor = 0;
-        if (encargos.length > 0 && encargos[0].tipo_comision_encargo === 'Porcentaje') {
-            if (encargos[0].precio_2) {
-                comisionVendedor = (encargos[0].precio_2 * encargos[0].comision_encargo) / 100;
+        if (encargos.length > 0 && encargos[0]?.tipo_comision_encargo === 'Porcentaje') {
+            if (encargos[0]?.precio_2) {
+                comisionVendedor = (encargos[0]?.precio_2 * encargos[0]?.comision_encargo) / 100;
             } else {
-                comisionVendedor = (encargos[0].precio_1 * encargos[0].comision_encargo) / 100;
+                comisionVendedor = (encargos[0]?.precio_1 * encargos[0]?.comision_encargo) / 100;
             }
-        } else if (encargos.length > 0 && encargos[0].tipo_comision_encargo === 'Fijo') {
-            comisionVendedor = encargos[0].comision_encargo;
+        } else if (encargos.length > 0 && encargos[0]?.tipo_comision_encargo === 'Fijo') {
+            comisionVendedor = encargos[0]?.comision_encargo;
         }
         return comisionVendedor;
     };
@@ -28,12 +28,12 @@ const FinalizarEncargo = ({ screenWidth, fetchTransacciones, fetchClientesAsocia
     // Lógica para calcular la comisión del pedido (comisiónComprador)
     const calcularComisionPedido = () => {
         let comisionPedido = 0;
-        if (encargos.length > 0 && encargos[0].comisionComprador === 'Porcentaje') {
-            comisionPedido = encargos[0].precio_2
-                ? (encargos[0].precio_2 * encargos[0].comisionCompradorValue) / 100
-                : (encargos[0].precio_1 * encargos[0].comisionCompradorValue) / 100;
-        } else if (encargos.length > 0 && encargos[0].comisionComprador === 'Fijo') {
-            comisionPedido = encargos[0].comisionCompradorValue;
+        if (encargos.length > 0 && encargos[0]?.comisionComprador === 'Porcentaje') {
+            comisionPedido = encargos[0]?.precio_2
+                ? (encargos[0]?.precio_2 * encargos[0]?.comisionCompradorValue) / 100
+                : (encargos[0]?.precio_1 * encargos[0]?.comisionCompradorValue) / 100;
+        } else if (encargos.length > 0 && encargos[0]?.comisionComprador === 'Fijo') {
+            comisionPedido = encargos[0]?.comisionCompradorValue;
         }
         return comisionPedido;
     };

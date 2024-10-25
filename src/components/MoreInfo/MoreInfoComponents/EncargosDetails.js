@@ -51,10 +51,10 @@ const showToast = (message, backgroundColor) => {
     }).showToast();
 };
 
-const EncargosDetails = ({ fetchTransacciones, fetchClientes, setClienteOptions, clienteOptions, refreshMatchingClientesEncargos, fetchClientesAsociados, data, fetchInmuebleMoreInfo, fetchData, currentPage, searchTerm, screenWidth }) => {
+const EncargosDetails = ({ fetchEncargos, encargoState, setEncargoState, tiempoExclusiva, setTiempoExclusiva, tipo_encargo, setTipo_encargo, encargos, setEncargos, precio_2, setPrecio_2, precio_1, setPrecio_1, selectedClienteEncargo, setSelectedClienteEncargo, fetchTransacciones, fetchClientes, setClienteOptions, clienteOptions, refreshMatchingClientesEncargos, fetchClientesAsociados, data, fetchInmuebleMoreInfo, fetchData, currentPage, searchTerm, screenWidth }) => {
     const [isOpen, setIsOpen] = useState(false);
     const [isPopupOpen, setIsPopupOpen] = useState(false);
-    const [encargos, setEncargos] = useState([]);
+
     const [tipoEncargo, setTipoEncargo] = useState('');
     const [selectedAsesor, setSelectedAsesor] = useState(null);
     const [asesorOptions, setAsesorOptions] = useState([]);
@@ -69,10 +69,6 @@ const EncargosDetails = ({ fetchTransacciones, fetchClientes, setClienteOptions,
     const [selectedCliente, setSelectedCliente] = useState(null);
     const [matchingCliente, setMatchingCliente] = useState([null]);
     const [nombreCliente, setNombreCliente] = useState('');
-    const [selectedClienteEncargo, setSelectedClienteEncargo] = useState(null);
-    const [precio_1, setPrecio_1] = useState('');
-    const [precio_2, setPrecio_2] = useState('');
-    const [tipo_encargo, setTipo_encargo] = useState('');
     const [matchingClientesEncargos, setMatchingClientesEncargos] = useState([]);
     const [loading, setLoading] = useState(false);
     const [verMásClienteEncargo, setVerMásClienteEncargo] = useState(false);
@@ -80,17 +76,12 @@ const EncargosDetails = ({ fetchTransacciones, fetchClientes, setClienteOptions,
     const [lodingMoreInfoClienteMatchingEncargo, setLodingMoreInfoClienteMatchingEncargo] = useState(false);
     const [isBajadaModalOpen, setIsBajadaModalOpen] = useState(false); // State for the modal
     const [newPrecio, setNewPrecio] = useState(''); // State for the new price
-    const [tiempoExclusiva, setTiempoExclusiva] = useState(null); // State for the new price
     const [tiempoExclusivaCounter, setTiempoExclusivaCounter] = useState(''); // State for the new price
     const [comisionComprador, setComisionComprador] = useState(''); // State for the new price
     const [comisionCompradorValue, setComisionCompradorValue] = useState(null); // State for the new price
     const [loadingTiempoExclusiva, setLoadingTiempoExclusiva] = useState(false);
-    const [encargoState, setEncargoState] = useState(null);
 
 
-    useEffect(() => {
-        console.log('selectedAsesor', selectedAsesor);
-    }, [selectedAsesor]);
 
 
     function toThousands(value) {
@@ -170,40 +161,6 @@ const EncargosDetails = ({ fetchTransacciones, fetchClientes, setClienteOptions,
     };
 
 
-    const fetchEncargos = async () => {
-        if (data.inmueble.encargostate === false) {
-            return;
-        } else {
-            try {
-                const inmuebleId = data.inmueble.id;
-                const response = await axios.get('/api/encargosFetch', {
-                    params: { id: inmuebleId },
-                });
-                if (response.data !== null) {
-                    const encargo = response.data;
-                    console.log('encargo', encargo);
-                    if (encargo.fullCliente) {
-                        setSelectedClienteEncargo(encargo.fullCliente.value);
-                    }
-                    setPrecio_1(encargo.precio_1);
-                    setPrecio_2(encargo.precio_2);
-                    setTipo_encargo(encargo.tipo_encargo);
-                    if (encargo) {
-                        setEncargos([encargo]);
-
-                    } else {
-                        console.error('No encargo data available');
-                        setEncargos([]);
-                    }
-                    setTiempoExclusiva(encargo.tiempo_exclusiva);
-                    setEncargoState(data.inmueble.encargostate);
-                }
-            } catch (error) {
-                console.error('Error fetching encargos:', error);
-                setEncargos([]);
-            }
-        }
-    };
 
 
     const fetchAsesores = async () => {
@@ -241,7 +198,6 @@ const EncargosDetails = ({ fetchTransacciones, fetchClientes, setClienteOptions,
 
 
     useEffect(() => {
-        fetchEncargos();
         fetchAsesores();
         fetchClientes();
     }, [data]);
@@ -259,7 +215,7 @@ const EncargosDetails = ({ fetchTransacciones, fetchClientes, setClienteOptions,
         setSelectedCliente(null);
         setIsPopupOpen(false);
         if (isEditing) {
-            setSelectedClienteEncargo(encargos[0].fullCliente.value);
+            setSelectedClienteEncargo(encargos[0]?.fullCliente.value);
         }
 
     };
@@ -300,7 +256,7 @@ const EncargosDetails = ({ fetchTransacciones, fetchClientes, setClienteOptions,
         }
 
         const params = {
-            encargo_id: isEditing ? encargos[0].encargo_id : data.inmueble.id,
+            encargo_id: isEditing ? encargos[0]?.encargo_id : data.inmueble.id,
             tipoEncargo: tipoEncargo,
             comercial: selectedAsesor,
             cliente: selectedCliente || '',
@@ -339,27 +295,27 @@ const EncargosDetails = ({ fetchTransacciones, fetchClientes, setClienteOptions,
     const handleEditEncargo = (encargo, asesorOptions, clienteOptions) => {
 
         // Assuming encargo is the object with the details of the encargo you want to edit
-        setTipoEncargo(encargo[0].tipo_encargo);
+        setTipoEncargo(encargo[0]?.tipo_encargo);
 
-        setPrecio(toThousands(encargo[0].precio_1) || '');
-        setTipoComision(encargo[0].tipo_comision_encargo || '');
-        setComision(encargo[0].comision_encargo || '');
-        setFecha(encargo[0].encargo_fecha || '');
+        setPrecio(toThousands(encargo[0]?.precio_1) || '');
+        setTipoComision(encargo[0]?.tipo_comision_encargo || '');
+        setComision(encargo[0]?.comision_encargo || '');
+        setFecha(encargo[0]?.encargo_fecha || '');
         setIsEditing(true);
-        setCurrentEncargoId(encargo.encargo_id);
+        setCurrentEncargoId(encargo?.encargo_id);
         setIsPopupOpen(true);
-        setComisionComprador(encargo[0].comisionComprador);
-        setComisionCompradorValue(encargo[0].comisionCompradorValue);
-        setTiempoExclusiva(encargo[0].tiempo_exclusiva);
-        setSelectedCliente(encargos[0].fullCliente);
-        setSelectedClienteEncargo(encargos[0].fullCliente);
-        setSelectedAsesor(encargos[0].comercial_encargo);
+        setComisionComprador(encargo[0]?.comisionComprador);
+        setComisionCompradorValue(encargo[0]?.comisionCompradorValue);
+        setTiempoExclusiva(encargo[0]?.tiempo_exclusiva);
+        setSelectedCliente(encargos[0]?.fullCliente);
+        setSelectedClienteEncargo(encargos[0]?.fullCliente);
+        setSelectedAsesor(encargos[0]?.comercial_encargo);
     };
 
     const handleDeleteEncargo = async () => {
 
         try {
-            const encargoIdToDelete = encargos[0].encargo_id;
+            const encargoIdToDelete = encargos[0]?.encargo_id;
 
             // Make DELETE request to API endpoint with encargo_id as a query parameter
             const response = await axios.delete('/api/deleteEncargo', {
@@ -521,12 +477,12 @@ const EncargosDetails = ({ fetchTransacciones, fetchClientes, setClienteOptions,
                                                 <div className="py-2 my-3 flex flex-col items-center gap-2">
                                                     <div className="flex items-center gap-2 flex-col w-full">
                                                         <IoCalendarNumber className="text-gray-900 text-3xl" />
-                                                        <p className="text-base text-gray-950 py-1 text-center">{formatDate(encargos[0].encargo_fecha)}</p>
+                                                        <p className="text-base text-gray-950 py-1 text-center">{formatDate(encargos[0]?.encargo_fecha)}</p>
                                                         <div className="border-b border-gray-300 w-4/6 -mt-1"></div>
                                                     </div>
                                                     <div className="flex items-center gap-2 flex-col w-full">
                                                         <GiSandsOfTime className="text-gray-900 text-4xl" />
-                                                        <p className="text-base text-gray-950 py-0 text-center">Tiempo de exclusiva: <br></br> {formatDate(encargos[0].tiempo_exclusiva)}</p>
+                                                        <p className="text-base text-gray-950 py-0 text-center">Tiempo de exclusiva: <br></br> {formatDate(encargos[0]?.tiempo_exclusiva)}</p>
                                                         <div className='flex flex-col gap-2 items-center bg-slate-200 rounded-md p-4 w-full'>
                                                             <p className='text-center text-gray-950 font-semibold'>Tiempo restante:</p>
                                                             <p className="text-base text-gray-950 py-1 text-center font-semibold w-[100%]">{tiempoExclusivaCounter}</p>
@@ -535,31 +491,31 @@ const EncargosDetails = ({ fetchTransacciones, fetchClientes, setClienteOptions,
                                                     </div>
                                                     <div className="flex items-center gap-2 flex-col w-full">
                                                         <BiSolidPurchaseTag className="text-gray-900 text-3xl" />
-                                                        <p className="text-base text-gray-950 py-1 text-center">{encargos[0].tipo_encargo}</p>
+                                                        <p className="text-base text-gray-950 py-1 text-center">{encargos[0]?.tipo_encargo}</p>
                                                         <div className="border-b border-gray-300 w-4/6 -mt-1"></div>
                                                     </div>
                                                     <div className="flex items-center gap-2 flex-col w-full">
                                                         <FaUserTag className="text-gray-900 text-3xl" />
-                                                        <p className="text-base text-gray-950 py-1 text-center">Cliente: <br /> {encargos[0].fullCliente.label}</p>
+                                                        <p className="text-base text-gray-950 py-1 text-center">Cliente: <br /> {encargos[0]?.fullCliente.label}</p>
                                                         <div className="border-b border-gray-300 w-4/6 -mt-1"></div>
                                                     </div>
                                                     <div className="flex items-center gap-2 flex-col w-full">
                                                         <MdAttachMoney className="text-gray-900 text-3xl" />
-                                                        <p className="text-base text-gray-950 py-1 text-center">Precio: {encargos[0].precio_1.toLocaleString('es-ES', { minimumFractionDigits: 0 })} €</p>
+                                                        <p className="text-base text-gray-950 py-1 text-center">Precio: {encargos[0]?.precio_1.toLocaleString('es-ES', { minimumFractionDigits: 0 })} €</p>
 
-                                                        {encargos[0].precio_2 ? null : <div className="border-b border-gray-300 w-4/6 -mt-1"></div>}
+                                                        {encargos[0]?.precio_2 ? null : <div className="border-b border-gray-300 w-4/6 -mt-1"></div>}
                                                     </div>
-                                                    {encargos[0].precio_2 && encargos[0].precio_2 > 0 && (
+                                                    {encargos[0]?.precio_2 && encargos[0]?.precio_2 > 0 && (
                                                         <div className="flex items-center gap-2 flex-col w-full mt-2">
                                                             <div className='flex flex-row items-center justify-center gap-3 mb-3'>
                                                                 <FaArrowTrendDown className='text-red-600 text-3xl' />
-                                                                <p className="text-base text-red-600 py-1 text-center">{Math.floor(encargos[0].precio_2 - encargos[0].precio_1).toLocaleString('es-ES', { minimumFractionDigits: 0 })} €</p>
+                                                                <p className="text-base text-red-600 py-1 text-center">{Math.floor(encargos[0]?.precio_2 - encargos[0]?.precio_1).toLocaleString('es-ES', { minimumFractionDigits: 0 })} €</p>
                                                             </div>
                                                             <div className='flex flex-row items-center justify-center text-gray-900 text-3xl' onClick={() => setIsBajadaModalOpen(true)}>
                                                                 <MdAttachMoney className="text-3xl cursor-pointer" />
                                                                 <MdKeyboardDoubleArrowDown className="text-3xl cursor-pointer  -ml-2" />
                                                             </div>
-                                                            <p className="text-base text-gray-900 py-1 text-center">Precio reducido: {encargos[0].precio_2} €</p>
+                                                            <p className="text-base text-gray-900 py-1 text-center">Precio reducido: {encargos[0]?.precio_2} €</p>
                                                             <div className="border-b border-gray-300 w-4/6 -mt-1"></div>
                                                         </div>
                                                     )}
@@ -568,37 +524,37 @@ const EncargosDetails = ({ fetchTransacciones, fetchClientes, setClienteOptions,
                                                         <div className="flex items-center gap-2 flex-col w-full bg-orange-100 rounded-xl p-4 ">
                                                             <TbPigMoney className="text-gray-900 text-3xl" />
                                                             <p className="text-base text-gray-950 py-1 text-center">Comisión Vendedor</p>
-                                                            {encargos[0].tipo_comision_encargo === 'Porcentaje' ? (
+                                                            {encargos[0]?.tipo_comision_encargo === 'Porcentaje' ? (
                                                                 <div className="flex flex-row items-center gap-2 justify-center">
-                                                                    <p className="text-base text-gray-950 py-1 text-center">{encargos[0].comision_encargo}%</p>
+                                                                    <p className="text-base text-gray-950 py-1 text-center">{encargos[0]?.comision_encargo}%</p>
                                                                     <p className='-my-2'>|</p>
-                                                                    {encargos[0].precio_2 && encargos[0].precio_2 > 0 ? (
-                                                                        <p className="text-base text-gray-950 py-1 text-center m-0">{toThousands(((encargos[0].precio_2 * encargos[0].comision_encargo) / 100))} €</p>
+                                                                    {encargos[0]?.precio_2 && encargos[0]?.precio_2 > 0 ? (
+                                                                        <p className="text-base text-gray-950 py-1 text-center m-0">{toThousands(((encargos[0]?.precio_2 * encargos[0]?.comision_encargo) / 100))} €</p>
                                                                     ) : (
-                                                                        <p className="text-base text-gray-950 py-1 text-center m-0">{toThousands(((encargos[0].precio_1 * encargos[0].comision_encargo) / 100))} €</p>
+                                                                        <p className="text-base text-gray-950 py-1 text-center m-0">{toThousands(((encargos[0]?.precio_1 * encargos[0]?.comision_encargo) / 100))} €</p>
                                                                     )}
                                                                 </div>
                                                             ) : (
-                                                                <p className="text-base text-gray-950 py-1 text-center">{(encargos[0].comision_encargo.toLocaleString('es-ES', { minimumFractionDigits: 0 }))} €</p>
+                                                                <p className="text-base text-gray-950 py-1 text-center">{(encargos[0]?.comision_encargo.toLocaleString('es-ES', { minimumFractionDigits: 0 }))} €</p>
                                                             )}
                                                         </div>
                                                         <div className="flex items-center gap-2 flex-col w-full bg-blue-100 rounded-xl p-4 ">
                                                             <TbPigMoney className="text-gray-900 text-3xl" />
                                                             <p className="text-base text-gray-950 py-1 text-center">Comisión Pedido</p>
-                                                            {encargos[0].comisionComprador === 'Porcentaje' ? (
+                                                            {encargos[0]?.comisionComprador === 'Porcentaje' ? (
                                                                 <div className="flex flex-row items-center gap-2 justify-center">
-                                                                    <p className="text-base text-gray-950 py-1 text-center">{encargos[0].comisionCompradorValue}%</p>
+                                                                    <p className="text-base text-gray-950 py-1 text-center">{encargos[0]?.comisionCompradorValue}%</p>
                                                                     <p className='-my-2'>|</p>
-                                                                    {encargos[0].precio_2 && encargos[0].precio_2 > 0 ? (
-                                                                        <p className="text-base text-gray-950 py-1 text-center m-0">{toThousands(((encargos[0].precio_2 * encargos[0].comisionCompradorValue) / 100))} €</p>
+                                                                    {encargos[0]?.precio_2 && encargos[0]?.precio_2 > 0 ? (
+                                                                        <p className="text-base text-gray-950 py-1 text-center m-0">{toThousands(((encargos[0]?.precio_2 * encargos[0]?.comisionCompradorValue) / 100))} €</p>
                                                                     ) : (
-                                                                        <p className="text-base text-gray-950 py-1 text-center m-0">{toThousands(((encargos[0].precio_1 * encargos[0].comisionCompradorValue) / 100))} €</p>
+                                                                        <p className="text-base text-gray-950 py-1 text-center m-0">{toThousands(((encargos[0]?.precio_1 * encargos[0]?.comisionCompradorValue) / 100))} €</p>
                                                                     )}
                                                                 </div>
                                                             ) : (
 
-                                                                encargos[0].comisionCompradorValue ? (
-                                                                    <p className="text-base text-gray-950 py-1 text-center">{encargos[0].comisionCompradorValue.toLocaleString('es-ES')} €</p>
+                                                                encargos[0]?.comisionCompradorValue ? (
+                                                                    <p className="text-base text-gray-950 py-1 text-center">{encargos[0]?.comisionCompradorValue.toLocaleString('es-ES')} €</p>
                                                                 ) : (
                                                                     <p className="text-base text-gray-950 py-1 text-center">N/A</p>
                                                                 )
@@ -610,17 +566,17 @@ const EncargosDetails = ({ fetchTransacciones, fetchClientes, setClienteOptions,
                                                             <p className="text-base text-gray-950 py-1 text-center">Comisión total:</p>
                                                             <p className="text-base text-gray-950 py-1 text-center m-0">
                                                                 {(() => {
-                                                                    const price = encargos[0].precio_2 && encargos[0].precio_2 > 0 ? encargos[0].precio_2 : encargos[0].precio_1;
+                                                                    const price = encargos[0]?.precio_2 && encargos[0]?.precio_2 > 0 ? encargos[0]?.precio_2 : encargos[0]?.precio_1;
 
                                                                     // Calculate comisionComprador
-                                                                    const comisionCompradorValue = encargos[0].comisionComprador === 'Porcentaje'
-                                                                        ? (price * encargos[0].comisionCompradorValue) / 100
-                                                                        : encargos[0].comisionCompradorValue;
+                                                                    const comisionCompradorValue = encargos[0]?.comisionComprador === 'Porcentaje'
+                                                                        ? (price * encargos[0]?.comisionCompradorValue) / 100
+                                                                        : encargos[0]?.comisionCompradorValue;
 
                                                                     // Calculate comision_encargo
-                                                                    const comisionEncargoValue = encargos[0].tipo_comision_encargo === 'Porcentaje'
-                                                                        ? (price * encargos[0].comision_encargo) / 100
-                                                                        : encargos[0].comision_encargo;
+                                                                    const comisionEncargoValue = encargos[0]?.tipo_comision_encargo === 'Porcentaje'
+                                                                        ? (price * encargos[0]?.comision_encargo) / 100
+                                                                        : encargos[0]?.comision_encargo;
 
                                                                     // Calculate total commission
                                                                     const totalComision = comisionCompradorValue + comisionEncargoValue;
@@ -637,10 +593,10 @@ const EncargosDetails = ({ fetchTransacciones, fetchClientes, setClienteOptions,
                                                     <div className="flex items-center gap-2 flex-col w-full">
 
                                                         <FaUserTie className="text-gray-900 text-3xl" />
-                                                        <p className="text-base text-gray-950 py-1 text-center">Asesor: {encargos[0].comercial_encargo.label}</p>
+                                                        <p className="text-base text-gray-950 py-1 text-center">Asesor: {encargos[0]?.comercial_encargo.label}</p>
                                                     </div>
                                                     <div>
-                                                        <FinalizarEncargo screenWidth={screenWidth} fetchTransacciones={fetchTransacciones} fetchClientesAsociados={fetchClientesAsociados} direccionInmueble={data.inmueble.direccion} inmuebleID={encargos[0].encargo_id} fetchMatchingEncargos={fetchMatchingEncargos} matchingClientesEncargos={matchingClientesEncargos} fetchInmuebleMoreInfo={fetchInmuebleMoreInfo} fetchData={fetchData} currentPage={currentPage} searchTerm={searchTerm} cliente={encargos[0].fullCliente.label} clienteID={encargos[0].fullCliente.value} asesorID={encargos[0].comercial_encargo.value} asesorNombre={encargos[0].comercial_encargo.label} encargos={encargos} tipoEncargo={encargos[0].tipo_encargo} precio={encargos[0].precio_1 || encargos[0].precio_2} encargoID={encargos[0].encargo_id} />
+                                                        <FinalizarEncargo screenWidth={screenWidth} fetchTransacciones={fetchTransacciones} fetchClientesAsociados={fetchClientesAsociados} direccionInmueble={data.inmueble.direccion} inmuebleID={encargos[0]?.encargo_id} fetchMatchingEncargos={fetchMatchingEncargos} matchingClientesEncargos={matchingClientesEncargos} fetchInmuebleMoreInfo={fetchInmuebleMoreInfo} fetchData={fetchData} currentPage={currentPage} searchTerm={searchTerm} cliente={encargos[0]?.fullCliente.label} clienteID={encargos[0]?.fullCliente.value} asesorID={encargos[0]?.comercial_encargo.value} asesorNombre={encargos[0]?.comercial_encargo.label} encargos={encargos} tipoEncargo={encargos[0]?.tipo_encargo} precio={encargos[0]?.precio_1 || encargos[0]?.precio_2} encargoID={encargos[0]?.encargo_id} />
                                                     </div>
                                                     <div className="absolute top-0 right-0 flex flex-col gap-6">
                                                         <div className='flex flex-col items-center gap-4'>
@@ -662,13 +618,13 @@ const EncargosDetails = ({ fetchTransacciones, fetchClientes, setClienteOptions,
                                                     <Modal.Body style={{ padding: '20px' }}>
                                                         <div className='flex flex-col gap-4 items-center px-10'>
                                                             <div className='flex flex-col gap-2 items-center bg-slate-200 rounded-md p-4 w-full'>
-                                                                <p>{encargos[0].precio_2 ? 'Precio Original' : 'Precio Actual'}:</p>
-                                                                <p className='text-lg font-semibold'>{encargos[0].precio_1.toLocaleString('es-ES', { minimumFractionDigits: 0 })} €</p>
+                                                                <p>{encargos[0]?.precio_2 ? 'Precio Original' : 'Precio Actual'}:</p>
+                                                                <p className='text-lg font-semibold'>{encargos[0]?.precio_1.toLocaleString('es-ES', { minimumFractionDigits: 0 })} €</p>
                                                             </div>
-                                                            {encargos[0].precio_2 ? (
+                                                            {encargos[0]?.precio_2 ? (
                                                                 <div className='flex flex-col gap-3 items-center bg-slate-200 rounded-md p-4 w-full'>
                                                                     <p>Precio rebajado:</p>
-                                                                    <p className='text-lg font-semibold'>{encargos[0].precio_2.toLocaleString('es-ES', { minimumFractionDigits: 0 })} €</p>
+                                                                    <p className='text-lg font-semibold'>{encargos[0]?.precio_2.toLocaleString('es-ES', { minimumFractionDigits: 0 })} €</p>
                                                                 </div>
                                                             ) : (
                                                                 <div className="flex flex-col gap-3 items-center bg-slate-200 rounded-md p-4 w-full">
@@ -693,8 +649,8 @@ const EncargosDetails = ({ fetchTransacciones, fetchClientes, setClienteOptions,
                                                         </div>
                                                     </Modal.Body>
                                                     <Modal.Footer style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', gap: '10px', marginTop: '10px' }}>
-                                                        {encargos[0].precio_2 ? (
-                                                            <Button onClick={() => handleDeleteBajadaPrecio(encargos[0].encargo_id)} appearance="primary" style={{ backgroundColor: 'red' }}>Eliminar rebajada de precio</Button>
+                                                        {encargos[0]?.precio_2 ? (
+                                                            <Button onClick={() => handleDeleteBajadaPrecio(encargos[0]?.encargo_id)} appearance="primary" style={{ backgroundColor: 'red' }}>Eliminar rebajada de precio</Button>
                                                         ) : (
                                                             <Button onClick={handleBajadaPrecio} appearance="primary">Aceptar</Button>
                                                         )}

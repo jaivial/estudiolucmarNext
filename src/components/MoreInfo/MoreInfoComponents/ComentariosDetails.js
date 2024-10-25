@@ -53,10 +53,10 @@ const commentTypes = {
 
 
 
-const ComentariosDetails = ({ data, fetchClientPhoneNumberRefreshKey, screenWidth, inmuebleId }) => {
+const ComentariosDetails = ({ data, fetchClientPhoneNumberRefreshKey, screenWidth, inmuebleId, fetchComments, comentarios, setComentarios }) => {
     const [isOpen, setIsOpen] = useState(false);
     const [newComment, setNewComment] = useState('');
-    const [comentarios, setComentarios] = useState([]);
+
     const [isAdmin, setIsAdmin] = useState(Cookies.get('admin'));
     const [commentType, setCommentType] = useState('Contacto Directo');
     const [phoneNumber, setPhoneNumber] = useState('');
@@ -77,7 +77,6 @@ const ComentariosDetails = ({ data, fetchClientPhoneNumberRefreshKey, screenWidt
         if (selectedTime === null) {
             setSelectedTime(new Date());
         }
-        console.log('selectedDate', selectedDate);
     }, [selectedDate, selectedTime])
 
     const getPhoneNumbers = async () => {
@@ -104,29 +103,6 @@ const ComentariosDetails = ({ data, fetchClientPhoneNumberRefreshKey, screenWidt
     const handleTimeChange = (time) => {
         setSelectedTime(time);
     };
-
-    const fetchComments = async () => {
-        try {
-            const response = await axios.get('/api/getComentarios', {
-                params: {
-                    id: inmuebleId,
-                },
-            });
-
-            if (response.data.success) {
-                setComentarios(response.data.comments);
-                console.log('comentarios', response.data.comments);
-            }
-        } catch (error) {
-            console.error('Error fetching comments:', error);
-            showToast('Error fetching comments', 'linear-gradient(to right bottom, #c62828, #b92125, #ac1a22, #a0131f, #930b1c)');
-        }
-    };
-
-    useEffect(() => {
-        fetchComments();
-    }, [inmuebleId]);
-
 
 
     const handleAddComment = async () => {
