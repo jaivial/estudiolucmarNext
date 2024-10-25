@@ -264,8 +264,9 @@ const Table = ({ parentsEdificioProps, admin, screenWidth, loadingLoader }) => {
             });
             axios.get('api/searchInmuebles', { params }).then((response) => {
                 const data = response.data;
-                setData(data.results);
-                console.log('searchInmuebles data', data.results);
+                const dataFiltered = data.results.filter(element => element !== 'pull me out');
+                setData(dataFiltered);
+                console.log('searchInmuebles data', dataFiltered);
                 setTotalPages(data.totalPages);
                 setCurrentPage(data.currentPage);
                 setAnalyticsData(data.analyitics[0]);

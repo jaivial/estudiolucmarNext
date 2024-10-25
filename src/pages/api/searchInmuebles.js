@@ -237,7 +237,7 @@ export default async function handler(req, res) {
                     (result.nestedescaleras && result.nestedescaleras.some(escalera => escalera.nestedinmuebles && escalera.nestedinmuebles.length > 0));
 
                 if (!hasValidNestedInmuebles) {
-                    return false;  // Exclude this result
+                    return 'pull me out';  // Exclude this result
                 }
             } else {
                 // Attach noticia to result if available
