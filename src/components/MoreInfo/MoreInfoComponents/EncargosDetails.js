@@ -671,17 +671,24 @@ const EncargosDetails = ({ fetchTransacciones, fetchClientes, setClienteOptions,
                                                                     <p className='text-lg font-semibold'>{encargos[0].precio_2.toLocaleString('es-ES', { minimumFractionDigits: 0 })} €</p>
                                                                 </div>
                                                             ) : (
-                                                                <div className='flex flex-col gap-3 items-center bg-slate-200 rounded-md p-4 w-full'>
+                                                                <div className="flex flex-col gap-3 items-center bg-slate-200 rounded-md p-4 w-full">
                                                                     <p>Nuevo precio:</p>
-                                                                    <InputNumber
-                                                                        min={0}
-                                                                        max={precio_1} // Ensure new price cannot exceed current price
-                                                                        value={newPrecio}
-                                                                        onChange={setNewPrecio}
-                                                                        placeholder="Introduce el nuevo precio"
-                                                                        className="w-full"
-                                                                    />
+                                                                    <div style={{ position: 'relative', width: '100%' }}>
+                                                                        <Input
+                                                                            min={0}
+                                                                            max={precio_1} // Ensure new price cannot exceed current price
+                                                                            value={new Intl.NumberFormat('es-ES').format(newPrecio)}
+                                                                            onChange={(value) => {
+                                                                                const numericValue = parseInt(value.replace(/\D/g, ''), 10) || 0; // Ensure numeric value
+                                                                                setNewPrecio(Math.min(numericValue, precio_1)); // Ensure new price cannot exceed precio_1
+                                                                            }}
+                                                                            placeholder="Introduce el nuevo precio"
+                                                                            className="w-full"
+                                                                        />
+                                                                        <span style={{ position: 'absolute', right: '10px', top: '80%', transform: 'translateY(-80%)' }}>€</span>
+                                                                    </div>
                                                                 </div>
+
                                                             )}
                                                         </div>
                                                     </Modal.Body>
