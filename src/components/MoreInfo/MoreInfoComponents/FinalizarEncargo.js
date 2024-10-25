@@ -8,7 +8,7 @@ import CountUp from 'react-countup';
 import { Checkbox, AutoComplete } from 'rsuite';
 
 
-const FinalizarEncargo = ({ fetchTransacciones, fetchClientesAsociados, clienteID, direccionInmueble, inmuebleID, fetchMatchingEncargos, matchingClientesEncargos, cliente, asesorID, asesorNombre, precio, encargos, tipoEncargo, encargoID, fetchData, currentPage, searchTerm, fetchInmuebleMoreInfo }) => {
+const FinalizarEncargo = ({ screenWidth, fetchTransacciones, fetchClientesAsociados, clienteID, direccionInmueble, inmuebleID, fetchMatchingEncargos, matchingClientesEncargos, cliente, asesorID, asesorNombre, precio, encargos, tipoEncargo, encargoID, fetchData, currentPage, searchTerm, fetchInmuebleMoreInfo }) => {
 
     // Lógica para calcular la comisión del vendedor
     const calcularComisionVendedor = () => {
@@ -207,63 +207,61 @@ const FinalizarEncargo = ({ fetchTransacciones, fetchClientesAsociados, clienteI
             </Button>
 
             {/* Modal para revisar el encargo */}
-            <Modal open={openModal} onClose={handleClose}>
+            <Modal open={openModal} onClose={handleClose} size='md'>
                 <Modal.Header>
-                    <Modal.Title>Finalizar Encargo</Modal.Title>
+                    <Modal.Title style={{ fontSize: '1.5rem', textAlign: 'center', fontStyl: 'sans-serif' }}>Finalizar Encargo</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
-                    <div className="flex flex-col items-center space-y-4">
+                    <div className="flex flex-col items-center space-y-6 p-6">
                         {/* Fecha de Finalización */}
-                        <div className="w-full max-w-md border-b border-gray-300 py-4">
-                            <div className="text-center text-lg font-semibold">Fecha de Finalización</div>
-                            <div className="mt-2 flex justify-center">
-                                <Input
-                                    type="date"
-                                    value={encargoFinalizado.fechaFinalizacion}
-                                    onChange={(value) => handleInputChange(value, 'fechaFinalizacion')}
-                                />
+                        <div className="w-full max-w-xl py-4 flex flex-row flex-wrap gap-8 items-start justify-evenly bg-blue-50 border border-blue-400 rounded-xl">
+                            <div className='w-[200px]'>
+                                <div className="text-center text-md font-semibold bg-blue-500 p-1 px-3 text-white rounded-xl w-fit mx-auto">Tipo de Encargo</div>
+                                <div className="mt-2 text-center text-gray-900 font-medium">{encargoFinalizado.tipoEncargo}</div>
+                            </div>
+                            <div className='w-[200px]'>
+                                <div className="text-center text-md font-semibold bg-blue-500 p-1 px-3 text-white rounded-xl w-fit mx-auto">Fecha de Finalización</div>
+                                <div className="mt-2 flex justify-center">
+                                    <Input
+                                        type="date"
+                                        value={encargoFinalizado.fechaFinalizacion}
+                                        onChange={(value) => handleInputChange(value, 'fechaFinalizacion')}
+                                        className="px-3 py-2 border border-blue-200 rounded-md focus:outline-none focus:ring focus:ring-blue-400"
+                                    />
+                                </div>
                             </div>
                         </div>
 
-                        {/* Tipo de Encargo */}
-                        <div className="w-full max-w-md border-b border-gray-300 py-4">
-                            <div className="text-center text-lg font-semibold">Tipo de Encargo</div>
-                            <div className="mt-2 text-center text-gray-600">{encargoFinalizado.tipoEncargo}</div>
-                        </div>
-
-                        {/* Cliente */}
-                        <div className="w-full max-w-md border-b border-gray-300 py-4">
-                            <div className="text-center text-lg font-semibold">Cliente</div>
-                            <div className="mt-2 text-center text-gray-600">{encargoFinalizado.cliente}</div>
-                        </div>
-
                         {/* Pedidos Relacionados */}
-                        <div className="w-full max-w-md py-4">
-                            <h3 className="text-center text-lg font-semibold mb-2">Pedidos relacionados con el encargo</h3>
-                            <AutoComplete
-                                data={matchingClientesEncargos.map((cliente) => `${cliente.nombre} ${cliente.apellido}`)}
-                                placeholder="Buscar cliente..."
-                                onChange={handleSearch}
-                                className="mb-4"
-                            />
+                        <div className="w-full max-w-xl py-4">
+                            <h3 className="text-center text-lg font-semibold text-slate-900 mb-4">Pedidos relacionados con el encargo</h3>
+                            <div className="relative mb-4">
+                                {/* AutoComplete with icon */}
+                                <AutoComplete
+                                    data={matchingClientesEncargos.map((cliente) => `${cliente.nombre} ${cliente.apellido}`)}
+                                    placeholder=" 🔍  Buscar clientes..."
+                                    onChange={handleSearch}
+                                    className="mb-4 pr-4 pl-4 py-2 border border-slate-300 rounded-xl focus:outline-none focus:ring focus:ring-blue-400"
+                                />
+                            </div>
 
                             {/* Table for displaying clientes */}
-                            <div className="max-h-48 overflow-y-scroll">
+                            <div className="max-h-48 overflow-y-scroll border border-slate-300 rounded-xl shadow-sm">
                                 <table className="w-full text-left table-auto border-collapse">
-                                    <thead>
+                                    <thead className="bg-blue-500 text-white">
                                         <tr>
-                                            <th></th>
-                                            <th className="px-4 py-2">Nombre</th>
-                                            <th className="px-4 py-2">Teléfono</th>
-                                            <th className="px-4 py-2">Email</th>
+                                            <th className="px-4 py-2 w-[5px]"></th>
+                                            <th className="px-4 py-2 text-center">Nombre</th>
+                                            {screenWidth >= 400 && <th className="px-4 py-2 text-center">Teléfono</th>}
+                                            {screenWidth >= 600 && <th className="px-4 py-2 text-center">Email</th>}
                                         </tr>
                                     </thead>
-                                    <tbody>
+                                    <tbody className="text-slate-900">
                                         {filteredClientes.map((cliente) => (
                                             <tr
                                                 key={cliente._id}
                                                 onClick={() => handleSelectRow(cliente)}
-                                                className={`cursor-pointer hover:bg-gray-100 ${selectedClientID === cliente._id ? 'bg-gray-200' : ''}`}
+                                                className={`w-[10px] cursor-pointer hover:bg-blue-50 ${selectedClientID === cliente._id ? 'bg-blue-100' : ''}`}
                                             >
                                                 <td className="px-4 py-2">
                                                     <Checkbox
@@ -271,11 +269,9 @@ const FinalizarEncargo = ({ fetchTransacciones, fetchClientesAsociados, clienteI
                                                         onChange={() => handleSelectRow(cliente)}
                                                     />
                                                 </td>
-                                                <td className="px-4 py-2">
-                                                    {cliente.nombre} {cliente.apellido}
-                                                </td>
-                                                <td className="px-4 py-2">{cliente.telefono}</td>
-                                                <td className="px-4 py-2">{cliente.email}</td>
+                                                <td className="px-4 py-2 text-center">{cliente.nombre} {cliente.apellido}</td>
+                                                {screenWidth >= 400 && <td className="px-4 py-2 text-center">{cliente.telefono}</td>}
+                                                {screenWidth >= 600 && <td className="px-4 py-2 text-center">{cliente.email}</td>}
                                             </tr>
                                         ))}
                                     </tbody>
@@ -283,39 +279,44 @@ const FinalizarEncargo = ({ fetchTransacciones, fetchClientesAsociados, clienteI
                             </div>
                         </div>
 
-
-                        {/* Asesor */}
-                        <div className="w-full max-w-md border-b border-gray-300 py-4">
-                            <div className="text-center text-lg font-semibold">Asesor</div>
-                            <div className="mt-2 text-center text-gray-600">{encargoFinalizado.asesorNombre}</div>
+                        {/* Cliente and Asesor */}
+                        <div className="w-full max-w-xl py-4 flex flex-row flex-wrap gap-8 items-start justify-evenly bg-blue-50 rounded-xl border border-blue-400 ">
+                            <div className='w-[200px]'>
+                                <div className="text-center text-md font-semibold bg-blue-500 p-1 px-3 text-white w-fit mx-auto rounded-xl">Cliente</div>
+                                <div className="mt-2 text-center text-gray-900 font-medium">{encargoFinalizado.cliente}</div>
+                            </div>
+                            <div className='w-[200px]'>
+                                <div className="text-center text-md font-semibold bg-blue-500 p-1 px-3 text-white rounded-xl w-fit mx-auto">Asesor</div>
+                                <div className="mt-2 text-center text-gray-900 font-medium">{encargoFinalizado.asesorNombre}</div>
+                            </div>
                         </div>
 
-                        {/* Precio */}
-                        <div className="w-full max-w-md border-b border-gray-300 py-4">
-                            <div className="text-center text-lg font-semibold">Precio</div>
-                            <div className="mt-2 text-center text-gray-600">{formatCurrency(encargoFinalizado.precio)}</div>
-                        </div>
+                        {/* Pricing and Commission Details */}
+                        <div className="w-full max-w-xl py-6 bg-blue-50 rounded-xl border border-blue-400 flex flex-row flex-wrap gap-6">
 
-                        {/* Comisión Vendedor */}
-                        <div className="w-full max-w-md border-b border-gray-300 py-4">
-                            <div className="text-center text-lg font-semibold">Comisión Vendedor</div>
-                            <div className="mt-2 text-center text-gray-600">{formatCurrency(encargoFinalizado.comisionVendedor)}</div>
-                        </div>
 
-                        {/* Comisión Pedido */}
-                        <div className="w-full max-w-md border-b border-gray-300 py-4">
-                            <div className="text-center text-lg font-semibold">Comisión Pedido</div>
-                            <div className="mt-2 text-center text-gray-600">{formatCurrency(encargoFinalizado.comisionPedido)}</div>
-                        </div>
+                            <div className='bg-blue-200 border-blue-400 pb-4 border rounded-xl w-[180px] mx-auto'>
+                                <div className="text-center text-md font-semibold bg-blue-500 p-1 px-8 text-white rounded-xl w-full mx-auto">Precio</div>
+                                <div className="mt-2 text-center text-gray-900 font-semibold">{formatCurrency(encargoFinalizado.precio)}</div>
+                            </div>
+                            <div className='bg-orange-200 border-orange-400 pb-4 border rounded-xl w-[180px] mx-auto'>
+                                <div className="text-center text-md font-semibold bg-orange-500 p-1 px-3 text-white rounded-xl w-full mx-auto">Comisión Vendedor</div>
+                                <div className="mt-2 text-center text-gray-900 font-semibold">{formatCurrency(encargoFinalizado.comisionVendedor)}</div>
+                            </div>
+                            <div className='bg-violet-200 border-violet-400 pb-4 border rounded-xl w-[180px] mx-auto'>
+                                <div className="text-center text-md font-semibold bg-violet-500 p-1 px-3 text-white rounded-xl w-full mx-auto">Comisión Pedido</div>
+                                <div className="mt-2 text-center text-gray-900 font-semibold">{formatCurrency(encargoFinalizado.comisionPedido)}</div>
+                            </div>
 
-                        {/* Comisión Total */}
-                        <div className="w-full max-w-md py-4">
-                            <div className="text-center text-lg font-semibold">Comisión Total</div>
-                            <div className="mt-2 text-center text-gray-600">{formatCurrency(encargoFinalizado.comisionTotal)}</div>
+                            <div className=" bg-green-200 border-green-400 pb-4 border rounded-xl w-[180px] mx-auto">
+                                <div className="text-center text-md font-semibold bg-green-500 p-1 px-3 text-white rounded-xl w-full mx-auto">Comisión Total</div>
+                                <div className="mt-2 text-center text-gray-900 font-semibold">{formatCurrency(encargoFinalizado.comisionTotal)}</div>
+                            </div>
                         </div>
                     </div>
+
                 </Modal.Body>
-                <Modal.Footer>
+                <Modal.Footer style={{ display: 'flex', justifyContent: 'center', gap: '10px' }}>
                     <Button onClick={handleConfirm} appearance="primary">
                         Finalizar Encargo
                     </Button>
