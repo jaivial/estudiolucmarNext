@@ -10,10 +10,6 @@ import { borderRadius } from '@mui/system';
 const DPVInfoComponent = ({ DPVInfo }) => {
 
 
-    useEffect(() => {
-        console.log('DPVInfo', DPVInfo);
-    }, []);
-
     return (
         <Accordion defaultActiveKey={0} className='w-full m-0 border-1 border-gray-300 bg-slate-50 rounded-3xl' style={{ borderRadius: '1rem' }}>
             <Accordion.Panel header="DPV" eventKey={0} defaultExpanded={true} style={{ display: 'flex', flexDirection: 'column', gap: '10px', borderRadius: '1rem' }}>

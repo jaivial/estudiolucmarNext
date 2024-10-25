@@ -15,6 +15,8 @@ export default async function handler(req, res) {
             // Get the comment ID and updated text from the request body
             const { id, comentario } = req.body;
 
+            console.log('id', id);
+
             if (!id || !comentario) {
                 return res.status(400).json({ message: 'ID y comentario son necesarios' });
             }
@@ -31,6 +33,8 @@ export default async function handler(req, res) {
                     }
                 }
             );
+
+            console.log(result);
 
             if (result.matchedCount === 0) {
                 return res.status(404).json({ message: 'Comentario no encontrado' });
@@ -49,7 +53,10 @@ export default async function handler(req, res) {
                 }
             );
 
+            console.log('taskUpdateResult', taskUpdateResult);
+
             if (taskUpdateResult.matchedCount === 0) {
+                console.log('error here');
                 return res.status(404).json({ message: 'Tarea no encontrada con el ID de comentario' });
             }
 

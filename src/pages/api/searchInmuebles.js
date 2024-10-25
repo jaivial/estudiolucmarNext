@@ -16,8 +16,9 @@ export default async function handler(req, res) {
         const db = client.db('inmoprocrm'); // Use the correct database name
         const inmuebles = db.collection('inmuebles');
 
-        const { pattern = '', currentPage = 1, itemsPerPage = 10, selectedZone = '', selectedCategoria = '', selectedResponsable = '', filterNoticia = null, filterEncargo = null, superficieMin = 0, superficieMax = 800000, yearMin = 1800, yearMax = new Date().getFullYear(), localizado = null, garaje = null, aireacondicionado = null, ascensor = null, trastero = null, jardin = null, terraza = null, tipo, banos, habitaciones, DPV = null } = req.query;
-        console.log('garaje', garaje);
+        const { zoneName, pattern = '', currentPage = 1, itemsPerPage = 10, selectedZone, selectedCategoria = '', selectedResponsable = '', filterNoticia = null, filterEncargo = null, superficieMin = 0, superficieMax = 800000, yearMin = 1800, yearMax = new Date().getFullYear(), localizado = null, garaje = null, aireacondicionado = null, ascensor = null, trastero = null, jardin = null, terraza = null, tipo, banos, habitaciones, DPV = null } = req.query;
+        console.log('selectedZone', selectedZone);
+        console.log('zoneName', zoneName);
         console.log('typeof garaje', typeof garaje);
         console.log('tipo', tipo);
         const page = parseInt(currentPage, 10);
@@ -237,7 +238,7 @@ export default async function handler(req, res) {
                     (result.nestedescaleras && result.nestedescaleras.some(escalera => escalera.nestedinmuebles && escalera.nestedinmuebles.length > 0));
 
                 if (!hasValidNestedInmuebles) {
-                    return false;  // Exclude this result
+                    return 'pull me out';  // Exclude this result
                 }
             } else {
                 // Attach noticia to result if available

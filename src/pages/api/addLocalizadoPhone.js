@@ -3,9 +3,8 @@ import clientPromise from '../../lib/mongodb';
 
 export default async function handler(req, res) {
 
-  // Run CORS middleware
-  await runMiddleware(req, res, cors);
-
+    // Run CORS middleware
+    await runMiddleware(req, res, cors);
 
     if (req.method === 'POST') {
         try {
@@ -14,11 +13,15 @@ export default async function handler(req, res) {
             console.log('inmuebleId', inmuebleId);
             console.log('telefono', telefono);
             console.log('client_id', client_id);
+
             const client = await clientPromise;
             const db = client.db('inmoprocrm');
-            // Update the main 'inmuebles' collection
+
+            const inmuebleIdInt = parseInt(inmuebleId);
+
+            // Update the main 'inmuebles' document if it matches 'inmuebleId'
             await db.collection('inmuebles').updateOne(
-                { id: inmuebleId },
+                { id: inmuebleIdInt },
                 {
                     $set: {
                         localizado: true,
@@ -27,28 +30,40 @@ export default async function handler(req, res) {
                     },
                 }
             );
-            // Update nestedinmuebles in 'inmuebles' collection
+
+            // Update nestedinmuebles within 'inmuebles' collection
             await db.collection('inmuebles').updateMany(
-                { 'nestedinmuebles.id': inmuebleId },
+                { 'nestedinmuebles.id': inmuebleIdInt },
                 {
                     $set: {
-                        'nestedinmuebles.$.localizado': true,
-                        'nestedinmuebles.$.localizado_phone': parsedtelefono,
-                        'nestedinmuebles.$.client_id': client_id,
-                    },
+                        'nestedinmuebles.$[elem].localizado': true,
+                        'nestedinmuebles.$[elem].localizado_phone': parsedtelefono,
+                        'nestedinmuebles.$[elem].client_id': client_id,
+                    }
+                },
+                {
+                    arrayFilters: [{ 'elem.id': inmuebleIdInt }]
                 }
             );
-            // Update nestedinmuebles in 'inmuebles' collection
+
+            // Update nestedinmuebles within nestedescaleras in 'inmuebles' collection
             await db.collection('inmuebles').updateMany(
-                { 'nestedescaleras.nestedinmuebles.id': inmuebleId },
+                { 'nestedescaleras.nestedinmuebles.id': inmuebleIdInt },
                 {
                     $set: {
-                        'nestedescaleras.nestedinmuebles.$.localizado': true,
-                        'nestedescaleras.nestedinmuebles.$.localizado_phone': parsedtelefono,
-                        'nestedescaleras.nestedinmuebles.$.client_id': client_id,
-                    },
+                        'nestedescaleras.$[escalera].nestedinmuebles.$[elem].localizado': true,
+                        'nestedescaleras.$[escalera].nestedinmuebles.$[elem].localizado_phone': parsedtelefono,
+                        'nestedescaleras.$[escalera].nestedinmuebles.$[elem].client_id': client_id,
+                    }
+                },
+                {
+                    arrayFilters: [
+                        { 'escalera.nestedinmuebles': { $exists: true } },
+                        { 'elem.id': inmuebleIdInt }
+                    ]
                 }
             );
+
             res.status(200).json({ message: 'Teléfono localizado con éxito' });
         } catch (error) {
             console.error('Error al localizar teléfono:', error);

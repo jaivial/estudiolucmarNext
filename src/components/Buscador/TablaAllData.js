@@ -23,7 +23,9 @@ import { FaArrowLeft } from "react-icons/fa6";
 
 
 
-const Table = ({ parentsEdificioProps, admin, screenWidth, loadingLoader }) => {
+const Table = ({ currentPath, zoneName, parentsEdificioProps, admin, screenWidth, loadingLoader }) => {
+
+
     const [expanded, setExpanded] = useState(false);
     const [expandedEscalera, setExpandedEscalera] = useState(false);
     const [expandedEscaleraId, setExpandedEscaleraId] = useState(null);
@@ -32,40 +34,6 @@ const Table = ({ parentsEdificioProps, admin, screenWidth, loadingLoader }) => {
     const [expandedItems, setExpandedItems] = useState({});
     const [expandedItemsEscalera, setExpandedItemsEscalera] = useState({});
 
-
-    //     <div className="cursor-pointer flex flex-row justify-center w-[30%]">
-    //     {!expandedItems[item.EdificioID] && (
-    //         <svg xmlns="http://www.w3.org/2000/svg" width="2.5em" height="2.5em" viewBox="0 0 24 24">
-    //             <path fill="currentColor" fillRule="evenodd" d="M7 9a1 1 0 0 0-.707 1.707l5 5a1 1 0 0 0 1.414 0l5-5A1 1 0 0 0 17 9z" clipRule="evenodd" />
-    //         </svg>
-    //     )}
-    //     {expandedItems[item.EdificioID] && (
-    //         <svg xmlns="http://www.w3.org/2000/svg" width="2.5em" height="2.5em" viewBox="0 0 24 24">
-    //             <path fill="currentColor" d="M18.2 13.3L12 7l-6.2 6.3c-.2.2-.3.5-.3.7s.1.5.3.7c.2.2.4.3.7.3h11c.3 0 .5-.1.7-.3c.2-.2.3-.5.3-.7s-.1-.5-.3-.7" />
-    //         </svg>
-    //     )}
-    // </div>
-
-    // </div>
-    // {expandedItems[item.EdificioID] && edifciosChildren(item)}
-    // </div>
-
-    //     onClick={() => handleToggle(item.EdificioID)}>
-
-    //     const [expandedItems, setExpandedItems] = useState({});
-
-    //     const handleToggle = (itemId) => {
-    //         setExpandedItems((prev) => ({
-    //             ...prev,
-    //             [itemId]: !prev[itemId],
-    //         }));
-    //     };
-
-    //     {expandedItems[child.id] && (
-    //         console.log('child.nestedInmuebles', child.nestedinmuebles)
-    //     )}
-    //     {expandedItems[child.id] && <div className="w-full flex flex-col justify-center items-center px-2">{escalerasChildren(child.nestedinmuebles)}</div>}
-    // </div>
 
     const handleToggle = (edificioId) => {
         setExpandedItems(prevState => ({
@@ -107,6 +75,7 @@ const Table = ({ parentsEdificioProps, admin, screenWidth, loadingLoader }) => {
 
 
 
+
     const [loading, setLoading] = useState(true);
     const [data, setData] = useState([]);
     const [currentPage, setCurrentPage] = useState(1);
@@ -143,7 +112,7 @@ const Table = ({ parentsEdificioProps, admin, screenWidth, loadingLoader }) => {
     const [showEditTable, setShowEditTable] = useState(false);
     const [showAnimation, setShowAnimation] = useState(showEditTable);
     const [filters, setFilters] = useState({
-        selectedZone: '',
+        selectedZone: currentPath === '/mizona' ? zoneName : '',
         selectedCategoria: '',
         selectedResponsable: '',
         filterNoticia: null,
@@ -198,6 +167,7 @@ const Table = ({ parentsEdificioProps, admin, screenWidth, loadingLoader }) => {
     const [paginaBuscador, setPaginaBuscador] = useState('Todos'); // Initial tab state
 
 
+
     const fetchData = async (currentPage, searchTerm) => {
         setLoadingPage(true);
         // Function to determine the value for each filter
@@ -241,7 +211,7 @@ const Table = ({ parentsEdificioProps, admin, screenWidth, loadingLoader }) => {
                 pattern: searchTerm,
                 itemsPerPage: 20,
                 currentPage: currentPage,
-                selectedZone: filters.selectedZone,
+                selectedZone: currentPath === '/mizona' ? zoneName : filters.selectedZone,
                 selectedCategoria: filters.selectedCategoria,
                 selectedResponsable: filters.selectedResponsable,
                 filterNoticia: paginaBuscador === 'Noticias' ? true : filters.filterNoticia,
@@ -261,11 +231,13 @@ const Table = ({ parentsEdificioProps, admin, screenWidth, loadingLoader }) => {
                 banos: banosValue,
                 habitaciones: habitacionesValue,
                 DPV: filters.DPV,
+                zoneName
             });
             axios.get('api/searchInmuebles', { params }).then((response) => {
                 const data = response.data;
-                setData(data.results);
-                console.log('searchInmuebles data', data.results);
+                const dataFiltered = data.results.filter(element => element !== 'pull me out');
+                setData(dataFiltered);
+                console.log('searchInmuebles data', dataFiltered);
                 setTotalPages(data.totalPages);
                 setCurrentPage(data.currentPage);
                 setAnalyticsData(data.analyitics[0]);
@@ -2158,7 +2130,7 @@ const Table = ({ parentsEdificioProps, admin, screenWidth, loadingLoader }) => {
                                     </div>
                                 </div>
                                 {showAnalytics && screenWidth <= 1280 && <Analytics analyticsData={analyticsData} />}
-                                {showFilters && <FilterMenu setFilters={setFilters} currentPage={currentPage} data={data} setData={setData} filters={filters} setCurrentPage={setCurrentPage} setTotalPages={setTotalPages} setLoading={setLoading} resetFiltersKey={resetFiltersKey} screenWidth={screenWidth} paginaBuscador={paginaBuscador} />}
+                                {showFilters && <FilterMenu currentPath={currentPath} zoneName={zoneName} setFilters={setFilters} currentPage={currentPage} data={data} setData={setData} filters={filters} setCurrentPage={setCurrentPage} setTotalPages={setTotalPages} setLoading={setLoading} resetFiltersKey={resetFiltersKey} screenWidth={screenWidth} paginaBuscador={paginaBuscador} />}
                                 {showEditTable && (
                                     <div className={`flex flex-row gap-4 pt-2 pb-2 w-full ${admin === 'true' ? 'justify-center' : 'justify-center'} iconscontainertrue`}>
                                         <div className="flex flex-row gap-4">

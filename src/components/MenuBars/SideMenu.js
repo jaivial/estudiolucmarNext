@@ -64,7 +64,8 @@ const Sidebar = ({ userData }) => {
     const menuItems = [
         { name: 'Home', path: '/home', icon: <AiOutlineHome /> },
         { name: 'Buscador', path: '/buscador', icon: <AiOutlineSearch /> },
-        { name: 'Mapa', path: '/mapa', icon: <Icon icon="gis:poi-map" /> },
+        { name: 'Mi Zona', path: '/mizona', icon: <Icon icon="gis:poi-map" /> },
+        { name: 'Mapa', path: '/mapa', icon: <Icon icon="solar:map-linear" /> },
         { name: 'Clientes', path: '/clientes', icon: <Icon icon="bi:people-fill" /> },
         { name: 'Ajustes', path: '/settings', icon: <AiOutlineSetting /> },
     ];

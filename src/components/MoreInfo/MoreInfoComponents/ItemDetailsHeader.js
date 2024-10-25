@@ -17,26 +17,24 @@ import 'react-loading-skeleton/dist/skeleton.css'
 import '../moreinfoglobal.css'
 
 
-const ItemDetailsHeader = ({ inmuebleId, onClose, address, setImages, setIsSliderLoading, isVisible, setIsVisible, data, onAddEdtMoreInfoRefreshKey, setOnAddEdtMoreInfoRefreshKey, DPVboolean, setDPVboolean, admin, onAddDeleteDPVRefreshKey, setOnAddDeleteDPVRefreshKey, localizado, setLocalizado, direccion, nombre, setNombre, apellido, setApellido, inmuebles_asociados_inquilino, setInmueblesAsociadosInquilino, inmuebles_asociados_propietario, setInmueblesAsociadosPropietario, inmuebles_asociados_informador, setInmueblesAsociadosInformador, localizadoRefreshKey, setLocalizadoRefreshKey }) => {
+const ItemDetailsHeader = ({ fetchInmuebleMoreInfo, fetchClientesAsociados, loadImages, images, uploadedImages, setUploadedImages, inmuebleId, onClose, address, setImages, setIsSliderLoading, isVisible, setIsVisible, data, onAddEdtMoreInfoRefreshKey, setOnAddEdtMoreInfoRefreshKey, DPVboolean, setDPVboolean, admin, onAddDeleteDPVRefreshKey, setOnAddDeleteDPVRefreshKey, localizado, setLocalizado, direccion, nombre, setNombre, apellido, setApellido, inmuebles_asociados_inquilino, setInmueblesAsociadosInquilino, inmuebles_asociados_propietario, setInmueblesAsociadosPropietario, inmuebles_asociados_informador, setInmueblesAsociadosInformador, localizadoRefreshKey, setLocalizadoRefreshKey }) => {
     const [selectedFiles, setSelectedFiles] = useState([]);
     const [uploadStatus, setUploadStatus] = useState('');
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const [uploadedImages, setUploadedImages] = useState([]);
     const [hoveredSlot, setHoveredSlot] = useState(null);
     const [selectedSlot, setSelectedSlot] = useState(null);
     const [isUploading, setIsUploading] = useState(false);
     const [isProcessing, setIsProcessing] = useState(false);
-    const modalRef = useRef(null);
     const containerRef = useRef(null);
     const getFileRef = useRef(null);
     const buttonUploadRef = useRef(null);
     const slotRefs = useRef([]);
     const [getImageRefreshKey, setGetImageRefreshKey] = useState(1);
     const [editModalOpen, setEditModalOpen] = useState(false);
+
     const [isImageValid, setIsImageValid] = useState(true);
     const [dpvModalOpen, setDPVModalOpen] = useState(false);
     const [phoneModalOpen, setPhoneModalOpen] = useState(false); // State for PhoneModal
-    const [loadingRenderSlots, setLoadingRenderSlots] = useState(true);
 
     const closeModal = () => setIsModalOpen(false);
 
@@ -45,29 +43,8 @@ const ItemDetailsHeader = ({ inmuebleId, onClose, address, setImages, setIsSlide
     };
 
     useEffect(() => {
-        const loadImages = async () => {
-            try {
-                const response = await axios.get('/api/getImages', {
-                    params: { inmueble_id: inmuebleId },
-                });
-                if (response.data.status === 'success') {
-                    const images = response.data.images || [];
-                    setUploadedImages(images);
-                    setImages(images); // Pass the images to the parent component
-                } else {
-                    console.error('Error fetching images:', response.data.message);
-                }
-            } catch (error) {
-                console.error('Error fetching images:', error);
-            } finally {
-                setIsSliderLoading(false);
-            }
-        };
-
-        if (inmuebleId) {
-            loadImages();
-        }
-    }, [inmuebleId, getImageRefreshKey]);
+        loadImages();
+    }, [getImageRefreshKey]);
 
     const handleFileChange = async (event) => {
         setSelectedFiles(event.target.files);
@@ -342,7 +319,7 @@ const ItemDetailsHeader = ({ inmuebleId, onClose, address, setImages, setIsSlide
                 <div className="header-container">
                     <EditModal closeModal={closeModal} isModalOpen={isModalOpen} setIsModalOpen={setIsModalOpen} data={data} onAddEdtMoreInfoRefreshKey={onAddEdtMoreInfoRefreshKey} setOnAddEdtMoreInfoRefreshKey={setOnAddEdtMoreInfoRefreshKey} />
                     <DPVComponent isOpen={dpvModalOpen} setDPVModalOpen={setDPVModalOpen} inmuebleId={inmuebleId} DPVboolean={DPVboolean} setDPVboolean={setDPVboolean} admin={admin} onAddDeleteDPVRefreshKey={onAddDeleteDPVRefreshKey} setOnAddDeleteDPVRefreshKey={setOnAddDeleteDPVRefreshKey} /> {/* Add DPVComponent modal */}
-                    <PhoneModal isOpen={phoneModalOpen} setPhoneModalOpen={setPhoneModalOpen} localizado={localizado} setLocalizado={setLocalizado} inmuebleId={inmuebleId} direccion={direccion} admin={admin} nombreReturn={nombre} setNombreReturn={setNombre} apellidoReturn={apellido} setApellidoReturn={setApellido} inmuebles_asociados_inquilino={inmuebles_asociados_inquilino} inmuebles_asociados_propietario={inmuebles_asociados_propietario} setInmueblesAsociadosInquilino={setInmueblesAsociadosInquilino} setInmueblesAsociadosPropietario={setInmueblesAsociadosPropietario} inmuebles_asociados_informador={inmuebles_asociados_informador} setInmueblesAsociadosInformador={setInmueblesAsociadosInformador} localizadoRefreshKey={localizadoRefreshKey} setlocalizadoRefreshKey={setLocalizadoRefreshKey} /> {/* Add PhoneModal modal */}
+                    <PhoneModal fetchInmuebleMoreInfo={fetchInmuebleMoreInfo} fetchClientesAsociados={fetchClientesAsociados} isOpen={phoneModalOpen} setPhoneModalOpen={setPhoneModalOpen} localizado={localizado} setLocalizado={setLocalizado} inmuebleId={inmuebleId} direccion={direccion} admin={admin} nombreReturn={nombre} setNombreReturn={setNombre} apellidoReturn={apellido} setApellidoReturn={setApellido} inmuebles_asociados_inquilino={inmuebles_asociados_inquilino} inmuebles_asociados_propietario={inmuebles_asociados_propietario} setInmueblesAsociadosInquilino={setInmueblesAsociadosInquilino} setInmueblesAsociadosPropietario={setInmueblesAsociadosPropietario} inmuebles_asociados_informador={inmuebles_asociados_informador} setInmueblesAsociadosInformador={setInmueblesAsociadosInformador} localizadoRefreshKey={localizadoRefreshKey} setlocalizadoRefreshKey={setLocalizadoRefreshKey} /> {/* Add PhoneModal modal */}
                     <div className='flex flex-row justify-center gap-3 items-center py-1'>
                         <div>
                             <button onClick={openModal} className="p-3 rounded-full border bg-white shadow-lg hover:bg-gray-900">

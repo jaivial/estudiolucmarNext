@@ -11,7 +11,7 @@ import Skeleton from 'react-loading-skeleton';
 import 'react-loading-skeleton/dist/skeleton.css';
 
 
-const PhoneModal = ({ isOpen, setPhoneModalOpen, localizado, setLocalizado, inmuebleId, direccion, admin, nombreReturn, setNombreReturn, apellidoReturn, setApellidoReturn, inmuebles_asociados_inquilino, inmuebles_asociados_propietario, setInmueblesAsociadosInquilino, setInmueblesAsociadosPropietario, inmuebles_asociados_informador, setInmueblesAsociadosInformador, localizadoRefreshKey, setLocalizadoRefreshKey }) => {
+const PhoneModal = ({ fetchInmuebleMoreInfo, fetchClientesAsociados, isOpen, setPhoneModalOpen, localizado, setLocalizado, inmuebleId, direccion, admin, nombreReturn, setNombreReturn, apellidoReturn, setApellidoReturn, inmuebles_asociados_inquilino, inmuebles_asociados_propietario, setInmueblesAsociadosInquilino, setInmueblesAsociadosPropietario, inmuebles_asociados_informador, setInmueblesAsociadosInformador, localizadoRefreshKey, setLocalizadoRefreshKey }) => {
     const [isLocalizado, setIsLocalizado] = useState(localizado);
     const [asesores, setAsesores] = useState([]);
     const [selectedAsesor, setSelectedAsesor] = useState(null);
@@ -62,8 +62,6 @@ const PhoneModal = ({ isOpen, setPhoneModalOpen, localizado, setLocalizado, inmu
     };
 
     useEffect(() => {
-        console.log('localizado', localizado);
-        console.log('inmuebleId', inmuebleId);
         if (localizado) {
             fetchLocalizadoPhone(inmuebleId);
         }
@@ -169,8 +167,11 @@ const PhoneModal = ({ isOpen, setPhoneModalOpen, localizado, setLocalizado, inmu
 
             if (response.status === 201) {
                 showToast('Cliente creado.', 'linear-gradient(to right bottom, #00603c, #006f39, #007d31, #008b24, #069903)');
+                fetchLocalizadoPhone(inmuebleId);
                 fetchAsesores();
                 handleClose();
+                fetchClientesAsociados();
+                fetchInmuebleMoreInfo();
                 // Additional actions after successful client creation
             } else {
                 showToast('Error al crear el cliente.', 'linear-gradient(to right, #ff416c, #ff4b2b)');
@@ -199,6 +200,8 @@ const PhoneModal = ({ isOpen, setPhoneModalOpen, localizado, setLocalizado, inmu
                 setLocalizado(true);
                 setLocalizadoModal(true); // Set the modal state to true
                 setLoadingLocalizado(false);
+                fetchClientesAsociados();
+                fetchInmuebleMoreInfo();
             }
         } catch (error) {
             console.error('Error al agregar cliente:', error);
@@ -219,6 +222,8 @@ const PhoneModal = ({ isOpen, setPhoneModalOpen, localizado, setLocalizado, inmu
                 setLocalizadoModal(false);
                 setSelectedAsesor(null);
                 setIsLocalizado(false);
+                fetchClientesAsociados();
+                fetchInmuebleMoreInfo();
             } else {
                 showToast('Error al eliminar el localizado.', 'linear-gradient(to right, #ff416c, #ff4b2b)');
             }
