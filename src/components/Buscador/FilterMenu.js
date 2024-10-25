@@ -13,7 +13,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import Skeleton from 'react-loading-skeleton';
 import 'react-loading-skeleton/dist/skeleton.css';
 
-const FilterMenu = ({ setFilters, currentPage, filters, data, setData, setCurrentPage, setTotalPages, setLoading, resetFiltersKey, screenWidth, paginaBuscador }) => {
+const FilterMenu = ({ zoneName, currentPath, setFilters, currentPage, filters, data, setData, setCurrentPage, setTotalPages, setLoading, resetFiltersKey, screenWidth, paginaBuscador }) => {
     const [filterLocalizado, setFilterLocalizado] = useState(null);
     const [selectedZone, setSelectedZone] = useState(null);
     const [selectedResponsable, setSelectedResponsable] = useState(null);
@@ -74,7 +74,7 @@ const FilterMenu = ({ setFilters, currentPage, filters, data, setData, setCurren
     }, [filterLocalizado, selectedZone, selectedResponsable, selectedCategoria, filterNoticia, filterEncargo, superficieRange, yearRange, filterDPV]);
 
 
-    const zoneOptions = zones.map((zone) => ({ value: zone, label: zone }));
+    const zoneOptions = currentPath === '/mizona' ? [{ value: zoneName, label: zoneName }] : zones.map((zone) => ({ value: zone, label: zone }));
     const responsableOptions = responsables.map((responsable) => ({ value: responsable.nombre_completo, label: responsable.nombre_completo }));
     const categoriaOptions = categorias.map((categoria) => ({ value: categoria, label: categoria === null ? 'Sin información' : categoria }));
 
@@ -214,7 +214,8 @@ const FilterMenu = ({ setFilters, currentPage, filters, data, setData, setCurren
                         options={zoneOptions}
                         onChange={setSelectedZone}
                         isClearable={true}
-                        value={selectedZone}
+                        value={currentPath === '/mizona' ? { value: zoneName, label: zoneName } : selectedZone}
+                        isDisabled={currentPath === '/mizona'} // Disable selection when on "mizona" page
                         placeholder={
                             <span className="flex flex-row justify-start items-center gap-3 text-black">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="1.5em" height="1.5em" viewBox="0 0 24 24">
@@ -229,6 +230,7 @@ const FilterMenu = ({ setFilters, currentPage, filters, data, setData, setCurren
                         }
                         className="leftanimation1 w-full z-[900]"
                     />
+
 
                     {/* Responsable Select */}
                     <Select
