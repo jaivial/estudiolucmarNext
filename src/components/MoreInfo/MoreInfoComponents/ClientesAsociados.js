@@ -1,5 +1,5 @@
 import React, { useState, useEffect, use } from 'react';
-import { Accordion, Tag, Button, SelectPicker, Modal, IconButton, Radio, RadioGroup, Toggle, Form, Grid, TagPicker, InputNumber, Table, Whisper, Tooltip, AutoComplete, InputGroup, Panel } from 'rsuite';
+import { Accordion, Tag, Button, SelectPicker, Modal, Radio, RadioGroup, Toggle, Form, TagPicker, InputNumber, Table, AutoComplete, InputGroup, Input } from 'rsuite';
 import axios from 'axios';
 import { Close } from '@rsuite/icons';
 import Toastify from 'toastify-js';
@@ -61,6 +61,21 @@ const ClientesAsociados = ({ setFilteredClientes, setClientesAsociadosInmueble, 
         rango_precios: [0, 1000000]
     });
 
+    // Handler for input change
+    const handleInputChange = (value) => {
+        const formattedValue = formatNumber(value);
+        setPrecio(formattedValue);
+    };
+
+
+    // Function to format number with thousands separator
+    const formatNumber = (value) => {
+        let numericValue = value.replace(/\./g, '').replace('€', '').trim(); // Remove dots and euro sign
+        if (!isNaN(numericValue) && numericValue !== '') {
+            return new Intl.NumberFormat('de-DE').format(numericValue); // Format with dot as thousand separator
+        }
+        return numericValue; // Return raw value if it's not a number
+    };
 
 
     const handleSearch = (value) => {
@@ -365,6 +380,10 @@ const ClientesAsociados = ({ setFilteredClientes, setClientesAsociadosInmueble, 
     const updateClienteAsociado = async () => {
         if (editCliente.nombre === "") {
             showToast('El campo "Nombre" es obligatorio.', 'linear-gradient(to right bottom, #c62828, #b92125, #ac1a22, #a0131f, #930b1c)');
+            return;
+        }
+        if (editCliente.rango_precios[1] < editCliente.rango_precios[0]) {
+            showToast('El precio máximo no puede ser menor que el precio mínimo.', 'linear-gradient(to right bottom, #c62828, #b92125, #ac1a22, #a0131f, #930b1c)');
             return;
         }
         if (editCliente.apellido === "") {
@@ -876,38 +895,53 @@ const ClientesAsociados = ({ setFilteredClientes, setClientesAsociadosInmueble, 
                                             <Form.Group controlId="rango_precios">
                                                 <Form.ControlLabel style={{ textAlign: 'center' }}>Rango de Precios</Form.ControlLabel>
                                                 <div className="flex justify-center gap-4 mt-4">
-                                                    <Form.Group controlId="precio_minimo">
-                                                        <Form.ControlLabel>Precio Mínimo (€)</Form.ControlLabel>
-                                                        <InputNumber
-                                                            type="number"
-                                                            min={0}
-                                                            value={editCliente.rango_precios[0]}
-                                                            onChange={value => {
-                                                                const maxPrice = editCliente.rango_precios[1];
-                                                                setEditCliente(prevState => ({
-                                                                    ...prevState,
-                                                                    rango_precios: [parseInt(value, 10), maxPrice < value ? parseInt(value, 10) : maxPrice]
-                                                                }));
-                                                            }}
-                                                        />
-                                                    </Form.Group>
-                                                    <Form.Group controlId="precio_maximo">
-                                                        <Form.ControlLabel>Precio Máximo (€)</Form.ControlLabel>
-                                                        <InputNumber
-                                                            type="number"
-                                                            min={editCliente.rango_precios[0] || 0}
-                                                            value={editCliente.rango_precios[1]}
-                                                            max={editCliente.interes === 'comprar' ? 1000000 : 2500}
-                                                            onChange={value => {
-                                                                const intValue = parseInt(value, 10);
-                                                                setEditCliente(prevState => ({
-                                                                    ...prevState,
-                                                                    rango_precios: [prevState.rango_precios[0], intValue]
-                                                                }));
-                                                            }}
-                                                        />
-                                                    </Form.Group>
+                                                    <div style={{ position: 'relative', width: '100%' }}>
+                                                        <Form.Group controlId="precio_minimo">
+                                                            <Form.ControlLabel>Precio Mínimo (€)</Form.ControlLabel>
+                                                            <Input
+                                                                id="precio_minimo"
+                                                                min={0}
+                                                                value={editCliente.rango_precios[0].toLocaleString('es-ES')}
+                                                                onChange={(value) => {
+                                                                    const numericValue = parseInt(value.replace(/\D/g, ''), 10) || 0; // Ensure numeric value
+                                                                    const maxPrice = editCliente.rango_precios[1];
+                                                                    setEditCliente(prevState => ({
+                                                                        ...prevState,
+                                                                        rango_precios: [
+                                                                            numericValue,
+                                                                            maxPrice < numericValue ? numericValue : maxPrice
+                                                                        ]
+                                                                    }));
+                                                                }}
+                                                                placeholder="Introduce el precio mínimo"
+                                                                className="w-full"
+                                                            />
+                                                            <span style={{ position: 'absolute', right: '10px', top: '80%', transform: 'translateY(-80%)' }}>€</span>
+                                                        </Form.Group>
+                                                    </div>
+
+                                                    <div style={{ position: 'relative', width: '100%' }}>
+                                                        <Form.Group controlId="precio_maximo">
+                                                            <Form.ControlLabel>Precio Máximo (€)</Form.ControlLabel>
+                                                            <Input
+                                                                id="precio_maximo"
+                                                                min={editCliente.rango_precios[0] || 0}
+                                                                value={editCliente.rango_precios[1].toLocaleString('es-ES')}
+                                                                onChange={(value) => {
+                                                                    const intValue = parseInt(value.replace(/\D/g, ''), 10) || 0; // Ensure numeric value
+                                                                    setEditCliente(prevState => ({
+                                                                        ...prevState,
+                                                                        rango_precios: [prevState.rango_precios[0], intValue]
+                                                                    }));
+                                                                }}
+                                                                placeholder="Introduce el precio máximo"
+                                                                className="w-full"
+                                                            />
+                                                            <span style={{ position: 'absolute', right: '10px', top: '80%', transform: 'translateY(-80%)' }}>€</span>
+                                                        </Form.Group>
+                                                    </div>
                                                 </div>
+
                                             </Form.Group>
                                         </div>
                                     </div>
