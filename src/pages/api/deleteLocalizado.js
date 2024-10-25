@@ -3,9 +3,8 @@ import clientPromise from '../../lib/mongodb';
 
 export default async function handler(req, res) {
 
-  // Run CORS middleware
-  await runMiddleware(req, res, cors);
-
+    // Run CORS middleware
+    await runMiddleware(req, res, cors);
 
     const { inmuebleId } = req.query;
 
@@ -14,15 +13,31 @@ export default async function handler(req, res) {
             const client = await clientPromise;
             const db = client.db('inmoprocrm');
 
-            // Update the main 'inmuebles' collection
+            const inmuebleIdInt = parseInt(inmuebleId);
+
+            // Update nested objects within 'inmuebles' collection
             await db.collection('inmuebles').updateMany(
-                { $or: [{ id: parseInt(inmuebleId) }, { 'nestedinmuebles.id': parseInt(inmuebleId) }, { 'nestedescaleras.nestedinmuebles.id': parseInt(inmuebleId) }] },
+                {
+                    $or: [
+                        { 'nestedinmuebles.id': inmuebleIdInt },
+                        { 'nestedescaleras.nestedinmuebles.id': inmuebleIdInt }
+                    ]
+                },
                 {
                     $set: {
-                        localizado: false,
-                        localizado_phone: '',
-                        client_id: '',
-                    },
+                        'nestedinmuebles.$[elem].localizado': false,
+                        'nestedinmuebles.$[elem].localizado_phone': '',
+                        'nestedinmuebles.$[elem].client_id': '',
+                        'nestedescaleras.$[escalera].nestedinmuebles.$[elem].localizado': false,
+                        'nestedescaleras.$[escalera].nestedinmuebles.$[elem].localizado_phone': '',
+                        'nestedescaleras.$[escalera].nestedinmuebles.$[elem].client_id': '',
+                    }
+                },
+                {
+                    arrayFilters: [
+                        { 'elem.id': inmuebleIdInt },
+                        { 'escalera.nestedinmuebles': { $exists: true } }
+                    ]
                 }
             );
 
