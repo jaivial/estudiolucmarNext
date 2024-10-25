@@ -518,46 +518,59 @@ const ClientesAsociados = ({ setFilteredClientes, setClientesAsociadosInmueble, 
                                                 <Form.Group controlId="rango_precios">
                                                     <Form.ControlLabel style={{ textAlign: 'center' }}>Rango de Precios</Form.ControlLabel>
                                                     <div className="flex justify-center gap-4 mt-4">
-                                                        <Form.Group controlId="precio_minimo">
-                                                            <Form.ControlLabel>Precio Mínimo (€)</Form.ControlLabel>
-                                                            <InputNumber
-                                                                type="number"
-                                                                min={0}
-                                                                value={newCliente.rango_precios[0]}
-                                                                onChange={value => {
-                                                                    const maxPrice = newCliente.rango_precios[1];
-                                                                    setNewCliente({
-                                                                        ...newCliente,
-                                                                        rango_precios: [parseInt(value, 10), maxPrice < value ? value : maxPrice]
-                                                                    });
-                                                                    setNewComprador({
-                                                                        ...newComprador,
-                                                                        rango_precios: [parseInt(value, 10), maxPrice < value ? value : maxPrice]
-                                                                    });
-                                                                }}
-                                                            />
-                                                        </Form.Group>
-                                                        <Form.Group controlId="precio_maximo">
-                                                            <Form.ControlLabel>Precio Máximo (€)</Form.ControlLabel>
-                                                            <InputNumber
-                                                                type="number"
-                                                                min={newCliente.rango_precios[0] || 0}
-                                                                value={newCliente.rango_precios[1]}
-                                                                max={newCliente.interes === 'comprar' ? 1000000 : 2500}
-                                                                onChange={value => {
-                                                                    const intValue = parseInt(value, 10);
-                                                                    setNewCliente(prevState => ({
-                                                                        ...prevState,
-                                                                        rango_precios: [prevState.rango_precios[0], intValue]
-                                                                    }));
-                                                                    setNewComprador(prevState => ({
-                                                                        ...prevState,
-                                                                        rango_precios: [prevState.rango_precios[0], intValue]
-                                                                    }));
-                                                                }}
-                                                            />
-                                                        </Form.Group>
+                                                        <div style={{ position: 'relative', width: '100%' }}>
+                                                            <Form.Group controlId="precio_minimo">
+                                                                <Form.ControlLabel>Precio Mínimo (€)</Form.ControlLabel>
+                                                                <Input
+                                                                    id="precio_minimo"
+                                                                    min={0}
+                                                                    value={new Intl.NumberFormat('es-ES').format(newCliente.rango_precios[0])}
+                                                                    onChange={(value) => {
+                                                                        const numericValue = parseInt(value.replace(/\D/g, ''), 10) || 0;
+                                                                        setNewCliente(prevState => ({
+                                                                            ...prevState,
+                                                                            rango_precios: [numericValue, prevState.rango_precios[1]]
+                                                                        }));
+                                                                        setNewComprador(prevState => ({
+                                                                            ...prevState,
+                                                                            rango_precios: [numericValue, prevState.rango_precios[1]]
+                                                                        }));
+                                                                    }}
+                                                                    placeholder="Introduce el precio mínimo"
+                                                                    className="w-full"
+                                                                />
+                                                                <span style={{ position: 'absolute', right: '10px', top: '80%', transform: 'translateY(-80%)' }}>€</span>
+                                                            </Form.Group>
+                                                        </div>
+
+                                                        <div style={{ position: 'relative', width: '100%' }}>
+                                                            <Form.Group controlId="precio_maximo">
+                                                                <Form.ControlLabel>Precio Máximo (€)</Form.ControlLabel>
+                                                                <Input
+                                                                    id="precio_maximo"
+                                                                    min={0}
+                                                                    max={newCliente.interes === 'comprar' ? 1000000 : 2500}
+                                                                    value={new Intl.NumberFormat('es-ES').format(newCliente.rango_precios[1])}
+                                                                    onChange={(value) => {
+                                                                        const intValue = parseInt(value.replace(/\D/g, ''), 10) || 0;
+                                                                        setNewCliente(prevState => ({
+                                                                            ...prevState,
+                                                                            rango_precios: [prevState.rango_precios[0], intValue]
+                                                                        }));
+                                                                        setNewComprador(prevState => ({
+                                                                            ...prevState,
+                                                                            rango_precios: [prevState.rango_precios[0], intValue]
+                                                                        }));
+                                                                    }}
+                                                                    placeholder="Introduce el precio máximo"
+                                                                    className="w-full"
+                                                                />
+                                                                <span style={{ position: 'absolute', right: '10px', top: '80%', transform: 'translateY(-80%)' }}>€</span>
+                                                            </Form.Group>
+                                                        </div>
                                                     </div>
+
+
                                                 </Form.Group>
                                             </div>
                                         </div>
@@ -681,29 +694,52 @@ const ClientesAsociados = ({ setFilteredClientes, setClientesAsociadosInmueble, 
 
                                     <Form.Group controlId="rango_precios">
                                         <Form.ControlLabel style={{ textAlign: 'center', fontWeight: 'bold', fontSize: '1rem' }}>Rango de Precios</Form.ControlLabel>
-                                        <div className="flex justify-center gap-4 mt-8 flex-row">
-                                            <Form.Group controlId="precio_minimo">
-                                                <Form.ControlLabel>Precio Mínimo (€)</Form.ControlLabel>
-                                                <InputNumber
-                                                    type="number"
-                                                    min={0}
-                                                    value={clientsToAssociateRangoPrecios[0]}
-                                                    onChange={value => setClientsToAssociateRangoPrecios(prevRangoPrecios => [parseInt(value, 10), prevRangoPrecios[1]])}
-                                                    style={{ width: '100%' }}
-                                                />
-                                            </Form.Group>
-                                            <Form.Group controlId="precio_maximo">
-                                                <Form.ControlLabel>Precio Máximo (€)</Form.ControlLabel>
-                                                <InputNumber
-                                                    type="number"
-                                                    min={clientsToAssociateRangoPrecios[0]}
-                                                    max={clientsToAssociateInteres === 'comprar' ? 1000000 : 2500}
-                                                    value={clientsToAssociateRangoPrecios[1]}
-                                                    onChange={value => setClientsToAssociateRangoPrecios(prevRangoPrecios => [prevRangoPrecios[0], parseInt(value, 10)])}
-                                                    style={{ width: '100%' }}
-                                                />
-                                            </Form.Group>
+                                        <div className="flex justify-center gap-4 mt-4">
+                                            <div style={{ position: 'relative', width: '100%' }}>
+                                                <Form.Group controlId="precio_minimo">
+                                                    <Form.ControlLabel>Precio Mínimo (€)</Form.ControlLabel>
+                                                    <Input
+                                                        id="precio_minimo"
+                                                        min={0}
+                                                        value={clientsToAssociateRangoPrecios[0].toLocaleString('es-ES')}
+                                                        onChange={(value) => {
+                                                            const numericValue = parseInt(value.replace(/\D/g, ''), 10) || 0; // Ensure numeric value
+                                                            const maxPrice = clientsToAssociateRangoPrecios[1];
+                                                            setClientsToAssociateRangoPrecios(prevRangoPrecios => [
+                                                                numericValue,
+                                                                maxPrice < numericValue ? numericValue : maxPrice
+                                                            ]);
+                                                        }}
+                                                        placeholder="Introduce el precio mínimo"
+                                                        className="w-full"
+                                                    />
+                                                    <span style={{ position: 'absolute', right: '10px', top: '80%', transform: 'translateY(-80%)' }}>€</span>
+                                                </Form.Group>
+                                            </div>
+
+                                            <div style={{ position: 'relative', width: '100%' }}>
+                                                <Form.Group controlId="precio_maximo">
+                                                    <Form.ControlLabel>Precio Máximo (€)</Form.ControlLabel>
+                                                    <Input
+                                                        id="precio_maximo"
+                                                        min={clientsToAssociateRangoPrecios[0] || 0}
+                                                        max={clientsToAssociateInteres === 'comprar' ? 1000000 : 2500}
+                                                        value={clientsToAssociateRangoPrecios[1].toLocaleString('es-ES')}
+                                                        onChange={(value) => {
+                                                            const intValue = parseInt(value.replace(/\D/g, ''), 10) || 0; // Ensure numeric value
+                                                            setClientsToAssociateRangoPrecios(prevRangoPrecios => [
+                                                                prevRangoPrecios[0],
+                                                                intValue
+                                                            ]);
+                                                        }}
+                                                        placeholder="Introduce el precio máximo"
+                                                        className="w-full"
+                                                    />
+                                                    <span style={{ position: 'absolute', right: '10px', top: '80%', transform: 'translateY(-80%)' }}>€</span>
+                                                </Form.Group>
+                                            </div>
                                         </div>
+
                                     </Form.Group>
                                 </div>
                             </Form>
