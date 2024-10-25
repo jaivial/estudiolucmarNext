@@ -11,8 +11,10 @@ import { Icon } from '@iconify/react';
 import './clientesasociados.css';
 const { Column, HeaderCell, Cell } = Table;
 import SearchIcon from '@rsuite/icons/Search';
+import Skeleton from 'react-loading-skeleton';
+import 'react-loading-skeleton/dist/skeleton.css';
 
-const ClientesAsociados = ({ setFilteredClientes, setClientesAsociadosInmueble, refreshMatchingClientesEncargos, setRefreshMatchingClientesEncargos, fetchClientesAsociados, setClientesAsociados, clientesAsociados, clientesAsociadosInmueble, filteredClientes, inmuebleId, inmuebleDireccion, screenWidth, setFetchClientPhoneNumberRefreshKey, fetchClientesPhoneNumberRefreshKey, localizadoRefreshKey, setLocalizadoRefreshKey, fetchClientesEncargos }) => {
+const ClientesAsociados = ({ loadingClientesAsociados, setFilteredClientes, setClientesAsociadosInmueble, refreshMatchingClientesEncargos, setRefreshMatchingClientesEncargos, fetchClientesAsociados, setClientesAsociados, clientesAsociados, clientesAsociadosInmueble, filteredClientes, inmuebleId, inmuebleDireccion, screenWidth, setFetchClientPhoneNumberRefreshKey, fetchClientesPhoneNumberRefreshKey, localizadoRefreshKey, setLocalizadoRefreshKey, fetchClientesEncargos }) => {
     const [open, setOpen] = useState(false);
     const [allClientes, setAllClientes] = useState([]);
     const [pedido, setPedido] = useState(false);
@@ -27,6 +29,7 @@ const ClientesAsociados = ({ setFilteredClientes, setClientesAsociadosInmueble, 
     const [editClienteAsociadoModalOpen, setEditClienteAsociadoModalOpen] = useState(false);
     const [viewMoreClienteAsociado, setViewMoreClienteAsociado] = useState(false);
     const [viewMoreClienteAsociadoModalOpen, setViewMoreClienteAsociadoModalOpen] = useState(false);
+
 
     const [newCliente, setNewCliente] = useState({
         inmuebleId: inmuebleId,
@@ -60,13 +63,6 @@ const ClientesAsociados = ({ setFilteredClientes, setClientesAsociadosInmueble, 
         interes: '',  // Default value
         rango_precios: [0, 1000000]
     });
-
-    // Handler for input change
-    const handleInputChange = (value) => {
-        const formattedValue = formatNumber(value);
-        setPrecio(formattedValue);
-    };
-
 
     // Function to format number with thousands separator
     const formatNumber = (value) => {
@@ -250,6 +246,7 @@ const ClientesAsociados = ({ setFilteredClientes, setClientesAsociadosInmueble, 
 
         console.log(inmuebleId, inmuebleDireccion, pedido, clientsToAssociate._id, clientsToAssociateInformador, clientsToAssociateInteres, clientsToAssociateRangoPrecios, propietario, inquilino);
         try {
+
             const response = await axios.post('/api/asociar_cliente', {
                 inmuebleId: inmuebleId,
                 inmuebleDireccion: inmuebleDireccion,
@@ -319,6 +316,7 @@ const ClientesAsociados = ({ setFilteredClientes, setClientesAsociadosInmueble, 
 
     const handleRemoveCliente = async (clienteId) => {
         try {
+
             const response = await axios.post('/api/unassociate_client', { clienteId, inmuebleId });
             if (response.data.status === 'success') {
                 showToast('Cliente eliminado con éxito', 'linear-gradient(to right bottom, #00603c, #006f39, #007d31, #008b24, #069903)');
@@ -327,6 +325,7 @@ const ClientesAsociados = ({ setFilteredClientes, setClientesAsociadosInmueble, 
                 setFilteredClientes(clientesAsociadosInmueble.filter(cliente => cliente._id !== clienteId));
                 setLocalizadoRefreshKey(localizadoRefreshKey + 1);
                 fetchClientesEncargos();
+
             } else {
                 showToast('Error al eliminar cliente', 'linear-gradient(to right bottom, #c62828, #b92125, #ac1a22, #a0131f, #930b1c)');
             }
@@ -403,6 +402,7 @@ const ClientesAsociados = ({ setFilteredClientes, setClientesAsociadosInmueble, 
             return;
         }
         try {
+
             const response = await axios.put('/api/updateClienteAsociado', editCliente, {
                 params: { inmuebleId, inmuebleDireccion }
             });
@@ -426,502 +426,277 @@ const ClientesAsociados = ({ setFilteredClientes, setClientesAsociadosInmueble, 
     };
 
 
+
+
     return (
         <Accordion defaultActiveKey={0} className={`w-full  ${screenWidth >= 640 ? 'm-0' : ''} border-1 border-gray-300 bg-slate-50`} style={{ borderRadius: '1rem' }}>
             <Accordion.Panel header="Clientes Asociados" eventKey={0} defaultExpanded={true} style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                <Modal open={open} onClose={handleClose} style={{ backgroundColor: 'rgba(0,0,0,0.15)', borderRadius: '10px', padding: '0px' }} backdrop="static">
-                    <Modal.Header>
-                        <Modal.Title style={{ fontSize: '1.5rem', fontWeight: 'semibold', textAlign: 'center' }}>Asociar Cliente</Modal.Title>
-                    </Modal.Header>
-                    <Modal.Body style={{ padding: '15px 20px', display: 'flex', flexDirection: 'column', gap: '20px', alignItems: 'center' }}>
-                        {!anyadeCliente && (
-                            <SelectPicker
-                                data={allClientes.map(cliente => ({ label: `${cliente.nombre} ${cliente.apellido}`, value: cliente }))}
-                                onChange={(value) => {
-                                    if (!value) {
-                                        // When the selection is cleared, reset the states
-                                        setClientsToAssociate([]);
-                                        setClientsToAssociateInteres('');
-                                        setClientsToAssociateRangoPrecios([]);
-                                        setPedido(false);
-                                        setInquilino(false);
-                                        setPropietario(false);
-                                    } else {
-                                        // When items are selected, update the states accordingly
-                                        setClientsToAssociate(value);
-                                        setClientsToAssociateInteres(value.interes);
-                                        setClientsToAssociateRangoPrecios(value.rango_precios);
-                                        setInquilino(value.inmuebles_asociados_inquilino.some(inquilino => inquilino.id === inmuebleId));
-                                        setPropietario(value.inmuebles_asociados_propietario.some(propietario => propietario.id === inmuebleId));
-                                    }
-                                }}
-                                searchable={true}
-                                style={{ width: '80%', margin: '0 auto' }}
-                                placeholder="Selecciona un cliente"
-                            />
-                        )}
-                        {clientsToAssociate.client_id && (
-                            <>
-                                <TagPicker
-                                    data={[
-                                        { label: 'Inquilino', value: 'inquilino', role: 'inquilino' },
-                                        { label: 'Propietario', value: 'propietario', role: 'propietario' }
-                                    ]}
-                                    value={(inquilino ? ['inquilino'] : []).concat(propietario ? ['propietario'] : [])}
-                                    onChange={(selectedValues) => {
-                                        setInquilino(selectedValues.includes('inquilino'));
-                                        setPropietario(selectedValues.includes('propietario'));
-                                    }}
-                                    placeholder="Selecciona roles"
-                                    style={{ width: '80%', margin: '0 auto' }}
-                                />
-
-                                <Toggle size="md" checkedChildren="Informador" unCheckedChildren="No Informador" onChange={(checked) => setClientsToAssociateInformador(checked)} />
-                                <Toggle size="md" checked={pedido} checkedChildren="Pedido" unCheckedChildren="No Pedido" onChange={(checked) => setPedido(checked)} />
-                            </>
-                        )}
-                        {!clientsToAssociate.client_id && !anyadeCliente && (
-                            <div className='flex flex-col gap-2 justify-center items-center mt-6'>
-                                <p>¿El cliente no se ha creado todavía?</p>
-                                <Button appearance='primary' onClick={handleAnyadeCliente}>Añadir Cliente</Button>
-                            </div>
-                        )}
-
-                        {anyadeCliente && (
-                            <div className='w-full flex flex-col gap-2 justify-center items-center mt-6'>
-                                <Form fluid style={{ width: '100%' }}>
-                                    <Form.Group controlId="pedido-toggle" className="w-full flex flex-col gap-4 justify-center items-center">
-                                        <p>¿Es un pedido?</p>
-                                        <Toggle
-                                            checkedChildren="Pedido"
-                                            unCheckedChildren="No Pedido"
-                                            checked={newCliente.pedido}
-                                            onChange={(checked) => handlePedido(checked)}
-                                            size={'lg'}
-                                        />
-                                    </Form.Group>
-                                    {newCliente.pedido && (
-                                        <div className="w-full flex flex-col gap-4 justify-center items-center mt-10">
-                                            <div className="w-full flex flex-row gap-32 justify-center items-start">
-                                                <Form.Group controlId="interes">
-                                                    <Form.ControlLabel style={{ textAlign: 'center' }}>Interés</Form.ControlLabel>
-                                                    <RadioGroup
-                                                        name="interes"
-                                                        value={newCliente.interes}
-                                                        onChange={handleInteresChange}
-                                                    >
-                                                        <Radio value="comprar">Comprar</Radio>
-                                                        <Radio value="alquilar">Alquilar</Radio>
-                                                    </RadioGroup>
-                                                </Form.Group>
-
-                                                <Form.Group controlId="rango_precios">
-                                                    <Form.ControlLabel style={{ textAlign: 'center' }}>Rango de Precios</Form.ControlLabel>
-                                                    <div className="flex justify-center gap-4 mt-4">
-                                                        <div style={{ position: 'relative', width: '100%' }}>
-                                                            <Form.Group controlId="precio_minimo">
-                                                                <Form.ControlLabel>Precio Mínimo (€)</Form.ControlLabel>
-                                                                <Input
-                                                                    id="precio_minimo"
-                                                                    min={0}
-                                                                    value={new Intl.NumberFormat('es-ES').format(newCliente.rango_precios[0])}
-                                                                    onChange={(value) => {
-                                                                        const numericValue = parseInt(value.replace(/\D/g, ''), 10) || 0;
-                                                                        setNewCliente(prevState => ({
-                                                                            ...prevState,
-                                                                            rango_precios: [numericValue, prevState.rango_precios[1]]
-                                                                        }));
-                                                                        setNewComprador(prevState => ({
-                                                                            ...prevState,
-                                                                            rango_precios: [numericValue, prevState.rango_precios[1]]
-                                                                        }));
-                                                                    }}
-                                                                    placeholder="Introduce el precio mínimo"
-                                                                    className="w-full"
-                                                                />
-                                                                <span style={{ position: 'absolute', right: '10px', top: '80%', transform: 'translateY(-80%)' }}>€</span>
-                                                            </Form.Group>
-                                                        </div>
-
-                                                        <div style={{ position: 'relative', width: '100%' }}>
-                                                            <Form.Group controlId="precio_maximo">
-                                                                <Form.ControlLabel>Precio Máximo (€)</Form.ControlLabel>
-                                                                <Input
-                                                                    id="precio_maximo"
-                                                                    min={0}
-                                                                    max={newCliente.interes === 'comprar' ? 1000000 : 2500}
-                                                                    value={new Intl.NumberFormat('es-ES').format(newCliente.rango_precios[1])}
-                                                                    onChange={(value) => {
-                                                                        const intValue = parseInt(value.replace(/\D/g, ''), 10) || 0;
-                                                                        setNewCliente(prevState => ({
-                                                                            ...prevState,
-                                                                            rango_precios: [prevState.rango_precios[0], intValue]
-                                                                        }));
-                                                                        setNewComprador(prevState => ({
-                                                                            ...prevState,
-                                                                            rango_precios: [prevState.rango_precios[0], intValue]
-                                                                        }));
-                                                                    }}
-                                                                    placeholder="Introduce el precio máximo"
-                                                                    className="w-full"
-                                                                />
-                                                                <span style={{ position: 'absolute', right: '10px', top: '80%', transform: 'translateY(-80%)' }}>€</span>
-                                                            </Form.Group>
-                                                        </div>
-                                                    </div>
-
-
-                                                </Form.Group>
-                                            </div>
-                                        </div>
-                                    )}
-                                    <Form.Group style={{ width: '100%' }}>
-                                        <Form.ControlLabel>Nombre</Form.ControlLabel>
-                                        <Form.Control name="nombre" value={newCliente.nombre} onChange={value => {
-                                            setNewCliente({ ...newCliente, nombre: value });
-                                            setNewComprador({ ...newComprador, nombre: value });
-                                        }} />
-                                    </Form.Group>
-
-                                    <Form.Group>
-                                        <Form.ControlLabel>Apellido</Form.ControlLabel>
-                                        <Form.Control name="apellido" value={newCliente.apellido} onChange={value => {
-                                            setNewCliente({ ...newCliente, apellido: value });
-                                            setNewComprador({ ...newComprador, apellido: value });
-                                        }} />
-                                    </Form.Group>
-                                    <Form.Group controlId="email">
-                                        <Form.ControlLabel>Email</Form.ControlLabel>
-                                        <Form.Control name="email" value={newCliente.email} onChange={value => {
-                                            setNewCliente({ ...newCliente, email: value });
-                                            setNewComprador({ ...newComprador, email: value });
-                                        }} />
-                                    </Form.Group>
-                                    <Form.Group>
-                                        <Form.ControlLabel>Teléfono</Form.ControlLabel>
-                                        <Form.Control name="telefono" value={newCliente.telefono} onChange={value => {
-                                            setNewCliente({ ...newCliente, telefono: value });
-                                            setNewComprador({ ...newComprador, telefono: value });
-                                        }} />
-                                    </Form.Group>
-
-                                    <Form.Group>
-                                        <Form.ControlLabel>DNI</Form.ControlLabel>
-                                        <Form.Control name="dni" value={newCliente.dni} onChange={value => {
-                                            setNewCliente({ ...newCliente, dni: value });
-                                            setNewComprador({ ...newComprador, dni: value });
+                {loadingClientesAsociados ? (
+                    <div className='flex flex-col gap-4 w-full'>
+                        <Skeleton count={1} height={50} className="shadow-lg" style={{ borderRadius: '1rem', margin: '0 auto' }} />
+                        <Skeleton count={1} height={80} className="shadow-lg" style={{ borderRadius: '1rem', margin: '0 auto' }} />
+                        <Skeleton count={1} height={80} className="shadow-lg" style={{ borderRadius: '1rem', margin: '0 auto' }} />
+                        <Skeleton count={1} height={80} className="shadow-lg" style={{ borderRadius: '1rem', margin: '0 auto' }} />
+                    </div>
+                ) : (
+                    <>
+                        <Modal open={open} onClose={handleClose} style={{ backgroundColor: 'rgba(0,0,0,0.15)', borderRadius: '10px', padding: '0px' }} backdrop="static">
+                            <Modal.Header>
+                                <Modal.Title style={{ fontSize: '1.5rem', fontWeight: 'semibold', textAlign: 'center' }}>Asociar Cliente</Modal.Title>
+                            </Modal.Header>
+                            <Modal.Body style={{ padding: '15px 20px', display: 'flex', flexDirection: 'column', gap: '20px', alignItems: 'center' }}>
+                                {!anyadeCliente && (
+                                    <SelectPicker
+                                        data={allClientes.map(cliente => ({ label: `${cliente.nombre} ${cliente.apellido}`, value: cliente }))}
+                                        onChange={(value) => {
+                                            if (!value) {
+                                                // When the selection is cleared, reset the states
+                                                setClientsToAssociate([]);
+                                                setClientsToAssociateInteres('');
+                                                setClientsToAssociateRangoPrecios([]);
+                                                setPedido(false);
+                                                setInquilino(false);
+                                                setPropietario(false);
+                                            } else {
+                                                // When items are selected, update the states accordingly
+                                                setClientsToAssociate(value);
+                                                setClientsToAssociateInteres(value.interes);
+                                                setClientsToAssociateRangoPrecios(value.rango_precios);
+                                                setInquilino(value.inmuebles_asociados_inquilino.some(inquilino => inquilino.id === inmuebleId));
+                                                setPropietario(value.inmuebles_asociados_propietario.some(propietario => propietario.id === inmuebleId));
+                                            }
                                         }}
-                                        />
-                                    </Form.Group>
-                                    <Form.Group>
-                                        <Form.ControlLabel>Tipo de asociación con el inmueble actual</Form.ControlLabel>
+                                        searchable={true}
+                                        style={{ width: '80%', margin: '0 auto' }}
+                                        placeholder="Selecciona un cliente"
+                                    />
+                                )}
+                                {clientsToAssociate.client_id && (
+                                    <>
                                         <TagPicker
                                             data={[
                                                 { label: 'Inquilino', value: 'inquilino', role: 'inquilino' },
                                                 { label: 'Propietario', value: 'propietario', role: 'propietario' }
                                             ]}
-                                            value={(newCliente.inmuebles_asociados_inquilino && newCliente.inmuebles_asociados_inquilino.some(inquilino => inquilino.id === inmuebleId) ? ['inquilino'] : []).concat(newCliente.inmuebles_asociados_propietario && newCliente.inmuebles_asociados_propietario.some(propietario => propietario.id === inmuebleId) ? ['propietario'] : [])}
+                                            value={(inquilino ? ['inquilino'] : []).concat(propietario ? ['propietario'] : [])}
                                             onChange={(selectedValues) => {
-                                                if (selectedValues.includes('inquilino')) {
-                                                    if (!newCliente.inmuebles_asociados_inquilino.some(inquilino => inquilino.id === inmuebleId)) {
-                                                        setNewCliente(prevState => ({
-                                                            ...prevState,
-                                                            inmuebles_asociados_inquilino: [...prevState.inmuebles_asociados_inquilino, { id: inmuebleId, direccion: inmuebleDireccion }]
-                                                        }));
-                                                    }
-                                                } else {
-                                                    setNewCliente(prevState => ({
-                                                        ...prevState,
-                                                        inmuebles_asociados_inquilino: prevState.inmuebles_asociados_inquilino.filter(inquilino => inquilino.id !== inmuebleId)
-                                                    }));
-                                                }
-                                                if (selectedValues.includes('propietario')) {
-                                                    if (!newCliente.inmuebles_asociados_propietario.some(propietario => propietario.id === inmuebleId)) {
-                                                        setNewCliente(prevState => ({
-                                                            ...prevState,
-                                                            inmuebles_asociados_propietario: [...prevState.inmuebles_asociados_propietario, { id: inmuebleId, direccion: inmuebleDireccion }]
-                                                        }));
-                                                    }
-                                                } else {
-                                                    setNewCliente(prevState => ({
-                                                        ...prevState,
-                                                        inmuebles_asociados_propietario: prevState.inmuebles_asociados_propietario.filter(propietario => propietario.id !== inmuebleId)
-                                                    }));
-                                                }
+                                                setInquilino(selectedValues.includes('inquilino'));
+                                                setPropietario(selectedValues.includes('propietario'));
                                             }}
                                             placeholder="Selecciona roles"
                                             style={{ width: '80%', margin: '0 auto' }}
                                         />
-                                    </Form.Group>
-                                    <Form.Group controlId="informador-toggle" className="w-full flex flex-col gap-4 justify-center items-center">
-                                        <p>¿Es un informador?</p>
-                                        <Toggle
-                                            checkedChildren="Informador"
-                                            unCheckedChildren="No Informador"
-                                            defaultChecked={newCliente.informador}
-                                            onChange={(checked) => handleInformador(checked)}
-                                            size={'lg'}
-                                        />
-                                    </Form.Group>
 
-                                    <div className="flex flex-col gap-4 justify-center items-center my-10">
-                                        <Button appearance="primary" onClick={handleAddCliente} style={{ marginTop: '20px' }}>
-                                            Asociar nuevo cliente
-                                        </Button>
-                                        <Button appearance="ghost" onClick={handleVolverAtras}>Volver atrás</Button>
+                                        <Toggle size="md" checkedChildren="Informador" unCheckedChildren="No Informador" onChange={(checked) => setClientsToAssociateInformador(checked)} />
+                                        <Toggle size="md" checked={pedido} checkedChildren="Pedido" unCheckedChildren="No Pedido" onChange={(checked) => setPedido(checked)} />
+                                    </>
+                                )}
+                                {!clientsToAssociate.client_id && !anyadeCliente && (
+                                    <div className='flex flex-col gap-2 justify-center items-center mt-6'>
+                                        <p>¿El cliente no se ha creado todavía?</p>
+                                        <Button appearance='primary' onClick={handleAnyadeCliente}>Añadir Cliente</Button>
                                     </div>
+                                )}
 
-                                </Form>
-                            </div>
-                        )}
+                                {anyadeCliente && (
+                                    <div className='w-full flex flex-col gap-2 justify-center items-center mt-6'>
+                                        <Form fluid style={{ width: '100%' }}>
+                                            <Form.Group controlId="pedido-toggle" className="w-full flex flex-col gap-4 justify-center items-center">
+                                                <p>¿Es un pedido?</p>
+                                                <Toggle
+                                                    checkedChildren="Pedido"
+                                                    unCheckedChildren="No Pedido"
+                                                    checked={newCliente.pedido}
+                                                    onChange={(checked) => handlePedido(checked)}
+                                                    size={'lg'}
+                                                />
+                                            </Form.Group>
+                                            {newCliente.pedido && (
+                                                <div className="w-full flex flex-col gap-4 justify-center items-center mt-10">
+                                                    <div className="w-full flex flex-row gap-32 justify-center items-start">
+                                                        <Form.Group controlId="interes">
+                                                            <Form.ControlLabel style={{ textAlign: 'center' }}>Interés</Form.ControlLabel>
+                                                            <RadioGroup
+                                                                name="interes"
+                                                                value={newCliente.interes}
+                                                                onChange={handleInteresChange}
+                                                            >
+                                                                <Radio value="comprar">Comprar</Radio>
+                                                                <Radio value="alquilar">Alquilar</Radio>
+                                                            </RadioGroup>
+                                                        </Form.Group>
 
-                        {pedido && (
-                            // Placeholder for future form development
-                            <Form>
-                                <div className="w-full flex flex-col gap-2 justify-center items-center border border-gray-300 rounded-lg p-4 bg-gray-100">
-                                    <Form.Group controlId="interes">
-                                        <Form.ControlLabel style={{ textAlign: 'center', fontWeight: 'bold', fontSize: '1rem', marginBottom: '10px' }}>Interés</Form.ControlLabel>
-                                        <RadioGroup
-                                            name="interes"
-                                            inline
-                                            onChange={value => setClientsToAssociateInteres(value)}
-                                            value={clientsToAssociateInteres}
-                                        >
-                                            <Radio value="comprar">Comprar</Radio>
-                                            <Radio value="alquilar">Alquilar</Radio>
-                                        </RadioGroup>
-                                    </Form.Group>
+                                                        <Form.Group controlId="rango_precios">
+                                                            <Form.ControlLabel style={{ textAlign: 'center' }}>Rango de Precios</Form.ControlLabel>
+                                                            <div className="flex justify-center gap-4 mt-4">
+                                                                <div style={{ position: 'relative', width: '100%' }}>
+                                                                    <Form.Group controlId="precio_minimo">
+                                                                        <Form.ControlLabel>Precio Mínimo (€)</Form.ControlLabel>
+                                                                        <Input
+                                                                            id="precio_minimo"
+                                                                            min={0}
+                                                                            value={new Intl.NumberFormat('es-ES').format(newCliente.rango_precios[0])}
+                                                                            onChange={(value) => {
+                                                                                const numericValue = parseInt(value.replace(/\D/g, ''), 10) || 0;
+                                                                                setNewCliente(prevState => ({
+                                                                                    ...prevState,
+                                                                                    rango_precios: [numericValue, prevState.rango_precios[1]]
+                                                                                }));
+                                                                                setNewComprador(prevState => ({
+                                                                                    ...prevState,
+                                                                                    rango_precios: [numericValue, prevState.rango_precios[1]]
+                                                                                }));
+                                                                            }}
+                                                                            placeholder="Introduce el precio mínimo"
+                                                                            className="w-full"
+                                                                        />
+                                                                        <span style={{ position: 'absolute', right: '10px', top: '80%', transform: 'translateY(-80%)' }}>€</span>
+                                                                    </Form.Group>
+                                                                </div>
 
-                                    <Form.Group controlId="rango_precios">
-                                        <Form.ControlLabel style={{ textAlign: 'center', fontWeight: 'bold', fontSize: '1rem' }}>Rango de Precios</Form.ControlLabel>
-                                        <div className="flex justify-center gap-4 mt-4">
-                                            <div style={{ position: 'relative', width: '100%' }}>
-                                                <Form.Group controlId="precio_minimo">
-                                                    <Form.ControlLabel>Precio Mínimo (€)</Form.ControlLabel>
-                                                    <Input
-                                                        id="precio_minimo"
-                                                        min={0}
-                                                        value={clientsToAssociateRangoPrecios[0].toLocaleString('es-ES')}
-                                                        onChange={(value) => {
-                                                            const numericValue = parseInt(value.replace(/\D/g, ''), 10) || 0; // Ensure numeric value
-                                                            const maxPrice = clientsToAssociateRangoPrecios[1];
-                                                            setClientsToAssociateRangoPrecios(prevRangoPrecios => [
-                                                                numericValue,
-                                                                maxPrice < numericValue ? numericValue : maxPrice
-                                                            ]);
-                                                        }}
-                                                        placeholder="Introduce el precio mínimo"
-                                                        className="w-full"
-                                                    />
-                                                    <span style={{ position: 'absolute', right: '10px', top: '80%', transform: 'translateY(-80%)' }}>€</span>
-                                                </Form.Group>
-                                            </div>
+                                                                <div style={{ position: 'relative', width: '100%' }}>
+                                                                    <Form.Group controlId="precio_maximo">
+                                                                        <Form.ControlLabel>Precio Máximo (€)</Form.ControlLabel>
+                                                                        <Input
+                                                                            id="precio_maximo"
+                                                                            min={0}
+                                                                            max={newCliente.interes === 'comprar' ? 1000000 : 2500}
+                                                                            value={new Intl.NumberFormat('es-ES').format(newCliente.rango_precios[1])}
+                                                                            onChange={(value) => {
+                                                                                const intValue = parseInt(value.replace(/\D/g, ''), 10) || 0;
+                                                                                setNewCliente(prevState => ({
+                                                                                    ...prevState,
+                                                                                    rango_precios: [prevState.rango_precios[0], intValue]
+                                                                                }));
+                                                                                setNewComprador(prevState => ({
+                                                                                    ...prevState,
+                                                                                    rango_precios: [prevState.rango_precios[0], intValue]
+                                                                                }));
+                                                                            }}
+                                                                            placeholder="Introduce el precio máximo"
+                                                                            className="w-full"
+                                                                        />
+                                                                        <span style={{ position: 'absolute', right: '10px', top: '80%', transform: 'translateY(-80%)' }}>€</span>
+                                                                    </Form.Group>
+                                                                </div>
+                                                            </div>
 
-                                            <div style={{ position: 'relative', width: '100%' }}>
-                                                <Form.Group controlId="precio_maximo">
-                                                    <Form.ControlLabel>Precio Máximo (€)</Form.ControlLabel>
-                                                    <Input
-                                                        id="precio_maximo"
-                                                        min={clientsToAssociateRangoPrecios[0] || 0}
-                                                        max={clientsToAssociateInteres === 'comprar' ? 1000000 : 2500}
-                                                        value={clientsToAssociateRangoPrecios[1].toLocaleString('es-ES')}
-                                                        onChange={(value) => {
-                                                            const intValue = parseInt(value.replace(/\D/g, ''), 10) || 0; // Ensure numeric value
-                                                            setClientsToAssociateRangoPrecios(prevRangoPrecios => [
-                                                                prevRangoPrecios[0],
-                                                                intValue
-                                                            ]);
-                                                        }}
-                                                        placeholder="Introduce el precio máximo"
-                                                        className="w-full"
-                                                    />
-                                                    <span style={{ position: 'absolute', right: '10px', top: '80%', transform: 'translateY(-80%)' }}>€</span>
-                                                </Form.Group>
-                                            </div>
-                                        </div>
 
-                                    </Form.Group>
-                                </div>
-                            </Form>
-                        )}
-
-                        <Modal.Footer style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: '10px', marginTop: '10px', marginBottom: '0px', alignItems: 'center' }}>
-                            {clientsToAssociate.client_id && (
-                                <Button appearance='primary' onClick={handleAsociarCliente} style={{ width: 'auto' }}>Asociar</Button>
-                            )}
-
-                            <Button onClick={handleClose} appearance="subtle">Cancelar</Button>
-                        </Modal.Footer>
-                    </Modal.Body>
-                </Modal>
-                <InputGroup style={{ width: '300px', margin: '0 auto 40px auto' }} className='searchclientesasociados'>
-                    <AutoComplete
-                        placeholder="Buscar clientes asociados.."
-                        data={clientesAsociadosInmueble.map(cliente => `${cliente.nombre} ${cliente.apellido}`)}
-                        onChange={handleSearch}
-                    />
-                    <InputGroup.Button tabIndex={-1}>
-                        <SearchIcon />
-                    </InputGroup.Button>
-                </InputGroup>
-                {filteredClientes?.length > 0 ? (
-                    <ul className='flex flex-col gap-3 mt-4 w-full'>
-                        {filteredClientes
-                            .sort((a, b) => {
-                                const aIsPropietario = a.inmuebles_asociados_propietario?.some(propietario => propietario.id === inmuebleId);
-                                const bIsPropietario = b.inmuebles_asociados_propietario?.some(propietario => propietario.id === inmuebleId);
-                                return bIsPropietario - aIsPropietario;
-                            })
-                            .map((cliente) => (
-                                <>
-                                    <li key={cliente._id} className="flex flex-row justify-stretch items-center">
-                                        <div className="flex flex-row justify-evenly items-center w-full gap-1">
-                                            {cliente.inmuebles_asociados_informador?.some(propietario => propietario.id === inmuebleId) && (
-                                                <div className='flex flex-row pr-1 justify-center items-center gap-1'>
-                                                    <Icon icon="mdi:information" style={{ fontSize: '2rem' }} className={cliente.informador ? 'text-blue-500' : 'text-transparent'} />
+                                                        </Form.Group>
+                                                    </div>
                                                 </div>
                                             )}
-                                            <div className='w-36  text-center'>
-                                                <p className="text-base sm:text-lg font-semibold w-full">{cliente.nombre} {cliente.apellido}</p>
+                                            <Form.Group style={{ width: '100%' }}>
+                                                <Form.ControlLabel>Nombre</Form.ControlLabel>
+                                                <Form.Control name="nombre" value={newCliente.nombre} onChange={value => {
+                                                    setNewCliente({ ...newCliente, nombre: value });
+                                                    setNewComprador({ ...newComprador, nombre: value });
+                                                }} />
+                                            </Form.Group>
+
+                                            <Form.Group>
+                                                <Form.ControlLabel>Apellido</Form.ControlLabel>
+                                                <Form.Control name="apellido" value={newCliente.apellido} onChange={value => {
+                                                    setNewCliente({ ...newCliente, apellido: value });
+                                                    setNewComprador({ ...newComprador, apellido: value });
+                                                }} />
+                                            </Form.Group>
+                                            <Form.Group controlId="email">
+                                                <Form.ControlLabel>Email</Form.ControlLabel>
+                                                <Form.Control name="email" value={newCliente.email} onChange={value => {
+                                                    setNewCliente({ ...newCliente, email: value });
+                                                    setNewComprador({ ...newComprador, email: value });
+                                                }} />
+                                            </Form.Group>
+                                            <Form.Group>
+                                                <Form.ControlLabel>Teléfono</Form.ControlLabel>
+                                                <Form.Control name="telefono" value={newCliente.telefono} onChange={value => {
+                                                    setNewCliente({ ...newCliente, telefono: value });
+                                                    setNewComprador({ ...newComprador, telefono: value });
+                                                }} />
+                                            </Form.Group>
+
+                                            <Form.Group>
+                                                <Form.ControlLabel>DNI</Form.ControlLabel>
+                                                <Form.Control name="dni" value={newCliente.dni} onChange={value => {
+                                                    setNewCliente({ ...newCliente, dni: value });
+                                                    setNewComprador({ ...newComprador, dni: value });
+                                                }}
+                                                />
+                                            </Form.Group>
+                                            <Form.Group>
+                                                <Form.ControlLabel>Tipo de asociación con el inmueble actual</Form.ControlLabel>
+                                                <TagPicker
+                                                    data={[
+                                                        { label: 'Inquilino', value: 'inquilino', role: 'inquilino' },
+                                                        { label: 'Propietario', value: 'propietario', role: 'propietario' }
+                                                    ]}
+                                                    value={(newCliente.inmuebles_asociados_inquilino && newCliente.inmuebles_asociados_inquilino.some(inquilino => inquilino.id === inmuebleId) ? ['inquilino'] : []).concat(newCliente.inmuebles_asociados_propietario && newCliente.inmuebles_asociados_propietario.some(propietario => propietario.id === inmuebleId) ? ['propietario'] : [])}
+                                                    onChange={(selectedValues) => {
+                                                        if (selectedValues.includes('inquilino')) {
+                                                            if (!newCliente.inmuebles_asociados_inquilino.some(inquilino => inquilino.id === inmuebleId)) {
+                                                                setNewCliente(prevState => ({
+                                                                    ...prevState,
+                                                                    inmuebles_asociados_inquilino: [...prevState.inmuebles_asociados_inquilino, { id: inmuebleId, direccion: inmuebleDireccion }]
+                                                                }));
+                                                            }
+                                                        } else {
+                                                            setNewCliente(prevState => ({
+                                                                ...prevState,
+                                                                inmuebles_asociados_inquilino: prevState.inmuebles_asociados_inquilino.filter(inquilino => inquilino.id !== inmuebleId)
+                                                            }));
+                                                        }
+                                                        if (selectedValues.includes('propietario')) {
+                                                            if (!newCliente.inmuebles_asociados_propietario.some(propietario => propietario.id === inmuebleId)) {
+                                                                setNewCliente(prevState => ({
+                                                                    ...prevState,
+                                                                    inmuebles_asociados_propietario: [...prevState.inmuebles_asociados_propietario, { id: inmuebleId, direccion: inmuebleDireccion }]
+                                                                }));
+                                                            }
+                                                        } else {
+                                                            setNewCliente(prevState => ({
+                                                                ...prevState,
+                                                                inmuebles_asociados_propietario: prevState.inmuebles_asociados_propietario.filter(propietario => propietario.id !== inmuebleId)
+                                                            }));
+                                                        }
+                                                    }}
+                                                    placeholder="Selecciona roles"
+                                                    style={{ width: '80%', margin: '0 auto' }}
+                                                />
+                                            </Form.Group>
+                                            <Form.Group controlId="informador-toggle" className="w-full flex flex-col gap-4 justify-center items-center">
+                                                <p>¿Es un informador?</p>
+                                                <Toggle
+                                                    checkedChildren="Informador"
+                                                    unCheckedChildren="No Informador"
+                                                    defaultChecked={newCliente.informador}
+                                                    onChange={(checked) => handleInformador(checked)}
+                                                    size={'lg'}
+                                                />
+                                            </Form.Group>
+
+                                            <div className="flex flex-col gap-4 justify-center items-center my-10">
+                                                <Button appearance="primary" onClick={handleAddCliente} style={{ marginTop: '20px' }}>
+                                                    Asociar nuevo cliente
+                                                </Button>
+                                                <Button appearance="ghost" onClick={handleVolverAtras}>Volver atrás</Button>
                                             </div>
-                                            <div className='min-width-20 px-2 text-center display-flex flex-col justify-center items-center'>
-                                                <div className='flex flex-col justify-center items-center mx-0 sm:flex-row md:flex-col md:min-w-fit gap-2'>
-                                                    {cliente.inmuebles_asociados_propietario?.some(propietario => propietario.id === inmuebleId) && (
-                                                        <Tag color="green" style={{ margin: '0 auto' }}>Propietario</Tag>
-                                                    )}
-                                                    {cliente.inmuebles_asociados_inquilino?.some(inquilino => inquilino.id === inmuebleId) && (
-                                                        <Tag color="orange" style={{ margin: '0 auto' }}>Inquilino</Tag>
-                                                    )}
-                                                </div>
-                                            </div>
-                                            <div className='w-[50px] text-center flex flex-col justify-center items-center gap-2 pl-2'>
-                                                <button className='rounded-md text-xl' onClick={() => handleViewCliente(cliente)}>
-                                                    <FaEye />
-                                                </button>
-                                                <button className='rounded-md text-xl' onClick={() => handleEditClienteAsociado(cliente)}>
-                                                    <AiOutlineEdit />
-                                                </button>
-                                                <button onClick={() => handleRemoveCliente(cliente._id)} className='text-black text-xl'>
-                                                    <AiOutlineClose />
-                                                </button>
-                                            </div>
-                                        </div>
-                                    </li>
-                                    <div className='h-[1px] w-full bg-gray-300 my-2'></div>
-                                </>
-                            ))}
-                    </ul>
-                ) : (
-                    <p className='text-center'>No hay clientes asociados a este inmueble.</p>
-                )}
 
-                <div className='flex justify-center items-center w-full'>
-                    <Button appearance='primary' style={{ marginBottom: '20px', marginTop: '20px' }} className="bg-blue-400" onClick={handleOpenAsociar}>Asociar Clientes</Button>
-                </div>
-                <Modal open={editClienteAsociadoModalOpen} onClose={closeModalClienteAsociado} backdrop={true} overflow={false} style={{ backgroundColor: 'rgba(0,0,0,0.15)', padding: '0px', marginBottom: '70px' }} size="xs">
-                    <Modal.Header style={{ display: 'flex', flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: '10px', width: '100%', marginTop: '10px' }}>
-                        <Modal.Title style={{ fontSize: '1.5rem', fontWeight: 'semibold', textAlign: 'center' }}>Editar Cliente Asociado</Modal.Title>
-                    </Modal.Header>
-                    <Modal.Body style={{ padding: '15px 20px', display: 'flex', flexDirection: 'column', gap: '20px', alignItems: 'center' }}>
-                        {editCliente && (
-                            <Form fluid>
-                                <Form.Group controlId="nombre">
-                                    <Form.ControlLabel>Nombre</Form.ControlLabel>
-                                    <Form.Control name="nombre" defaultValue={editCliente.nombre} onChange={value => setEditCliente(prevState => ({ ...prevState, nombre: value }))} />
-                                </Form.Group>
-                                <Form.Group controlId="apellido">
-                                    <Form.ControlLabel>Apellido</Form.ControlLabel>
-                                    <Form.Control name="apellido" defaultValue={editCliente.apellido} onChange={value => setEditCliente(prevState => ({ ...prevState, apellido: value }))} />
-                                </Form.Group>
-                                <Form.Group controlId="dni">
-                                    <Form.ControlLabel>DNI</Form.ControlLabel>
-                                    <Form.Control name="dni" defaultValue={editCliente.dni} onChange={value => setEditCliente(prevState => ({ ...prevState, dni: value }))} />
-                                </Form.Group>
-                                <Form.Group controlId="email">
-                                    <Form.ControlLabel>Email</Form.ControlLabel>
-                                    <Form.Control name="email" defaultValue={editCliente.email} onChange={value => setEditCliente(prevState => ({ ...prevState, email: value }))} />
-                                </Form.Group>
-                                <Form.Group controlId="telefono">
-                                    <Form.ControlLabel>Teléfono</Form.ControlLabel>
-                                    <Form.Control name="telefono" defaultValue={editCliente.telefono} onChange={value => setEditCliente(prevState => ({ ...prevState, telefono: value }))} />
-                                </Form.Group>
+                                        </Form>
+                                    </div>
+                                )}
 
-
-                                <Form.Group>
-                                    <Form.ControlLabel>Tipo de asociación con el inmueble actual</Form.ControlLabel>
-                                    <TagPicker
-                                        data={[
-                                            { label: 'Inquilino', value: 'inquilino', role: 'inquilino' },
-                                            { label: 'Propietario', value: 'propietario', role: 'propietario' }
-                                        ]}
-                                        value={(editCliente.inmuebles_asociados_inquilino && editCliente.inmuebles_asociados_inquilino.some(inquilino => inquilino.id === inmuebleId) ? ['inquilino'] : []).concat(editCliente.inmuebles_asociados_propietario && editCliente.inmuebles_asociados_propietario.some(propietario => propietario.id === inmuebleId) ? ['propietario'] : [])}
-                                        onChange={(selectedValues) => {
-                                            if (selectedValues.includes('inquilino')) {
-                                                if (!editCliente.inmuebles_asociados_inquilino.some(inquilino => inquilino.id === inmuebleId)) {
-                                                    setEditCliente(prevState => ({
-                                                        ...prevState,
-                                                        inmuebles_asociados_inquilino: [...prevState.inmuebles_asociados_inquilino, { id: inmuebleId, direccion: inmuebleDireccion }]
-                                                    }));
-                                                }
-                                            } else {
-                                                setEditCliente(prevState => ({
-                                                    ...prevState,
-                                                    inmuebles_asociados_inquilino: prevState.inmuebles_asociados_inquilino.filter(inquilino => inquilino.id !== inmuebleId)
-                                                }));
-                                            }
-                                            if (selectedValues.includes('propietario')) {
-                                                if (!editCliente.inmuebles_asociados_propietario.some(propietario => propietario.id === inmuebleId)) {
-                                                    setEditCliente(prevState => ({
-                                                        ...prevState,
-                                                        inmuebles_asociados_propietario: [...prevState.inmuebles_asociados_propietario, { id: inmuebleId, direccion: inmuebleDireccion }]
-                                                    }));
-                                                }
-                                            } else {
-                                                setEditCliente(prevState => ({
-                                                    ...prevState,
-                                                    inmuebles_asociados_propietario: prevState.inmuebles_asociados_propietario.filter(propietario => propietario.id !== inmuebleId)
-                                                }));
-                                            }
-                                        }}
-                                        placeholder="Selecciona roles"
-                                        style={{ width: '80%', margin: '0 auto' }}
-                                    />
-                                </Form.Group>
-                                <Form.Group controlId="informador-toggle" className="w-full flex flex-col gap-4 justify-center items-center">
-                                    <p>¿Es un informador?</p>
-                                    <Toggle
-                                        checkedChildren="Informador"
-                                        unCheckedChildren="No Informador"
-                                        checked={editCliente.informador}
-                                        onChange={(checked) => setEditCliente({ ...editCliente, informador: checked })}
-                                        size={'lg'}
-                                    />
-                                </Form.Group>
-                                <Form.Group controlId="pedido-toggle" className="w-full flex flex-col gap-4 justify-center items-center">
-                                    <p>¿Es un pedido?</p>
-                                    <Toggle
-                                        checkedChildren="Pedido"
-                                        unCheckedChildren="No Pedido"
-                                        checked={editCliente.pedido}
-                                        onChange={(checked) => setEditCliente(prevState => ({ ...prevState, pedido: !prevState.pedido }))}
-                                        size={'lg'}
-                                    />
-                                </Form.Group>
-
-                                {editCliente.pedido && (
-                                    <div className="w-full flex flex-col gap-4 justify-center items-center mt-10 bg-slate-200 rounded-md p-4 shadow-lg">
-                                        <h4 className='text-lg font-semibold text-center'>Información del Pedido</h4>
-                                        <div className="w-full flex flex-col justify-center items-center">
+                                {pedido && (
+                                    // Placeholder for future form development
+                                    <Form>
+                                        <div className="w-full flex flex-col gap-2 justify-center items-center border border-gray-300 rounded-lg p-4 bg-gray-100">
                                             <Form.Group controlId="interes">
-                                                <Form.ControlLabel style={{ textAlign: 'center' }}>Interés</Form.ControlLabel>
+                                                <Form.ControlLabel style={{ textAlign: 'center', fontWeight: 'bold', fontSize: '1rem', marginBottom: '10px' }}>Interés</Form.ControlLabel>
                                                 <RadioGroup
                                                     name="interes"
-                                                    value={editCliente.interes}
-                                                    onChange={value => setEditCliente(prevState => ({
-                                                        ...prevState,
-                                                        interes: value,
-                                                        rango_precios: value === 'comprar' ? [0, 1000000] : [0, 2500]
-                                                    }))}
+                                                    inline
+                                                    onChange={value => setClientsToAssociateInteres(value)}
+                                                    value={clientsToAssociateInteres}
                                                 >
                                                     <Radio value="comprar">Comprar</Radio>
                                                     <Radio value="alquilar">Alquilar</Radio>
@@ -929,7 +704,7 @@ const ClientesAsociados = ({ setFilteredClientes, setClientesAsociadosInmueble, 
                                             </Form.Group>
 
                                             <Form.Group controlId="rango_precios">
-                                                <Form.ControlLabel style={{ textAlign: 'center' }}>Rango de Precios</Form.ControlLabel>
+                                                <Form.ControlLabel style={{ textAlign: 'center', fontWeight: 'bold', fontSize: '1rem' }}>Rango de Precios</Form.ControlLabel>
                                                 <div className="flex justify-center gap-4 mt-4">
                                                     <div style={{ position: 'relative', width: '100%' }}>
                                                         <Form.Group controlId="precio_minimo">
@@ -937,17 +712,14 @@ const ClientesAsociados = ({ setFilteredClientes, setClientesAsociadosInmueble, 
                                                             <Input
                                                                 id="precio_minimo"
                                                                 min={0}
-                                                                value={editCliente.rango_precios[0].toLocaleString('es-ES')}
+                                                                value={clientsToAssociateRangoPrecios[0].toLocaleString('es-ES')}
                                                                 onChange={(value) => {
                                                                     const numericValue = parseInt(value.replace(/\D/g, ''), 10) || 0; // Ensure numeric value
-                                                                    const maxPrice = editCliente.rango_precios[1];
-                                                                    setEditCliente(prevState => ({
-                                                                        ...prevState,
-                                                                        rango_precios: [
-                                                                            numericValue,
-                                                                            maxPrice < numericValue ? numericValue : maxPrice
-                                                                        ]
-                                                                    }));
+                                                                    const maxPrice = clientsToAssociateRangoPrecios[1];
+                                                                    setClientsToAssociateRangoPrecios(prevRangoPrecios => [
+                                                                        numericValue,
+                                                                        maxPrice < numericValue ? numericValue : maxPrice
+                                                                    ]);
                                                                 }}
                                                                 placeholder="Introduce el precio mínimo"
                                                                 className="w-full"
@@ -961,14 +733,15 @@ const ClientesAsociados = ({ setFilteredClientes, setClientesAsociadosInmueble, 
                                                             <Form.ControlLabel>Precio Máximo (€)</Form.ControlLabel>
                                                             <Input
                                                                 id="precio_maximo"
-                                                                min={editCliente.rango_precios[0] || 0}
-                                                                value={editCliente.rango_precios[1].toLocaleString('es-ES')}
+                                                                min={clientsToAssociateRangoPrecios[0] || 0}
+                                                                max={clientsToAssociateInteres === 'comprar' ? 1000000 : 2500}
+                                                                value={clientsToAssociateRangoPrecios[1].toLocaleString('es-ES')}
                                                                 onChange={(value) => {
                                                                     const intValue = parseInt(value.replace(/\D/g, ''), 10) || 0; // Ensure numeric value
-                                                                    setEditCliente(prevState => ({
-                                                                        ...prevState,
-                                                                        rango_precios: [prevState.rango_precios[0], intValue]
-                                                                    }));
+                                                                    setClientsToAssociateRangoPrecios(prevRangoPrecios => [
+                                                                        prevRangoPrecios[0],
+                                                                        intValue
+                                                                    ]);
                                                                 }}
                                                                 placeholder="Introduce el precio máximo"
                                                                 className="w-full"
@@ -980,145 +753,384 @@ const ClientesAsociados = ({ setFilteredClientes, setClientesAsociadosInmueble, 
 
                                             </Form.Group>
                                         </div>
+                                    </Form>
+                                )}
+
+                                <Modal.Footer style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: '10px', marginTop: '10px', marginBottom: '0px', alignItems: 'center' }}>
+                                    {clientsToAssociate.client_id && (
+                                        <Button appearance='primary' onClick={handleAsociarCliente} style={{ width: 'auto' }}>Asociar</Button>
+                                    )}
+
+                                    <Button onClick={handleClose} appearance="subtle">Cancelar</Button>
+                                </Modal.Footer>
+                            </Modal.Body>
+                        </Modal>
+                        <InputGroup style={{ width: '300px', margin: '0 auto 40px auto' }} className='searchclientesasociados'>
+                            <AutoComplete
+                                placeholder="Buscar clientes asociados.."
+                                data={clientesAsociadosInmueble.map(cliente => `${cliente.nombre} ${cliente.apellido}`)}
+                                onChange={handleSearch}
+                            />
+                            <InputGroup.Button tabIndex={-1}>
+                                <SearchIcon />
+                            </InputGroup.Button>
+                        </InputGroup>
+                        {filteredClientes?.length > 0 ? (
+                            <ul className='flex flex-col gap-3 mt-4 w-full'>
+                                {filteredClientes
+                                    .sort((a, b) => {
+                                        const aIsPropietario = a.inmuebles_asociados_propietario?.some(propietario => propietario.id === inmuebleId);
+                                        const bIsPropietario = b.inmuebles_asociados_propietario?.some(propietario => propietario.id === inmuebleId);
+                                        return bIsPropietario - aIsPropietario;
+                                    })
+                                    .map((cliente) => (
+                                        <>
+                                            <li key={cliente._id} className="flex flex-row justify-stretch items-center">
+                                                <div className="flex flex-row justify-evenly items-center w-full gap-1">
+                                                    {cliente.inmuebles_asociados_informador?.some(propietario => propietario.id === inmuebleId) && (
+                                                        <div className='flex flex-row pr-1 justify-center items-center gap-1'>
+                                                            <Icon icon="mdi:information" style={{ fontSize: '2rem' }} className={cliente.informador ? 'text-blue-500' : 'text-transparent'} />
+                                                        </div>
+                                                    )}
+                                                    <div className='w-36  text-center'>
+                                                        <p className="text-base sm:text-lg font-semibold w-full">{cliente.nombre} {cliente.apellido}</p>
+                                                    </div>
+                                                    <div className='min-width-20 px-2 text-center display-flex flex-col justify-center items-center'>
+                                                        <div className='flex flex-col justify-center items-center mx-0 sm:flex-row md:flex-col md:min-w-fit gap-2'>
+                                                            {cliente.inmuebles_asociados_propietario?.some(propietario => propietario.id === inmuebleId) && (
+                                                                <Tag color="green" style={{ margin: '0 auto' }}>Propietario</Tag>
+                                                            )}
+                                                            {cliente.inmuebles_asociados_inquilino?.some(inquilino => inquilino.id === inmuebleId) && (
+                                                                <Tag color="orange" style={{ margin: '0 auto' }}>Inquilino</Tag>
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                    <div className='w-[50px] text-center flex flex-col justify-center items-center gap-2 pl-2'>
+                                                        <button className='rounded-md text-xl' onClick={() => handleViewCliente(cliente)}>
+                                                            <FaEye />
+                                                        </button>
+                                                        <button className='rounded-md text-xl' onClick={() => handleEditClienteAsociado(cliente)}>
+                                                            <AiOutlineEdit />
+                                                        </button>
+                                                        <button onClick={() => handleRemoveCliente(cliente._id)} className='text-black text-xl'>
+                                                            <AiOutlineClose />
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </li>
+                                            <div className='h-[1px] w-full bg-gray-300 my-2'></div>
+                                        </>
+                                    ))}
+                            </ul>
+                        ) : (
+                            <p className='text-center'>No hay clientes asociados a este inmueble.</p>
+                        )}
+
+                        <div className='flex justify-center items-center w-full'>
+                            <Button appearance='primary' style={{ marginBottom: '20px', marginTop: '20px' }} className="bg-blue-400" onClick={handleOpenAsociar}>Asociar Clientes</Button>
+                        </div>
+                        <Modal open={editClienteAsociadoModalOpen} onClose={closeModalClienteAsociado} backdrop={true} overflow={false} style={{ backgroundColor: 'rgba(0,0,0,0.15)', padding: '0px', marginBottom: '70px' }} size="xs">
+                            <Modal.Header style={{ display: 'flex', flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: '10px', width: '100%', marginTop: '10px' }}>
+                                <Modal.Title style={{ fontSize: '1.5rem', fontWeight: 'semibold', textAlign: 'center' }}>Editar Cliente Asociado</Modal.Title>
+                            </Modal.Header>
+                            <Modal.Body style={{ padding: '15px 20px', display: 'flex', flexDirection: 'column', gap: '20px', alignItems: 'center' }}>
+                                {editCliente && (
+                                    <Form fluid>
+                                        <Form.Group controlId="nombre">
+                                            <Form.ControlLabel>Nombre</Form.ControlLabel>
+                                            <Form.Control name="nombre" defaultValue={editCliente.nombre} onChange={value => setEditCliente(prevState => ({ ...prevState, nombre: value }))} />
+                                        </Form.Group>
+                                        <Form.Group controlId="apellido">
+                                            <Form.ControlLabel>Apellido</Form.ControlLabel>
+                                            <Form.Control name="apellido" defaultValue={editCliente.apellido} onChange={value => setEditCliente(prevState => ({ ...prevState, apellido: value }))} />
+                                        </Form.Group>
+                                        <Form.Group controlId="dni">
+                                            <Form.ControlLabel>DNI</Form.ControlLabel>
+                                            <Form.Control name="dni" defaultValue={editCliente.dni} onChange={value => setEditCliente(prevState => ({ ...prevState, dni: value }))} />
+                                        </Form.Group>
+                                        <Form.Group controlId="email">
+                                            <Form.ControlLabel>Email</Form.ControlLabel>
+                                            <Form.Control name="email" defaultValue={editCliente.email} onChange={value => setEditCliente(prevState => ({ ...prevState, email: value }))} />
+                                        </Form.Group>
+                                        <Form.Group controlId="telefono">
+                                            <Form.ControlLabel>Teléfono</Form.ControlLabel>
+                                            <Form.Control name="telefono" defaultValue={editCliente.telefono} onChange={value => setEditCliente(prevState => ({ ...prevState, telefono: value }))} />
+                                        </Form.Group>
+
+
+                                        <Form.Group>
+                                            <Form.ControlLabel>Tipo de asociación con el inmueble actual</Form.ControlLabel>
+                                            <TagPicker
+                                                data={[
+                                                    { label: 'Inquilino', value: 'inquilino', role: 'inquilino' },
+                                                    { label: 'Propietario', value: 'propietario', role: 'propietario' }
+                                                ]}
+                                                value={(editCliente.inmuebles_asociados_inquilino && editCliente.inmuebles_asociados_inquilino.some(inquilino => inquilino.id === inmuebleId) ? ['inquilino'] : []).concat(editCliente.inmuebles_asociados_propietario && editCliente.inmuebles_asociados_propietario.some(propietario => propietario.id === inmuebleId) ? ['propietario'] : [])}
+                                                onChange={(selectedValues) => {
+                                                    if (selectedValues.includes('inquilino')) {
+                                                        if (!editCliente.inmuebles_asociados_inquilino.some(inquilino => inquilino.id === inmuebleId)) {
+                                                            setEditCliente(prevState => ({
+                                                                ...prevState,
+                                                                inmuebles_asociados_inquilino: [...prevState.inmuebles_asociados_inquilino, { id: inmuebleId, direccion: inmuebleDireccion }]
+                                                            }));
+                                                        }
+                                                    } else {
+                                                        setEditCliente(prevState => ({
+                                                            ...prevState,
+                                                            inmuebles_asociados_inquilino: prevState.inmuebles_asociados_inquilino.filter(inquilino => inquilino.id !== inmuebleId)
+                                                        }));
+                                                    }
+                                                    if (selectedValues.includes('propietario')) {
+                                                        if (!editCliente.inmuebles_asociados_propietario.some(propietario => propietario.id === inmuebleId)) {
+                                                            setEditCliente(prevState => ({
+                                                                ...prevState,
+                                                                inmuebles_asociados_propietario: [...prevState.inmuebles_asociados_propietario, { id: inmuebleId, direccion: inmuebleDireccion }]
+                                                            }));
+                                                        }
+                                                    } else {
+                                                        setEditCliente(prevState => ({
+                                                            ...prevState,
+                                                            inmuebles_asociados_propietario: prevState.inmuebles_asociados_propietario.filter(propietario => propietario.id !== inmuebleId)
+                                                        }));
+                                                    }
+                                                }}
+                                                placeholder="Selecciona roles"
+                                                style={{ width: '80%', margin: '0 auto' }}
+                                            />
+                                        </Form.Group>
+                                        <Form.Group controlId="informador-toggle" className="w-full flex flex-col gap-4 justify-center items-center">
+                                            <p>¿Es un informador?</p>
+                                            <Toggle
+                                                checkedChildren="Informador"
+                                                unCheckedChildren="No Informador"
+                                                checked={editCliente.informador}
+                                                onChange={(checked) => setEditCliente({ ...editCliente, informador: checked })}
+                                                size={'lg'}
+                                            />
+                                        </Form.Group>
+                                        <Form.Group controlId="pedido-toggle" className="w-full flex flex-col gap-4 justify-center items-center">
+                                            <p>¿Es un pedido?</p>
+                                            <Toggle
+                                                checkedChildren="Pedido"
+                                                unCheckedChildren="No Pedido"
+                                                checked={editCliente.pedido}
+                                                onChange={(checked) => setEditCliente(prevState => ({ ...prevState, pedido: !prevState.pedido }))}
+                                                size={'lg'}
+                                            />
+                                        </Form.Group>
+
+                                        {editCliente.pedido && (
+                                            <div className="w-full flex flex-col gap-4 justify-center items-center mt-10 bg-slate-200 rounded-md p-4 shadow-lg">
+                                                <h4 className='text-lg font-semibold text-center'>Información del Pedido</h4>
+                                                <div className="w-full flex flex-col justify-center items-center">
+                                                    <Form.Group controlId="interes">
+                                                        <Form.ControlLabel style={{ textAlign: 'center' }}>Interés</Form.ControlLabel>
+                                                        <RadioGroup
+                                                            name="interes"
+                                                            value={editCliente.interes}
+                                                            onChange={value => setEditCliente(prevState => ({
+                                                                ...prevState,
+                                                                interes: value,
+                                                                rango_precios: value === 'comprar' ? [0, 1000000] : [0, 2500]
+                                                            }))}
+                                                        >
+                                                            <Radio value="comprar">Comprar</Radio>
+                                                            <Radio value="alquilar">Alquilar</Radio>
+                                                        </RadioGroup>
+                                                    </Form.Group>
+
+                                                    <Form.Group controlId="rango_precios">
+                                                        <Form.ControlLabel style={{ textAlign: 'center' }}>Rango de Precios</Form.ControlLabel>
+                                                        <div className="flex justify-center gap-4 mt-4">
+                                                            <div style={{ position: 'relative', width: '100%' }}>
+                                                                <Form.Group controlId="precio_minimo">
+                                                                    <Form.ControlLabel>Precio Mínimo (€)</Form.ControlLabel>
+                                                                    <Input
+                                                                        id="precio_minimo"
+                                                                        min={0}
+                                                                        value={editCliente.rango_precios[0].toLocaleString('es-ES')}
+                                                                        onChange={(value) => {
+                                                                            const numericValue = parseInt(value.replace(/\D/g, ''), 10) || 0; // Ensure numeric value
+                                                                            const maxPrice = editCliente.rango_precios[1];
+                                                                            setEditCliente(prevState => ({
+                                                                                ...prevState,
+                                                                                rango_precios: [
+                                                                                    numericValue,
+                                                                                    maxPrice < numericValue ? numericValue : maxPrice
+                                                                                ]
+                                                                            }));
+                                                                        }}
+                                                                        placeholder="Introduce el precio mínimo"
+                                                                        className="w-full"
+                                                                    />
+                                                                    <span style={{ position: 'absolute', right: '10px', top: '80%', transform: 'translateY(-80%)' }}>€</span>
+                                                                </Form.Group>
+                                                            </div>
+
+                                                            <div style={{ position: 'relative', width: '100%' }}>
+                                                                <Form.Group controlId="precio_maximo">
+                                                                    <Form.ControlLabel>Precio Máximo (€)</Form.ControlLabel>
+                                                                    <Input
+                                                                        id="precio_maximo"
+                                                                        min={editCliente.rango_precios[0] || 0}
+                                                                        value={editCliente.rango_precios[1].toLocaleString('es-ES')}
+                                                                        onChange={(value) => {
+                                                                            const intValue = parseInt(value.replace(/\D/g, ''), 10) || 0; // Ensure numeric value
+                                                                            setEditCliente(prevState => ({
+                                                                                ...prevState,
+                                                                                rango_precios: [prevState.rango_precios[0], intValue]
+                                                                            }));
+                                                                        }}
+                                                                        placeholder="Introduce el precio máximo"
+                                                                        className="w-full"
+                                                                    />
+                                                                    <span style={{ position: 'absolute', right: '10px', top: '80%', transform: 'translateY(-80%)' }}>€</span>
+                                                                </Form.Group>
+                                                            </div>
+                                                        </div>
+
+                                                    </Form.Group>
+                                                </div>
+                                            </div>
+                                        )}
+                                    </Form>
+                                )}
+
+                                <Modal.Footer style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', gap: '10px', marginTop: '10px', marginBottom: '0px', alignItems: 'center' }}>
+                                    <Button onClick={updateClienteAsociado} appearance="primary">
+                                        Guardar
+                                    </Button>
+                                    <Button onClick={closeModalClienteAsociado} appearance="subtle" style={{ margin: '0px' }}>
+                                        Cancelar
+                                    </Button>
+                                </Modal.Footer>
+                            </Modal.Body>
+                        </Modal>
+                        <Modal open={viewMoreClienteAsociadoModalOpen} onClose={handleCloseViewMoreClienteAsociado} style={{ backgroundColor: 'rgba(0,0,0,0.15)', padding: '0px', marginBottom: '70px' }} backdrop={true} overflow={false} size="xs">
+                            <Modal.Header style={{ display: 'flex', flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: '10px', width: '100%', marginTop: '10px' }}>
+                                <Modal.Title style={{ fontSize: '1.5rem', fontWeight: 'semibold', textAlign: 'center' }}>Detalles del Cliente Asociado</Modal.Title>
+                            </Modal.Header>
+                            <Modal.Body style={{ padding: '15px 0px', display: 'flex', flexDirection: 'column', gap: '20px', alignItems: 'center' }}>
+                                {viewMoreClienteAsociado && (
+                                    <div className='flex flex-col gap-2 w-[90%]'>
+                                        <div className='flex flex-col gap-2 px-4 py-2 bg-slate-200 rounded-md shadow-lg mb-4'>
+                                            <p><strong>Nombre:</strong> {viewMoreClienteAsociado.nombre}</p>
+                                            <p><strong>Apellido:</strong> {viewMoreClienteAsociado.apellido}</p>
+                                            <p><strong>DNI:</strong> {viewMoreClienteAsociado.dni}</p>
+                                            <p><strong>Teléfono:</strong> {viewMoreClienteAsociado.telefono}</p>
+                                            {viewMoreClienteAsociado.pedido && (
+                                                <div className="flex flex-row gap-2 mt-[10px]">
+                                                    <p><strong>Pedido:</strong></p>
+                                                    <Tag color="orange" style={{ marginBottom: '5px', marginRight: '5px' }}>
+                                                        Pedido
+                                                    </Tag>
+                                                </div>
+                                            )}
+
+                                            <div className="flex flex-row gap-2 mt-[10px]">
+                                                <p><strong>Tipo de Cliente:</strong></p>
+                                                <div>
+                                                    {viewMoreClienteAsociado.inmuebles_asociados_propietario && viewMoreClienteAsociado.inmuebles_asociados_propietario.length > 0 && (
+                                                        <Tag
+                                                            key="propietario"
+                                                            color="green"
+                                                            style={{ marginBottom: '5px', marginRight: '5px' }}
+                                                        >
+                                                            Propietario
+                                                        </Tag>
+                                                    )}
+                                                    {viewMoreClienteAsociado.inmuebles_asociados_inquilino && viewMoreClienteAsociado.inmuebles_asociados_inquilino.length > 0 && (
+                                                        <Tag
+                                                            key="inquilino"
+                                                            color="red"
+                                                            style={{ marginBottom: '5px', marginRight: '5px' }}
+                                                        >
+                                                            Inquilino
+                                                        </Tag>
+                                                    )}
+                                                </div>
+                                            </div>
+                                            {viewMoreClienteAsociado.informador && (
+                                                <div className="flex flex-row gap-2 mt-[10px]">
+                                                    <p><strong>Informador:</strong></p>
+                                                    <Tag color="cyan" style={{ marginBottom: '5px', marginRight: '5px' }}>
+                                                        Informador
+                                                    </Tag>
+                                                </div>
+                                            )}
+                                        </div>
+
+
+                                        {(viewMoreClienteAsociado.inmuebles_asociados_propietario && viewMoreClienteAsociado.inmuebles_asociados_propietario.length > 0) || (viewMoreClienteAsociado.inmuebles_asociados_inquilino && viewMoreClienteAsociado.inmuebles_asociados_inquilino.length > 0) ? (
+                                            <div>
+                                                {['propietario', 'inquilino'].map(tipo => (
+                                                    viewMoreClienteAsociado[`inmuebles_asociados_${tipo}`] && viewMoreClienteAsociado[`inmuebles_asociados_${tipo}`].length > 0 && (
+                                                        <div key={tipo} className='mb-14 mt-8'>
+                                                            <div
+                                                                style={{
+                                                                    backgroundColor: tipo === 'propietario' ? '#28a745' :
+                                                                        tipo === 'inquilino' ? '#ef4444' : '#ef4444',
+                                                                    borderRadius: '10px',
+                                                                    padding: '8px 0px',
+                                                                    color: '#fff',
+                                                                    textAlign: 'center',
+                                                                    marginBottom: '10px',
+                                                                    width: '100px',
+                                                                    marginRight: 'auto',
+                                                                    marginLeft: 'auto',
+                                                                }}
+                                                            >
+                                                                {tipo.charAt(0).toUpperCase() + tipo.slice(1)}
+                                                            </div>
+
+                                                            <Table autoHeight={true} data={viewMoreClienteAsociado.inmueblesDetalle.filter(inmueble =>
+                                                                viewMoreClienteAsociado[`inmuebles_asociados_${tipo}`].some(assoc => assoc.id === inmueble.id)
+                                                            )}>
+                                                                <Column width={320} align="center">
+                                                                    <HeaderCell>Dirección</HeaderCell>
+                                                                    <Cell dataKey="direccion" />
+                                                                </Column>
+                                                                <Column width={200} align="center">
+                                                                    <HeaderCell>Zona</HeaderCell>
+                                                                    <Cell dataKey="zona" />
+                                                                </Column>
+                                                                <Column width={80} align="center">
+                                                                    <HeaderCell>Noticias</HeaderCell>
+                                                                    <Cell>
+                                                                        {rowData => rowData.noticiastate ? 'Sí' : 'No'}
+                                                                    </Cell>
+                                                                </Column>
+                                                                <Column width={80} align="center">
+                                                                    <HeaderCell>Encargos</HeaderCell>
+                                                                    <Cell>
+                                                                        {rowData => rowData.encargostate ? 'Sí' : 'No'}
+                                                                    </Cell>
+                                                                </Column>
+                                                                <Column width={100} align="center">
+                                                                    <HeaderCell>Superficie</HeaderCell>
+                                                                    <Cell>
+                                                                        {rowData => (
+                                                                            <span>{rowData.superficie} m²</span>
+                                                                        )}
+                                                                    </Cell>
+                                                                </Column>
+                                                            </Table>
+                                                        </div>
+                                                    )
+                                                ))}
+                                            </div>
+                                        ) : null}
                                     </div>
                                 )}
-                            </Form>
-                        )}
-
-                        <Modal.Footer style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', gap: '10px', marginTop: '10px', marginBottom: '0px', alignItems: 'center' }}>
-                            <Button onClick={updateClienteAsociado} appearance="primary">
-                                Guardar
-                            </Button>
-                            <Button onClick={closeModalClienteAsociado} appearance="subtle" style={{ margin: '0px' }}>
-                                Cancelar
-                            </Button>
-                        </Modal.Footer>
-                    </Modal.Body>
-                </Modal>
-                <Modal open={viewMoreClienteAsociadoModalOpen} onClose={handleCloseViewMoreClienteAsociado} style={{ backgroundColor: 'rgba(0,0,0,0.15)', padding: '0px', marginBottom: '70px' }} backdrop={true} overflow={false} size="xs">
-                    <Modal.Header style={{ display: 'flex', flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: '10px', width: '100%', marginTop: '10px' }}>
-                        <Modal.Title style={{ fontSize: '1.5rem', fontWeight: 'semibold', textAlign: 'center' }}>Detalles del Cliente Asociado</Modal.Title>
-                    </Modal.Header>
-                    <Modal.Body style={{ padding: '15px 0px', display: 'flex', flexDirection: 'column', gap: '20px', alignItems: 'center' }}>
-                        {viewMoreClienteAsociado && (
-                            <div className='flex flex-col gap-2 w-[90%]'>
-                                <div className='flex flex-col gap-2 px-4 py-2 bg-slate-200 rounded-md shadow-lg mb-4'>
-                                    <p><strong>Nombre:</strong> {viewMoreClienteAsociado.nombre}</p>
-                                    <p><strong>Apellido:</strong> {viewMoreClienteAsociado.apellido}</p>
-                                    <p><strong>DNI:</strong> {viewMoreClienteAsociado.dni}</p>
-                                    <p><strong>Teléfono:</strong> {viewMoreClienteAsociado.telefono}</p>
-                                    {viewMoreClienteAsociado.pedido && (
-                                        <div className="flex flex-row gap-2 mt-[10px]">
-                                            <p><strong>Pedido:</strong></p>
-                                            <Tag color="orange" style={{ marginBottom: '5px', marginRight: '5px' }}>
-                                                Pedido
-                                            </Tag>
-                                        </div>
-                                    )}
-
-                                    <div className="flex flex-row gap-2 mt-[10px]">
-                                        <p><strong>Tipo de Cliente:</strong></p>
-                                        <div>
-                                            {viewMoreClienteAsociado.inmuebles_asociados_propietario && viewMoreClienteAsociado.inmuebles_asociados_propietario.length > 0 && (
-                                                <Tag
-                                                    key="propietario"
-                                                    color="green"
-                                                    style={{ marginBottom: '5px', marginRight: '5px' }}
-                                                >
-                                                    Propietario
-                                                </Tag>
-                                            )}
-                                            {viewMoreClienteAsociado.inmuebles_asociados_inquilino && viewMoreClienteAsociado.inmuebles_asociados_inquilino.length > 0 && (
-                                                <Tag
-                                                    key="inquilino"
-                                                    color="red"
-                                                    style={{ marginBottom: '5px', marginRight: '5px' }}
-                                                >
-                                                    Inquilino
-                                                </Tag>
-                                            )}
-                                        </div>
-                                    </div>
-                                    {viewMoreClienteAsociado.informador && (
-                                        <div className="flex flex-row gap-2 mt-[10px]">
-                                            <p><strong>Informador:</strong></p>
-                                            <Tag color="cyan" style={{ marginBottom: '5px', marginRight: '5px' }}>
-                                                Informador
-                                            </Tag>
-                                        </div>
-                                    )}
-                                </div>
-
-
-                                {(viewMoreClienteAsociado.inmuebles_asociados_propietario && viewMoreClienteAsociado.inmuebles_asociados_propietario.length > 0) || (viewMoreClienteAsociado.inmuebles_asociados_inquilino && viewMoreClienteAsociado.inmuebles_asociados_inquilino.length > 0) ? (
-                                    <div>
-                                        {['propietario', 'inquilino'].map(tipo => (
-                                            viewMoreClienteAsociado[`inmuebles_asociados_${tipo}`] && viewMoreClienteAsociado[`inmuebles_asociados_${tipo}`].length > 0 && (
-                                                <div key={tipo} className='mb-14 mt-8'>
-                                                    <div
-                                                        style={{
-                                                            backgroundColor: tipo === 'propietario' ? '#28a745' :
-                                                                tipo === 'inquilino' ? '#ef4444' : '#ef4444',
-                                                            borderRadius: '10px',
-                                                            padding: '8px 0px',
-                                                            color: '#fff',
-                                                            textAlign: 'center',
-                                                            marginBottom: '10px',
-                                                            width: '100px',
-                                                            marginRight: 'auto',
-                                                            marginLeft: 'auto',
-                                                        }}
-                                                    >
-                                                        {tipo.charAt(0).toUpperCase() + tipo.slice(1)}
-                                                    </div>
-
-                                                    <Table autoHeight={true} data={viewMoreClienteAsociado.inmueblesDetalle.filter(inmueble =>
-                                                        viewMoreClienteAsociado[`inmuebles_asociados_${tipo}`].some(assoc => assoc.id === inmueble.id)
-                                                    )}>
-                                                        <Column width={320} align="center">
-                                                            <HeaderCell>Dirección</HeaderCell>
-                                                            <Cell dataKey="direccion" />
-                                                        </Column>
-                                                        <Column width={200} align="center">
-                                                            <HeaderCell>Zona</HeaderCell>
-                                                            <Cell dataKey="zona" />
-                                                        </Column>
-                                                        <Column width={80} align="center">
-                                                            <HeaderCell>Noticias</HeaderCell>
-                                                            <Cell>
-                                                                {rowData => rowData.noticiastate ? 'Sí' : 'No'}
-                                                            </Cell>
-                                                        </Column>
-                                                        <Column width={80} align="center">
-                                                            <HeaderCell>Encargos</HeaderCell>
-                                                            <Cell>
-                                                                {rowData => rowData.encargostate ? 'Sí' : 'No'}
-                                                            </Cell>
-                                                        </Column>
-                                                        <Column width={100} align="center">
-                                                            <HeaderCell>Superficie</HeaderCell>
-                                                            <Cell>
-                                                                {rowData => (
-                                                                    <span>{rowData.superficie} m²</span>
-                                                                )}
-                                                            </Cell>
-                                                        </Column>
-                                                    </Table>
-                                                </div>
-                                            )
-                                        ))}
-                                    </div>
-                                ) : null}
-                            </div>
-                        )}
-                        <Modal.Footer>
-                            <Button onClick={handleCloseViewMoreClienteAsociado} appearance="subtle">
-                                Cerrar
-                            </Button>
-                        </Modal.Footer>
-                    </Modal.Body>
-                </Modal>
-
+                                <Modal.Footer>
+                                    <Button onClick={handleCloseViewMoreClienteAsociado} appearance="subtle">
+                                        Cerrar
+                                    </Button>
+                                </Modal.Footer>
+                            </Modal.Body>
+                        </Modal>
+                    </>
+                )}
             </Accordion.Panel>
         </Accordion >
     );
