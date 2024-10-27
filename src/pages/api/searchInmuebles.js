@@ -2073,8 +2073,8 @@ export default async function handler(req, res) {
         const newresults = [];
 
         // Include result1 and result2 unconditionally
-        newresults.push(result1);
-        newresults.push(result2);
+       // newresults.push(result1);
+       // newresults.push(result2);
 
         // Include result3 only if tipo is not 'undefined' and not equal to '2'
         if (tipo !== '2') {
