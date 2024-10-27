@@ -2082,8 +2082,8 @@ export default async function handler(req, res) {
         }
 
         // Include result4 and result5 unconditionally
-        newresults.push(result4);
-        newresults.push(result5);
+        // newresults.push(result4);
+       newresults.push(result5);
 
 
         const finalResultAnalytics = combineResults(newresults);
