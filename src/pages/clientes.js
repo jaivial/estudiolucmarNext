@@ -34,6 +34,24 @@ export async function getServerSideProps(context) {
 const { Column, HeaderCell, Cell } = Table;
 
 export default function Clientes({ isAdmin }) {
+    const [screenWidth, setScreenWidth] = useState(0);
+
+    useEffect(() => {
+        if (typeof window !== 'undefined') {
+            // Function to update state to current window inner width
+            const handleResize = () => setScreenWidth(window.innerWidth);
+
+            // Set initial screen width
+            setScreenWidth(window.innerWidth);
+
+            // Set up event listener for window resize to update screenWidth state
+            window.addEventListener('resize', handleResize);
+
+            // Clean up event listener when component unmounts to prevent memory leaks
+            return () => window.removeEventListener('resize', handleResize);
+        }
+    }, []); // Empty dependency array means this effect runs once on mount and cleanup on unmount
+
     const [clientes, setClientes] = useState([]);
     const [loading, setLoading] = useState(true);
     const [selectedCliente, setSelectedCliente] = useState(null);
@@ -505,8 +523,8 @@ export default function Clientes({ isAdmin }) {
                                         <Icon icon="mdi:magnify" className="text-gray-500 text-2xl mr-2 absolute right-0" />
                                     </div>
 
-                                    <div className="p-4 w-full flex flex-row gap-6">
-                                        <div className={`${showAddNewClient ? 'w-3/4' : 'w-full'} transition-all duration-1000 ease-in-out`}>
+                                    <div className={`p-4 w-full flex flex-row ${showAddNewClient ? screenWidth >= 990 ? 'gap-6' : 'gap-0' : 'gap-0'}`}>
+                                        <div className={`${(showAddNewClient && screenWidth >= 990) ? 'w-3/4' : 'w-full'} ${(showAddNewClient && screenWidth < 990) ? 'w-0 opacity-0' : 'w-full'} transition-all duration-1000 ease-in-out`}>
                                             <PanelGroup bordered defaultActiveKey="1" style={{ marginBottom: '20px', borderRadius: '1.2rem' }}>
                                                 <Panel header="Clientes" eventKey="1" className="bg-slate-50 rounded-lg shadow-xl">
                                                     <div className="overflow-x-auto max-h-[800px] overflow-y-auto">
@@ -520,7 +538,7 @@ export default function Clientes({ isAdmin }) {
                                                                     <th className="px-4 py-2 border">Teléfono</th>
                                                                     <th className="px-4 py-2 border">Email</th>
                                                                     <th className="px-4 py-2 border">Inmuebles Asociados</th>
-                                                                    <th className="px-4 py-2 border m-0 bg-white sticky right-0 z-10">Acciones</th>
+                                                                    <th className="px-4 py-2 border m-0 bg-white sticky right-0 z-10 rounded-tl-2xl">Acciones</th>
                                                                 </tr>
                                                             </thead>
                                                             <tbody>
@@ -596,8 +614,14 @@ export default function Clientes({ isAdmin }) {
 
                                             </PanelGroup>
                                         </div>
-                                        <div className={`${showAddNewClient ? 'w-1/4' : 'w-1/4 hidden'} transition-all duration-1000 ease-in-out`}>
-                                            <PanelGroup bordered defaultActiveKey="2" style={{ borderRadius: '1.2rem' }}>
+                                        <div
+                                            className={`${showAddNewClient
+                                                ? screenWidth >= 990
+                                                    ? 'w-1/4 opacity-100'
+                                                    : 'w-full opacity-100'
+                                                : 'w-0 opacity-0'
+                                                } transition-all duration-500 ease-in-out`}
+                                        >                                            <PanelGroup bordered defaultActiveKey="2" style={{ borderRadius: '1.2rem' }}>
                                                 <Panel header="Agregar Nuevo Cliente" eventKey="2" className="bg-slate-50 rounded-2xl">
                                                     <Form fluid className="w-[80%] mx-auto">
                                                         <Form.Group controlId="pedido-toggle" className="w-full flex flex-col gap-4 justify-center items-center">
