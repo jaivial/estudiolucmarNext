@@ -101,6 +101,99 @@ export default function Clientes({ isAdmin }) {
     const [showAddNewClient, setShowAddNewClient] = useState(false);
     const [searchTermClients, setSearchTermClients] = useState('');
     const [filteredClientes, setFilteredClientes] = useState(clientes);
+    const [sortConfig, setSortConfig] = useState({ key: 'nombre', direction: 'desc' });
+    const [sortedCompradores, setSortedCompradores] = useState(compradores);
+    // State for filtering and sorting
+    const [infoFilter, setInfoFilter] = useState('');
+    const [nombreSortDirection, setNombreSortDirection] = useState('');
+    const [tipoClienteFilter, setTipoClienteFilter] = useState('');
+    const [inmueblesSortDirection, setInmueblesSortDirection] = useState('');
+
+    // Function to apply filters and sorting
+    const applyFilters = () => {
+        let filtered = clientes.filter((cliente) => {
+            const matchesInfo =
+                infoFilter === '' ||
+                (infoFilter === 'informador' && cliente.informador) ||
+                (infoFilter === 'pedido' && cliente.pedido);
+
+            const matchesTipoCliente =
+                tipoClienteFilter === '' ||
+                (tipoClienteFilter === 'propietario' && cliente.inmuebles_asociados_propietario?.length > 0) ||
+                (tipoClienteFilter === 'inquilino' && cliente.inmuebles_asociados_inquilino?.length > 0);
+
+            return matchesInfo && matchesTipoCliente;
+        });
+
+        // Apply sorting for Nombre
+        if (nombreSortDirection) {
+            filtered = filtered.sort((a, b) => {
+                const fullNameA = `${a.nombre} ${a.apellido}`.toLowerCase();
+                const fullNameB = `${b.nombre} ${b.apellido}`.toLowerCase();
+
+                if (fullNameA < fullNameB) return nombreSortDirection === 'asc' ? -1 : 1;
+                if (fullNameA > fullNameB) return nombreSortDirection === 'asc' ? 1 : -1;
+                return 0;
+            });
+        }
+
+        // Apply sorting for Inmuebles Asociados
+        if (inmueblesSortDirection) {
+            filtered = filtered.sort((a, b) => {
+                const countA = a.inmuebles_asociados_propietario?.length +
+                    a.inmuebles_asociados_inquilino?.length +
+                    (a.direccionfuerazonapropietario ? 1 : 0) +
+                    (a.direccionfuerazonainquilino ? 1 : 0);
+
+                const countB = b.inmuebles_asociados_propietario?.length +
+                    b.inmuebles_asociados_inquilino?.length +
+                    (b.direccionfuerazonapropietario ? 1 : 0) +
+                    (b.direccionfuerazonainquilino ? 1 : 0);
+
+                return inmueblesSortDirection === 'asc' ? countA - countB : countB - countA;
+            });
+        }
+
+        setFilteredClientes(filtered);
+    };
+
+    // Call `applyFilters` whenever a filter or sort state changes
+    useEffect(() => {
+        applyFilters();
+    }, [infoFilter, tipoClienteFilter, nombreSortDirection, inmueblesSortDirection]);
+
+    // Function to toggle sorting direction
+    const toggleSortDirection = (key) => {
+        if (key === 'nombre') {
+            setNombreSortDirection((prev) => (prev === 'asc' ? 'desc' : 'asc'));
+            setInmueblesSortDirection(''); // Reset other sort states
+        } else if (key === 'inmuebles') {
+            setInmueblesSortDirection((prev) => (prev === 'asc' ? 'desc' : 'asc'));
+            setNombreSortDirection(''); // Reset other sort states
+        }
+    };
+
+    // Function to sort data based on a key and direction
+    const handleSort = (key) => {
+        let direction = 'asc';
+        if (sortConfig.key === key && sortConfig.direction === 'asc') {
+            direction = 'desc';
+        }
+
+        setSortConfig({ key, direction });
+
+        const sortedData = [...compradores].sort((a, b) => {
+            if (a[key] < b[key]) {
+                return direction === 'asc' ? -1 : 1;
+            }
+            if (a[key] > b[key]) {
+                return direction === 'asc' ? 1 : -1;
+            }
+            return 0;
+        });
+
+        setSortedCompradores(sortedData);
+    };
 
     const handleSearch = (value) => {
         setSearchTerm(value);
@@ -221,6 +314,7 @@ export default function Clientes({ isAdmin }) {
             setFilteredClientes(response.data);
             const compradoresConPedido = response.data.filter(cliente => cliente.pedido);
             setCompradores(compradoresConPedido);
+            setSortedCompradores(compradoresConPedido);
         } catch (error) {
             console.error('Error al obtener clientes:', error);
         } finally {
@@ -531,14 +625,72 @@ export default function Clientes({ isAdmin }) {
                                                         <table className="min-w-full bg-white border-collapse border border-slate-200 relative">
                                                             <thead className="bg-gray-100">
                                                                 <tr>
-                                                                    <th className="px-0 py-2 border w-fit">Info</th>
-                                                                    <th className="px-4 py-2 border">Nombre</th>
-                                                                    <th className="px-4 py-2 border min-w-fit">Tipo de Cliente</th>
+                                                                    <th className="px-0 py-2 border w-fit">
+                                                                        Info
+                                                                        <div className="mt-2 mx-2">
+                                                                            <select
+                                                                                className="text-sm w-full px-2 py-1 border rounded"
+                                                                                value={infoFilter}
+                                                                                onChange={(e) => setInfoFilter(e.target.value)}
+                                                                            >
+                                                                                <option value="">Cualquiera</option>
+                                                                                <option value="informador">Informador</option>
+                                                                                <option value="pedido">Pedido</option>
+                                                                            </select>
+                                                                        </div>
+                                                                    </th>
+                                                                    <th
+                                                                        className="px-4 py-2 border cursor-pointer"
+                                                                        onClick={() => toggleSortDirection('nombre')}
+                                                                    >
+                                                                        <div className="flex justify-center gap-4 items-center">
+                                                                            <span>Nombre</span>
+                                                                            {nombreSortDirection === 'asc' ?
+                                                                                (
+                                                                                    <Icon icon="mdi:sort-alphabetical-descending-variant" className="text-2xl" />
+
+                                                                                )
+
+                                                                                :
+                                                                                (
+                                                                                    <Icon icon="mdi:sort-alphabetical-ascending-variant" className="text-2xl" />
+
+                                                                                )}
+                                                                        </div>
+                                                                    </th>
+                                                                    <th className="px-4 py-2 border min-w-fit">
+                                                                        Tipo de Cliente
+                                                                        <div className="mt-2">
+                                                                            <select
+                                                                                className="text-sm w-full px-2 py-1 border rounded"
+                                                                                value={tipoClienteFilter}
+                                                                                onChange={(e) => setTipoClienteFilter(e.target.value)}
+                                                                            >
+                                                                                <option value="">Cualquiera</option>
+                                                                                <option value="propietario">Propietario</option>
+                                                                                <option value="inquilino">Inquilino</option>
+                                                                            </select>
+                                                                        </div>
+                                                                    </th>
                                                                     <th className="px-4 py-2 border">DNI</th>
                                                                     <th className="px-4 py-2 border">Teléfono</th>
                                                                     <th className="px-4 py-2 border">Email</th>
-                                                                    <th className="px-4 py-2 border">Inmuebles Asociados</th>
-                                                                    <th className="px-4 py-2 border m-0 bg-white sticky right-0 z-10 rounded-tl-2xl">Acciones</th>
+                                                                    <th
+                                                                        className="px-4 py-2 border cursor-pointer"
+                                                                        onClick={() => toggleSortDirection('inmuebles')}
+                                                                    >
+                                                                        <div className="flex justify-center gap-4 items-center">
+                                                                            <span>Inmuebles Asociados</span>
+
+                                                                            {inmueblesSortDirection === 'asc' ?
+                                                                                (<Icon icon="gravity-ui:bars-descending-align-left-arrow-down" className="text-xl" />) :
+                                                                                (<Icon icon="gravity-ui:bars-descending-align-left-arrow-up" className="text-xl" />)}
+
+                                                                        </div>
+                                                                    </th>
+                                                                    <th className="px-4 py-2 border m-0 bg-white sticky right-0 z-10 rounded-tl-2xl">
+                                                                        Acciones
+                                                                    </th>
                                                                 </tr>
                                                             </thead>
                                                             <tbody>
@@ -547,7 +699,6 @@ export default function Clientes({ isAdmin }) {
                                                                         key={cliente.id}
                                                                         className={`border-t ${index % 2 === 0 ? 'bg-white' : 'bg-slate-200'}`}
                                                                     >
-
                                                                         <td className="px-0 py-2 text-center flex flex-row items-start justify-start mx-auto w-[50px]">
                                                                             {cliente.informador && (
                                                                                 <Icon icon="mdi:information" className="text-blue-500 text-2xl" />
@@ -556,7 +707,9 @@ export default function Clientes({ isAdmin }) {
                                                                                 <Icon icon="mdi:parking" className="text-orange-500 text-2xl" />
                                                                             )}
                                                                         </td>
-                                                                        <td className="px-4 py-2 text-center min-w-fit text-nowrap">{cliente.nombre} {cliente.apellido}</td>
+                                                                        <td className="px-4 py-2 text-center min-w-fit text-nowrap">
+                                                                            {cliente.nombre} {cliente.apellido}
+                                                                        </td>
                                                                         <td className="px-4 py-2 text-center w-[220px]">
                                                                             <div className="flex flex-row justify-center gap-3">
                                                                                 {cliente.inmuebles_asociados_propietario?.length > 0 && (
@@ -841,80 +994,118 @@ export default function Clientes({ isAdmin }) {
                             </Tabs.Tab>
                             <Tabs.Tab eventKey="compradores" title="Pedidos">
                                 <div className="p-4 w-full">
-                                    <PanelGroup accordion bordered>
-                                        {/* Panel para visualizar la tabla de compradores */}
+                                    <PanelGroup bordered defaultActiveKey="1" style={{ marginBottom: '20px', borderRadius: '1.2rem' }}>
                                         <Panel header="Pedidos" eventKey="1" className="bg-slate-50 rounded-lg shadow-xl">
-                                            <Table data={compradores} autoHeight>
-                                                <Column width={200} align="center">
-                                                    <HeaderCell>Nombre</HeaderCell>
-                                                    <Cell dataKey="nombre" />
-                                                </Column>
-
-                                                <Column width={200} align="center">
-                                                    <HeaderCell>Apellido</HeaderCell>
-                                                    <Cell dataKey="apellido" />
-                                                </Column>
-                                                <Column width={200} align="center">
-                                                    <HeaderCell>Teléfono</HeaderCell>
-                                                    <Cell dataKey="telefono" />
-                                                </Column>
-
-                                                <Column width={200} align="center">
-                                                    <HeaderCell>Email</HeaderCell>
-                                                    <Cell dataKey="email" />
-                                                </Column>
-
-                                                <Column width={200} align="center">
-                                                    <HeaderCell>DNI</HeaderCell>
-                                                    <Cell dataKey="dni" />
-                                                </Column>
-
-                                                <Column width={200} align="center">
-                                                    <HeaderCell>Interés</HeaderCell>
-                                                    <Cell>
-                                                        {rowData => rowData.interes === 'comprar' ? 'Comprar' : 'Alquilar'}
-                                                    </Cell>
-                                                </Column>
-
-                                                <Column width={200} align="center">
-                                                    <HeaderCell>Rango de Precios</HeaderCell>
-                                                    <Cell>
-                                                        {rowData => `${rowData.rango_precios[0].toLocaleString('es-ES')}€ - ${rowData.rango_precios[1].toLocaleString('es-ES')}€`}
-                                                    </Cell>
-                                                </Column>
-
-                                                <Column width={120} align="center" fixed="right">
-                                                    <HeaderCell>Acciones</HeaderCell>
-                                                    <Cell>
-                                                        {rowData => (
-                                                            <div className="flex flex-row gap-4">
-                                                                {/* Whisper for viewing the buyer's information */}
-                                                                <Whisper placement="top" trigger="hover" speaker={<Tooltip>Ver</Tooltip>}>
-                                                                    <Icon icon="mdi:eye-outline" style={{ cursor: 'pointer', fontSize: '1.5rem' }} onClick={() => handleOpenInfoComprador(rowData)} />
-                                                                </Whisper>
-
-                                                                {isAdmin && (
-                                                                    <>
-                                                                        <Whisper placement="top" trigger="hover" speaker={<Tooltip>Editar</Tooltip>}>
-                                                                            <Icon icon="mdi:pencil-outline" style={{ cursor: 'pointer', fontSize: '1.5rem', color: 'green' }} onClick={() => handleOpenEditModalComprador(rowData)} />
-                                                                        </Whisper>
-
-                                                                        <Whisper placement="top" trigger="hover" speaker={<Tooltip>Eliminar</Tooltip>}>
-                                                                            <Icon icon="mdi:trash-can-outline" style={{ cursor: 'pointer', fontSize: '1.5rem', color: 'red' }} onClick={() => handleDeleteComprador(rowData._id)} />
-                                                                        </Whisper>
-                                                                    </>
+                                            <div className="overflow-x-auto max-h-[800px] overflow-y-auto">
+                                                <table className="min-w-full bg-white border-collapse border border-slate-200 relative">
+                                                    <thead className="bg-gray-100">
+                                                        <tr>
+                                                            <th className="px-4 py-2 border cursor-pointer w-[160px]" onClick={() => handleSort('nombre')}>
+                                                                Nombre
+                                                                <Icon
+                                                                    icon="mdi:sort"
+                                                                    className="inline-block ml-2 text-gray-500"
+                                                                />
+                                                                {sortConfig.key === 'nombre' && (
+                                                                    <Icon
+                                                                        icon={`mdi:chevron-${sortConfig.direction === 'asc' ? 'up' : 'down'}`}
+                                                                        className="inline-block ml-1 text-gray-500"
+                                                                    />
                                                                 )}
-                                                            </div>
-                                                        )}
-                                                    </Cell>
-                                                </Column>
+                                                            </th>
+                                                            <th className="px-4 py-2 border cursor-pointer w-[160px]" onClick={() => handleSort('apellido')}>
+                                                                Apellido
+                                                                <Icon
+                                                                    icon="mdi:sort"
+                                                                    className="inline-block ml-2 text-gray-500"
+                                                                />
+                                                                {sortConfig.key === 'apellido' && (
+                                                                    <Icon
+                                                                        icon={`mdi:chevron-${sortConfig.direction === 'asc' ? 'up' : 'down'}`}
+                                                                        className="inline-block ml-1 text-gray-500"
+                                                                    />
+                                                                )}
+                                                            </th>
+                                                            <th className="px-4 py-2 border">Teléfono</th>
+                                                            <th className="px-4 py-2 border">Email</th>
+                                                            <th className="px-4 py-2 border">DNI</th>
+                                                            <th className="px-4 py-2 border cursor-pointer w-[160px]" onClick={() => handleSort('interes')}>
+                                                                Interés
+                                                                <Icon
+                                                                    icon="mdi:sort"
+                                                                    className="inline-block ml-2 text-gray-500"
+                                                                />
+                                                                {sortConfig.key === 'interes' && (
+                                                                    <Icon
+                                                                        icon={`mdi:chevron-${sortConfig.direction === 'asc' ? 'up' : 'down'}`}
+                                                                        className="inline-block ml-1 text-gray-500"
+                                                                    />
+                                                                )}
+                                                            </th>
+                                                            <th className="px-4 py-2 border">Rango de Precios</th>
+                                                            <th className="px-4 py-2 border m-0 bg-white sticky right-0 z-10 rounded-tl-2xl">Acciones</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        {sortedCompradores.map((comprador, index) => (
+                                                            <tr key={comprador._id} className={`border-t ${index % 2 === 0 ? 'bg-white' : 'bg-slate-200'}`}>
+                                                                <td className="px-4 py-2 text-center">{comprador.nombre}</td>
+                                                                <td className="px-4 py-2 text-center">{comprador.apellido}</td>
+                                                                <td className="px-4 py-2 text-center">{comprador.telefono}</td>
+                                                                <td className="px-4 py-2 text-center">{comprador.email}</td>
+                                                                <td className="px-4 py-2 text-center">{comprador.dni}</td>
+                                                                <td className="px-4 py-2 text-center">
+                                                                    <span
+                                                                        className={`px-2 py-1 rounded text-sm font-medium ${comprador.interes === 'comprar'
+                                                                            ? 'bg-yellow-100 text-yellow-700'
+                                                                            : 'bg-violet-100 text-violet-700'
+                                                                            }`}
+                                                                    >
+                                                                        {comprador.interes === 'comprar' ? 'Comprar' : 'Alquilar'}
+                                                                    </span>
+                                                                </td>
 
-                                            </Table>
+                                                                <td className="px-4 py-2 text-center">
+                                                                    {`${comprador.rango_precios[0].toLocaleString('es-ES')}€ - ${comprador.rango_precios[1].toLocaleString('es-ES')}€`}
+                                                                </td>
+                                                                <td className="px-1 py-2 border m-0 bg-white sticky right-0 z-10">
+                                                                    <div className="flex gap-2 justify-center">
+                                                                        <button
+                                                                            className="text-slate-700 hover:text-blue-800"
+                                                                            onClick={() => handleOpenInfoComprador(comprador)}
+                                                                            title="Ver"
+                                                                        >
+                                                                            <Icon icon="mdi:eye-outline" className="text-2xl" />
+                                                                        </button>
+
+                                                                        {isAdmin && (
+                                                                            <>
+                                                                                <button
+                                                                                    className="text-slate-700 hover:text-green-800"
+                                                                                    onClick={() => handleOpenEditModalComprador(comprador)}
+                                                                                    title="Editar"
+                                                                                >
+                                                                                    <Icon icon="mdi:pencil-outline" className="text-2xl" />
+                                                                                </button>
+                                                                                <button
+                                                                                    className="text-slate-700 hover:text-red-800"
+                                                                                    onClick={() => handleDeleteComprador(comprador._id)}
+                                                                                    title="Eliminar"
+                                                                                >
+                                                                                    <Icon icon="mdi:trash-can-outline" className="text-2xl" />
+                                                                                </button>
+                                                                            </>
+                                                                        )}
+                                                                    </div>
+                                                                </td>
+                                                            </tr>
+                                                        ))}
+                                                    </tbody>
+                                                </table>
+                                            </div>
                                         </Panel>
-
-
-
                                     </PanelGroup>
+
                                 </div>
                             </Tabs.Tab>
                         </Tabs>
