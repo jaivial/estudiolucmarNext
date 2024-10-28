@@ -1,7 +1,7 @@
 import GeneralLayout from "../components/layouts/GeneralLayout.js";
 import { useState, useEffect } from "react";
 import axios from 'axios';
-import { Button, Form, Modal, SelectPicker, Table, Tag, Panel, PanelGroup, Whisper, Tooltip, Tabs, Radio, RadioGroup, RangeSlider, InputPicker, Toggle, InputNumber } from 'rsuite';
+import { Button, Form, Modal, SelectPicker, Table, Tag, Panel, PanelGroup, Whisper, Tooltip, Tabs, Radio, RadioGroup, RangeSlider, InputPicker, Toggle, InputNumber, AutoComplete } from 'rsuite';
 import { Icon } from '@iconify/react';
 import Toastify from 'toastify-js';
 import 'toastify-js/src/toastify.css';
@@ -14,6 +14,7 @@ import cookie from 'cookie';
 import '../components/Clientes/clients.css';
 import MoreInfo from '../components/MoreInfo/MoreInfo.js';
 import { intlFormat } from "date-fns";
+import { FaPlus } from 'react-icons/fa';
 
 export async function getServerSideProps(context) {
     // Parse the cookies on the request
@@ -79,6 +80,26 @@ export default function Clientes({ isAdmin }) {
     const [moreInfoInmuebleId, setMoreInfoInmuebleId] = useState(null);
     const [viewMoreComprador, setViewMoreComprador] = useState(false);
     const [moreInfoCompradorId, setMoreInfoCompradorId] = useState(null);
+    const [showAddNewClient, setShowAddNewClient] = useState(false);
+    const [searchTermClients, setSearchTermClients] = useState('');
+    const [filteredClientes, setFilteredClientes] = useState(clientes);
+
+    const handleSearch = (value) => {
+        setSearchTerm(value);
+
+        // Split the input into individual words for more flexible searching
+        const searchWords = value.toLowerCase().split(' ').filter(Boolean);
+
+        // Filter the clientes based on each word matching either nombre or apellido
+        const filtered = clientes.filter((cliente) =>
+            searchWords.every((word) =>
+                cliente.nombre.toLowerCase().includes(word) ||
+                cliente.apellido.toLowerCase().includes(word)
+            )
+        );
+
+        setFilteredClientes(filtered);
+    };
 
 
     const handleOpenInfoComprador = async (comprador) => {
@@ -125,6 +146,11 @@ export default function Clientes({ isAdmin }) {
                         cliente._id === comprador_id ? { ...cliente, pedido: false } : cliente
                     )
                 );
+                setFilteredClientes((prevClientes) =>
+                    prevClientes.map((cliente) =>
+                        cliente._id === comprador_id ? { ...cliente, pedido: false } : cliente
+                    )
+                );
                 showToast('Pedido eliminado con éxito', 'linear-gradient(to right bottom, #00603c, #006f39, #007d31, #008b24, #069903)');
             } else {
                 console.error('Error al eliminar el comprador:', response.data.message);
@@ -156,14 +182,14 @@ export default function Clientes({ isAdmin }) {
 
 
     const handleInteresChange = (value) => {
-        setNewComprador({
+        setNewCliente({
             ...newCliente,
             interes: value,
             rango_precios: value === 'comprar' ? [0, 1000000] : [0, 2500]  // Adjust range based on selection
         });
     };
     const handleInteresChangeEdit = (value) => {
-        setNewComprador({
+        setEditCliente({
             ...editCliente,
             interes: value,
             rango_precios: value === 'comprar' ? [0, 1000000] : [0, 2500]  // Adjust range based on selection
@@ -174,6 +200,7 @@ export default function Clientes({ isAdmin }) {
         try {
             const response = await axios.get('/api/fetch_clientes');
             setClientes(response.data);
+            setFilteredClientes(response.data);
             const compradoresConPedido = response.data.filter(cliente => cliente.pedido);
             setCompradores(compradoresConPedido);
         } catch (error) {
@@ -347,6 +374,7 @@ export default function Clientes({ isAdmin }) {
             if (response.status === 200) {
                 showToast('Cliente eliminado.', 'linear-gradient(to right bottom, #00603c, #006f39, #007d31, #008b24, #069903)');
                 setClientes(prevClientes => prevClientes.filter(cliente => cliente.client_id !== clienteId));
+                setFilteredClientes(prevClientes => prevClientes.filter(cliente => cliente.client_id !== clienteId));
             }
         } catch (error) {
             console.error('Error al eliminar cliente:', error);
@@ -416,6 +444,31 @@ export default function Clientes({ isAdmin }) {
         setMoreInfoCompradorId(comprador);
     };
     const handleCloseMoreInfoComprador = () => setViewMoreComprador(false);
+
+    const handleShowAddClient = async () => {
+        if (showAddNewClient === true) {
+            setNewCliente({
+                ...newCliente,
+                nombre: '',
+                apellido: '',
+                dni: '',
+                tipo_de_cliente: [],
+                inmuebles_asociados_propietario: [],
+                inmuebles_asociados_inquilino: [],
+                telefono: '',
+                inmueblesDetalle: [],
+                informador: false,
+                pedido: false,
+                email: '',
+                direccionfuerazonainquilino: '',
+                direccionfuerazonapropietario: '',
+                interes: 'comprar',  // Default value
+                rango_precios: [0, 1000000],  // Default price range as array
+            });
+        }
+
+        setShowAddNewClient(!showAddNewClient);
+    };
     return (
         <GeneralLayout title="Gestión de Clientes" description="Panel de administración de clientes">
             {loading && <LoadingScreen />}
@@ -433,318 +486,333 @@ export default function Clientes({ isAdmin }) {
                         >
 
                             <Tabs.Tab eventKey="clientes" title="Clientes" className="w-full">
-                                <div className="p-4 w-full">
-                                    <PanelGroup accordion bordered>
-                                        <Panel header="Clientes" eventKey="1" className="bg-slate-50 rounded-lg shadow-xl">
-                                            <Table data={clientes} autoHeight>
-                                                <Column width={70} align="center" fixed="center">
-                                                    <HeaderCell></HeaderCell>
-                                                    <Cell style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', flexDirection: 'column', padding: '0px' }}>
-                                                        {rowData => (
-                                                            <>
-                                                                {rowData.informador && (
-                                                                    <Icon icon="mdi:information" style={{ color: 'blue', fontSize: '2rem' }} />
-                                                                )}
-                                                                {rowData.pedido && (
-                                                                    <Icon icon="mdi:parking" style={{ color: 'orange', fontSize: '1.8rem' }} />
-                                                                )}
-                                                            </>
-                                                        )}
-                                                    </Cell>
-                                                </Column>
-                                                <Column width={80} align="center">
-                                                    <HeaderCell>Nombre</HeaderCell>
-                                                    <Cell dataKey="nombre" />
-                                                </Column>
+                                <div className="w-full flex flex-col items-center">
+                                    <div
+                                        className="bg-blue-200 flex items-center justify-center cursor-pointer p-3 rounded-2xl border border-blue-400 hover:bg-blue-300 hover:border-blue-500 group"
+                                        onClick={handleShowAddClient}
+                                    >
+                                        <Icon icon="bi:person-add" className="text-blue-600 text-4xl transition-colors duration-300 group-hover:text-blue-800" />
+                                    </div>
 
-                                                <Column width={200} align="center">
-                                                    <HeaderCell>Apellido</HeaderCell>
-                                                    <Cell dataKey="apellido" />
-                                                </Column>
+                                    <div className="flex items-center w-full max-w-sm mt-4 border border-gray-300 rounded-lg relative">
+                                        <AutoComplete
+                                            placeholder="Buscar cliente..."
+                                            value={searchTerm}
+                                            onChange={handleSearch}
+                                            data={clientes.map((cliente) => `${cliente.nombre} ${cliente.apellido}`)}
+                                            className="w-full border-none"
+                                        />
+                                        <Icon icon="mdi:magnify" className="text-gray-500 text-2xl mr-2 absolute right-0" />
+                                    </div>
 
-                                                <Column width={350} align="center">
-                                                    <HeaderCell>Tipo de Cliente</HeaderCell>
-                                                    <Cell>
-                                                        {rowData => (
-                                                            <div className='flex flex-row justify-center items-center mx-4 sm:flex-row gap-2'>
-                                                                {rowData.inmuebles_asociados_propietario && rowData.inmuebles_asociados_propietario.length > 0 && (
-                                                                    <Tag
-                                                                        key="propietario"
-                                                                        color="green"
-                                                                        style={{ margin: '0px' }}
+                                    <div className="p-4 w-full flex flex-row gap-6">
+                                        <div className={`${showAddNewClient ? 'w-3/4' : 'w-full'} transition-all duration-1000 ease-in-out`}>
+                                            <PanelGroup bordered defaultActiveKey="1" style={{ marginBottom: '20px', borderRadius: '1.2rem' }}>
+                                                <Panel header="Clientes" eventKey="1" className="bg-slate-50 rounded-lg shadow-xl">
+                                                    <div className="overflow-x-auto max-h-[800px] overflow-y-auto">
+                                                        <table className="min-w-full bg-white border-collapse border border-slate-200 relative">
+                                                            <thead className="bg-gray-100">
+                                                                <tr>
+                                                                    <th className="px-0 py-2 border w-fit">Info</th>
+                                                                    <th className="px-4 py-2 border">Nombre</th>
+                                                                    <th className="px-4 py-2 border min-w-fit">Tipo de Cliente</th>
+                                                                    <th className="px-4 py-2 border">DNI</th>
+                                                                    <th className="px-4 py-2 border">Teléfono</th>
+                                                                    <th className="px-4 py-2 border">Email</th>
+                                                                    <th className="px-4 py-2 border">Inmuebles Asociados</th>
+                                                                    <th className="px-4 py-2 border m-0 bg-white sticky right-0 z-10">Acciones</th>
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody>
+                                                                {filteredClientes.map((cliente, index) => (
+                                                                    <tr
+                                                                        key={cliente.id}
+                                                                        className={`border-t ${index % 2 === 0 ? 'bg-white' : 'bg-slate-200'}`}
                                                                     >
-                                                                        Propietario
-                                                                    </Tag>
-                                                                )}
-                                                                {rowData.inmuebles_asociados_inquilino && rowData.inmuebles_asociados_inquilino.length > 0 && (
-                                                                    <Tag
-                                                                        key="inquilino"
-                                                                        color="red"
-                                                                        style={{ margin: '0px', marginBottom: '5px' }}
-                                                                    >
-                                                                        Inquilino
-                                                                    </Tag>
-                                                                )}
-                                                            </div>
-                                                        )}
-                                                    </Cell>
-                                                </Column>
 
-                                                <Column width={200} align="center">
-                                                    <HeaderCell>DNI</HeaderCell>
-                                                    <Cell dataKey="dni" />
-                                                </Column>
+                                                                        <td className="px-0 py-2 text-center flex flex-row items-start justify-start mx-auto w-[50px]">
+                                                                            {cliente.informador && (
+                                                                                <Icon icon="mdi:information" className="text-blue-500 text-2xl" />
+                                                                            )}
+                                                                            {cliente.pedido && (
+                                                                                <Icon icon="mdi:parking" className="text-orange-500 text-2xl" />
+                                                                            )}
+                                                                        </td>
+                                                                        <td className="px-4 py-2 text-center min-w-fit text-nowrap">{cliente.nombre} {cliente.apellido}</td>
+                                                                        <td className="px-4 py-2 text-center w-[220px]">
+                                                                            <div className="flex flex-row justify-center gap-3">
+                                                                                {cliente.inmuebles_asociados_propietario?.length > 0 && (
+                                                                                    <span className="text-green-700 bg-green-100 px-2 py-1 rounded">
+                                                                                        Propietario
+                                                                                    </span>
+                                                                                )}
+                                                                                {cliente.inmuebles_asociados_inquilino?.length > 0 && (
+                                                                                    <span className="text-red-700 bg-red-100 px-2 py-1 rounded">
+                                                                                        Inquilino
+                                                                                    </span>
+                                                                                )}
+                                                                            </div>
+                                                                        </td>
+                                                                        <td className="px-4 py-2 text-center">{cliente.dni}</td>
+                                                                        <td className="px-4 py-2 text-center">{cliente.telefono || 'N/A'}</td>
+                                                                        <td className="px-4 py-2 text-center">{cliente.email || 'N/A'}</td>
+                                                                        <td className="px-4 py-2 text-center">
+                                                                            {cliente.inmuebles_asociados_propietario?.length +
+                                                                                cliente.inmuebles_asociados_inquilino?.length +
+                                                                                (cliente.direccionfuerazonapropietario ? 1 : 0) +
+                                                                                (cliente.direccionfuerazonainquilino ? 1 : 0)}
+                                                                        </td>
+                                                                        <td className="px-1 py-2 border m-0 bg-white sticky right-0 z-10">
+                                                                            <div className="flex gap-2 justify-center">
+                                                                                <button
+                                                                                    className="text-slate-700 hover:text-blue-800"
+                                                                                    onClick={() => handleOpen(cliente)}
+                                                                                    title="Ver"
+                                                                                >
+                                                                                    <Icon icon="mdi:eye-outline" className="text-2xl" />
+                                                                                </button>
+                                                                                <button
+                                                                                    className="text-slate-700 hover:text-green-800"
+                                                                                    onClick={() => handleOpenEditModal(cliente)}
+                                                                                    title="Editar"
+                                                                                >
+                                                                                    <Icon icon="mdi:pencil-outline" className="text-2xl" />
+                                                                                </button>
+                                                                                <button
+                                                                                    className="text-slate-700 hover:text-red-800"
+                                                                                    onClick={() => handleDeleteCliente(cliente.client_id)}
+                                                                                    title="Eliminar"
+                                                                                >
+                                                                                    <Icon icon="mdi:trash-can-outline" className="text-2xl" />
+                                                                                </button>
+                                                                            </div>
+                                                                        </td>
+                                                                    </tr>
+                                                                ))}
+                                                            </tbody>
+                                                        </table>
+                                                    </div>
+                                                </Panel>
 
-
-                                                <Column width={200} align="center">
-                                                    <HeaderCell>Teléfono</HeaderCell>
-                                                    <Cell dataKey="telefono">
-                                                        {rowData => rowData.telefono || 'N/A'}
-                                                    </Cell>
-                                                </Column>
-                                                <Column width={200} align="center">
-                                                    <HeaderCell>Email</HeaderCell>
-                                                    <Cell dataKey="telefono">
-                                                        {rowData => rowData.email || 'N/A'}
-                                                    </Cell>
-                                                </Column>
-                                                <Column width={200} align="center">
-                                                    <HeaderCell>Inmuebles Asociados</HeaderCell>
-                                                    <Cell>
-                                                        {rowData =>
-                                                            rowData.inmuebles_asociados_propietario.length +
-                                                            rowData.inmuebles_asociados_inquilino.length +
-                                                            (rowData.direccionfuerazonapropietario ? 1 : 0) +
-                                                            (rowData.direccionfuerazonainquilino ? 1 : 0)}
-                                                    </Cell>
-                                                </Column>
-
-                                                <Column width={120} align="center" fixed="right">
-                                                    <HeaderCell>Acciones</HeaderCell>
-                                                    <Cell>
-                                                        {rowData => (
-                                                            <div className="flex flex-row gap-4">
-                                                                <Whisper placement="top" trigger="hover" speaker={<Tooltip>Ver</Tooltip>}>
-                                                                    <Icon icon="mdi:eye-outline" style={{ cursor: 'pointer', fontSize: '1.5rem' }} onClick={() => handleOpen(rowData)} />
-                                                                </Whisper>
-
-                                                                <Whisper placement="top" trigger="hover" speaker={<Tooltip>Editar</Tooltip>}>
-                                                                    <Icon icon="mdi:pencil-outline" style={{ cursor: 'pointer', fontSize: '1.5rem', color: 'green' }} onClick={() => handleOpenEditModal(rowData)} />
-                                                                </Whisper>
-
-                                                                <Whisper placement="top" trigger="hover" speaker={<Tooltip>Eliminar</Tooltip>}>
-                                                                    <Icon icon="mdi:trash-can-outline" style={{ cursor: 'pointer', fontSize: '1.5rem', color: 'red' }} onClick={() => handleDeleteCliente(rowData.client_id)} />
-                                                                </Whisper>
-
-                                                            </div>
-                                                        )}
-                                                    </Cell>
-                                                </Column>
-                                            </Table>
-                                        </Panel>
-
-                                        <Panel header="Agregar Nuevo Cliente" eventKey="2" className="bg-slate-50 rounded-lg shadow-xl">
-                                            <Form fluid>
-                                                <Form.Group controlId="pedido-toggle" className="w-full flex flex-col gap-4 justify-center items-center">
-                                                    <p>¿Es un pedido?</p>
-                                                    <Toggle
-                                                        checkedChildren="Pedido"
-                                                        unCheckedChildren="No Pedido"
-                                                        checked={newCliente.pedido}
-                                                        onChange={(checked) => handlePedido(checked)}
-                                                        size={'lg'}
-                                                    />
-                                                </Form.Group>
-                                                {newCliente.pedido && (
-                                                    <div className="w-full flex flex-col gap-4 justify-center items-center mt-10">
-                                                        <div className="w-full flex flex-row gap-32 justify-center items-start">
-                                                            <Form.Group controlId="interes">
-                                                                <Form.ControlLabel style={{ textAlign: 'center' }}>Interés</Form.ControlLabel>
-                                                                <RadioGroup
-                                                                    name="interes"
-                                                                    value={newCliente.interes}
-                                                                    onChange={handleInteresChange}
-                                                                >
-                                                                    <Radio value="comprar">Comprar</Radio>
-                                                                    <Radio value="alquilar">Alquilar</Radio>
-                                                                </RadioGroup>
-                                                            </Form.Group>
-
-                                                            <Form.Group controlId="rango_precios">
-                                                                <Form.ControlLabel style={{ textAlign: 'center' }}>Rango de Precios</Form.ControlLabel>
-                                                                <div className="flex justify-center gap-4 mt-4">
-                                                                    <Form.Group controlId="precio_minimo">
-                                                                        <Form.ControlLabel>Precio Mínimo (€)</Form.ControlLabel>
-                                                                        <Form.Control
-                                                                            type="number"
-                                                                            min={0}
-                                                                            value={newCliente.rango_precios[0]}
-                                                                            onChange={value => setNewComprador({ ...newCliente, rango_precios: [parseInt(value, 10), newCliente.rango_precios[1]] })}
-                                                                        />
+                                            </PanelGroup>
+                                        </div>
+                                        <div className={`${showAddNewClient ? 'w-1/4' : 'w-1/4 hidden'} transition-all duration-1000 ease-in-out`}>
+                                            <PanelGroup bordered defaultActiveKey="2" style={{ borderRadius: '1.2rem' }}>
+                                                <Panel header="Agregar Nuevo Cliente" eventKey="2" className="bg-slate-50 rounded-2xl">
+                                                    <Form fluid className="w-[80%] mx-auto">
+                                                        <Form.Group controlId="pedido-toggle" className="w-full flex flex-col gap-4 justify-center items-center">
+                                                            <p>¿Es un pedido?</p>
+                                                            <Toggle
+                                                                checkedChildren="Pedido"
+                                                                unCheckedChildren="No Pedido"
+                                                                checked={newCliente.pedido}
+                                                                onChange={(checked) => handlePedido(checked)}
+                                                                size={'lg'}
+                                                            />
+                                                        </Form.Group>
+                                                        {newCliente.pedido && (
+                                                            <div className="w-full flex flex-col gap-4 justify-center items-center mt-10">
+                                                                <div className="w-full flex flex-row gap-32 justify-center items-center">
+                                                                    <Form.Group controlId="interes">
+                                                                        <Form.ControlLabel style={{ textAlign: 'center' }}>Interés</Form.ControlLabel>
+                                                                        <RadioGroup
+                                                                            name="interes"
+                                                                            value={newCliente.interes}
+                                                                            onChange={handleInteresChange}
+                                                                        >
+                                                                            <Radio value="comprar">Comprar</Radio>
+                                                                            <Radio value="alquilar">Alquilar</Radio>
+                                                                        </RadioGroup>
                                                                     </Form.Group>
-                                                                    <Form.Group controlId="precio_maximo">
-                                                                        <Form.ControlLabel>Precio Máximo (€)</Form.ControlLabel>
-                                                                        <Form.Control
-                                                                            type="number"
-                                                                            min={newCliente.rango_precios[0]}
-                                                                            max={newCliente.interes === 'comprar' ? 1000000 : 2500}
-                                                                            value={newCliente.rango_precios[1]}
-                                                                            onChange={value => setNewComprador({ ...newCliente, rango_precios: [newCliente.rango_precios[0], parseInt(value, 10)] })}
-                                                                        />
+
+                                                                    <Form.Group controlId="rango_precios">
+                                                                        <Form.ControlLabel style={{ textAlign: 'center' }}>Rango de Precios</Form.ControlLabel>
+                                                                        <div className="flex justify-center flex-col gap-1 mt-4">
+                                                                            <Form.Group controlId="precio_minimo">
+                                                                                <Form.ControlLabel>Precio Mínimo (€)</Form.ControlLabel>
+                                                                                <Form.Control
+                                                                                    type="number"
+                                                                                    min={0}
+                                                                                    value={newCliente.rango_precios[0]}
+                                                                                    onChange={(value) =>
+                                                                                        setNewCliente({
+                                                                                            ...newCliente,
+                                                                                            rango_precios: [parseInt(value, 10), newCliente.rango_precios[1]],
+                                                                                        })
+                                                                                    }
+                                                                                />
+                                                                            </Form.Group>
+                                                                            <Form.Group controlId="precio_maximo">
+                                                                                <Form.ControlLabel>Precio Máximo (€)</Form.ControlLabel>
+                                                                                <Form.Control
+                                                                                    type="number"
+                                                                                    min={newCliente.rango_precios[0]}
+                                                                                    max={newCliente.interes === 'comprar' ? 1000000 : 2500}
+                                                                                    value={newCliente.rango_precios[1]}
+                                                                                    onChange={(value) =>
+                                                                                        setNewCliente({
+                                                                                            ...newCliente,
+                                                                                            rango_precios: [newCliente.rango_precios[0], parseInt(value, 10)],
+                                                                                        })
+                                                                                    }
+                                                                                />
+                                                                            </Form.Group>
+                                                                        </div>
                                                                     </Form.Group>
                                                                 </div>
+                                                            </div>
+                                                        )}
+
+                                                        <Form.Group>
+                                                            <Form.ControlLabel>Nombre</Form.ControlLabel>
+                                                            <Form.Control name="nombre" value={newCliente.nombre} onChange={value => {
+                                                                setNewCliente({ ...newCliente, nombre: value });
+                                                            }} />
+                                                        </Form.Group>
+
+                                                        <Form.Group>
+                                                            <Form.ControlLabel>Apellido</Form.ControlLabel>
+                                                            <Form.Control name="apellido" value={newCliente.apellido} onChange={value => {
+                                                                setNewCliente({ ...newCliente, apellido: value });
+                                                            }} />
+                                                        </Form.Group>
+                                                        <Form.Group controlId="email">
+                                                            <Form.ControlLabel>Email</Form.ControlLabel>
+                                                            <Form.Control name="email" value={newCliente.email} onChange={value => {
+                                                                setNewCliente({ ...newCliente, email: value });
+                                                            }} />
+                                                        </Form.Group>
+                                                        <Form.Group>
+                                                            <Form.ControlLabel>Teléfono</Form.ControlLabel>
+                                                            <Form.Control name="telefono" value={newCliente.telefono} onChange={value => {
+                                                                setNewCliente({ ...newCliente, telefono: value });
+                                                            }} />
+                                                        </Form.Group>
+
+                                                        <Form.Group>
+                                                            <Form.ControlLabel>DNI</Form.ControlLabel>
+                                                            <Form.Control name="dni" value={newCliente.dni} onChange={value => {
+                                                                setNewCliente({ ...newCliente, dni: value });
+                                                            }}
+                                                            />
+                                                        </Form.Group>
+
+
+
+                                                        <Form.Group>
+                                                            <Form.ControlLabel>Tipo de Cliente</Form.ControlLabel>
+                                                            <SelectPicker
+                                                                data={[
+                                                                    { label: 'Propietario', value: 'propietario' },
+                                                                    { label: 'Inquilino', value: 'inquilino' },
+                                                                ]}
+                                                                value={newCliente.tipo_de_cliente}
+                                                                onChange={value => handleSelectTipoDeCliente(value, 'new')}
+                                                                searchable={false}
+                                                                multiple
+                                                                block
+                                                            />
+                                                        </Form.Group>
+
+                                                        {newCliente.tipo_de_cliente.includes('propietario') && (
+                                                            <Form.Group className="bg-slate-200 p-4 rounded-md">
+                                                                <Form.ControlLabel>Inmuebles Asociados (Propietario)</Form.ControlLabel>
+                                                                <div style={{ marginBottom: '10px' }}>
+                                                                    {newCliente.inmuebles_asociados_propietario.map(item => (
+                                                                        <Tag
+                                                                            key={item.id}
+                                                                            closable
+                                                                            onClose={() => handleRemoveInmueble('propietario', item.id)}
+                                                                            style={{ marginRight: '5px', marginBottom: '5px' }}
+                                                                        >
+                                                                            {item.direccion}
+                                                                        </Tag>
+                                                                    ))}
+                                                                </div>
+                                                                <SelectPicker
+                                                                    data={inmuebles.map(inmueble => ({ label: inmueble.direccion, value: inmueble.id }))}
+                                                                    onSearch={handleSearchInmuebles}
+                                                                    onChange={(value) => handleSelectInmueble('propietario', value, 'new')}
+                                                                    searchable
+                                                                    block
+                                                                    menuStyle={{ maxHeight: 200, overflowY: 'auto' }}
+                                                                    placement="bottomEnd"
+                                                                />
+                                                                <div className="mt-3 flex flex-col gap-2">
+                                                                    <p>¿El inmueble está fuera de zona?</p>
+                                                                    <Form.Control
+                                                                        name="direccionfuerazonapropietario"
+                                                                        type="text"
+                                                                        placeholder="Introduce una dirección"
+                                                                        value={newCliente.direccionfuerazonapropietario}
+                                                                        onChange={value => setNewCliente(prevState => ({ ...newCliente, direccionfuerazonapropietario: value }))}
+                                                                        className="w-full"
+                                                                    />
+                                                                </div>
                                                             </Form.Group>
-                                                        </div>
-                                                    </div>
-                                                )}
-                                                <Form.Group>
-                                                    <Form.ControlLabel>Nombre</Form.ControlLabel>
-                                                    <Form.Control name="nombre" value={newCliente.nombre} onChange={value => {
-                                                        setNewCliente({ ...newCliente, nombre: value });
-                                                    }} />
-                                                </Form.Group>
+                                                        )}
 
-                                                <Form.Group>
-                                                    <Form.ControlLabel>Apellido</Form.ControlLabel>
-                                                    <Form.Control name="apellido" value={newCliente.apellido} onChange={value => {
-                                                        setNewCliente({ ...newCliente, apellido: value });
-                                                    }} />
-                                                </Form.Group>
-                                                <Form.Group controlId="email">
-                                                    <Form.ControlLabel>Email</Form.ControlLabel>
-                                                    <Form.Control name="email" value={newCliente.email} onChange={value => {
-                                                        setNewCliente({ ...newCliente, email: value });
-                                                    }} />
-                                                </Form.Group>
-                                                <Form.Group>
-                                                    <Form.ControlLabel>Teléfono</Form.ControlLabel>
-                                                    <Form.Control name="telefono" value={newCliente.telefono} onChange={value => {
-                                                        setNewCliente({ ...newCliente, telefono: value });
-                                                    }} />
-                                                </Form.Group>
+                                                        {newCliente.tipo_de_cliente.includes('inquilino') && (
+                                                            <Form.Group className="bg-slate-200 p-4 rounded-md">
+                                                                <Form.ControlLabel>Inmuebles Asociados (Inquilino)</Form.ControlLabel>
+                                                                <div style={{ marginBottom: '10px' }}>
+                                                                    {newCliente.inmuebles_asociados_inquilino.map(item => (
+                                                                        <Tag
+                                                                            key={item.id}
+                                                                            closable
+                                                                            onClose={() => handleRemoveInmueble('inquilino', item.id)}
+                                                                            style={{ marginRight: '5px', marginBottom: '5px' }}
+                                                                        >
+                                                                            {item.direccion}
+                                                                        </Tag>
+                                                                    ))}
+                                                                </div>
+                                                                <SelectPicker
+                                                                    data={inmuebles.map(inmueble => ({ label: inmueble.direccion, value: inmueble.id }))}
+                                                                    onSearch={handleSearchInmuebles}
+                                                                    onChange={(value) => handleSelectInmueble('inquilino', value, 'new')}
+                                                                    searchable
+                                                                    block
+                                                                    menuStyle={{ maxHeight: 200, overflowY: 'auto' }}
+                                                                    placement="bottomEnd"
+                                                                />
+                                                                <div className="mt-3 flex flex-col gap-2">
+                                                                    <p>¿El inmueble está fuera de zona?</p>
+                                                                    <Form.Control
+                                                                        name="direccionfuerazonainquilino"
+                                                                        type="text"
+                                                                        placeholder="Introduce una dirección"
+                                                                        value={newCliente.direccionfuerazonainquilino}
+                                                                        onChange={value => setNewCliente(prevState => ({ ...newCliente, direccionfuerazonainquilino: value }))}
+                                                                        className="w-full"
+                                                                    />
+                                                                </div>
+                                                            </Form.Group>
+                                                        )}
 
-                                                <Form.Group>
-                                                    <Form.ControlLabel>DNI</Form.ControlLabel>
-                                                    <Form.Control name="dni" value={newCliente.dni} onChange={value => {
-                                                        setNewCliente({ ...newCliente, dni: value });
-                                                    }}
-                                                    />
-                                                </Form.Group>
 
-
-
-                                                <Form.Group>
-                                                    <Form.ControlLabel>Tipo de Cliente</Form.ControlLabel>
-                                                    <SelectPicker
-                                                        data={[
-                                                            { label: 'Propietario', value: 'propietario' },
-                                                            { label: 'Inquilino', value: 'inquilino' },
-                                                        ]}
-                                                        value={newCliente.tipo_de_cliente}
-                                                        onChange={value => handleSelectTipoDeCliente(value, 'new')}
-                                                        searchable={false}
-                                                        multiple
-                                                        block
-                                                    />
-                                                </Form.Group>
-
-                                                {newCliente.tipo_de_cliente.includes('propietario') && (
-                                                    <Form.Group className="bg-slate-200 p-4 rounded-md">
-                                                        <Form.ControlLabel>Inmuebles Asociados (Propietario)</Form.ControlLabel>
-                                                        <div style={{ marginBottom: '10px' }}>
-                                                            {newCliente.inmuebles_asociados_propietario.map(item => (
-                                                                <Tag
-                                                                    key={item.id}
-                                                                    closable
-                                                                    onClose={() => handleRemoveInmueble('propietario', item.id)}
-                                                                    style={{ marginRight: '5px', marginBottom: '5px' }}
-                                                                >
-                                                                    {item.direccion}
-                                                                </Tag>
-                                                            ))}
-                                                        </div>
-                                                        <SelectPicker
-                                                            data={inmuebles.map(inmueble => ({ label: inmueble.direccion, value: inmueble.id }))}
-                                                            onSearch={handleSearchInmuebles}
-                                                            onChange={(value) => handleSelectInmueble('propietario', value, 'new')}
-                                                            searchable
-                                                            block
-                                                            menuStyle={{ maxHeight: 200, overflowY: 'auto' }}
-                                                            placement="bottomEnd"
-                                                        />
-                                                        <div className="mt-3 flex flex-col gap-2">
-                                                            <p>¿El inmueble está fuera de zona?</p>
-                                                            <Form.Control
-                                                                name="direccionfuerazonapropietario"
-                                                                type="text"
-                                                                placeholder="Introduce una dirección"
-                                                                value={newCliente.direccionfuerazonapropietario}
-                                                                onChange={value => setNewCliente(prevState => ({ ...newCliente, direccionfuerazonapropietario: value }))}
-                                                                className="w-full"
+                                                        <Form.Group controlId="informador-toggle" className="w-full flex flex-col gap-4 justify-center items-center">
+                                                            <p>¿Es un informador?</p>
+                                                            <Toggle
+                                                                checkedChildren="Informador"
+                                                                unCheckedChildren="No Informador"
+                                                                defaultChecked={newCliente.informador}
+                                                                onChange={(checked) => handleInformador(checked)}
+                                                                size={'lg'}
                                                             />
+                                                        </Form.Group>
+
+                                                        <div className="flex flex-col gap-4 justify-center items-center my-10">
+                                                            <Button appearance="primary" onClick={handleAddCliente} style={{ marginTop: '20px' }}>
+                                                                Agregar Cliente
+                                                            </Button>
                                                         </div>
-                                                    </Form.Group>
-                                                )}
 
-                                                {newCliente.tipo_de_cliente.includes('inquilino') && (
-                                                    <Form.Group className="bg-slate-200 p-4 rounded-md">
-                                                        <Form.ControlLabel>Inmuebles Asociados (Inquilino)</Form.ControlLabel>
-                                                        <div style={{ marginBottom: '10px' }}>
-                                                            {newCliente.inmuebles_asociados_inquilino.map(item => (
-                                                                <Tag
-                                                                    key={item.id}
-                                                                    closable
-                                                                    onClose={() => handleRemoveInmueble('inquilino', item.id)}
-                                                                    style={{ marginRight: '5px', marginBottom: '5px' }}
-                                                                >
-                                                                    {item.direccion}
-                                                                </Tag>
-                                                            ))}
-                                                        </div>
-                                                        <SelectPicker
-                                                            data={inmuebles.map(inmueble => ({ label: inmueble.direccion, value: inmueble.id }))}
-                                                            onSearch={handleSearchInmuebles}
-                                                            onChange={(value) => handleSelectInmueble('inquilino', value, 'new')}
-                                                            searchable
-                                                            block
-                                                            menuStyle={{ maxHeight: 200, overflowY: 'auto' }}
-                                                            placement="bottomEnd"
-                                                        />
-                                                        <div className="mt-3 flex flex-col gap-2">
-                                                            <p>¿El inmueble está fuera de zona?</p>
-                                                            <Form.Control
-                                                                name="direccionfuerazonainquilino"
-                                                                type="text"
-                                                                placeholder="Introduce una dirección"
-                                                                value={newCliente.direccionfuerazonainquilino}
-                                                                onChange={value => setNewCliente(prevState => ({ ...newCliente, direccionfuerazonainquilino: value }))}
-                                                                className="w-full"
-                                                            />
-                                                        </div>
-                                                    </Form.Group>
-                                                )}
-
-
-                                                <Form.Group controlId="informador-toggle" className="w-full flex flex-col gap-4 justify-center items-center">
-                                                    <p>¿Es un informador?</p>
-                                                    <Toggle
-                                                        checkedChildren="Informador"
-                                                        unCheckedChildren="No Informador"
-                                                        defaultChecked={newCliente.informador}
-                                                        onChange={(checked) => handleInformador(checked)}
-                                                        size={'lg'}
-                                                    />
-                                                </Form.Group>
-
-                                                <div className="flex flex-col gap-4 justify-center items-center my-10">
-                                                    <Button appearance="primary" onClick={handleAddCliente} style={{ marginTop: '20px' }}>
-                                                        Agregar Cliente
-                                                    </Button>
-                                                </div>
-
-                                            </Form>
-                                        </Panel>
-                                    </PanelGroup>
+                                                    </Form>
+                                                </Panel>
+                                            </PanelGroup>
+                                        </div>
+                                    </div>
                                 </div>
                             </Tabs.Tab>
                             <Tabs.Tab eventKey="compradores" title="Pedidos">
