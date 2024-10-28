@@ -2,11 +2,11 @@ import React, { useEffect, useState } from 'react';
 import { AiOutlineHome, AiOutlineSearch, AiOutlineSetting, AiOutlineUser } from 'react-icons/ai';
 import { Icon } from '@iconify/react';
 import Image from 'next/image';
-import { FaSignOutAlt } from 'react-icons/fa';
 import Cookies from 'js-cookie';
 import axios from 'axios';
 import Toastify from 'toastify-js';
 import { useRouter } from 'next/router';
+import { FaSignOutAlt, FaChevronRight, FaChevronLeft } from 'react-icons/fa';
 
 const Sidebar = ({ userData }) => {
     const router = useRouter();
@@ -72,33 +72,33 @@ const Sidebar = ({ userData }) => {
 
     return (
         <div
-            className={`fixed top-0 flex flex-col left-0 h-screen transition-width duration-[900ms] ease-in-out ${isExpanded ? 'w-56' : 'w-20'} bg-slate-200 shadow-lg rounded-tr-2xl rounded-br-2xl z-[50000]`}
-            onMouseEnter={() => setIsExpanded(true)}
-            onMouseLeave={() => setIsExpanded(false)}
+            className={`top-0 flex flex-col justify-between items-stretch left-0 bottom-0 h-screen transition-width duration-[600ms] ease-in-out ${isExpanded ? 'w-56' : 'w-20'} bg-slate-200 shadow-lg rounded-tr-2xl rounded-br-2xl z-[50000]`}
         >
-            <div className="flex flex-col items-center mx-auto py-4 h-[20%]">
-                {/* Avatar Section */}
+            {/* Avatar Section */}
+            <div className="flex flex-col py-4 justify-center items-center mx-auto flex-shrink-0">
                 <div>
                     <Image
-                        src="/assets/img/logolucmar.jpg" // Path to your image
+                        src="/assets/img/logolucmar.jpg"
                         alt="Lucmar Logo"
                         width={isExpanded ? 100 : 120}
                         height={isExpanded ? 100 : 120}
-                        className={`rounded-full transition-all duration-[1000ms] mx-auto ${isExpanded ? 'w-24 h-24 mb-3' : 'w-16 h-16'}`}
+                        className={`rounded-full transition-all duration-[400ms] mx-auto ${isExpanded ? 'w-24 h-24 mb-3' : 'w-16 h-16'}`}
                     />
-                    {isExpanded &&
-                        <span className={`text-blue-950 font-semibold text-xl transition-opacity  ${fullyExpanded ? 'opacity-100 flex duration-[3500ms] ease-in-out mx-4 text-center' : 'opacity-0 flex duration-[0ms] ease-in-out'}`}>
-                            Estudio Lucmar CRM
+                    {isExpanded && (
+                        <span className={`text-blue-950 font-semibold text-xl transition-opacity ${fullyExpanded ? 'opacity-100 flex duration-[3000ms] ease-in-out mx-4 text-center' : 'opacity-0 flex duration-[0ms] ease-in-out'}`}>
+                            Estudio Lucmar
                         </span>
-                    }
+                    )}
                 </div>
             </div>
-            <nav className="mt-4 flex-grow gap-6 absolute top-[200px] mx-auto w-full flex-col h-[60%]">
+
+            {/* Navigation Section */}
+            <nav className={`flex-grow relative overflow-y-auto flex flex-col ${isExpanded ? 'h-auto' : 'h-auto'}`}>
                 {menuItems.map((item) => (
                     <a
                         key={item.name}
                         href={item.path}
-                        className={`flex items-center p-3 gap-3 rounded-lg transition-all duration-[1000ms] ease-in-out group mt-3 ${isExpanded
+                        className={`flex items-center p-3 gap-3 rounded-lg transition-all duration-[300ms] ease-in-out group mt-3 ${isExpanded
                             ? 'justify-start mx-4'
                             : 'justify-center mx-2'
                             } ${window.location.pathname === item.path
@@ -118,48 +118,74 @@ const Sidebar = ({ userData }) => {
                         )}
                     </a>
                 ))}
+
+                {/* Expand/Collapse Button */}
+                <button
+                    className="absolute bottom-5 left-1/2 transform -translate-x-1/2 bg-white text-black rounded-full p-2 shadow-md hover:bg-blue-400 hover:text-white transition-all"
+                    onClick={() => setIsExpanded(!isExpanded)}
+                >
+                    {isExpanded ? <FaChevronLeft size="1.5em" /> : <FaChevronRight size="1.5em" />}
+                </button>
             </nav>
 
-
-
             {/* User Information Section */}
-            <div className={`bg-slate-800 text-white mt-auto  rounded-br-2xl flex flex-col items-center transition-all duration-[1000ms] ${isExpanded ? 'h-[35%] gap-5 pt-6' : 'justify-center h-[20%]'}`}>
-
+            <div
+                className={`bg-slate-800 text-white mt-auto rounded-br-2xl flex flex-col items-center justify-center transition-all duration-[500ms] ${isExpanded && window.innerHeight > 700 ? 'h-[36%] gap-5 pb-4' : 'justify-center h-[20%] pb-4 py-2'} overflow-hidden flex-shrink-0`}
+            >
                 <>
                     <Image
                         src={userData?.user?.profile_photo}
-                        alt="Lucmar Logo"
-                        width={isExpanded ? 100 : 100}
-                        height={isExpanded ? 100 : 100}
-                        className={`rounded-full transition-all duration-[1000ms] mx-auto mt-2 ${isExpanded ? 'w-24 h-24 mb-3 mt-4' : 'w-14 h-14 mb-2'}`}
+                        alt="User Profile"
+                        width={100}
+                        height={100}
+                        className={`rounded-full transition-all duration-[800ms] mx-auto mt-2 ${isExpanded ? 'w-24 h-24 mb-3 mt-4' : 'w-14 h-14 mb-2'}`}
                     />
                     {userData?.user?.admin && (
-                        <div className={` bg-blue-500 text-white ${isExpanded ? 'px-3 py-1 text-md' : 'px-2 py-1 text-xs'} rounded-lg mt-1 w-fit mx-auto`}>Admin</div>
+                        <div className={`bg-blue-500 text-white ${isExpanded ? 'px-3 py-1 text-md' : 'px-2 py-1 text-xs'} rounded-lg mt-1 w-fit`}>
+                            Admin
+                        </div>
                     )}
-                    {isExpanded && (
+                    {isExpanded && window.innerHeight > 700 && (
                         <>
-                            <span className={`${fullyExpanded ? 'opacity-100' : 'opacity-0'} transition-opacity duration-[1000ms]`}>{userData?.user?.nombre} {userData?.user?.apellido}</span>
-                            <div className={`${fullyExpanded ? 'opacity-100' : 'opacity-0'} transition-opacity duration-[1000ms]`}>{userData?.user?.email}</div>
+                            <span className={`text-center ${fullyExpanded ? 'opacity-100' : 'opacity-0'} transition-opacity duration-[600ms]`}>
+                                {userData?.user?.nombre} {userData?.user?.apellido}
+                            </span>
+                            <div className={`text-center ${fullyExpanded ? 'opacity-100' : 'opacity-0'} transition-opacity duration-[600ms] px-6`}>
+                                {userData?.user?.email}
+                            </div>
                         </>
                     )}
-                    <div>
-                        {isExpanded &&
-                            <>
-                                <label>Cerrar Sesión</label>
-                            </>
-                        }
-                        <div
-                            id="mobile-itemLogOut"
-                            className="w-[50px] flex mx-auto mt-3 justify-center py-2 bg-white text-black rounded-3xl shadow-lg hover:cursor-pointer hover:bg-blue-400 hover:text-white"
-                            onClick={handleLogout}
-                        >
-                            <FaSignOutAlt size="1.8em" />
+                    {!isExpanded && (
+                        <>
+                            <div
+                                id="mobile-itemLogOut"
+                                className="w-[50px] flex mx-auto justify-center py-2 mt-4 bg-white text-black rounded-3xl shadow-lg hover:cursor-pointer hover:bg-blue-400 hover:text-white transition-all duration-[500ms]"
+                                onClick={handleLogout}
+                            >
+                                <FaSignOutAlt size="1.8em" />
+                            </div> </>
+                    )}
+                    {isExpanded && (
+                        <div className="text-center">
+                            <label>Cerrar Sesión</label>
+                            <div
+                                id="mobile-itemLogOut"
+                                className="w-[50px] flex mx-auto justify-center py-2 mt-2 bg-white text-black rounded-3xl shadow-lg hover:cursor-pointer hover:bg-blue-400 hover:text-white transition-all duration-[500ms]"
+                                onClick={handleLogout}
+                            >
+                                <FaSignOutAlt size="1.8em" />
+                            </div>
                         </div>
-                    </div>
+                    )}
                 </>
             </div>
-        </div >
+
+
+
+        </div>
     );
+
+
 };
 
 export default Sidebar;

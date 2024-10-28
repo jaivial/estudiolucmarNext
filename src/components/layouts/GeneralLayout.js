@@ -63,7 +63,7 @@ const Layout = ({ children, title, description, user, userData }) => {
             </Head>
 
             {/* Conditional Rendering of Menu */}
-            <div className="flex h-full">
+            <div className="flex h-full bg-gradient-to-t from-slate-400 via-slate-300 to-slate-200 ">
                 {windowWidth < 990 ? <MobileMenuBar /> : <SideMenu userData={userData} />}
                 <div className="w-full h-dvh overflow-x-hidden">{children}</div>
             </div>
