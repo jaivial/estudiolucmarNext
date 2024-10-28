@@ -3,8 +3,8 @@ import clientPromise from '../../lib/mongodb';
 
 export default async function handler(req, res) {
 
-  // Run CORS middleware
-  await runMiddleware(req, res, cors);
+    // Run CORS middleware
+    await runMiddleware(req, res, cors);
 
 
     try {
@@ -20,7 +20,7 @@ export default async function handler(req, res) {
 
         const loggedInUser = await db.collection('users').findOne(
             { user_id: userId },
-            { projection: { _id: 0, user_id: 1, nombre: 1, apellido: 1, email: 1, password: 1, admin: 1, profile_photo: 1 } }
+            { projection: { _id: 1, user_id: 1, nombre: 1, apellido: 1, email: 1, password: 1, admin: 1, profile_photo: 1 } }
         );
 
         if (!loggedInUser) {

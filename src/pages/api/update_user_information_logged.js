@@ -12,8 +12,8 @@ export const config = {
 
 export default async function handler(req, res) {
 
-  // Run CORS middleware
-  await runMiddleware(req, res, cors);
+    // Run CORS middleware
+    await runMiddleware(req, res, cors);
 
 
     if (req.method === 'POST') {
@@ -21,7 +21,9 @@ export default async function handler(req, res) {
             const client = await clientPromise;
             const db = client.db('inmoprocrm');
 
-            const { user_id, nombre, apellido, email, password, admin, profilePhoto } = req.body;
+            console.log('req.body loggedin', req.body);
+
+            const { user_id, nombre, apellido, email, password, admin, profilePhoto, _id } = req.body;
             const sessionId = req.cookies['sessionID'];
 
             const updateFields = {
