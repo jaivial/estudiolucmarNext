@@ -15,25 +15,73 @@ import '../components/Clientes/clients.css';
 import MoreInfo from '../components/MoreInfo/MoreInfo.js';
 import { intlFormat } from "date-fns";
 import { FaPlus } from 'react-icons/fa';
+import { checkLogin } from "../lib/mongodb/login/checkLogin.js";
 
 export async function getServerSideProps(context) {
+    const { req } = context;
+    let user = null;
+
+    try {
+        user = await checkLogin(req); // Pass the request object to checkActiveUser
+        if (!user || user.length === 0) {
+            return {
+                redirect: {
+                    destination: '/',
+                    permanent: false,
+                },
+            };
+        }
+    } catch (error) {
+        console.error('Error during server-side data fetching:', error.message);
+    }
+
+    const cookiesone = context.req.cookies; // Corrected to access cookies from the request
+    const admin = cookiesone.admin || null;
+    const user_id = cookiesone.user_id;
+
+    let userData = null;
+    if (user_id) {
+        try {
+            // Construct the URL
+            const response = await fetch(`http://localhost:3000/api/fetchuserinformation`, {
+                method: 'POST', // Specify the method
+                headers: {
+                    'Content-Type': 'application/json', // Specify the content type
+                },
+                body: JSON.stringify({ user_id }) // Pass user_id in the body
+            });
+
+            if (response.status === 200) {
+                userData = await response.json();
+            } else {
+                console.error('Error fetching user data:', response.statusText);
+            }
+        } catch (error) {
+            console.error('Error fetching user data:', error);
+        }
+    }
+
     // Parse the cookies on the request
     const cookies = cookie.parse(context.req.headers.cookie || '');
 
     // Get the value of the 'admin' cookie
     const isAdmin = cookies.admin === 'true'; // assuming 'admin' cookie has value 'true' or 'false'
 
+
+
+
+
     // Pass the isAdmin value as a prop to the page component
     return {
         props: {
-            isAdmin,
+            isAdmin, userData
         },
     };
 }
 
 const { Column, HeaderCell, Cell } = Table;
 
-export default function Clientes({ isAdmin }) {
+export default function Clientes({ isAdmin, userData }) {
     const [screenWidth, setScreenWidth] = useState(0);
 
     useEffect(() => {
@@ -582,7 +630,7 @@ export default function Clientes({ isAdmin }) {
         setShowAddNewClient(!showAddNewClient);
     };
     return (
-        <GeneralLayout title="Gestión de Clientes" description="Panel de administración de clientes">
+        <GeneralLayout title="Gestión de Clientes" description="Panel de administración de clientes" userData={userData}>
             {loading && <LoadingScreen />}
             {viewMore && <MoreInfo id={moreInfoInmuebleId} showModal={viewMore} setViewMore={setViewMore} onClose={handleCloseMoreInfo} />}
             {viewMoreComprador && <MoreInfo id={moreInfoCompradorId} showModal={viewMoreComprador} setViewMore={setViewMoreComprador} onClose={handleCloseMoreInfoComprador} />}
