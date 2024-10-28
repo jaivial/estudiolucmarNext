@@ -2809,27 +2809,28 @@ const Table = ({ currentPath, zoneName, parentsEdificioProps, admin, screenWidth
                                 <div className='flex flex-col gap-4 w-fit mx-auto'>
                                     <p className='text-slate-900 text-center font-sans'>Elige el tipo de agrupación:</p>
                                     <RadioGroup name="tipo" onChange={(value) => setFormData({ ...formData, tipo: value })} value={formData.tipo} style={{ gap: '35px', display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }}>
+                                        <div className={`${screenWidth <= 990 ? 'flex flex-col gap-4 w-fit' : 'flex flex-row gap-4 w-fit'} mx-auto`}>
 
-                                        <Radio value="Edificio" className={`${formData.tipo === 'Edificio' ? 'bg-slate-800 text-white border-slate-800' : 'bg-slate-100 border-2 border-slate-500'} rounded-xl w-[fit] md:hover:bg-slate-800 md:hover:text-white md:hover:border-slate-800 md:hover:cursor-pointer flex flex-row gap-2 items-center justify-center crearnuevogruporadio`}>
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="2em" height="2em" viewBox="0 0 24 24">
-                                                <g fill="none">
-                                                    <path d="M24 0v24H0V0zM12.593 23.258l-.011.002l-.071.035l-.02.004l-.014-.004l-.071-.035q-.016-.005-.024.005l-.004.01l-.017.428l.005.02l.01.013l.104.074l.015.004l.012-.004l.104-.074l.012-.016l.004-.017l-.017-.427q-.004-.016-.017-.018m.265-.113l-.013.002l-.185.093l-.01.01l-.003.011l.018.43l.005.012l.008.007l.201.093q.019.005.029-.008l.004-.014l-.034-.614q-.005-.019-.02-.022m-.715.002a.02.02 0 0 0-.027.006l-.006.014l-.034.614q.001.018.017.024l.015-.002l.201-.093l.01-.008l.004-.011l.017-.43l-.003-.012l-.01-.01z" />
-                                                    <path fill="currentColor" d="M3 19h1V6.36a1.5 1.5 0 0 1 1.026-1.423l8-2.666A1.5 1.5 0 0 1 15 3.694V19h1V9.99a.5.5 0 0 1 .598-.49l2.196.44A1.5 1.5 0 0 1 20 11.41V19h1a1 1 0 1 1 0 2H3a1 1 0 1 1 0-2" />
-                                                </g>
-                                            </svg> Edificio</Radio>
+                                            <Radio value="Edificio" className={`${formData.tipo === 'Edificio' ? 'bg-slate-800 text-white border-slate-800' : 'bg-slate-100 border-2 border-slate-500'} rounded-xl w-[fit] md:hover:bg-slate-800 md:hover:text-white md:hover:border-slate-800 md:hover:cursor-pointer flex flex-row gap-2 items-center justify-center crearnuevogruporadio`}>
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="2em" height="2em" viewBox="0 0 24 24">
+                                                    <g fill="none">
+                                                        <path d="M24 0v24H0V0zM12.593 23.258l-.011.002l-.071.035l-.02.004l-.014-.004l-.071-.035q-.016-.005-.024.005l-.004.01l-.017.428l.005.02l.01.013l.104.074l.015.004l.012-.004l.104-.074l.012-.016l.004-.017l-.017-.427q-.004-.016-.017-.018m.265-.113l-.013.002l-.185.093l-.01.01l-.003.011l.018.43l.005.012l.008.007l.201.093q.019.005.029-.008l.004-.014l-.034-.614q-.005-.019-.02-.022m-.715.002a.02.02 0 0 0-.027.006l-.006.014l-.034.614q.001.018.017.024l.015-.002l.201-.093l.01-.008l.004-.011l.017-.43l-.003-.012l-.01-.01z" />
+                                                        <path fill="currentColor" d="M3 19h1V6.36a1.5 1.5 0 0 1 1.026-1.423l8-2.666A1.5 1.5 0 0 1 15 3.694V19h1V9.99a.5.5 0 0 1 .598-.49l2.196.44A1.5 1.5 0 0 1 20 11.41V19h1a1 1 0 1 1 0 2H3a1 1 0 1 1 0-2" />
+                                                    </g>
+                                                </svg> Edificio</Radio>
 
 
-                                        <Radio value="Escalera" className={`${formData.tipo === 'Escalera' ? 'bg-slate-800 text-white border-slate-800' : 'bg-slate-100 border-2 border-slate-500'} rounded-xl w-[fit] md:hover:bg-slate-800 md:hover:text-white md:hover:border-slate-800 md:hover:cursor-pointer flex flex-row gap-2 items-center justify-center crearnuevogruporadio`}>
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="2em" height="2em" viewBox="0 0 24 24">
-                                                <path fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M22 5h-5v5h-5v5H7v5H2" />
-                                            </svg> Escalera</Radio>
-
+                                            <Radio value="Escalera" className={`${formData.tipo === 'Escalera' ? 'bg-slate-800 text-white border-slate-800' : 'bg-slate-100 border-2 border-slate-500'} rounded-xl w-[fit] md:hover:bg-slate-800 md:hover:text-white md:hover:border-slate-800 md:hover:cursor-pointer flex flex-row gap-2 items-center justify-center crearnuevogruporadio`}>
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="2em" height="2em" viewBox="0 0 24 24">
+                                                    <path fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M22 5h-5v5h-5v5H7v5H2" />
+                                                </svg> Escalera</Radio>
+                                        </div>
                                     </RadioGroup>
                                 </div>
 
                                 {formData.tipo && (
                                     <>
-                                        <div className='flex flex-col gap-4 w-2/4 mx-auto mt-4'>
+                                        <div className={`${screenWidth <= 990 ? 'w-3/4' : 'w-2/4'} flex flex-col gap-4 mx-auto mt-4`}>
                                             <label>Nombre:</label>
                                             <input type="text" name="nombre" value={formData.nombre} onChange={handleFormChange} className="rs-input" placeholder={`Dirección de ${formData.tipo}`} />
 
@@ -2885,7 +2886,7 @@ const Table = ({ currentPath, zoneName, parentsEdificioProps, admin, screenWidth
                                 </div>
                                 {selectedType && (
                                     <>
-                                        <div className='flex flex-col gap-4 w-2/4 mx-auto mt-4'>
+                                        <div className={`${screenWidth <= 990 ? 'w-3/4' : 'w-2/4'} flex flex-col gap-4 mx-auto mt-4`}>
                                             <label>Elige {selectedType}:</label>
                                             <SelectPicker
                                                 data={options}
