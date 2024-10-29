@@ -1,5 +1,5 @@
 // components/analytics-charts/VentasAlquilerPieChart.js
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from 'recharts';
 import { Tabs, Tab } from 'rsuite';
 import Lottie from 'lottie-react';
@@ -7,6 +7,10 @@ import houseContractAnimation from '../../../public/assets/gif/housecontract.jso
 
 const VentasAlquilerPieChart = ({ data }) => {
     const [selectedPeriod, setSelectedPeriod] = useState('week');
+
+    useEffect(() => {
+        console.log('data', data);
+    }, [data]);
 
     const transformValue = (value) => Math.sqrt(value); // Change to Math.log10(value) if preferred
 

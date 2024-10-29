@@ -109,10 +109,40 @@ export default async function handler(req, res) {
                 }
             };
 
+            // Calculate futureEncargoComisiones
+            const encargos = await db.collection('encargos').find({
+                "comercial_encargo.value": user_id
+            }).toArray();
+
+            const calculateCommission = (encargo) => {
+                const precio = encargo.precio_2 || encargo.precio_1;
+                let comisionPedido = 0;
+                let comisionComprador = 0;
+
+                // Calculate comisionPedido
+                if (encargo.tipo_comision_encargo === 'Fijo') {
+                    comisionPedido = encargo.comision_encargo;
+                } else if (encargo.tipo_comision_encargo === 'Porcentaje') {
+                    comisionPedido = (encargo.comision_encargo / 100) * precio;
+                }
+
+                // Calculate comisionComprador
+                if (encargo.comisionComprador === 'Fijo') {
+                    comisionComprador = encargo.comisionCompradorValue;
+                } else if (encargo.comisionComprador === 'Porcentaje') {
+                    comisionComprador = (encargo.comisionCompradorValue / 100) * precio;
+                }
+
+                return comisionPedido + comisionComprador;
+            };
+
+            const futureEncargoComisiones = encargos.reduce((total, encargo) => total + calculateCommission(encargo), 0);
+
             console.log('performance', performance);
             console.log('analyticsResults', analyticsResults);
+            console.log('futureEncargoComisiones', futureEncargoComisiones);
 
-            res.status(200).json({ analyticsResults, performance });
+            res.status(200).json({ analyticsResults, performance, futureEncargoComisiones });
         } catch (error) {
             console.error('Error fetching analytics:', error);
             res.status(500).json({ message: 'Error fetching analytics', error: error.message });

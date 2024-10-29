@@ -108,7 +108,7 @@ const ComisionTotalAreaChart = ({ data, performance }) => {
                                 }
                                 className="mr-1"
                             />
-                            <span>{difference !== 0 ? `${Math.abs(difference).toLocaleString('es-ES')} €` : '0€'}</span>
+                            <span>{difference !== 0 ? `${Math.abs(difference).toLocaleString('es-ES')} €` : '0 €'}</span>
                         </div>
 
                         {/* Performance percentage change */}

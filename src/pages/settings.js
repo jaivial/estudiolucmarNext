@@ -23,6 +23,13 @@ const VentasAlquilerBarChart = dynamic(() => import('../components/analytics-cha
 const ComisionTotalLineChart = dynamic(() => import('../components/analytics-charts/ComisionTotalLineChart'), {
     ssr: false,
 });
+const ObjetivosComisionesChart = dynamic(() => import('../components/analytics-charts/ObjetivosComisionesChart'), {
+    ssr: false,
+});
+
+// import VentasAlquilerBarChart from '../components/analytics-charts/VentasAlquilerBarChart';
+// import ComisionTotalLineChart from '../components/analytics-charts/ComisionTotalLineChart';
+// import ObjetivosComisionesChart from "../components/analytics-charts/ObjetivosComisionesChart.js";
 
 import PerformancePieChart from '../components/analytics-charts/PerformancePieChart';
 import TotalComisionRadialChart from '../components/analytics-charts/TotalComisionRadialChart';
@@ -1213,6 +1220,7 @@ export default function Settings({ isAdmin: initialIsAdmin, userData }) {
 
                     {/* Right Column for Analytics / Graphs */}
                     <div className="hidden lg:flex lg:w-3/5 bg-slate-800 rounded-xl flex-col shadow-md transition-all duration-700 ease-in-out p-6">
+                        <ObjetivosComisionesChart analyticsResults={userAnalytics?.analyticsResults} futureEncargoComisiones={userAnalytics.futureEncargoComisiones} />
                         <ComisionTotalLineChart data={userAnalytics?.analyticsResults} performance={userAnalytics?.performance} />
                         <VentasAlquilerBarChart data={userAnalytics?.analyticsResults} />
                         {/* 
