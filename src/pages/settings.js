@@ -9,6 +9,7 @@ import 'toastify-js/src/toastify.css'; // Import Toastify CSS
 import clientPromise from '../lib/mongodb.js';
 import 'rsuite/dist/rsuite.min.css';
 import '../app/globals.css';
+import '../components/Settings/settings.css';
 import '../components/ProgressCircle/progresscircle.css';
 import LoadingScreen from "../components/LoadingScreen/LoadingScreen.js";
 import Cookies from 'js-cookie';  // Import js-cookie to access cookies
@@ -704,6 +705,9 @@ export default function Settings({ isAdmin: initialIsAdmin, userData }) {
                 user_id: '',
             });
         }
+        if (key === 'perfil') {
+            fetchAnalytics(userData.user._id, userData.user.user_id);
+        }
     };
 
 
@@ -1100,121 +1104,123 @@ export default function Settings({ isAdmin: initialIsAdmin, userData }) {
                                     </Panel>
                                 </Tabs.Tab>
                                 <Tabs.Tab eventKey="agregar" title="Agregar Usuarios">
-                                    <Form fluid>
-                                        {/* Profile Photo Uploader */}
-                                        <Form.Group controlId="newProfilePhoto" className="bg-slate-200 w-1/2 mx-auto flex flex-col items-center justify-center gap-4 p-4 rounded-lg">
-                                            <Form.ControlLabel>Foto de Perfil</Form.ControlLabel>
-                                            {newUser.profilePhoto ? (
-                                                <Avatar src={newUser.profilePhoto} size="xxl" bordered />
-                                            ) : (
-                                                null
-                                            )}
-                                            <Uploader
-                                                listType="picture"
-                                                action=""
-                                                autoUpload={false}
-                                                onChange={handleImageUploadNew}
-                                                fileList={[]}
-                                            >
-                                                <Button appearance="ghost" style={{ width: 'fit-content', height: 'auto', padding: '10px 5px', border: '1px solid #000', backgroundColor: '#000', color: '#fff' }}>Seleccionar archivo</Button>
-                                            </Uploader>
-                                        </Form.Group>
+                                    <Panel bordered className="p-4 bg-slate-50 rounded-lg shadow-md transition-all duration-300 ease-in-out" style={{ borderRadius: '1.5rem' }}>
+                                        <Form fluid>
+                                            {/* Profile Photo Uploader */}
+                                            <Form.Group controlId="newProfilePhoto" className="bg-slate-200 w-1/2 mx-auto flex flex-col items-center justify-center gap-4 p-4 rounded-lg">
+                                                <Form.ControlLabel>Foto de Perfil</Form.ControlLabel>
+                                                {newUser.profilePhoto ? (
+                                                    <Avatar src={newUser.profilePhoto} size="xxl" bordered />
+                                                ) : (
+                                                    null
+                                                )}
+                                                <Uploader
+                                                    listType="picture"
+                                                    action=""
+                                                    autoUpload={false}
+                                                    onChange={handleImageUploadNew}
+                                                    fileList={[]}
+                                                >
+                                                    <Button appearance="ghost" style={{ width: 'fit-content', height: 'auto', padding: '10px 5px', border: '1px solid #000', backgroundColor: '#000', color: '#fff' }}>Seleccionar archivo</Button>
+                                                </Uploader>
+                                            </Form.Group>
 
-                                        {/* Name Field */}
-                                        <Form.Group controlId="newNombre" style={{
-                                            width: '50%',
-                                            marginInline: 'auto',
-                                            display: 'flex',
-                                            flexDirection: 'column',
-                                            alignItems: 'flex-start',
-                                            justifyContent: 'center',
-                                            gap: '0.25rem',
-                                        }}>
-                                            <Form.ControlLabel>Nombre</Form.ControlLabel>
-                                            <Input value={newUser.nombre} onChange={(value) => setNewUser({ ...newUser, nombre: value })} />
-                                        </Form.Group>
+                                            {/* Name Field */}
+                                            <Form.Group controlId="newNombre" style={{
+                                                width: '50%',
+                                                marginInline: 'auto',
+                                                display: 'flex',
+                                                flexDirection: 'column',
+                                                alignItems: 'flex-start',
+                                                justifyContent: 'center',
+                                                gap: '0.25rem',
+                                            }}>
+                                                <Form.ControlLabel>Nombre</Form.ControlLabel>
+                                                <Input value={newUser.nombre} onChange={(value) => setNewUser({ ...newUser, nombre: value })} />
+                                            </Form.Group>
 
-                                        {/* Last Name Field */}
-                                        <Form.Group controlId="newApellido" style={{
-                                            width: '50%',
-                                            marginInline: 'auto',
-                                            display: 'flex',
-                                            flexDirection: 'column',
-                                            alignItems: 'flex-start',
-                                            justifyContent: 'center',
-                                            gap: '0.25rem',
-                                            marginTop: '1.3rem',
-                                        }}>
-                                            <Form.ControlLabel>Apellido</Form.ControlLabel>
-                                            <Input value={newUser.apellido} onChange={(value) => setNewUser({ ...newUser, apellido: value })} />
-                                        </Form.Group>
+                                            {/* Last Name Field */}
+                                            <Form.Group controlId="newApellido" style={{
+                                                width: '50%',
+                                                marginInline: 'auto',
+                                                display: 'flex',
+                                                flexDirection: 'column',
+                                                alignItems: 'flex-start',
+                                                justifyContent: 'center',
+                                                gap: '0.25rem',
+                                                marginTop: '1.3rem',
+                                            }}>
+                                                <Form.ControlLabel>Apellido</Form.ControlLabel>
+                                                <Input value={newUser.apellido} onChange={(value) => setNewUser({ ...newUser, apellido: value })} />
+                                            </Form.Group>
 
-                                        {/* Email Field */}
-                                        <Form.Group controlId="newEmail" style={{
-                                            width: '50%',
-                                            marginInline: 'auto',
-                                            display: 'flex',
-                                            flexDirection: 'column',
-                                            alignItems: 'flex-start',
-                                            justifyContent: 'center',
-                                            gap: '0.25rem',
-                                            marginTop: '1.3rem',
-                                        }}>
-                                            <Form.ControlLabel>Email</Form.ControlLabel>
-                                            <Input value={newUser.email} onChange={(value) => setNewUser({ ...newUser, email: value })} />
-                                        </Form.Group>
+                                            {/* Email Field */}
+                                            <Form.Group controlId="newEmail" style={{
+                                                width: '50%',
+                                                marginInline: 'auto',
+                                                display: 'flex',
+                                                flexDirection: 'column',
+                                                alignItems: 'flex-start',
+                                                justifyContent: 'center',
+                                                gap: '0.25rem',
+                                                marginTop: '1.3rem',
+                                            }}>
+                                                <Form.ControlLabel>Email</Form.ControlLabel>
+                                                <Input value={newUser.email} onChange={(value) => setNewUser({ ...newUser, email: value })} />
+                                            </Form.Group>
 
-                                        {/* Password Field with Visibility Toggle */}
-                                        <Form.Group controlId="newPassword" style={{
-                                            width: '50%',
-                                            marginInline: 'auto',
-                                            display: 'flex',
-                                            flexDirection: 'column',
-                                            alignItems: 'flex-start',
-                                            justifyContent: 'center',
-                                            gap: '0.25rem',
-                                            marginTop: '1.3rem',
-                                        }}>
-                                            <Form.ControlLabel>Contraseña</Form.ControlLabel>
-                                            <InputGroup inside>
-                                                <Input
-                                                    type={passwordVisible ? "text" : "password"}
-                                                    value={newUser.password}
-                                                    onChange={(value) => setNewUser({ ...newUser, password: value })}
+                                            {/* Password Field with Visibility Toggle */}
+                                            <Form.Group controlId="newPassword" style={{
+                                                width: '50%',
+                                                marginInline: 'auto',
+                                                display: 'flex',
+                                                flexDirection: 'column',
+                                                alignItems: 'flex-start',
+                                                justifyContent: 'center',
+                                                gap: '0.25rem',
+                                                marginTop: '1.3rem',
+                                            }}>
+                                                <Form.ControlLabel>Contraseña</Form.ControlLabel>
+                                                <InputGroup inside>
+                                                    <Input
+                                                        type={passwordVisible ? "text" : "password"}
+                                                        value={newUser.password}
+                                                        onChange={(value) => setNewUser({ ...newUser, password: value })}
+                                                    />
+                                                    <InputGroup.Button onClick={() => setPasswordVisible(!passwordVisible)}>
+                                                        <Icon icon={passwordVisible ? "mdi:eye" : "mdi:eye-off"} />
+                                                    </InputGroup.Button>
+                                                </InputGroup>
+                                            </Form.Group>
+
+                                            {/* Role Toggle */}
+                                            <Form.Group controlId="newRole" style={{
+                                                width: '50%',
+                                                marginInline: 'auto',
+                                                display: 'flex',
+                                                flexDirection: 'column',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                                gap: '0.25rem',
+                                                marginTop: '1.3rem',
+                                            }}>
+                                                <Form.ControlLabel>Rol</Form.ControlLabel>
+                                                <Toggle
+                                                    checked={newUser.admin}
+                                                    onChange={(checked) => setNewUser({ ...newUser, admin: checked })}
+                                                    checkedChildren="Administrador"
+                                                    unCheckedChildren="Asesor"
+                                                    size="lg"
                                                 />
-                                                <InputGroup.Button onClick={() => setPasswordVisible(!passwordVisible)}>
-                                                    <Icon icon={passwordVisible ? "mdi:eye" : "mdi:eye-off"} />
-                                                </InputGroup.Button>
-                                            </InputGroup>
-                                        </Form.Group>
+                                            </Form.Group>
+                                            <div style={{ display: 'flex', justifyContent: 'center' }}>
+                                                <Button onClick={handleAddUser} appearance="primary" style={{ width: 'fit-content' }}>
+                                                    Guardar Cambios
+                                                </Button>
+                                            </div>
 
-                                        {/* Role Toggle */}
-                                        <Form.Group controlId="newRole" style={{
-                                            width: '50%',
-                                            marginInline: 'auto',
-                                            display: 'flex',
-                                            flexDirection: 'column',
-                                            alignItems: 'center',
-                                            justifyContent: 'center',
-                                            gap: '0.25rem',
-                                            marginTop: '1.3rem',
-                                        }}>
-                                            <Form.ControlLabel>Rol</Form.ControlLabel>
-                                            <Toggle
-                                                checked={newUser.admin}
-                                                onChange={(checked) => setNewUser({ ...newUser, admin: checked })}
-                                                checkedChildren="Administrador"
-                                                unCheckedChildren="Asesor"
-                                                size="lg"
-                                            />
-                                        </Form.Group>
-                                        <div style={{ display: 'flex', justifyContent: 'center' }}>
-                                            <Button onClick={handleAddUser} appearance="primary" style={{ width: 'fit-content' }}>
-                                                Guardar Cambios
-                                            </Button>
-                                        </div>
-
-                                    </Form>
+                                        </Form>
+                                    </Panel>
                                 </Tabs.Tab>
 
                             </Tabs>
