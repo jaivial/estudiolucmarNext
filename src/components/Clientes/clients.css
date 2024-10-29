@@ -1,3 +1,7 @@
 .rs-tabs-content {
     @apply w-full max-w-full;
 }
+
+.rs-panel-body.rs-scroll-view.rs-scroll-view-custom-scrollbar {
+    padding: 0px;
+}

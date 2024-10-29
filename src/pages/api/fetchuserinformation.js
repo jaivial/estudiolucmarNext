@@ -32,6 +32,7 @@ export default async function handler(req, res) {
         // Construct zone_responsable by concatenating nombre and apellido
         const zoneResponsable = `${user.nombre} ${user.apellido}`.trim();
 
+
         // Fetch the zone_name from 'map_zones' collection where zone_responsable matches the constructed value
         const zone = await db.collection('map_zones').findOne({ zone_responsable: zoneResponsable });
 
