@@ -13,6 +13,19 @@ import '../components/ProgressCircle/progresscircle.css';
 import LoadingScreen from "../components/LoadingScreen/LoadingScreen.js";
 import Cookies from 'js-cookie';  // Import js-cookie to access cookies
 import { checkLogin } from "../lib/mongodb/login/checkLogin.js";
+import dynamic from 'next/dynamic';
+
+// Dynamically import VentasAlquilerBarChart and ComisionTotalLineChart with no SSR
+const VentasAlquilerBarChart = dynamic(() => import('../components/analytics-charts/VentasAlquilerBarChart'), {
+    ssr: false,
+});
+
+const ComisionTotalLineChart = dynamic(() => import('../components/analytics-charts/ComisionTotalLineChart'), {
+    ssr: false,
+});
+
+import PerformancePieChart from '../components/analytics-charts/PerformancePieChart';
+import TotalComisionRadialChart from '../components/analytics-charts/TotalComisionRadialChart';
 
 
 export const getServerSideProps = async (context) => {
@@ -166,6 +179,33 @@ export default function Settings({ isAdmin: initialIsAdmin, userData }) {
 
     // State for tracking open modals for each user
     const [editModalOpen, setEditModalOpen] = useState({});
+    const [selectedUserId, setSelectedUserId] = useState(null);
+    const [userAnalytics, setUserAnalytics] = useState(null);
+
+    const fetchAnalytics = async (userId, user_id) => {
+        try {
+            const response = await axios.get(`/api/fetchUserAnalytics`, {
+                params: { userId, user_id },
+            });
+            setUserAnalytics(response.data); // Store the API response in userAnalytics
+            console.log('userAnalytics', response.data);
+        } catch (error) {
+            console.error('Error fetching analytics:', error);
+        }
+    };
+
+    useEffect(() => {
+        console.log('userData', userData);
+        fetchAnalytics(userData.user.id, parseInt(userData.user.user_id, 10));
+    }, []);
+
+
+
+
+    const handlePanelClick = (userId, user_id) => {
+        setSelectedUserId(userId);
+        fetchAnalytics(userId, user_id); // Fetch analytics for the clicked user
+    };
 
     // Function to open the edit modal for a specific user
     const handleOpenEditModal = (user) => {
@@ -666,14 +706,14 @@ export default function Settings({ isAdmin: initialIsAdmin, userData }) {
                     </div>
                 </div>
             )}
-            <div className="h-full w-full flex flex-col items-center justify-start pt-16 bg-gradient-to-t from-slate-400 via-slate-300 to-slate-200 overflow-y-auto">
+            <div className="h-full w-full flex pb-6 flex-col items-center justify-start pt-16 bg-gradient-to-t from-slate-400 via-slate-300 to-slate-200 overflow-y-auto">
                 <h1 className="text-3xl font-bold text-center font-sans mb-8">Administración de Usuarios</h1>
 
                 <CustomModal open={showLogoutModal} onClose={() => setShowLogoutModal(false)} onConfirm={handleConfirmEdit} />
 
                 <div className="container mx-auto px-4 md:px-8 lg:px-12 flex flex-col lg:flex-row gap-8 lg:gap-12 w-full transition-all duration-700 ease-in-out">
                     {/* Left Column for Profile & User Management */}
-                    <div className="flex flex-col w-full lg:w-3/5 transition-all duration-500 ease-in-out bg-white rounded-xl shadow-lg p-6">
+                    <div className="flex flex-col w-full lg:w-3/5 transition-all duration-500 ease-in-out bg-white rounded-3xl shadow-lg p-6">
                         {isAdministrador ? (
 
                             <Tabs activeKey={activeKey} onSelect={handleSelect} appearance="pills">
@@ -688,14 +728,14 @@ export default function Settings({ isAdmin: initialIsAdmin, userData }) {
                                                     onClick={handleEditProfile}
                                                     title="Edit Profile"
                                                 />
-                                                <div className={`w-full flex flex-col justify-center items-center`}>
+                                                <div className={`w-1/2 flex flex-col justify-center items-center`}>
                                                     {loggedInUserInfo.profilePhoto ? (
                                                         <Avatar src={loggedInUserInfo.profilePhoto} size="xxl" bordered className="mx-auto" />
                                                     ) : (
                                                         <p><strong>Foto de perfil:</strong> Sin imagen</p>
                                                     )}
                                                 </div>
-                                                <div className={`p-6 flex flex-col justify-center items-center gap-6`}>
+                                                <div className={`p-6 w-1/2 flex flex-col justify-center items-center gap-6`}>
                                                     <div>
                                                         <p className="text-center"><strong>Nombre:</strong> <br /> {loggedInUserInfo.nombre}  {loggedInUserInfo.apellido}</p>
                                                     </div>
@@ -828,7 +868,7 @@ export default function Settings({ isAdmin: initialIsAdmin, userData }) {
                                 </Tabs.Tab>
                                 <Tabs.Tab eventKey="usuarios" title="Gestionar Usuarios">
                                     {/* Gestionar Usuarios Section */}
-                                    <Panel bordered className="p-4 bg-slate-50 rounded-lg shadow-md transition-all duration-300 ease-in-out">
+                                    <Panel bordered className="p-4 bg-slate-50 rounded-lg shadow-md transition-all duration-300 ease-in-out" style={{ borderRadius: '1.5rem' }}>
                                         <Form layout="inline" className="flex items-center justify-center gap-3">
                                             <div className="flex items-center w-full max-w-sm mt-4 border border-gray-300 rounded-lg relative">
                                                 <AutoComplete
@@ -843,16 +883,25 @@ export default function Settings({ isAdmin: initialIsAdmin, userData }) {
                                         </Form>
                                         {filteredUsers.length > 0 ? (
                                             filteredUsers.map(user => (
-                                                <Panel key={user.user_id} header={`${user.nombre} ${user.apellido}`} bordered className="bg-slate-100 rounded-lg p-0 mb-4 transition-all duration-300 ease-in-out relative">
-                                                    <div className="relative flex items-center gap-3">
-                                                        <div className="w-fit">
+                                                <Panel
+                                                    key={user.user_id}
+                                                    header={`${user.nombre} ${user.apellido}`}
+                                                    bordered
+                                                    className={`bg-slate-100 rounded-2xl p-0 mb-4 transition-all duration-300 ease-in-out relative 
+                                                    ${selectedUserId === user._id ? 'bg-slate-800 text-white' : 'bg-slate-100'}
+                                                    hover:bg-slate-800 hover:text-white cursor-pointer group`}
+                                                    onClick={() => handlePanelClick(user._id, user.user_id)}
+                                                    style={{ borderRadius: '1.2rem' }}
+                                                >
+                                                    <div className="relative flex items-center gap-0 w-full">
+                                                        <div className="w-2/5 items-center justify-center flex flex-row">
                                                             {user.profile_photo ? (
                                                                 <Avatar src={user.profile_photo} size="xxl" bordered />
                                                             ) : (
                                                                 <Icon icon="fa:profile" className="text-3xl" />
                                                             )}
                                                         </div>
-                                                        <div className="text-sm flex flex-col items-start justify-center gap-4 p-3 rounded-lg w-fit">
+                                                        <div className="text-sm flex flex-col items-start justify-center gap-4 p-3 rounded-lg w-3/5">
                                                             <p><strong>Email:</strong> {user.email}</p>
 
                                                             {/* Password field with visibility toggle for each user */}
@@ -862,7 +911,7 @@ export default function Settings({ isAdmin: initialIsAdmin, userData }) {
                                                                     <Input
                                                                         type={passwordVisibility[user.user_id] ? "text" : "password"}
                                                                         value={user.password}
-                                                                        readOnly // makes the input readonly
+                                                                        readOnly
                                                                     />
                                                                     <InputGroup.Button onClick={() => togglePasswordVisibility(user.user_id)}>
                                                                         <Icon icon={passwordVisibility[user.user_id] ? "mdi:eye" : "mdi:eye-off"} />
@@ -873,25 +922,23 @@ export default function Settings({ isAdmin: initialIsAdmin, userData }) {
                                                             {/* Role tag based on admin status */}
                                                             <div className="mt-2">
                                                                 <span
-                                                                    className={`px-3 py-1 rounded-lg text-xs font-semibold ${user.admin ? 'bg-blue-200 text-blue-900' : 'bg-gray-800 text-gray-50'
-                                                                        }`}
+                                                                    className={`px-3 py-1 rounded-lg text-xs font-semibold ${user.admin ? 'bg-blue-200 text-blue-900' : 'bg-gray-800 text-gray-50'}`}
                                                                 >
                                                                     {user.admin ? 'Administrador' : 'Asesor'}
                                                                 </span>
                                                             </div>
                                                         </div>
-
                                                     </div>
                                                     {/* Edit and Delete icons */}
                                                     <div className="absolute top-3 right-3 flex items-center gap-3">
                                                         <Icon
                                                             icon="mdi:pencil-outline"
-                                                            className="text-gray-500 cursor-pointer text-2xl hover:text-gray-700 transition"
+                                                            className={`text-gray-500 cursor-pointer text-2xl hover:text-gray-700 group-hover:text-white transition ${selectedUserId === user._id ? 'text-white' : ''}`}
                                                             onClick={() => handleOpenEditModal(user)}
                                                         />
                                                         <Icon
                                                             icon="mdi:trash-can-outline"
-                                                            className="text-gray-500 cursor-pointer text-2xl hover:text-red-600 transition"
+                                                            className={`text-gray-500 cursor-pointer text-2xl hover:text-red-600 group-hover:text-white transition ${selectedUserId === user._id ? 'text-white' : ''}`}
                                                             onClick={() => handleDeleteUser(user.user_id)}
                                                         />
                                                     </div>
@@ -1165,8 +1212,13 @@ export default function Settings({ isAdmin: initialIsAdmin, userData }) {
                     </div>
 
                     {/* Right Column for Analytics / Graphs */}
-                    <div className="hidden lg:flex lg:w-3/5 bg-slate-800 rounded-xl shadow-md transition-all duration-700 ease-in-out p-6">
-                        <div className="w-full h-full flex items-center justify-center text-white text-lg">Gráficas de Analítica (Placeholder)</div>
+                    <div className="hidden lg:flex lg:w-3/5 bg-slate-800 rounded-xl flex-col shadow-md transition-all duration-700 ease-in-out p-6">
+                        <ComisionTotalLineChart data={userAnalytics?.analyticsResults} performance={userAnalytics?.performance} />
+                        <VentasAlquilerBarChart data={userAnalytics?.analyticsResults} />
+                        {/* 
+                        <PerformancePieChart performance={userAnalytics.performance} />
+                        <TotalComisionRadialChart totalComision={userAnalytics.ventasAggregation[0].totalComisionGeneral[0].totalComision} /> */}
+
                     </div>
                 </div>
             </div>
