@@ -10,7 +10,7 @@ const ObjetivosComisionesChart = ({ analyticsResults, futureEncargoComisiones })
         console.log('futureEncargoComisiones', futureEncargoComisiones);
     }, [analyticsResults]);
 
-    const goal = 20000;
+    const goal = 100000;
     const currentComisionTotal = analyticsResults?.currentYear.comisionTotal || 0;
     const pendingComisionTotal = futureEncargoComisiones || 0;
 
@@ -38,7 +38,7 @@ const ObjetivosComisionesChart = ({ analyticsResults, futureEncargoComisiones })
     };
 
     return (
-        <div className="w-full flex flex-col items-center justify-center p-4">
+        <div className="w-full flex flex-col items-center justify-center p-0">
             {currentComisionTotal >= goal && (
                 <div className="flex flex-col items-center mb-4">
                     <h4 className="text-green-500 font-bold text-xl mb-2">¡Objetivo conseguido!</h4>
@@ -50,51 +50,55 @@ const ObjetivosComisionesChart = ({ analyticsResults, futureEncargoComisiones })
             )}
 
             <h4 className="text-slate-50 text-lg mb-2">Objetivo de Comisiones</h4>
-            <p className="text-slate-50 mt-4 mb-4 text-lg font-semibold text-center">
-                Comisiones actuales: <br /> {currentComisionTotal.toLocaleString('es-ES')} € / {goal.toLocaleString('es-ES')} €
-            </p>
+            <div className='flex flex-col items-center justify-center w-full gap-0 border-slate-50 border-2 rounded-3xl p-4 bg-slate-100 mb-4'>
+                <p className="text-slate-800 mt-0 mb-4 text-lg font-semibold text-center">
+                    Comisiones actuales: <br /> {currentComisionTotal.toLocaleString('es-ES')} € / {goal.toLocaleString('es-ES')} €
+                </p>
 
-            {/* Achieved Commissions Chart */}
-            <div className="w-full flex items-center justify-center mb-4">
-                {Array.from({ length: totalRectangles }, (_, index) => (
-                    <div
-                        key={index}
-                        className="h-6 w-1 rounded-full mx-[1.5px]"
-                        style={{
-                            backgroundColor: index < achievedFilledRectangles ? getRectangleColor(index) : '#e5e7eb',
-                        }}
-                    ></div>
-                ))}
+                {/* Achieved Commissions Chart */}
+                <div className="w-full flex items-center justify-center mb-4">
+                    {Array.from({ length: totalRectangles }, (_, index) => (
+                        <div
+                            key={index}
+                            className="h-6 w-1 rounded-full mx-[1.5px]"
+                            style={{
+                                backgroundColor: index < achievedFilledRectangles ? getRectangleColor(index) : '#d6d7da',
+                            }}
+                        ></div>
+                    ))}
+                </div>
+
+                <p className="text-slate-600 mt-0 text-md mb-4">
+                    Progreso logrado: {achievedPercentage.toFixed(1)}%
+                </p>
             </div>
-
-            <p className="text-gray-300 mt-2 text-md mb-4">
-                Progreso logrado: {achievedPercentage.toFixed(1)}%
-            </p>
 
             {/* Pending + Achieved Commissions Chart */}
-            <h4 className="text-slate-50 text-lg mb-0">Comisiones proyectadas:</h4>
-            <p className="text-slate-50 mt-4 mb-0 text-lg font-semibold text-center">{(pendingComisionTotal + currentComisionTotal).toLocaleString('es-ES')} € / {goal.toLocaleString('es-ES')} €</p>
-            <p className="text-slate-50 mb-2">Comisiones pendientes: {pendingComisionTotal.toLocaleString('es-ES')} €</p>
-            <div className="w-full flex items-center justify-center">
-                {Array.from({ length: totalRectangles }, (_, index) => (
-                    <div
-                        key={index}
-                        className="h-6 w-1 rounded-full mx-[1.5px]"
-                        style={{
-                            backgroundColor:
-                                index < pendingFilledRectangles
-                                    ? index < achievedFilledRectangles
-                                        ? getRectangleColor(index)
-                                        : '#60a5fa' // Blue-400 for pending commission rectangles
-                                    : '#e5e7eb', // Light gray for unfilled
-                        }}
-                    ></div>
-                ))}
-            </div>
+            <div className='flex flex-col items-center justify-center w-full gap-0 border-slate-50 border-2 rounded-3xl p-4 bg-slate-100'>
+                <h4 className="text-slate-800 text-lg mb-0">Comisiones proyectadas:</h4>
+                <p className="text-slate-800 mt-0 mb-0 text-lg font-semibold text-center">{(pendingComisionTotal + currentComisionTotal).toLocaleString('es-ES')} € / {goal.toLocaleString('es-ES')} €</p>
+                <p className="text-slate-800 mb-2">Comisiones pendientes: {pendingComisionTotal.toLocaleString('es-ES')} €</p>
+                <div className="w-full flex items-center justify-center">
+                    {Array.from({ length: totalRectangles }, (_, index) => (
+                        <div
+                            key={index}
+                            className="h-6 w-1 rounded-full mx-[1.5px]"
+                            style={{
+                                backgroundColor:
+                                    index < pendingFilledRectangles
+                                        ? index < achievedFilledRectangles
+                                            ? getRectangleColor(index)
+                                            : '#60a5fa' // Blue-400 for pending commission rectangles
+                                        : '#d6d7da', // Light gray for unfilled
+                            }}
+                        ></div>
+                    ))}
+                </div>
 
-            <p className="text-gray-300 mt-2 text-md">
-                Progreso total proyectado: {pendingPercentage.toFixed(1)}%
-            </p>
+                <p className="text-slate-600 mt-2 text-md">
+                    Progreso total proyectado: {pendingPercentage.toFixed(1)}%
+                </p>
+            </div>
         </div>
     );
 };

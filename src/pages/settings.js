@@ -14,7 +14,14 @@ import LoadingScreen from "../components/LoadingScreen/LoadingScreen.js";
 import Cookies from 'js-cookie';  // Import js-cookie to access cookies
 import { checkLogin } from "../lib/mongodb/login/checkLogin.js";
 import dynamic from 'next/dynamic';
+// import Lottie from 'lottie-react';
+import barchartloading from '../../public/assets/gif/barchartloading.json';
 
+
+// Dynamically import VentasAlquilerBarChart and ComisionTotalLineChart with no SSR
+const Lottie = dynamic(() => import('lottie-react'), {
+    ssr: false,
+});
 // Dynamically import VentasAlquilerBarChart and ComisionTotalLineChart with no SSR
 const VentasAlquilerBarChart = dynamic(() => import('../components/analytics-charts/VentasAlquilerBarChart'), {
     ssr: false,
@@ -24,6 +31,9 @@ const ComisionTotalLineChart = dynamic(() => import('../components/analytics-cha
     ssr: false,
 });
 const ObjetivosComisionesChart = dynamic(() => import('../components/analytics-charts/ObjetivosComisionesChart'), {
+    ssr: false,
+});
+const TotalCountsDiv = dynamic(() => import('../components/analytics-charts/TotalCountsDiv'), {
     ssr: false,
 });
 
@@ -121,7 +131,7 @@ export default function Settings({ isAdmin: initialIsAdmin, userData }) {
     const [fileList, setFileList] = useState([]);
     const [isAdmin, setIsAdmin] = useState(false);
     const [isAdministrador, setIsAdministrador] = useState(initialIsAdmin);
-
+    const [loadingCharts, setLoadingCharts] = useState(true);
 
 
     // State for edit mode
@@ -195,6 +205,7 @@ export default function Settings({ isAdmin: initialIsAdmin, userData }) {
                 params: { userId, user_id },
             });
             setUserAnalytics(response.data); // Store the API response in userAnalytics
+            setLoadingCharts(false);
             console.log('userAnalytics', response.data);
         } catch (error) {
             console.error('Error fetching analytics:', error);
@@ -1219,14 +1230,23 @@ export default function Settings({ isAdmin: initialIsAdmin, userData }) {
                     </div>
 
                     {/* Right Column for Analytics / Graphs */}
-                    <div className="hidden lg:flex lg:w-3/5 bg-slate-800 rounded-xl flex-col shadow-md transition-all duration-700 ease-in-out p-6">
-                        <ObjetivosComisionesChart analyticsResults={userAnalytics?.analyticsResults} futureEncargoComisiones={userAnalytics.futureEncargoComisiones} />
-                        <ComisionTotalLineChart data={userAnalytics?.analyticsResults} performance={userAnalytics?.performance} />
-                        <VentasAlquilerBarChart data={userAnalytics?.analyticsResults} />
-                        {/* 
+                    <div className="hidden lg:flex lg:w-3/5 bg-slate-800 rounded-3xl flex-col shadow-md transition-all duration-700 ease-in-out p-6 max-h-screen overflow-y-auto">
+                        {loadingCharts ? (
+                            <div className="flex flex-col items-center justify-center h-full">
+                                <Lottie animationData={barchartloading} style={{ width: 200, height: 200 }} loop />
+                                <p className="mt-0 text-slate-50 text-lg">Cargando datos...</p>
+                            </div>
+                        ) : (
+                            <>
+                                <ObjetivosComisionesChart analyticsResults={userAnalytics?.analyticsResults} futureEncargoComisiones={userAnalytics?.futureEncargoComisiones} />
+                                <ComisionTotalLineChart data={userAnalytics?.analyticsResults} performance={userAnalytics?.performance} />
+                                <TotalCountsDiv counts={userAnalytics?.countTotalInmublesUser} />
+                                <VentasAlquilerBarChart data={userAnalytics?.analyticsResults} />
+                                {/* 
                         <PerformancePieChart performance={userAnalytics.performance} />
                         <TotalComisionRadialChart totalComision={userAnalytics.ventasAggregation[0].totalComisionGeneral[0].totalComision} /> */}
-
+                            </>
+                        )}
                     </div>
                 </div>
             </div>

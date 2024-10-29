@@ -18,9 +18,78 @@ export default async function handler(req, res) {
         try {
             const client = await clientPromise;
             const db = client.db('inmoprocrm');
-
             // Convert user_id to ObjectId for matching in ventas collection
             const userObjectId = new ObjectId(userId);
+
+            // Fetch user data to get nombre and apellido
+            const user = await db.collection('users').findOne({ user_id: parseInt(user_id, 10) });
+            if (!user) {
+                return res.status(404).json({ message: 'User not found' });
+            }
+
+            const { nombre, apellido } = user;
+            const fullName = `${nombre} ${apellido}`;
+
+            // Count totalInmubles, totalNoticias, totalEncargos, and totalEncargosFinalizados
+            const totalNoticias = await db.collection('noticias').countDocuments({
+                comercial_noticia: fullName
+            });
+
+            const totalEncargos = await db.collection('encargos').countDocuments({
+                "comercial_encargo.value": user_id
+            });
+
+            // Count finalized encargos from ventas collection where asesorId matches user_id
+            const totalEncargosFinalizados = await db.collection('ventas').countDocuments({
+                asesorId: parseInt(user_id, 10)
+            });
+
+
+            // Assuming totalInmubles refers to properties or real estate items the user is responsible for
+            const totalInmubles = await db.collection('inmuebles').countDocuments({
+                "responsable.value": user_id
+            });
+            // Fetch totalInmueblesZone for user’s assigned properties in zones
+            const totalInmueblesZone = await db.collection('inmuebles').aggregate([
+                {
+                    $match: {
+                        $or: [
+                            {
+                                tipoagrupacion: 1,
+                                responsable: `${nombre} ${apellido}`
+                            },
+                            {
+                                tipoagrupacion: 2,
+                                $or: [
+                                    { "nestedinmuebles.responsable": `${nombre} ${apellido}` },
+                                    { "nestedescaleras.nestedinmuebles.responsable": `${nombre} ${apellido}` },
+                                    { responsable: `${nombre} ${apellido}` }
+                                ]
+                            }
+                        ]
+                    }
+                },
+                // Unwind for nestedinmuebles (only applies to tipoagrupacion 2)
+                { $unwind: { path: "$nestedinmuebles", preserveNullAndEmptyArrays: true } },
+                // Unwind for nestedescaleras and their nestedinmuebles (only applies to tipoagrupacion 2)
+                { $unwind: { path: "$nestedescaleras", preserveNullAndEmptyArrays: true } },
+                { $unwind: { path: "$nestedescaleras.nestedinmuebles", preserveNullAndEmptyArrays: true } },
+                {
+                    $group: {
+                        _id: null,
+                        totalInmueblesZone: { $sum: 1 }
+                    }
+                }
+            ]).toArray();
+
+            // Prepare countTotalInmublesUser array
+            const countTotalInmublesUser = [
+                { totalInmubles },
+                { totalNoticias },
+                { totalEncargos },
+                { totalEncargosFinalizados },
+                { totalInmueblesZone: totalInmueblesZone[0]?.totalInmueblesZone || 0 }
+            ];
 
             // Fetch all transactions for the user from ventas collection
             const transactions = await db.collection('ventas').find({
@@ -115,22 +184,22 @@ export default async function handler(req, res) {
             }).toArray();
 
             const calculateCommission = (encargo) => {
-                const precio = encargo.precio_2 || encargo.precio_1;
+                const precio = encargo.precio_2 || encargo.precio_1 || 0; // Default to 0 if both are null or undefined
                 let comisionPedido = 0;
                 let comisionComprador = 0;
 
                 // Calculate comisionPedido
                 if (encargo.tipo_comision_encargo === 'Fijo') {
-                    comisionPedido = encargo.comision_encargo;
+                    comisionPedido = encargo.comision_encargo || 0; // Default to 0 if null
                 } else if (encargo.tipo_comision_encargo === 'Porcentaje') {
-                    comisionPedido = (encargo.comision_encargo / 100) * precio;
+                    comisionPedido = ((encargo.comision_encargo || 0) / 100) * precio; // Default to 0 if null
                 }
 
                 // Calculate comisionComprador
                 if (encargo.comisionComprador === 'Fijo') {
-                    comisionComprador = encargo.comisionCompradorValue;
+                    comisionComprador = encargo.comisionCompradorValue || 0; // Default to 0 if null
                 } else if (encargo.comisionComprador === 'Porcentaje') {
-                    comisionComprador = (encargo.comisionCompradorValue / 100) * precio;
+                    comisionComprador = ((encargo.comisionCompradorValue || 0) / 100) * precio; // Default to 0 if null
                 }
 
                 return comisionPedido + comisionComprador;
@@ -138,11 +207,13 @@ export default async function handler(req, res) {
 
             const futureEncargoComisiones = encargos.reduce((total, encargo) => total + calculateCommission(encargo), 0);
 
+
             console.log('performance', performance);
             console.log('analyticsResults', analyticsResults);
             console.log('futureEncargoComisiones', futureEncargoComisiones);
+            console.log('countTotalInmublesUser', countTotalInmublesUser);
 
-            res.status(200).json({ analyticsResults, performance, futureEncargoComisiones });
+            res.status(200).json({ analyticsResults, performance, futureEncargoComisiones, countTotalInmublesUser });
         } catch (error) {
             console.error('Error fetching analytics:', error);
             res.status(500).json({ message: 'Error fetching analytics', error: error.message });

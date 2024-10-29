@@ -131,7 +131,13 @@ const ComisionTotalAreaChart = ({ data, performance }) => {
                                     ))}
                                 </linearGradient>
                             </defs>
-                            <CartesianGrid strokeDasharray="1 1" />
+                            {/* Remove the grid */}
+                            {/* <CartesianGrid strokeDasharray="1 1" /> */}
+
+                            {/* Customize X and Y axes to show only the lines */}
+                            <XAxis axisLine={{ stroke: '#cccccc' }} tick={false} />
+                            <YAxis axisLine={{ stroke: '#cccccc' }} tick={false} />
+
                             <Tooltip />
                             <Area
                                 type="monotone"
@@ -142,6 +148,7 @@ const ComisionTotalAreaChart = ({ data, performance }) => {
                             />
                         </AreaChart>
                     </ResponsiveContainer>
+
                 </>
             )}
         </div>
