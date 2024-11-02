@@ -5,3 +5,10 @@
 .rs-panel-body.rs-scroll-view.rs-scroll-view-custom-scrollbar {
     padding: 0px;
 }
+
+@media (max-width: 500px) { 
+
+.searchbarclientes {
+    width: 80%;
+}
+ }
