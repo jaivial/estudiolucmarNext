@@ -728,14 +728,14 @@ export default function Settings({ isAdmin: initialIsAdmin, userData }) {
                     </div>
                 </div>
             )}
-            <div className="h-full w-full flex pb-6 flex-col items-center justify-start pt-16 bg-gradient-to-t from-slate-400 via-slate-300 to-slate-200 overflow-y-auto">
+            <div className={`h-full w-full flex pb-6 flex-col items-center justify-start pt-16 bg-gradient-to-t from-slate-400 via-slate-300 to-slate-200 overflow-y-auto ${activeKey === 'agregar' && 'pb-[65px]'}`}>
                 <h1 className="text-3xl font-bold text-center font-sans mb-8">Administración de Usuarios</h1>
 
                 <CustomModal open={showLogoutModal} onClose={() => setShowLogoutModal(false)} onConfirm={handleConfirmEdit} />
 
                 <div className="container mx-auto px-4 md:px-8 lg:px-12 flex flex-col lg:flex-row gap-8 lg:gap-12 w-full transition-all duration-700 ease-in-out containeradministracionusuarios">
                     {/* Left Column for Profile & User Management */}
-                    <div className="flex flex-col w-full lg:w-3/5 transition-all duration-500 ease-in-out bg-white rounded-3xl shadow-lg p-6">
+                    <div className={`flex flex-col w-full transition-all duration-500 ease-in-out bg-white rounded-3xl shadow-lg p-6 ${activeKey === 'agregar' ? 'w-full' : 'lg:w-3/5'}`}>
                         {isAdministrador ? (
 
                             <Tabs activeKey={activeKey} onSelect={handleSelect} appearance="pills" className="tablistsSettings">
@@ -1104,10 +1104,10 @@ export default function Settings({ isAdmin: initialIsAdmin, userData }) {
                                     </Panel>
                                 </Tabs.Tab>
                                 <Tabs.Tab eventKey="agregar" title="Agregar Usuarios">
-                                    <Panel bordered className="p-4 bg-slate-50 rounded-lg shadow-md transition-all duration-300 ease-in-out" style={{ borderRadius: '1.5rem' }}>
+                                    <Panel bordered className={`p-4 bg-slate-50 rounded-lg shadow-md transition-all duration-300 ease-in-out" style={{ borderRadius: '1.5rem' }}`}>
                                         <Form fluid>
                                             {/* Profile Photo Uploader */}
-                                            <Form.Group controlId="newProfilePhoto" className="bg-slate-200 w-1/2 mx-auto flex flex-col items-center justify-center gap-4 p-4 rounded-lg">
+                                            <Form.Group controlId="newProfilePhoto" className="bg-slate-200 w-[80%] lg:w-1/2 mx-auto flex flex-col items-center justify-center gap-4 p-4 rounded-lg">
                                                 <Form.ControlLabel>Foto de Perfil</Form.ControlLabel>
                                                 {newUser.profilePhoto ? (
                                                     <Avatar src={newUser.profilePhoto} size="xxl" bordered />
@@ -1126,7 +1126,7 @@ export default function Settings({ isAdmin: initialIsAdmin, userData }) {
                                             </Form.Group>
 
                                             {/* Name Field */}
-                                            <Form.Group controlId="newNombre" style={{
+                                            <Form.Group className="agregarusuarioinputs" controlId="newNombre" style={{
                                                 width: '50%',
                                                 marginInline: 'auto',
                                                 display: 'flex',
@@ -1140,7 +1140,7 @@ export default function Settings({ isAdmin: initialIsAdmin, userData }) {
                                             </Form.Group>
 
                                             {/* Last Name Field */}
-                                            <Form.Group controlId="newApellido" style={{
+                                            <Form.Group className="agregarusuarioinputs" controlId="newApellido" style={{
                                                 width: '50%',
                                                 marginInline: 'auto',
                                                 display: 'flex',
@@ -1155,7 +1155,7 @@ export default function Settings({ isAdmin: initialIsAdmin, userData }) {
                                             </Form.Group>
 
                                             {/* Email Field */}
-                                            <Form.Group controlId="newEmail" style={{
+                                            <Form.Group className="agregarusuarioinputs" controlId="newEmail" style={{
                                                 width: '50%',
                                                 marginInline: 'auto',
                                                 display: 'flex',
@@ -1170,7 +1170,7 @@ export default function Settings({ isAdmin: initialIsAdmin, userData }) {
                                             </Form.Group>
 
                                             {/* Password Field with Visibility Toggle */}
-                                            <Form.Group controlId="newPassword" style={{
+                                            <Form.Group className="agregarusuarioinputs" controlId="newPassword" style={{
                                                 width: '50%',
                                                 marginInline: 'auto',
                                                 display: 'flex',
@@ -1235,25 +1235,31 @@ export default function Settings({ isAdmin: initialIsAdmin, userData }) {
                         )}
                     </div>
 
-                    {/* Right Column for Analytics / Graphs */}
-                    <div className="flex mb-12 lg:mb-0 lg:flex lg:w-3/5 bg-slate-800 rounded-3xl flex-col shadow-md transition-all duration-700 ease-in-out py-6 px-2 lg:p-6 lg:max-h-screen lg:overflow-y-auto containeranalyticsadministracionsusuarios">
-                        {loadingCharts ? (
-                            <div className="flex flex-col items-center justify-center h-full">
-                                <Lottie animationData={barchartloading} style={{ width: 200, height: 200 }} loop />
-                                <p className="mt-0 text-slate-50 text-lg">Cargando datos...</p>
-                            </div>
-                        ) : (
-                            <>
-                                <ObjetivosComisionesChart analyticsResults={userAnalytics?.analyticsResults} futureEncargoComisiones={userAnalytics?.futureEncargoComisiones} />
-                                <ComisionTotalLineChart data={userAnalytics?.analyticsResults} performance={userAnalytics?.performance} />
-                                <TotalCountsDiv counts={userAnalytics?.countTotalInmublesUser} />
-                                <VentasAlquilerBarChart data={userAnalytics?.analyticsResults} />
-                                {/* 
+                    {activeKey !== 'agregar' && (
+                        <>
+
+                            {/* Right Column for Analytics / Graphs */}
+                            <div className="flex mb-12 lg:mb-0 lg:flex lg:w-3/5 bg-slate-800 rounded-3xl flex-col shadow-md transition-all duration-700 ease-in-out py-6 px-2 lg:p-6 lg:max-h-screen lg:overflow-y-auto containeranalyticsadministracionsusuarios">
+                                {loadingCharts ? (
+                                    <div className="flex flex-col items-center justify-center h-full">
+                                        <Lottie animationData={barchartloading} style={{ width: 200, height: 200 }} loop />
+                                        <p className="mt-0 text-slate-50 text-lg">Cargando datos...</p>
+                                    </div>
+                                ) : (
+                                    <>
+                                        <ObjetivosComisionesChart analyticsResults={userAnalytics?.analyticsResults} futureEncargoComisiones={userAnalytics?.futureEncargoComisiones} />
+                                        <ComisionTotalLineChart data={userAnalytics?.analyticsResults} performance={userAnalytics?.performance} />
+                                        <TotalCountsDiv counts={userAnalytics?.countTotalInmublesUser} />
+                                        <VentasAlquilerBarChart data={userAnalytics?.analyticsResults} />
+                                        {/* 
                         <PerformancePieChart performance={userAnalytics.performance} />
                         <TotalComisionRadialChart totalComision={userAnalytics.ventasAggregation[0].totalComisionGeneral[0].totalComision} /> */}
-                            </>
-                        )}
-                    </div>
+                                    </>
+                                )}
+                            </div>
+
+                        </>
+                    )}
                 </div>
             </div>
         </GeneralLayout>
