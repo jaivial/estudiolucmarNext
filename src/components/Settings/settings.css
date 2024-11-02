@@ -1,3 +1,91 @@
 .rs-nav.rs-nav-pills.rs-nav-horizontal {
     margin-inline: auto;
 }
+
+@media (max-width: 990) { 
+
+    .containeranalyticsadministracionsusuarios {
+        height: 100% !important;
+        overflow-y: hidden !important;
+        margin-bottom: 90px !important;
+    }
+}
+@media (max-width: 440px) { 
+
+
+
+
+    .tablistsSettings .rs-nav.rs-nav-pills.rs-nav-horizontal {
+        margin-inline: column;
+        flex-direction: column;
+    }
+
+    .editavatarloggedin {
+        width: 80%;
+    }
+
+    .editloggedinforminputs {
+        width: 80%;
+    }
+
+    .searchbarusers {
+        margin-right: 0px;
+    }
+
+    .rs-panel-body.rs-scroll-view.rs-scroll-view-custom-scrollbar {
+        padding: 0px;
+    }
+
+    .userinfocontainerallusers {
+        flex-direction: column;
+    }
+
+    .allusersavatar {
+        width: 100%;
+    }
+
+    .allusersinfoconatiner {
+        width: 100%;
+        padding-top: 2rem;
+        padding-bottom: 2rem;
+        align-items: center;
+        text-align: center;
+    }
+
+    .alluserspasswordinfo {
+        flex-direction: column;
+    }
+
+    .alluserseditavatarcontainer {
+        width: 80%;
+    }
+
+.alluserseditinput {
+    width: 80% !important;
+}
+
+.containeradministracionusuarios {
+    gap: 1rem !important;
+}
+
+ 
+
+}
+
+@media (max-width: 500px) { 
+    .agregarusuarioinputs {
+        width: 80% !important;
+    }
+    .containerprofileinfo {
+        flex-direction: column;
+        align-items: center;
+    }
+    .avatarcontainer {
+        width: 100%;
+    }
+
+    .userinfocontainer {
+        width: 100%;
+        padding: 25px 0px;
+    }
+}

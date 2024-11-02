@@ -728,36 +728,36 @@ export default function Settings({ isAdmin: initialIsAdmin, userData }) {
                     </div>
                 </div>
             )}
-            <div className="h-full w-full flex pb-6 flex-col items-center justify-start pt-16 bg-gradient-to-t from-slate-400 via-slate-300 to-slate-200 overflow-y-auto">
+            <div className={`h-full w-full flex pb-6 flex-col items-center justify-start pt-16 bg-gradient-to-t from-slate-400 via-slate-300 to-slate-200 overflow-y-auto ${activeKey === 'agregar' && 'pb-[65px]'}`}>
                 <h1 className="text-3xl font-bold text-center font-sans mb-8">Administración de Usuarios</h1>
 
                 <CustomModal open={showLogoutModal} onClose={() => setShowLogoutModal(false)} onConfirm={handleConfirmEdit} />
 
-                <div className="container mx-auto px-4 md:px-8 lg:px-12 flex flex-col lg:flex-row gap-8 lg:gap-12 w-full transition-all duration-700 ease-in-out">
+                <div className="container mx-auto px-4 md:px-8 lg:px-12 flex flex-col lg:flex-row gap-8 lg:gap-12 w-full transition-all duration-700 ease-in-out containeradministracionusuarios">
                     {/* Left Column for Profile & User Management */}
-                    <div className="flex flex-col w-full lg:w-3/5 transition-all duration-500 ease-in-out bg-white rounded-3xl shadow-lg p-6">
+                    <div className={`flex flex-col w-full transition-all duration-500 ease-in-out bg-white rounded-3xl shadow-lg p-6 ${activeKey === 'agregar' ? 'w-full' : 'lg:w-3/5'}`}>
                         {isAdministrador ? (
 
-                            <Tabs activeKey={activeKey} onSelect={handleSelect} appearance="pills">
+                            <Tabs activeKey={activeKey} onSelect={handleSelect} appearance="pills" className="tablistsSettings">
                                 <Tabs.Tab eventKey="perfil" title="Mi Perfil">
                                     {/* Mi Perfil Section */}
                                     <div className="flex flex-row gap-0">
                                         <Panel bordered className="p-4 bg-slate-50 rounded-lg shadow-md transition-all duration-300 ease-in-out relative w-full">
-                                            <div className="h-full flex flex-row w-auto">
+                                            <div className="h-full flex flex-row w-auto containerprofileinfo">
                                                 <Icon
                                                     icon="mdi:pencil-outline"
                                                     className="absolute top-3 right-3 text-gray-500 cursor-pointer text-2xl hover:text-gray-700 transition"
                                                     onClick={handleEditProfile}
                                                     title="Edit Profile"
                                                 />
-                                                <div className={`w-1/2 flex flex-col justify-center items-center`}>
+                                                <div className={`w-1/2 flex flex-col justify-center items-center avatarcontainer`}>
                                                     {loggedInUserInfo.profilePhoto ? (
                                                         <Avatar src={loggedInUserInfo.profilePhoto} size="xxl" bordered className="mx-auto" />
                                                     ) : (
                                                         <p><strong>Foto de perfil:</strong> Sin imagen</p>
                                                     )}
                                                 </div>
-                                                <div className={`p-6 w-1/2 flex flex-col justify-center items-center gap-6`}>
+                                                <div className={`p-6 w-1/2 flex flex-col justify-center items-center gap-6 userinfocontainer`}>
                                                     <div>
                                                         <p className="text-center"><strong>Nombre:</strong> <br /> {loggedInUserInfo.nombre}  {loggedInUserInfo.apellido}</p>
                                                     </div>
@@ -785,14 +785,14 @@ export default function Settings({ isAdmin: initialIsAdmin, userData }) {
                                         </Panel>
 
                                         {/* Edit Profile Modal */}
-                                        <Modal open={isEditing} onClose={() => setIsEditing(false)} size="md" centered>
+                                        <Modal open={isEditing} onClose={() => setIsEditing(false)} size="md" centered backdrop overflow={false} style={{ paddingBottom: '40px' }}>
                                             <Modal.Header>
                                                 <Modal.Title style={{ fontSize: '1.5rem', textAlign: 'center' }}>Editar Perfil</Modal.Title>
                                             </Modal.Header>
                                             <Modal.Body>
                                                 <Form fluid className="flex flex-col gap-6">
                                                     {/* Profile Photo Upload */}
-                                                    <div className="w-1/2 mx-auto bg-slate-100 p-4 rounded-lg shadow-md">
+                                                    <div className="w-1/2 mx-auto bg-slate-100 p-4 rounded-lg shadow-md editavatarloggedin">
                                                         <div className="flex flex-col items-center gap-4">
                                                             {loggedInUserInfoUpdate.profilePhoto ? (
                                                                 <Avatar src={loggedInUserInfoUpdate.profilePhoto} size="xxl" circle />
@@ -817,7 +817,7 @@ export default function Settings({ isAdmin: initialIsAdmin, userData }) {
                                                     </div>
 
                                                     {/* Name */}
-                                                    <Form.Group controlId="name" className="w-2/4 mx-auto">
+                                                    <Form.Group controlId="name" className="editloggedinforminputs w-2/4 mx-auto">
                                                         <Form.ControlLabel>Nombre</Form.ControlLabel>
                                                         <Input
                                                             value={loggedInUserInfoUpdate.nombre}
@@ -830,7 +830,7 @@ export default function Settings({ isAdmin: initialIsAdmin, userData }) {
                                                         />
                                                     </Form.Group>
                                                     {/* Apellido */}
-                                                    <Form.Group controlId="name" className="w-2/4 mx-auto">
+                                                    <Form.Group controlId="name" className="editloggedinforminputs w-2/4 mx-auto">
                                                         <Form.ControlLabel>Apellido</Form.ControlLabel>
                                                         <Input
                                                             value={loggedInUserInfoUpdate.apellido}
@@ -844,13 +844,13 @@ export default function Settings({ isAdmin: initialIsAdmin, userData }) {
                                                     </Form.Group>
 
                                                     {/* Email */}
-                                                    <Form.Group controlId="email" className="w-2/4 mx-auto">
+                                                    <Form.Group controlId="email" className="editloggedinforminputs w-2/4 mx-auto">
                                                         <Form.ControlLabel>Email</Form.ControlLabel>
                                                         <Input type="email" value={loggedInUserInfoUpdate.email} onChange={(value) => setLoggedInUserInfoUpdate({ ...loggedInUserInfoUpdate, email: value })} />
                                                     </Form.Group>
 
                                                     {/* Password */}
-                                                    <Form.Group controlId="password" className="w-2/4 mx-auto">
+                                                    <Form.Group controlId="password" className="editloggedinforminputs w-2/4 mx-auto">
                                                         <Form.ControlLabel>Contraseña</Form.ControlLabel>
                                                         <InputGroup inside>
                                                             <Input
@@ -876,15 +876,15 @@ export default function Settings({ isAdmin: initialIsAdmin, userData }) {
                                                         />
                                                     </Form.Group>
                                                 </Form>
+                                                <Modal.Footer style={{ display: 'flex', justifyContent: 'center', gap: '10px', marginTop: '20px', marginBottom: '10px' }}>
+                                                    <Button onClick={handleEditLoggedInUser} appearance="primary">
+                                                        Guardar Cambios
+                                                    </Button>
+                                                    <Button onClick={() => setIsEditing(false)} appearance="subtle">
+                                                        Cancelar
+                                                    </Button>
+                                                </Modal.Footer>
                                             </Modal.Body>
-                                            <Modal.Footer style={{ display: 'flex', justifyContent: 'center', gap: '10px', marginTop: '20px', marginBottom: '10px' }}>
-                                                <Button onClick={handleEditLoggedInUser} appearance="primary">
-                                                    Guardar Cambios
-                                                </Button>
-                                                <Button onClick={() => setIsEditing(false)} appearance="subtle">
-                                                    Cancelar
-                                                </Button>
-                                            </Modal.Footer>
                                         </Modal>
                                     </div>
                                 </Tabs.Tab>
@@ -892,7 +892,7 @@ export default function Settings({ isAdmin: initialIsAdmin, userData }) {
                                     {/* Gestionar Usuarios Section */}
                                     <Panel bordered className="p-4 bg-slate-50 rounded-lg shadow-md transition-all duration-300 ease-in-out" style={{ borderRadius: '1.5rem' }}>
                                         <Form layout="inline" className="flex items-center justify-center gap-3">
-                                            <div className="flex items-center w-full max-w-sm mt-4 border border-gray-300 rounded-lg relative">
+                                            <div className="flex items-center w-full max-w-sm mt-4 border border-gray-300 rounded-lg relative searchbarusers">
                                                 <AutoComplete
                                                     data={otherUsers.map(user => `${user.nombre} ${user.apellido}`)} // provide list of names for autocomplete
                                                     value={searchTerm}
@@ -915,19 +915,19 @@ export default function Settings({ isAdmin: initialIsAdmin, userData }) {
                                                     onClick={() => handlePanelClick(user._id, user.user_id)}
                                                     style={{ borderRadius: '1.2rem' }}
                                                 >
-                                                    <div className="relative flex items-center gap-0 w-full">
-                                                        <div className="w-2/5 items-center justify-center flex flex-row">
+                                                    <div className="relative flex flex-row items-center gap-0 w-full userinfocontainerallusers">
+                                                        <div className="w-2/5 items-center justify-center flex flex-row allusersavatar">
                                                             {user.profile_photo ? (
                                                                 <Avatar src={user.profile_photo} size="xxl" bordered />
                                                             ) : (
                                                                 <Icon icon="fa:profile" className="text-3xl" />
                                                             )}
                                                         </div>
-                                                        <div className="text-sm flex flex-col items-start justify-center gap-4 p-3 rounded-lg w-3/5">
+                                                        <div className="text-sm flex flex-col items-start justify-center gap-4 p-3 rounded-lg w-3/5 allusersinfoconatiner">
                                                             <p><strong>Email:</strong> {user.email}</p>
 
                                                             {/* Password field with visibility toggle for each user */}
-                                                            <div className="flex items-center gap-2">
+                                                            <div className="flex items-center gap-2 alluserspasswordinfo">
                                                                 <p><strong>Contraseña:</strong></p>
                                                                 <InputGroup inside style={{ width: '100%', height: 'fit-content' }}>
                                                                     <Input
@@ -966,14 +966,14 @@ export default function Settings({ isAdmin: initialIsAdmin, userData }) {
                                                     </div>
 
                                                     {/* Edit User Modal */}
-                                                    <Modal open={editModalOpen[user.user_id]} onClose={() => handleCloseEditModal(user.user_id)} size="sm">
+                                                    <Modal open={editModalOpen[user.user_id]} onClose={() => handleCloseEditModal(user.user_id)} size="sm" backdrop overflow={false} style={{ paddingBottom: '40px' }}>
                                                         <Modal.Header>
                                                             <Modal.Title>Editar Usuario</Modal.Title>
                                                         </Modal.Header>
                                                         <Modal.Body>
                                                             <Form fluid>
                                                                 {/* Profile Photo Uploader */}
-                                                                <Form.Group controlId="profilePhoto" className="bg-slate-200 w-1/2 mx-auto flex flex-col items-center justify-center gap-4 p-4 rounded-lg">
+                                                                <Form.Group controlId="profilePhoto" className="bg-slate-200 w-1/2 mx-auto flex flex-col items-center justify-center gap-4 p-4 rounded-lg alluserseditavatarcontainer">
                                                                     <Form.ControlLabel>Foto de Perfil</Form.ControlLabel>
 
                                                                     {loggedInUserInfoUpdate.profilePhoto ? (
@@ -992,7 +992,7 @@ export default function Settings({ isAdmin: initialIsAdmin, userData }) {
                                                                     </Uploader>
                                                                 </Form.Group>
 
-                                                                <Form.Group controlId="nombre" style={{
+                                                                <Form.Group className="alluserseditinput" controlId="nombre" style={{
                                                                     width: '50%',
                                                                     marginInline: 'auto',
                                                                     display: 'flex',
@@ -1006,7 +1006,7 @@ export default function Settings({ isAdmin: initialIsAdmin, userData }) {
                                                                     <Input value={loggedInUserInfoUpdate.nombre} onChange={(value) => setLoggedInUserInfoUpdate({ ...loggedInUserInfoUpdate, nombre: value })} />
                                                                 </Form.Group>
 
-                                                                <Form.Group controlId="apellido" style={{
+                                                                <Form.Group className="alluserseditinput" controlId="apellido" style={{
                                                                     width: '50%',
                                                                     marginInline: 'auto',
                                                                     display: 'flex',
@@ -1022,7 +1022,7 @@ export default function Settings({ isAdmin: initialIsAdmin, userData }) {
                                                                     <Input value={loggedInUserInfoUpdate.apellido} onChange={(value) => setLoggedInUserInfoUpdate({ ...loggedInUserInfoUpdate, apellido: value })} />
                                                                 </Form.Group>
 
-                                                                <Form.Group controlId="email" style={{
+                                                                <Form.Group className="alluserseditinput" controlId="email" style={{
                                                                     width: '50%',
                                                                     marginInline: 'auto',
                                                                     display: 'flex',
@@ -1039,7 +1039,7 @@ export default function Settings({ isAdmin: initialIsAdmin, userData }) {
                                                                 </Form.Group>
 
                                                                 {/* Password Field with Visibility Toggle */}
-                                                                <Form.Group controlId="password" style={{
+                                                                <Form.Group className="alluserseditinput" controlId="password" style={{
                                                                     width: '50%',
                                                                     marginInline: 'auto',
                                                                     display: 'flex',
@@ -1065,7 +1065,7 @@ export default function Settings({ isAdmin: initialIsAdmin, userData }) {
                                                                 </Form.Group>
 
                                                                 {/* Role Toggle */}
-                                                                <Form.Group controlId="role" style={{
+                                                                <Form.Group className="alluserseditinput" controlId="role" style={{
                                                                     width: '50%',
                                                                     marginInline: 'auto',
                                                                     display: 'flex',
@@ -1086,15 +1086,15 @@ export default function Settings({ isAdmin: initialIsAdmin, userData }) {
                                                                     />
                                                                 </Form.Group>
                                                             </Form>
+                                                            <Modal.Footer style={{ display: 'flex', justifyContent: 'center', gap: '10px', margin: '20px 0px' }}>
+                                                                <Button onClick={() => handleUpdateUser(user.user_id)} appearance="primary">
+                                                                    Guardar Cambios
+                                                                </Button>
+                                                                <Button onClick={() => handleCloseEditModal(user.user_id)} appearance="subtle">
+                                                                    Cancelar
+                                                                </Button>
+                                                            </Modal.Footer>
                                                         </Modal.Body>
-                                                        <Modal.Footer style={{ display: 'flex', justifyContent: 'center', gap: '10px', margin: '20px 0px' }}>
-                                                            <Button onClick={() => handleUpdateUser(user.user_id)} appearance="primary">
-                                                                Guardar Cambios
-                                                            </Button>
-                                                            <Button onClick={() => handleCloseEditModal(user.user_id)} appearance="subtle">
-                                                                Cancelar
-                                                            </Button>
-                                                        </Modal.Footer>
                                                     </Modal>
                                                 </Panel>
                                             ))
@@ -1104,10 +1104,10 @@ export default function Settings({ isAdmin: initialIsAdmin, userData }) {
                                     </Panel>
                                 </Tabs.Tab>
                                 <Tabs.Tab eventKey="agregar" title="Agregar Usuarios">
-                                    <Panel bordered className="p-4 bg-slate-50 rounded-lg shadow-md transition-all duration-300 ease-in-out" style={{ borderRadius: '1.5rem' }}>
+                                    <Panel bordered className={`p-4 bg-slate-50 rounded-lg shadow-md transition-all duration-300 ease-in-out" style={{ borderRadius: '1.5rem' }}`}>
                                         <Form fluid>
                                             {/* Profile Photo Uploader */}
-                                            <Form.Group controlId="newProfilePhoto" className="bg-slate-200 w-1/2 mx-auto flex flex-col items-center justify-center gap-4 p-4 rounded-lg">
+                                            <Form.Group controlId="newProfilePhoto" className="bg-slate-200 w-[80%] lg:w-1/2 mx-auto flex flex-col items-center justify-center gap-4 p-4 rounded-lg">
                                                 <Form.ControlLabel>Foto de Perfil</Form.ControlLabel>
                                                 {newUser.profilePhoto ? (
                                                     <Avatar src={newUser.profilePhoto} size="xxl" bordered />
@@ -1126,7 +1126,7 @@ export default function Settings({ isAdmin: initialIsAdmin, userData }) {
                                             </Form.Group>
 
                                             {/* Name Field */}
-                                            <Form.Group controlId="newNombre" style={{
+                                            <Form.Group className="agregarusuarioinputs" controlId="newNombre" style={{
                                                 width: '50%',
                                                 marginInline: 'auto',
                                                 display: 'flex',
@@ -1140,7 +1140,7 @@ export default function Settings({ isAdmin: initialIsAdmin, userData }) {
                                             </Form.Group>
 
                                             {/* Last Name Field */}
-                                            <Form.Group controlId="newApellido" style={{
+                                            <Form.Group className="agregarusuarioinputs" controlId="newApellido" style={{
                                                 width: '50%',
                                                 marginInline: 'auto',
                                                 display: 'flex',
@@ -1155,7 +1155,7 @@ export default function Settings({ isAdmin: initialIsAdmin, userData }) {
                                             </Form.Group>
 
                                             {/* Email Field */}
-                                            <Form.Group controlId="newEmail" style={{
+                                            <Form.Group className="agregarusuarioinputs" controlId="newEmail" style={{
                                                 width: '50%',
                                                 marginInline: 'auto',
                                                 display: 'flex',
@@ -1170,7 +1170,7 @@ export default function Settings({ isAdmin: initialIsAdmin, userData }) {
                                             </Form.Group>
 
                                             {/* Password Field with Visibility Toggle */}
-                                            <Form.Group controlId="newPassword" style={{
+                                            <Form.Group className="agregarusuarioinputs" controlId="newPassword" style={{
                                                 width: '50%',
                                                 marginInline: 'auto',
                                                 display: 'flex',
@@ -1235,25 +1235,31 @@ export default function Settings({ isAdmin: initialIsAdmin, userData }) {
                         )}
                     </div>
 
-                    {/* Right Column for Analytics / Graphs */}
-                    <div className="hidden lg:flex lg:w-3/5 bg-slate-800 rounded-3xl flex-col shadow-md transition-all duration-700 ease-in-out p-6 max-h-screen overflow-y-auto">
-                        {loadingCharts ? (
-                            <div className="flex flex-col items-center justify-center h-full">
-                                <Lottie animationData={barchartloading} style={{ width: 200, height: 200 }} loop />
-                                <p className="mt-0 text-slate-50 text-lg">Cargando datos...</p>
-                            </div>
-                        ) : (
-                            <>
-                                <ObjetivosComisionesChart analyticsResults={userAnalytics?.analyticsResults} futureEncargoComisiones={userAnalytics?.futureEncargoComisiones} />
-                                <ComisionTotalLineChart data={userAnalytics?.analyticsResults} performance={userAnalytics?.performance} />
-                                <TotalCountsDiv counts={userAnalytics?.countTotalInmublesUser} />
-                                <VentasAlquilerBarChart data={userAnalytics?.analyticsResults} />
-                                {/* 
+                    {activeKey !== 'agregar' && (
+                        <>
+
+                            {/* Right Column for Analytics / Graphs */}
+                            <div className="flex mb-12 lg:mb-0 lg:flex lg:w-3/5 bg-slate-800 rounded-3xl flex-col shadow-md transition-all duration-700 ease-in-out py-6 px-2 lg:p-6 lg:max-h-screen lg:overflow-y-auto containeranalyticsadministracionsusuarios">
+                                {loadingCharts ? (
+                                    <div className="flex flex-col items-center justify-center h-full">
+                                        <Lottie animationData={barchartloading} style={{ width: 200, height: 200 }} loop />
+                                        <p className="mt-0 text-slate-50 text-lg">Cargando datos...</p>
+                                    </div>
+                                ) : (
+                                    <>
+                                        <ObjetivosComisionesChart analyticsResults={userAnalytics?.analyticsResults} futureEncargoComisiones={userAnalytics?.futureEncargoComisiones} />
+                                        <ComisionTotalLineChart data={userAnalytics?.analyticsResults} performance={userAnalytics?.performance} />
+                                        <TotalCountsDiv counts={userAnalytics?.countTotalInmublesUser} />
+                                        <VentasAlquilerBarChart data={userAnalytics?.analyticsResults} />
+                                        {/* 
                         <PerformancePieChart performance={userAnalytics.performance} />
                         <TotalComisionRadialChart totalComision={userAnalytics.ventasAggregation[0].totalComisionGeneral[0].totalComision} /> */}
-                            </>
-                        )}
-                    </div>
+                                    </>
+                                )}
+                            </div>
+
+                        </>
+                    )}
                 </div>
             </div>
         </GeneralLayout>

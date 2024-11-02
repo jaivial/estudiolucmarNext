@@ -654,7 +654,7 @@ export default function Clientes({ isAdmin, userData }) {
                                         <Icon icon="bi:person-add" className="text-blue-600 text-4xl transition-colors duration-300 group-hover:text-blue-800" />
                                     </div>
 
-                                    <div className="flex items-center w-full max-w-sm mt-4 border border-gray-300 rounded-lg relative">
+                                    <div className="flex items-center w-full max-w-sm mt-4 border border-gray-300 rounded-lg relative searchbarclientes">
                                         <AutoComplete
                                             placeholder="Buscar cliente..."
                                             value={searchTerm}
@@ -673,7 +673,7 @@ export default function Clientes({ isAdmin, userData }) {
                                                         <table className="min-w-full bg-white border-collapse border border-slate-200 relative">
                                                             <thead className="bg-gray-100">
                                                                 <tr>
-                                                                    <th className="px-0 py-2 border w-fit">
+                                                                    <th className="px-0 py-2 border w-[100px]">
                                                                         Info
                                                                         <div className="mt-2 mx-2">
                                                                             <select
@@ -747,13 +747,15 @@ export default function Clientes({ isAdmin, userData }) {
                                                                         key={cliente.id}
                                                                         className={`border-t ${index % 2 === 0 ? 'bg-white' : 'bg-slate-200'}`}
                                                                     >
-                                                                        <td className="px-0 py-2 text-center flex flex-row items-start justify-start mx-auto w-[50px]">
-                                                                            {cliente.informador && (
-                                                                                <Icon icon="mdi:information" className="text-blue-500 text-2xl" />
-                                                                            )}
-                                                                            {cliente.pedido && (
-                                                                                <Icon icon="mdi:parking" className="text-orange-500 text-2xl" />
-                                                                            )}
+                                                                        <td className="px-0 py-2 text-center flex flex-row items-start justify-start mx-auto w-[120px]">
+                                                                            <div className="w-[50px] flex flex-row mx-auto">
+                                                                                {cliente.informador && (
+                                                                                    <Icon icon="mdi:information" className="text-blue-500 text-2xl" />
+                                                                                )}
+                                                                                {cliente.pedido && (
+                                                                                    <Icon icon="mdi:parking" className="text-orange-500 text-2xl" />
+                                                                                )}
+                                                                            </div>
                                                                         </td>
                                                                         <td className="px-4 py-2 text-center min-w-fit text-nowrap">
                                                                             {cliente.nombre} {cliente.apellido}
@@ -1090,7 +1092,7 @@ export default function Clientes({ isAdmin, userData }) {
                                                                     />
                                                                 )}
                                                             </th>
-                                                            <th className="px-4 py-2 border">Rango de Precios</th>
+                                                            <th className="px-4 py-2 border w-fit">Rango de Precios</th>
                                                             <th className="px-4 py-2 border m-0 bg-white sticky right-0 z-10 rounded-tl-2xl">Acciones</th>
                                                         </tr>
                                                     </thead>
@@ -1114,7 +1116,9 @@ export default function Clientes({ isAdmin, userData }) {
                                                                 </td>
 
                                                                 <td className="px-4 py-2 text-center">
-                                                                    {`${comprador.rango_precios[0].toLocaleString('es-ES')}€ - ${comprador.rango_precios[1].toLocaleString('es-ES')}€`}
+                                                                    <div className="w-[170px]">
+                                                                        {`${comprador.rango_precios[0].toLocaleString('es-ES')}€ - ${comprador.rango_precios[1].toLocaleString('es-ES')}€`}
+                                                                    </div>
                                                                 </td>
                                                                 <td className="px-1 py-2 border m-0 bg-white sticky right-0 z-10">
                                                                     <div className="flex gap-2 justify-center">
@@ -1328,7 +1332,7 @@ export default function Clientes({ isAdmin, userData }) {
 
                 {
                     editCliente && editModalOpen && (
-                        <Modal open={editModalOpen} onClose={handleCloseEditModal} backdrop={true} size="lg" overflow={true}>
+                        <Modal open={editModalOpen} onClose={handleCloseEditModal} backdrop={true} size="lg" overflow={false} style={{ paddingBottom: '35px' }}>
                             <Modal.Header>
                                 <Modal.Title style={{ fontSize: '1.5rem', fontWeight: 'bold', textAlign: 'center' }}>Editar Cliente</Modal.Title>
                             </Modal.Header>

@@ -117,7 +117,7 @@ const ComisionTotalAreaChart = ({ data, performance }) => {
                             <span>{change !== 0 ? `${Math.abs(change)}%` : '0%'}</span>
                         </div>
                     </div>
-                    <ResponsiveContainer width="100%" height={300}>
+                    <ResponsiveContainer width="100%" height={300} style={{ marginLeft: '-50px' }}>
                         <AreaChart data={chartData}>
                             <defs>
                                 <linearGradient id="colorComisionTotal" x1="0" y1="0" x2="0" y2="1">
