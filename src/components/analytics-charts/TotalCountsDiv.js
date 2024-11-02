@@ -17,7 +17,7 @@ const TotalCountsDiv = ({ counts }) => {
     };
 
     return (
-        <div className="bg-slate-50 rounded-3xl text-slate-800 p-6 m-4 shadow-lg">
+        <div className="bg-slate-50 rounded-3xl text-slate-800 p-6 lg:m-4 shadow-lg">
             <h3 className="text-xl font-semibold mb-4 text-center">Resumen de Totales</h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {Object.entries(countLabels).map(([key, label]) => {

@@ -71,7 +71,7 @@ const VentasAlquilerPieChart = ({ data }) => {
                     <p className="mt-0">Todavía no hay datos disponibles para este período.</p>
                 </div>
             ) : (
-                <ResponsiveContainer width="100%" height={300}>
+                <ResponsiveContainer width="100%" height={300} style={{ marginBottom: '-100px' }}>
                     <PieChart>
                         <Pie
                             data={periods[selectedPeriod].data}
