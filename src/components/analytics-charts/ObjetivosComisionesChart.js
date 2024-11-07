@@ -50,7 +50,7 @@ const ObjetivosComisionesChart = ({ totalComsiones, analyticsResults, futureEnca
                 </div>
             )}
 
-            <h4 className="text-slate-50 text-lg mb-2">Objetivo de Comisiones</h4>
+            <h4 className="text-slate-50 text-lg mb-2 text-center">Objetivo de Comisiones</h4>
             <div className='flex flex-col items-center justify-center w-full gap-0 border-slate-50 border-2 rounded-3xl p-4 bg-slate-100 mb-4'>
                 <p className="text-slate-800 mt-0 mb-4 text-lg font-semibold text-center">
                     Comisiones actuales: <br /> {currentComisionTotal.toLocaleString('es-ES')} € / {goal.toLocaleString('es-ES')} €
@@ -76,7 +76,7 @@ const ObjetivosComisionesChart = ({ totalComsiones, analyticsResults, futureEnca
 
             {/* Pending + Achieved Commissions Chart */}
             <div className='flex flex-col items-center justify-center w-full gap-0 border-slate-50 border-2 rounded-3xl p-4 bg-slate-100'>
-                <h4 className="text-slate-800 text-lg mb-0">Comisiones proyectadas:</h4>
+                <h4 className="text-slate-800 text-lg mb-0 text-center">Comisiones proyectadas:</h4>
                 <p className="text-slate-800 mt-0 mb-0 text-lg font-semibold text-center">{(pendingComisionTotal + currentComisionTotal).toLocaleString('es-ES')} € / {goal.toLocaleString('es-ES')} €</p>
                 <p className="text-slate-800 mb-2">Comisiones pendientes: {pendingComisionTotal.toLocaleString('es-ES')} €</p>
                 <div className="w-full flex items-center justify-center">

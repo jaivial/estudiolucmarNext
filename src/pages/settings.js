@@ -1247,9 +1247,6 @@ export default function Settings({ isAdmin: initialIsAdmin, userData }) {
                                         <ComisionTotalLineChart data={userAnalytics?.analyticsResults} performance={userAnalytics?.performance} />
                                         <TotalCountsDiv counts={userAnalytics?.countTotalInmublesUser} />
                                         <VentasAlquilerBarChart data={userAnalytics?.analyticsResults} />
-                                        {/* 
-                        <PerformancePieChart performance={userAnalytics.performance} />
-                        <TotalComisionRadialChart totalComision={userAnalytics.ventasAggregation[0].totalComisionGeneral[0].totalComision} /> */}
                                     </>
                                 )}
                             </div>
