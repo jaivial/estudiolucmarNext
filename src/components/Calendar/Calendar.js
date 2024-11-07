@@ -138,7 +138,7 @@ const CalendarApp = ({ tasksSSR, allTasksSSR, datesWithCompletedTasks, datesWith
 
 
     return (
-        <div className="pb-36 flex flex-col items-center justify-center gap-6  ">
+        <div className="pb-36 max-[800px]:pb-6 flex flex-col items-center justify-center gap-6">
             <h1 className="text-center text-2xl font-bold">Calendario de tareas</h1>
             <Calendar
                 value={date}
