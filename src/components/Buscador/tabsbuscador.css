@@ -32,5 +32,11 @@
     margin: 0px;
 }
 
+@media (max-width: 400px) {
+    .rs-nav.rs-nav-pills.rs-nav-horizontal {
+        flex-direction: column
+    }
+}
+
 
 @import "../../../node_modules/rsuite/dist/rsuite.css";

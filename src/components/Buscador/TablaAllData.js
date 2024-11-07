@@ -19,6 +19,8 @@ import { AiOutlineLoading } from "react-icons/ai";
 import BuscadorTabs from './TabsBuscador.js';
 import { Accordion, Panel, Checkbox, Modal, Button, RadioGroup, Radio, SelectPicker } from 'rsuite';
 import { FaArrowLeft } from "react-icons/fa6";
+import arrowLeft from '@iconify-icons/mdi/arrow-left';
+import arrowRight from '@iconify-icons/mdi/arrow-right';
 
 
 
@@ -2747,18 +2749,26 @@ const Table = ({ currentPath, zoneName, parentsEdificioProps, admin, screenWidth
                                             <div className="flex mt-4 pb-4 w-full xl:w-[60%] flex-row items-center justify-center">
                                                 <div className="flex flex-row justify-center items-center gap-3">
 
-                                                    <button type="button" onClick={handlePrevious} disabled={currentPage === 1 || loadingPage} className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded w-[100px]">
-                                                        Anterior
+                                                    <button
+                                                        type="button"
+                                                        onClick={handlePrevious}
+                                                        disabled={currentPage === 1 || loadingPage}
+                                                        className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+                                                    >
+                                                        <Icon icon={arrowLeft} />
                                                     </button>
-
 
                                                     <div className="text-gray-700 font-semibold">
                                                         Página {currentPage} de {totalPages}
                                                     </div>
 
-
-                                                    <button type="button" onClick={handleNext} disabled={currentPage === totalPages || loadingPage} className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded w-[100px]">
-                                                        Siguiente
+                                                    <button
+                                                        type="button"
+                                                        onClick={handleNext}
+                                                        disabled={currentPage === totalPages || loadingPage}
+                                                        className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+                                                    >
+                                                        <Icon icon={arrowRight} />
                                                     </button>
                                                 </div>
                                             </div>
