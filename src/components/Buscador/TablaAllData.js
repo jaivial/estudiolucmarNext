@@ -362,6 +362,7 @@ const Table = ({ currentPath, zoneName, parentsEdificioProps, admin, screenWidth
         filters.trastero,             // Added trastero filter
         filters.DPV,                 // Added DPV filter
         paginaBuscador,
+
     ]);
 
 

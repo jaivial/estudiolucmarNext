@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import Lottie from 'react-lottie';
-import animationData from '/public/assets/gif/gifjson.json';
+import animationData from '../../../../public/assets/gif/gifjson.json';
 import { Button, Modal, Input } from 'rsuite';
 import axios from 'axios';
 import Confetti from 'react-confetti';
