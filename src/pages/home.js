@@ -4,15 +4,12 @@ import GeneralLayout from "../components/layouts/GeneralLayout.js";
 import Image from "next/image";
 import logoLucmar from "../../public/assets/icons/icon-256.webp";
 import "../app/globals.css";
-import LoginForm from "../components/LoginForm/LoginForm.js";
-import { useRouter } from 'next/navigation'
 import 'toastify-js/src/toastify.css'; // Import Toastify CSS
 import Toastify from 'toastify-js';
 import { checkLogin } from "../lib/mongodb/login/checkLogin.js";
 import HeroSection from "../components/Home/HeroSection.js";
 import { parse } from 'cookie';
 import { fetchUserName } from "../lib/mongodb/home/fetchuserHome.js";
-import { getTasksByDaySSR, getTasksSSR } from "../lib/mongodb/calendar/calendarFunctions.js";
 import { Modal, Button, Form, SelectPicker, Input } from 'rsuite';
 import { DatePicker } from 'rsuite';
 import 'rsuite/dist/rsuite.min.css'; // Make sure to include RSuite styles
@@ -70,56 +67,86 @@ export async function getServerSideProps(context) {
     const day = new Date();
     let tasksSSR;
     try {
-        tasksSSR = await getTasksByDaySSR(day, user_id);
+        const response = await fetch(`http://localhost:3000/api/getTasksByDaySSR`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ day, userId: user_id })
+        });
+
+        if (!response.ok) {
+            throw new Error('Failed to fetch tasks by day');
+        }
+
+        tasksSSR = await response.json();
     } catch (error) {
         console.error('Error fetching tasks:', error);
     }
+
 
     let allTasksSSR;
     let datesWithIncompleteTasks;
     let datesWithCompletedTasks;
     try {
-        allTasksSSR = await getTasksSSR(user_id);
+        // Fetch tasks from the API
+        const response = await fetch(`http://localhost:3000/api/getTasksSSR`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ userId: user_id })
+        });
 
-        try {
+        if (!response.ok) {
+            throw new Error('Failed to fetch tasks');
+        }
+
+        // Get the JSON response and extract the tasks array
+        let responseData = await response.json();
+        allTasksSSR = responseData.tasks; // Ensure we're getting the array of tasks
+        console.log('allTasksSSR', allTasksSSR);
+
+        // Ensure allTasksSSR is an array before filtering
+        if (Array.isArray(allTasksSSR)) {
             datesWithIncompleteTasks = Array.from(
                 new Set(
                     allTasksSSR
-                        .filter((task) => task.completed === false) // Filter tasks that are not completed
-                        .map((task) => new Date(task.task_date).toISOString().split('T')[0]), // Extract and format the date
+                        .filter((task) => !task.completed) // Filter tasks that are not completed
+                        .map((task) => new Date(task.task_date).toISOString().split('T')[0]) // Extract and format the date
                 )
             );
-
-            const groupTasksByDate = (tasks) => {
-                return tasks.reduce((acc, task) => {
-                    const date = new Date(task.task_date).toISOString().split('T')[0];
-                    if (!acc[date]) {
-                        acc[date] = [];
-                    }
-                    acc[date].push(task);
-                    return acc;
-                }, {});
-            };
-
-            // Group tasks by date
-            const tasksByDate = groupTasksByDate(allTasksSSR);
-
-            // Filter dates where all tasks are completed
-            const datesWithAllTasksCompleted = Object.keys(tasksByDate).filter(date => {
-                return tasksByDate[date].every(task => task.completed === true);
-            });
-
-            // Convert the result to a Set
-            const datesWithCompletedTasksSet = new Set(datesWithAllTasksCompleted);
-
-            datesWithCompletedTasks = Array.from(datesWithCompletedTasksSet);
-
-
-        } catch (error) {
-            console.error('Error processing tasks:', error);
+        } else {
+            console.error('allTasksSSR is not an array:', allTasksSSR);
+            datesWithIncompleteTasks = [];
         }
+        console.log('datesWithIncompleteTasks', datesWithIncompleteTasks);
 
+        const groupTasksByDate = (tasks) => {
+            return tasks.reduce((acc, task) => {
+                const date = new Date(task.task_date).toISOString().split('T')[0];
+                if (!acc[date]) {
+                    acc[date] = [];
+                }
+                acc[date].push(task);
+                return acc;
+            }, {});
+        };
 
+        // Group tasks by date
+        const tasksByDate = groupTasksByDate(allTasksSSR);
+
+        // Filter dates where all tasks are completed
+        const datesWithAllTasksCompleted = Object.keys(tasksByDate).filter(date => {
+            return tasksByDate[date].every(task => task.completed === true);
+        });
+
+        // Convert the result to a Set
+        const datesWithCompletedTasksSet = new Set(datesWithAllTasksCompleted);
+
+        datesWithCompletedTasks = Array.from(datesWithCompletedTasksSet);
+
+        console.log('datesWithCompletedTasks', datesWithCompletedTasks);
 
 
 
@@ -148,6 +175,22 @@ export async function getServerSideProps(context) {
             console.error('Error fetching user data:', error);
         }
     }
+    let userAnalyticsProps = null;
+    // Fetch analytics data
+    if (userData && userData.user) {
+        try {
+            const analyticsResponse = await axios.get('http://localhost:3000/api/fetchUserAnalytics', {
+                params: {
+                    userId: userData.user.id,
+                    user_id: parseInt(userData.user.user_id, 10),
+                },
+            });
+
+            userAnalyticsProps = analyticsResponse.data;
+        } catch (error) {
+            console.error('Error fetching analytics data:', error);
+        }
+    }
 
 
     return {
@@ -160,14 +203,15 @@ export async function getServerSideProps(context) {
             datesWithCompletedTasks,
             datesWithIncompleteTasks,
             admin,
-            userData
+            userData,
+            userAnalyticsProps
         },
     };
 }
 
 
 
-export default function Home({ user, user_id, initialUserName, tasksSSR, allTasksSSR, datesWithCompletedTasks, datesWithIncompleteTasks, admin, userData }) {
+export default function Home({ user, user_id, initialUserName, tasksSSR, allTasksSSR, datesWithCompletedTasks, datesWithIncompleteTasks, admin, userData, userAnalyticsProps }) {
 
     const [modalAsignarTarea, setModalAsignarTarea] = useState(false);
     const [selectedAsesor, setSelectedAsesor] = useState(null);
@@ -175,7 +219,7 @@ export default function Home({ user, user_id, initialUserName, tasksSSR, allTask
     const [taskInput, setTaskInput] = useState('');
     const [day, setDay] = useState(new Date());
     const [taskTimeInput, setTaskTimeInput] = useState(new Date());
-    const [userAnalytics, setUserAnalytics] = useState(null);
+    const [userAnalytics, setUserAnalytics] = useState(userAnalyticsProps);
 
 
     const fetchAnalytics = async (userId, user_id) => {

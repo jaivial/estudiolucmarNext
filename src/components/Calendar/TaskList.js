@@ -84,9 +84,10 @@ const TaskList = ({ day, tasks, refreshTasks, filteredTasksByDate, setDisplayedM
         console.log('taskId', taskId);
         console.log('userId', userId);
         try {
-            const functionToActivate = 'markTaskAsCompleted';
-            await axios.post(`/api/calendar_functions`, { taskId, userId, functionToActivate });
+            await axios.post(`/api/markTaskAsCompleted`, { taskId, userId });
+
             showToast('Tarea completada', 'linear-gradient(to right bottom, #00603c, #006f39, #007d31, #008b24, #069903)');
+
             // Convert day (YYYY-MM-DD) to YYYY-MM
             const month = format(parseISO(day), 'yyyy-MM');
             refreshTasks(month);
@@ -96,11 +97,16 @@ const TaskList = ({ day, tasks, refreshTasks, filteredTasksByDate, setDisplayedM
         }
     };
 
+
     const handleDeleteTask = async (taskId) => {
         try {
-            const functionToActivate = 'deleteTask';
-            await axios.post(`/api/calendar_functions`, { taskId, userId, functionToActivate });
+            await axios.delete(`/api/deleteTask`, {
+                data: { taskId, userId }
+            });
+
+
             showToast('Tarea eliminada', 'linear-gradient(to right bottom, #c62828, #b92125, #ac1a22, #a0131f, #930b1c)');
+
             const month = format(parseISO(day), 'yyyy-MM');
             refreshTasks(month);
             setDisplayedMonth(month);
@@ -108,6 +114,7 @@ const TaskList = ({ day, tasks, refreshTasks, filteredTasksByDate, setDisplayedM
             console.error('Error deleting task:', error);
         }
     };
+
 
     const handleAddTaskClick = () => {
         setIsAdding(!isAdding);
@@ -124,14 +131,13 @@ const TaskList = ({ day, tasks, refreshTasks, filteredTasksByDate, setDisplayedM
     const handleTaskSubmit = async (event) => {
         event.preventDefault();
         try {
-            const functionToActivate = 'addTask';
-            await axios.post(`/api/calendar_functions`, {
+            await axios.post(`/api/addTask`, {
                 userId,
                 task: taskInput,
-                taskDate: day,
-                taskTime: taskTimeInput,
-                functionToActivate,
+                date: day,
+                taskTime: taskTimeInput
             });
+
             showToast('Tarea añadida', 'linear-gradient(to right bottom, #00603c, #006f39, #007d31, #008b24, #069903)');
             setTaskInput('');
             setTaskTimeInput('');
@@ -141,6 +147,7 @@ const TaskList = ({ day, tasks, refreshTasks, filteredTasksByDate, setDisplayedM
             console.error('Error adding task:', error);
         }
     };
+
 
     const formatDateString = (dateString) => {
         const date = parseISO(dateString);
@@ -162,6 +169,7 @@ const TaskList = ({ day, tasks, refreshTasks, filteredTasksByDate, setDisplayedM
 
     const assignedTasks = sortedTasks.filter(task => task.asignada);
     const unassignedTasks = sortedTasks.filter(task => !task.asignada);
+
 
 
 
@@ -207,15 +215,15 @@ const TaskList = ({ day, tasks, refreshTasks, filteredTasksByDate, setDisplayedM
                             </>
                         } bordered>                    <List>
                                 {assignedTasks.map(task => (
-                                    <List.Item key={task.id} className="flex items-center gap-2 justify-between">
-                                        <Checkbox checked={task.completed} onChange={() => handleTaskCompletion(task.id)}>
+                                    <List.Item key={task._id} className="flex items-center gap-2 justify-between">
+                                        <Checkbox checked={task.completed} onChange={() => handleTaskCompletion(task._id)}>
                                             <div className='flex flex-row items-center gap-4 w-full'>
                                                 {task.task_time && <span className="font-bold">{formatTime(task.task_time)}</span>}
                                                 <span className={task.completed ? 'line-through text-gray-500' : ''}>{task.task}</span>
                                             </div>
                                         </Checkbox>
                                         {admin === 'true' && (
-                                            <Button appearance="link" onClick={() => handleDeleteTask(task.id)} className="text-red-600">
+                                            <Button appearance="link" onClick={() => handleDeleteTask(task._id)} className="text-red-600">
                                                 <FaTrash />
                                             </Button>
                                         )}
@@ -230,14 +238,14 @@ const TaskList = ({ day, tasks, refreshTasks, filteredTasksByDate, setDisplayedM
                         <Panel header="Tareas No Asignadas" bordered>
                             <List>
                                 {unassignedTasks.map(task => (
-                                    <List.Item key={task.id} className="flex items-center gap-2 justify-between">
-                                        <Checkbox checked={task.completed} onChange={() => handleTaskCompletion(task.id)}>
+                                    <List.Item key={task._id} className="flex items-center gap-2 justify-between">
+                                        <Checkbox checked={task.completed} onChange={() => handleTaskCompletion(task._id)}>
                                             <div className='flex flex-row items-center gap-4 w-full'>
                                                 {task.task_time && <span className="font-bold">{formatTime(task.task_time)}</span>}
                                                 <span className={task.completed ? 'line-through text-gray-500' : ''}>{task.task}</span>
                                             </div>
                                         </Checkbox>
-                                        <Button appearance="link" onClick={() => handleDeleteTask(task.id)} className="text-red-600">
+                                        <Button appearance="link" onClick={() => handleDeleteTask(task._id)} className="text-red-600">
                                             <FaTrash />
                                         </Button>
                                     </List.Item>

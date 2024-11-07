@@ -126,19 +126,15 @@ export const getTasksSSR = async (userId) => {
             }
         }).toArray();
 
-        return tasks.map(task => ({
-            id: task.id,
-            task: task.task,
-            completed: task.completed,
-            task_date: task.task_date,
-            task_time: task.task_time,
-            asignada: task.asignada ? task.asignada : false
-        }));
+        console.log('tasks ssr', tasks);
+
+        return tasks; // Return all fields
     } catch (error) {
         console.error("Error fetching tasks: ", error);
         return [];
     }
 };
+
 
 
 
