@@ -4,8 +4,8 @@ import clientPromise from '../../lib/mongodb';
 
 export default async function handler(req, res) {
 
-  // Run CORS middleware
-  await runMiddleware(req, res, cors);
+    // Run CORS middleware
+    await runMiddleware(req, res, cors);
 
 
     if (req.method === 'GET') {
@@ -26,6 +26,8 @@ export default async function handler(req, res) {
 
             // Fetch the document from the 'encargos' collection
             const encargo = await db.collection('encargos').findOne({ encargo_id: numericId });
+
+            console.log('encargo', encargo);
 
 
             // Return the document as JSON

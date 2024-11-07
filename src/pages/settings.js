@@ -38,12 +38,6 @@ const TotalCountsDiv = dynamic(() => import('../components/analytics-charts/Tota
     ssr: false,
 });
 
-// import VentasAlquilerBarChart from '../components/analytics-charts/VentasAlquilerBarChart';
-// import ComisionTotalLineChart from '../components/analytics-charts/ComisionTotalLineChart';
-// import ObjetivosComisionesChart from "../components/analytics-charts/ObjetivosComisionesChart.js";
-
-import PerformancePieChart from '../components/analytics-charts/PerformancePieChart';
-import TotalComisionRadialChart from '../components/analytics-charts/TotalComisionRadialChart';
 
 
 export const getServerSideProps = async (context) => {
@@ -201,6 +195,8 @@ export default function Settings({ isAdmin: initialIsAdmin, userData }) {
     const [userAnalytics, setUserAnalytics] = useState(null);
 
     const fetchAnalytics = async (userId, user_id) => {
+        console.log('userId', userId);
+        console.log('user_id', user_id);
         try {
             const response = await axios.get(`/api/fetchUserAnalytics`, {
                 params: { userId, user_id },
@@ -1247,7 +1243,7 @@ export default function Settings({ isAdmin: initialIsAdmin, userData }) {
                                     </div>
                                 ) : (
                                     <>
-                                        <ObjetivosComisionesChart analyticsResults={userAnalytics?.analyticsResults} futureEncargoComisiones={userAnalytics?.futureEncargoComisiones} />
+                                        <ObjetivosComisionesChart analyticsResults={userAnalytics?.analyticsResults} futureEncargoComisiones={userAnalytics?.futureEncargoComisiones} totalComsiones={userAnalytics?.totalComision} />
                                         <ComisionTotalLineChart data={userAnalytics?.analyticsResults} performance={userAnalytics?.performance} />
                                         <TotalCountsDiv counts={userAnalytics?.countTotalInmublesUser} />
                                         <VentasAlquilerBarChart data={userAnalytics?.analyticsResults} />

@@ -175,7 +175,25 @@ export default function Home({ user, user_id, initialUserName, tasksSSR, allTask
     const [taskInput, setTaskInput] = useState('');
     const [day, setDay] = useState(new Date());
     const [taskTimeInput, setTaskTimeInput] = useState(new Date());
+    const [userAnalytics, setUserAnalytics] = useState(null);
 
+
+    const fetchAnalytics = async (userId, user_id) => {
+        try {
+            const response = await axios.get(`/api/fetchUserAnalytics`, {
+                params: { userId, user_id },
+            });
+            setUserAnalytics(response.data); // Store the API response in userAnalytics
+            console.log('userAnalytics pepepep', response.data);
+        } catch (error) {
+            console.error('Error fetching analytics:', error);
+        }
+    };
+
+    useEffect(() => {
+        console.log('userData', userData);
+        fetchAnalytics(userData.user.id, parseInt(userData.user.user_id, 10));
+    }, []);
 
     const handleTaskSubmit = async () => {
         try {
@@ -321,7 +339,7 @@ export default function Home({ user, user_id, initialUserName, tasksSSR, allTask
                 </Modal>
 
                 <div style={{ paddingTop: 'var(--safe-area-inset-top)' }} className="h-full w-full">
-                    <HeroSection initialUserName={initialUserName} tasksSSR={tasksSSR} allTasksSSR={allTasksSSR} datesWithCompletedTasks={datesWithCompletedTasks} datesWithIncompleteTasks={datesWithIncompleteTasks} admin={admin} setModalAsignarTarea={setModalAsignarTarea} />
+                    <HeroSection userAnalytics={userAnalytics} initialUserName={initialUserName} tasksSSR={tasksSSR} allTasksSSR={allTasksSSR} datesWithCompletedTasks={datesWithCompletedTasks} datesWithIncompleteTasks={datesWithIncompleteTasks} admin={admin} setModalAsignarTarea={setModalAsignarTarea} />
                 </div>
             </div>
         </GeneralLayout >

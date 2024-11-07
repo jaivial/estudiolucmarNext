@@ -3,11 +3,13 @@ import clientPromise from '../../lib/mongodb';
 
 export default async function handler(req, res) {
 
-  // Run CORS middleware
-  await runMiddleware(req, res, cors);
+    // Run CORS middleware
+    await runMiddleware(req, res, cors);
 
 
     const { precio_1, precio_2, tipo_encargo } = req.query;
+
+    console.log('req.query', req.query);
 
     try {
         const client = await clientPromise;

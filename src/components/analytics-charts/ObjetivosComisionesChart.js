@@ -4,14 +4,15 @@ import Lottie from 'lottie-react';
 import goalAnimation from '../../../public/assets/gif/goal.json';
 import trophyAnimation from '../../../public/assets/gif/trophy.json';
 
-const ObjetivosComisionesChart = ({ analyticsResults, futureEncargoComisiones }) => {
+const ObjetivosComisionesChart = ({ totalComsiones, analyticsResults, futureEncargoComisiones }) => {
     useEffect(() => {
         console.log('analyticsResults', analyticsResults);
         console.log('futureEncargoComisiones', futureEncargoComisiones);
+        console.log('totalComsiones', totalComsiones);
     }, [analyticsResults]);
 
     const goal = 100000;
-    const currentComisionTotal = analyticsResults?.currentYear.comisionTotal || 0;
+    const currentComisionTotal = totalComsiones || 0;
     const pendingComisionTotal = futureEncargoComisiones || 0;
 
     // Calculate the percentage of goal reached by current and pending commissions

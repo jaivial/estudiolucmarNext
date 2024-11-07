@@ -19,6 +19,8 @@ import { AiOutlineLoading } from "react-icons/ai";
 import BuscadorTabs from './TabsBuscador.js';
 import { Accordion, Panel, Checkbox, Modal, Button, RadioGroup, Radio, SelectPicker } from 'rsuite';
 import { FaArrowLeft } from "react-icons/fa6";
+import arrowLeft from '@iconify-icons/mdi/arrow-left';
+import arrowRight from '@iconify-icons/mdi/arrow-right';
 
 
 
@@ -1268,7 +1270,7 @@ const Table = ({ currentPath, zoneName, parentsEdificioProps, admin, screenWidth
                                     }
                                 }}
                             >
-                                <div className="flex flex-row justify-between items-center w-full">
+                                <div className="flex flex-row justify-between items-center w-full overflow-x-hidden">
                                     {showUngroupButtons && (
                                         <Checkbox
                                             checked={selectedItemsUngroup.has(child.id)}
@@ -1290,7 +1292,7 @@ const Table = ({ currentPath, zoneName, parentsEdificioProps, admin, screenWidth
                                             className="m-0 h-fit w-fit p-0"
                                         />
                                     )}
-                                    <div className="flex flex-row justify-start items-center gap-1 w-[100%] py-2 ">
+                                    <div className="flex flex-row justify-start items-center gap-1 w-[100%] py-2">
                                         {paginaBuscador === 'Todos' ? (
                                             <>
                                                 <p className={`w-[100%] ${screenWidth > 450 ? 'w-[72.5%]' : ''} sm:w-[55%] md:w-[45%] lg:w-[40%] xl:w-[37.5%] 2xl:w-[35%] text-center truncate`} style={{ marginTop: '0px' }}>
@@ -1705,27 +1707,27 @@ const Table = ({ currentPath, zoneName, parentsEdificioProps, admin, screenWidth
                                 }
                             }}
                         >
-                            <div className="flex flex-row justify-between items-center w-full">
+                            <div className="flex flex-row justify-between items-center w-full overflow-x-hidden">
 
                                 {showUngroupButtons && (
                                     <Checkbox
                                         checked={selectedItemsUngroup.has(child.id)}
                                         onChange={() => handleCheckboxChangeUngroup(child.id)}
-                                        className="mr-4 ml-4 h-fit w-fit p-0"
+                                        className="mr-0 ml-0 h-fit w-fit p-0"
                                     />
                                 )}
                                 {showExtraButtons && (
                                     <Checkbox
                                         checked={selectedItems.has(child.id)}
                                         onChange={() => handleCheckboxChange(child.id)}
-                                        className="mr-4 ml-4 h-fit w-fit p-0"
+                                        className="mr-0 ml-0 h-fit w-fit p-0"
                                     />
                                 )}
                                 {showDeleteInmuebleButtons && (
                                     <Checkbox
                                         checked={selectedItems.has(child.id)}
                                         onChange={() => handleCheckboxChange(child.id)}
-                                        className="mr-4 ml-4 h-fit w-fit p-0"
+                                        className="mr-0 ml-0 h-fit w-fit p-0"
                                     />
                                 )}
                                 <div className="flex flex-row justify-start items-center gap-1 w-[100%] py-2 ">
@@ -1982,17 +1984,17 @@ const Table = ({ currentPath, zoneName, parentsEdificioProps, admin, screenWidth
                             key={child.id}
                             className={`relative border border-gray-400 mb-0 p-0 rounded-md shadow-xl flex items-center flex-col w-full bg-gray-100 transition-all duration-[1000ms] ease-in-out`}
                         >
-                            <div className="flex flex-row justify-stretch items-stretch gap-2 w-full cursor-pointer" onClick={() => handleToggleEscalera(child.id)}>
+                            <div className="flex flex-row justify-evenly items-center gap-2 w-full cursor-pointer" onClick={() => handleToggleEscalera(child.id)}>
                                 {showDeleteInmuebleButtons && (
                                     <Checkbox
                                         checked={selectedItems.has(child.id)}
                                         onChange={() => handleCheckboxChange(child.id)}
-                                        className="mr-4 ml-4 h-fit w-fit p-0"
+                                        className="mr-0 ml-0 h-fit w-fit p-0"
                                     />
                                 )}
-                                <div className="flex flex-row justify-evenly items-center w-full py-2 px-4 h-[4.5rem]">
-                                    <span className="flex flex-row justify-start items-center w-[50%] pl-1">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="3em" height="3em" viewBox="0 0 24 24">
+                                <div className="flex flex-row justify-evenly items-center w-full py-2 pr-4 min-[400px]:px-4 h-[4.5rem]">
+                                    <span className="flex flex-row justify-start items-center w-[100%] pl-1 gap-3 min-[400px]:w-[50%] min-[400px]:gap-0">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="2em" height="2em" viewBox="0 0 24 24">
                                             <path fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M22 5h-5v5h-5v5H7v5H2" />
                                         </svg>
                                         <p className="w-[60%] text-center">{child.direccion}</p>
@@ -2035,7 +2037,7 @@ const Table = ({ currentPath, zoneName, parentsEdificioProps, admin, screenWidth
 
     return (
         <div className="bg-slate-400 h-full w-full overflow-x-hidden">
-            <div className={`${screenWidth >= 990 ? 'w-[calc(100%-5rem)]' : 'w-full'} ml-auto p-4 pb-24`}>
+            <div className={`${screenWidth >= 990 ? 'w-[100%]' : 'w-full'} ml-auto p-4 pb-24`}>
                 <form onSubmit={handleSearch} className="mb-4 flex flex-row gap-2 mt-0 w-full justify-center items-center bg-slate-200 rounded-2xl p-4 shadow-2xl">
                     <div className="relative w-[80%]">
                         <input type="text" value={searchTerm} onChange={(e) => { setSearchTerm(e.target.value); setShowMoreInfo(false); }} placeholder="Buscar una dirección..." className="border border-gray-300 px-3 py-2 w-[100%] rounded-3xl" />
@@ -2412,19 +2414,19 @@ const Table = ({ currentPath, zoneName, parentsEdificioProps, admin, screenWidth
                                                                 }
                                                             }}
                                                         >
-                                                            <div className="flex flex-row justify-between w-full items-center">
+                                                            <div className="flex flex-row justify-between w-full items-center overflow-hidden">
                                                                 {showExtraButtons && (
                                                                     <Checkbox
                                                                         checked={selectedItems.has(item.id)}
                                                                         onChange={() => handleCheckboxChange(item.id)}
-                                                                        className="mr-4 ml-4 h-fit w-fit p-0"
+                                                                        className="mr-0 ml-0 h-fit w-fit p-0"
                                                                     />
                                                                 )}
                                                                 {showDeleteInmuebleButtons && (
                                                                     <Checkbox
                                                                         checked={selectedItems.has(item.id)}
                                                                         onChange={() => handleCheckboxChange(item.id)}
-                                                                        className="mr-4 ml-4 h-fit w-fit p-0"
+                                                                        className="mr-0 ml-0 h-fit w-fit p-0"
                                                                     />
                                                                 )}
                                                                 <div className="flex flex-row justify-start items-center gap-1 w-[100%] py-2 ">
@@ -2689,7 +2691,7 @@ const Table = ({ currentPath, zoneName, parentsEdificioProps, admin, screenWidth
                                                                         <Checkbox
                                                                             checked={selectedItems.has(item.id)}
                                                                             onChange={() => handleCheckboxChange(item.id)}
-                                                                            className="mr-4 ml-4 h-fit w-fit p-0"
+                                                                            className="mr-0 ml-0 h-fit w-fit p-0"
                                                                         />
                                                                     )}
                                                                     <div className="flex flex-row justify-evenly items-center w-full py-2 px-4 h-[4.5rem]">
@@ -2747,18 +2749,26 @@ const Table = ({ currentPath, zoneName, parentsEdificioProps, admin, screenWidth
                                             <div className="flex mt-4 pb-4 w-full xl:w-[60%] flex-row items-center justify-center">
                                                 <div className="flex flex-row justify-center items-center gap-3">
 
-                                                    <button type="button" onClick={handlePrevious} disabled={currentPage === 1 || loadingPage} className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded w-[100px]">
-                                                        Anterior
+                                                    <button
+                                                        type="button"
+                                                        onClick={handlePrevious}
+                                                        disabled={currentPage === 1 || loadingPage}
+                                                        className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+                                                    >
+                                                        <Icon icon={arrowLeft} />
                                                     </button>
-
 
                                                     <div className="text-gray-700 font-semibold">
                                                         Página {currentPage} de {totalPages}
                                                     </div>
 
-
-                                                    <button type="button" onClick={handleNext} disabled={currentPage === totalPages || loadingPage} className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded w-[100px]">
-                                                        Siguiente
+                                                    <button
+                                                        type="button"
+                                                        onClick={handleNext}
+                                                        disabled={currentPage === totalPages || loadingPage}
+                                                        className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+                                                    >
+                                                        <Icon icon={arrowRight} />
                                                     </button>
                                                 </div>
                                             </div>

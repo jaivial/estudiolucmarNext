@@ -52,6 +52,9 @@ const showToast = (message, backgroundColor) => {
 };
 
 const EncargosDetails = ({ fetchEncargos, encargoState, setEncargoState, tiempoExclusiva, setTiempoExclusiva, tipo_encargo, setTipo_encargo, encargos, setEncargos, precio_2, setPrecio_2, precio_1, setPrecio_1, selectedClienteEncargo, setSelectedClienteEncargo, fetchTransacciones, fetchClientes, setClienteOptions, clienteOptions, refreshMatchingClientesEncargos, fetchClientesAsociados, data, fetchInmuebleMoreInfo, fetchData, currentPage, searchTerm, screenWidth }) => {
+    useEffect(() => {
+        console.log('precio_1', precio_1);
+    }, [precio_1]);
     const [isOpen, setIsOpen] = useState(false);
     const [isPopupOpen, setIsPopupOpen] = useState(false);
 

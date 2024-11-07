@@ -9,7 +9,7 @@ export default async function handler(req, res) {
     if (req.method === 'GET') {
         const { userId, user_id } = req.query;
 
-        console.log('req.query', req.query);
+        console.log('req.query Hereee', req.query);
 
         if (!user_id) {
             return res.status(400).json({ message: 'user_id is required' });
@@ -93,17 +93,52 @@ export default async function handler(req, res) {
 
             // Fetch all transactions for the user from ventas collection
             const transactions = await db.collection('ventas').find({
-                "user_id": userObjectId
+                'asesorID': parseInt(user_id, 10)
             }).toArray();
+
+            console.log('transactions', transactions);
 
             // Helper function to calculate sums for a specific period
             const calculatePeriodSums = (transactions, startDate, endDate) => {
-                const filteredTransactions = transactions.filter(trans => new Date(trans.fechaFinalizacion) >= startDate && new Date(trans.fechaFinalizacion) < endDate);
-                const ventasSum = filteredTransactions.filter(trans => trans.tipoEncargo === 'Venta').reduce((acc, curr) => acc + curr.precio, 0);
-                const alquilerSum = filteredTransactions.filter(trans => trans.tipoEncargo === 'Alquiler').reduce((acc, curr) => acc + curr.precio, 0);
-                const comisionTotal = filteredTransactions.reduce((acc, curr) => acc + curr.comisionTotal, 0);
+                // Adjust endDate to ensure it's after startDate for effective filtering
+                const adjustedEndDate = new Date(endDate);
+                adjustedEndDate.setSeconds(adjustedEndDate.getSeconds() + 1); // Buffer by 1 second
+
+                console.log('Period Start:', startDate.toISOString());
+                console.log('Period End:', adjustedEndDate.toISOString());
+
+                const filteredTransactions = transactions.filter(trans => {
+                    const finalizationDate = trans.fechaFinalizacion ? new Date(trans.fechaFinalizacion) : null;
+                    return finalizationDate && finalizationDate >= startDate && finalizationDate < adjustedEndDate;
+                });
+
+                console.log('Filtered Transactions for Period:', filteredTransactions);
+
+                const ventasSum = filteredTransactions
+                    .filter(trans => trans.tipoEncargo === 'Venta')
+                    .reduce((acc, curr) => acc + curr.precio, 0);
+
+                const alquilerSum = filteredTransactions
+                    .filter(trans => trans.tipoEncargo === 'Alquiler')
+                    .reduce((acc, curr) => acc + curr.precio, 0);
+
+                const comisionTotal = filteredTransactions.reduce((acc, curr) => acc + (curr.comisionTotal || 0), 0);
+
+                console.log(`Calculated comisionTotal for Period (${startDate.toISOString()} - ${adjustedEndDate.toISOString()}):`, comisionTotal);
+
                 return { ventasSum, alquilerSum, comisionTotal };
             };
+
+
+            // Function to calculate total comision across all transactions for a specific user
+            const calculateTotalComision = (transactions) => {
+                return transactions.reduce((acc, curr) => acc + (curr.comisionTotal || 0), 0);
+            };
+
+            // Calculate the total comision for all transactions without filtering by date
+            const totalComision = calculateTotalComision(transactions);
+
+            console.log('Total Comision for all transactions:', totalComision);
 
             // Generate period data for the last 14 days, 8 weeks, 8 months, 8 6-month periods, and 8 years
             const generatePeriodData = (transactions, periodFn, numPeriods, unit) => {
@@ -208,12 +243,15 @@ export default async function handler(req, res) {
             const futureEncargoComisiones = encargos.reduce((total, encargo) => total + calculateCommission(encargo), 0);
 
 
+
+
+
             console.log('performance', performance);
             console.log('analyticsResults', analyticsResults);
             console.log('futureEncargoComisiones', futureEncargoComisiones);
             console.log('countTotalInmublesUser', countTotalInmublesUser);
 
-            res.status(200).json({ analyticsResults, performance, futureEncargoComisiones, countTotalInmublesUser });
+            res.status(200).json({ analyticsResults, performance, futureEncargoComisiones, countTotalInmublesUser, totalComision });
         } catch (error) {
             console.error('Error fetching analytics:', error);
             res.status(500).json({ message: 'Error fetching analytics', error: error.message });

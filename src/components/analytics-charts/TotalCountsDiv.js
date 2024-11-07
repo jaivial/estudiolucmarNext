@@ -22,7 +22,7 @@ const TotalCountsDiv = ({ counts }) => {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {Object.entries(countLabels).map(([key, label]) => {
                     // Find the relevant count object in the array
-                    const countData = counts.find(count => count[key] !== undefined);
+                    const countData = counts?.find(count => count[key] !== undefined);
                     const countValue = countData ? countData[key] : 0;
 
                     return (
