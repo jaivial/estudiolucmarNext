@@ -59,10 +59,10 @@ const VentasAlquilerPieChart = ({ data }) => {
                 onSelect={setSelectedPeriod}
                 className=" text-white -mb-2"
             >
-                <Tab eventKey="week" title="Semana" />
-                <Tab eventKey="month" title="Mes" />
-                <Tab eventKey="sixMonths" title="6 Meses" />
-                <Tab eventKey="year" title="Año" />
+                <Tabs.Tab eventKey="week" title="Semana" />
+                <Tabs.Tab eventKey="month" title="Mes" />
+                <Tabs.Tab eventKey="sixMonths" title="6 Meses" />
+                <Tabs.Tab eventKey="year" title="Año" />
             </Tabs>
 
             {isDataEmpty ? (

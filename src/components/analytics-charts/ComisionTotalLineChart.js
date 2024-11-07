@@ -1,10 +1,22 @@
 // components/analytics-charts/ComisionTotalAreaChart.js
 import React, { useState } from 'react';
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { AreaChart, Area, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { Tabs, Tab } from 'rsuite';
 import { Icon } from '@iconify/react';
 import Lottie from 'lottie-react';
 import mobileGraphMoneyAnimation from '../../../public/assets/gif/mobilegraphsmoney.json';
+import { XAxis, YAxis } from 'recharts';
+
+// Wrapper for XAxis with default parameters
+const XAxisWrapper = ({ axisLine = { stroke: '#cccccc' }, tick = false, ...props }) => {
+    return <XAxis axisLine={axisLine} tick={tick} {...props} />;
+};
+
+// Wrapper for YAxis with default parameters
+const YAxisWrapper = ({ axisLine = { stroke: '#cccccc' }, tick = false, ...props }) => {
+    return <YAxis axisLine={axisLine} tick={tick} {...props} />;
+};
+
 
 const ComisionTotalAreaChart = ({ data, performance }) => {
     const [selectedPeriod, setSelectedPeriod] = useState('week');
@@ -73,10 +85,10 @@ const ComisionTotalAreaChart = ({ data, performance }) => {
                 onSelect={setSelectedPeriod}
                 className=" text-white -mb-2"
             >
-                <Tab eventKey="week" title="Semana" />
-                <Tab eventKey="month" title="Mes" />
-                <Tab eventKey="sixMonths" title="6 Meses" />
-                <Tab eventKey="year" title="Año" />
+                <Tabs.Tab eventKey="week" title="Semana" />
+                <Tabs.Tab eventKey="month" title="Mes" />
+                <Tabs.Tab eventKey="sixMonths" title="6 Meses" />
+                <Tabs.Tab eventKey="year" title="Año" />
             </Tabs>
 
 
@@ -134,9 +146,9 @@ const ComisionTotalAreaChart = ({ data, performance }) => {
                             {/* Remove the grid */}
                             {/* <CartesianGrid strokeDasharray="1 1" /> */}
 
-                            {/* Customize X and Y axes to show only the lines */}
-                            <XAxis axisLine={{ stroke: '#cccccc' }} tick={false} />
-                            <YAxis axisLine={{ stroke: '#cccccc' }} tick={false} />
+                            {/* Use the wrapper components here */}
+                            <XAxisWrapper />
+                            <YAxisWrapper />
 
                             <Tooltip />
                             <Area

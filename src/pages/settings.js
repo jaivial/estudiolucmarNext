@@ -81,6 +81,8 @@ export const getServerSideProps = async (context) => {
         }
     }
 
+
+
     let isAdmin = null;
     try {
         const client = await clientPromise;
@@ -103,15 +105,33 @@ export const getServerSideProps = async (context) => {
         console.error('Error al obtener los datos del usuario:', error);
         isAdmin = false;
     }
+
+    let userAnalyticsProps = null;
+    // Fetch analytics data
+    if (userData && userData.user) {
+        try {
+            const analyticsResponse = await axios.get('http://localhost:3000/api/fetchUserAnalytics', {
+                params: {
+                    userId: userData.user.id,
+                    user_id: parseInt(userData.user.user_id, 10),
+                },
+            });
+
+            userAnalyticsProps = analyticsResponse.data;
+        } catch (error) {
+            console.error('Error fetching analytics data:', error);
+        }
+    }
     return {
         props: {
             isAdmin,
             userData,
+            userAnalyticsProps
         },
     };
 };
 
-export default function Settings({ isAdmin: initialIsAdmin, userData }) {
+export default function Settings({ isAdmin: initialIsAdmin, userData, userAnalyticsProps }) {
     const [searchTerm, setSearchTerm] = useState('');
     const [passwordVisible, setPasswordVisible] = useState(false);
     const [newUserPasswordVisible, setNewUserPasswordVisible] = useState(false);
@@ -192,7 +212,7 @@ export default function Settings({ isAdmin: initialIsAdmin, userData }) {
     // State for tracking open modals for each user
     const [editModalOpen, setEditModalOpen] = useState({});
     const [selectedUserId, setSelectedUserId] = useState(null);
-    const [userAnalytics, setUserAnalytics] = useState(null);
+    const [userAnalytics, setUserAnalytics] = useState(userAnalyticsProps);
 
     const fetchAnalytics = async (userId, user_id) => {
         console.log('userId', userId);

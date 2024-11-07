@@ -90,10 +90,11 @@ const CalendarApp = ({ tasksSSR, allTasksSSR, datesWithCompletedTasks, datesWith
 
     const fetchAllTasks = async (month) => {
         try {
-            const functionToActivate = 'getTasks';
-            const response = await axios.get(`/api/calendar_functions`, {
-                params: { userId, functionToActivate, month }, // Pass the month parameter
+            const response = await axios.post(`/api/getTasks`, {
+                userId, // Pass the userId directly in the data object
+                month   // Pass the month parameter in the data object
             });
+
             const allTasks = response.data.tasks;
             setAllTasks(allTasks);
             datesCompleteIncompleteTasks(allTasks);
@@ -101,6 +102,7 @@ const CalendarApp = ({ tasksSSR, allTasksSSR, datesWithCompletedTasks, datesWith
             console.error('Error fetching all tasks:', error);
         }
     };
+
 
     const onDateClick = (value) => {
         setSelectedDay(format(value, 'yyyy-MM-dd'));
