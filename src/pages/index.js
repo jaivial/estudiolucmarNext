@@ -35,7 +35,7 @@ export default function Index() {
                   <Image className="w-full rounded-xl" src={logoLucmar} alt="Logo Lucmar" />
                 </div>
                 <div className="flex flex-col items-start justify-center w-fit h-full">
-                  <span className="font-bold font-sans text-xl tracking-wide text-slate-800">Lucmar Cloud</span>
+                  <span className="font-bold font-sans text-xl tracking-wide text-slate-800">Vivienda Nova</span>
                   <span className="font-sans font-extralight text-base text-slate-800">Panel de administración</span>
                 </div>
               </div>

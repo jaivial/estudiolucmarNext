@@ -66,7 +66,7 @@ const HeroSection = ({ userAnalytics, initialUserName, tasksSSR, allTasksSSR, da
             </div>
             <div id="home-title" className="flex flex-col items-center justify-center w-full h-auto pb-8">
                 <p className="text-4xl font-bold text-center animate-fade-in-up">Bienvenido a</p>
-                <h1 className="animate-fade-in-up-delayed text-5xl font-sans font-extrabold text-transparent bg-clip-text bg-gradient-to-br from-sky-800 via-sky-600 to-sky-300 inline-block text-center">Estudio Lucmar</h1>
+                <h1 className="animate-fade-in-up-delayed text-5xl font-sans font-extrabold text-transparent bg-clip-text bg-gradient-to-br from-sky-800 via-sky-600 to-sky-300 inline-block text-center">Vivienda Nova</h1>
             </div>
             <div className='flex flex-row justify-center items-start w-full h-full gap-2 px-6 max-[800px]:flex-col max-[800px]:gap-0' >
 

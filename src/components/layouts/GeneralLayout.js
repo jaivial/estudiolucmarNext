@@ -6,9 +6,9 @@ import SideMenu from "../MenuBars/SideMenu.js"; // Import SideMenu
 import "../../app/globals.css";
 
 export const metadata = {
-    title: "Lucmar Cloud",
+    title: "Vivienda Nova",
     description:
-        "Lucmar Cloud es el CRM de las inmobilirias que quieren hacer sus negocios más eficientes, comprar y vender inmuebles, y gestionar sus clientes.",
+        "Vivienda Nova es el CRM de las inmobilirias que quieren hacer sus negocios más eficientes, comprar y vender inmuebles, y gestionar sus clientes.",
 };
 
 const Layout = ({ children, title, description, user, userData }) => {

@@ -6,8 +6,8 @@ import "../../app/globals.css";
 
 
 export const metadata = {
-    title: "Lucmar Cloud",
-    description: "Lucmar Cloud es el CRM de las inmobilirias que quieren hacer sus negocios más eficientes, comprar y vender inmuebles, y gestionar sus clientes.",
+    title: "Vivienda Nova",
+    description: "Vivienda Nova es el CRM de las inmobilirias que quieren hacer sus negocios más eficientes, comprar y vender inmuebles, y gestionar sus clientes.",
 };
 
 const Layout = ({ children, title, description }) => {
